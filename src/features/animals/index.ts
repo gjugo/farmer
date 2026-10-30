@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import { ANIMALS, FEED_PACK, PENS, type AnimalKind, type PenType } from '../../data/animals';
 import { getItem } from '../../data/items';
+import { FEED_WORK_MS } from '../../data/workers';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
+import { withFarmer } from '../../game/workers';
 import {
   animalProgress,
   animalsOf,
@@ -235,8 +237,11 @@ function penPanel(ctx: FarmContext, obj: PlacedObject<PenState>): PanelSpec {
       label: `Feed all (${need} feed)`,
       disabled: !canFeedAny,
       onClick: () => {
-        const fed = feedAll(game, obj);
-        if (fed > 0) ctx.ui.toast(`Fed ${fed} ${fed === 1 ? 'animal' : 'animals'}`, 'success');
+        withFarmer(ctx, 'feed', obj, FEED_WORK_MS, () => {
+          const fed = feedAll(game, obj);
+          if (fed > 0) ctx.ui.toast(`Fed ${fed} ${fed === 1 ? 'animal' : 'animals'}`, 'success');
+          return fed > 0;
+        });
       },
     });
   }

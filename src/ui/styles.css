@@ -1025,3 +1025,37 @@ button {
 .credits-list a {
   color: var(--green-dark);
 }
+
+/* Farmers sheet */
+.farmers-count {
+  margin: 0 0 8px;
+}
+
+.farmers-list {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.farmer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: var(--paper-dark);
+}
+
+.farmer-icon {
+  font-size: 20px;
+}
+
+.farmer-name {
+  font-weight: 600;
+}
+
+.farmer-status {
+  margin-left: auto;
+  white-space: nowrap;
+}

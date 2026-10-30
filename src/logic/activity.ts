@@ -33,4 +33,8 @@ export interface ActivityEvents {
   orderFulfilled: { reward: number };
   /** A finished goal was claimed. */
   goalClaimed: { id: string };
+  /** A farmer was put to work (building, planting, harvesting, feeding). */
+  workStarted: { kind: string };
+  /** A farmer was hired; `farmers` is the new total. */
+  hired: { farmers: number };
 }
