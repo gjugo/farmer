@@ -87,10 +87,12 @@ src/
     signals.ts         uiSignals: UI moments that are not state changes (refused action, welcome-back opened)
   scenes/            Phaser scenes
     iso.ts             isometric projection (no Phaser, unit-tested): ISO_W/ISO_H, tile ↔ world, picking, depth order
-    depth.ts           depth layers (ground, flat, tall, signs, ghost…)
-    textures.ts        runtime-drawn textures (registerTexture) + isometric drawing helpers
-    BootScene.ts       bakes textures
-    FarmScene.ts       map, fences, objects, camera, build/demolish input
+    depth.ts           depth layers (ground, flat, shadow, tall, signs, ghost…)
+    art.ts             the art pack (no Phaser, unit-tested): texture key → pack sprite, path/fence autotile
+    sprites.ts         drawing pack sprites (anchors, 2x art at half scale, shadows)
+    textures.ts        the few runtime-drawn textures (bubbles, sparkles, smoke, `missing`)
+    BootScene.ts       loads the pack (progress bar), anchors, animations, composed textures
+    FarmScene.ts       ground (one Blitter), scenery, objects, camera, build/demolish input
   ui/                HTML/CSS overlay above the canvas
     hud.ts             top bar, side sheet (build, inventory, settings, action panel), toasts, dialogs
     debug.ts           ?debug=1 panel
@@ -115,7 +117,9 @@ Features live in `src/features/<name>/index.ts`. Every such file is imported aut
 ### Add an item
 
 Items are shared ids, so they live in one place: add an entry to `ITEMS` in `src/data/items.ts`
-(`id`, `name`, `category`, base sell `price`, emoji `icon`). Use the id everywhere else
+(`id`, `name`, `category`, base sell `price`, emoji `icon`). Use the id everywhere else; give it a pack icon
+in `public/assets/farm/*/icons/<id>.png` and list it in `ICON_ART` (`src/scenes/art.ts`), and its emoji in any
+label shows as that icon
 (`game.addItem('egg', 3)`, `game.count('milk')`).
 
 ### Add a buildable
@@ -123,25 +127,19 @@ Items are shared ids, so they live in one place: add an entry to `ITEMS` in `src
 ```ts
 // src/features/coop/index.ts
 import { registerBuildable } from '../../data/buildables';
-import { diamondPoints, footprintTexture, poly, registerTexture } from '../../scenes/textures';
 import { registerBehavior } from '../../game/hooks';
 import { startTimer, timerDone, timerProgress, type Timer } from '../../logic/clock';
 
 interface CoopState { hens: number; timer: Timer | null }
 
-// The map is drawn in isometric view: a texture is the box around the footprint's diamond, plus room
-// above it for anything that stands up (the sprite is anchored at the diamond's front corner).
-registerTexture('coop', {
-  ...footprintTexture(2, 2, 24),
-  draw: (g) => poly(g, 0xc0503a, diamondPoints(2, 2, 24)),
-});
-
+// `texture` is a sprite of the art pack (public/assets/farm/manifest.json), or a game key mapped to one in
+// TEXTURE_ART (src/scenes/art.ts). It is drawn anchored on the footprint's top corner, with its shadow.
 registerBuildable({
   id: 'coop',
   name: 'Chicken coop',
   cost: 120,
-  footprint: { w: 2, h: 2 },
-  texture: 'coop',
+  footprint: { w: 3, h: 3 }, // the sprite's footprint in the manifest
+  texture: 'chicken_coop',
   category: 'animals',
   initialState: (): CoopState => ({ hens: 0, timer: null }), // also fills old saves
 });
@@ -210,5 +208,8 @@ Settings → **New game** resets the farm after a confirmation.
 
 ## Art
 
-All art is original placeholder art drawn at runtime with Phaser Graphics (`src/scenes/textures.ts`);
-HUD icons are emoji. No external assets.
+The isometric farm pack in `public/assets/farm/` (its `README.md` and `manifest.json`; licence in
+CREDITS.md). The 2x set is loaded and drawn at half scale, so one world pixel is one 1x pack pixel and a tile
+is 128 × 64. `src/scenes/art.ts` maps the game's texture keys to pack sprites; anchors come from the manifest.
+Only speech bubbles, sparkles and smoke are drawn at runtime. Emoji remain only where the pack has no icon
+(animals, buildings, HUD buttons).

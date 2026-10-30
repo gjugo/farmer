@@ -1,5 +1,12 @@
 # Credits
 
+## Art
+
+Every image in `public/assets/farm/` (sprites, tiles, icons; `manifest.json`) is the **Isometric Farm Pack**
+supplied for this game (see its `public/assets/farm/README.md`). Licence, from that README: *"You can use,
+modify and ship these in commercial games. No attribution required."* So it is not listed in the in-game
+Credits sheet. Unchanged: the 1x and 2x PNGs are committed as shipped; the game draws the 2x set at half size.
+
 ## Audio
 
 Every audio file in `public/audio/`. All are CC0 or public domain except where noted;
