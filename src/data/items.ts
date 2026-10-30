@@ -6,7 +6,7 @@ export interface ItemDef {
   category: ItemCategory;
   /** Base sell price in dollars. */
   price: number;
-  /** Emoji used as the placeholder icon in the HTML overlay. */
+  /** Emoji standing for the item in text; the HTML overlay and the farm show the art pack's icon for it (see `splitIcons`). */
   icon: string;
 }
 
@@ -34,4 +34,22 @@ export const ITEM_LIST: readonly ItemDef[] = Object.values(ITEMS);
 
 export function getItem(id: string): ItemDef | undefined {
   return (ITEMS as Record<string, ItemDef>)[id];
+}
+
+/** Emoji that the art pack has an icon for, by icon name: every item, plus coins for money. */
+export const ICON_EMOJI: Readonly<Record<string, string>> = {
+  ...Object.fromEntries(ITEM_LIST.map((item) => [item.icon, item.id])),
+  '💰': 'coins',
+};
+
+const ICON_PATTERN = new RegExp(`(${Object.keys(ICON_EMOJI).join('|')})`, 'u');
+
+export type TextPart = string | { icon: string; emoji: string };
+
+/** Splits text into plain runs and the emoji that have a pack icon, e.g. "+3 🥚 Egg" → ["+3 ", {icon: 'egg'}, " Egg"]. */
+export function splitIcons(text: string): TextPart[] {
+  return text
+    .split(ICON_PATTERN)
+    .filter((part) => part !== '')
+    .map((part) => (Object.hasOwn(ICON_EMOJI, part) ? { icon: ICON_EMOJI[part], emoji: part } : part));
 }

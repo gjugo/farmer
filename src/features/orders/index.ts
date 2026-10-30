@@ -16,6 +16,7 @@ import {
   type OrderSlot,
 } from '../../logic/orders';
 import { formatMoney, h } from '../../ui/dom';
+import { itemIcon } from '../../ui/icons';
 
 /**
  * The Orders board: 3 customer orders for bundles of known goods, paying more than
@@ -49,7 +50,7 @@ function orderCard(ctx: FarmContext, order: Order, index: number): HTMLElement {
         return h(
           'li',
           { class: `order-item${have >= it.qty ? ' have' : ''}`, 'data-testid': `order-${index}-item-${it.itemId}`, 'data-qty': it.qty },
-          h('span', { class: 'item-icon', 'aria-hidden': 'true' }, item?.icon ?? '📦'),
+          itemIcon(it.itemId),
           h('span', { class: 'item-name' }, `${it.qty} × ${item?.name ?? it.itemId}`),
           h('span', { class: 'order-have', 'aria-label': `you have ${have}` }, `${Math.min(have, it.qty)}/${it.qty}`),
         );

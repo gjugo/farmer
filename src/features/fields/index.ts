@@ -14,8 +14,10 @@ import {
   type CropStage,
   type FieldState,
 } from '../../logic/crops';
+import { ART_SCALE, cropArt, SHADOW } from '../../scenes/art';
 import { footprintLocal } from '../../scenes/iso';
-import { cropTexture } from './textures';
+import { addArt, textureKey } from '../../scenes/sprites';
+import './textures';
 
 /**
  * Fields: plant crops for money, watch them grow on the game clock, harvest into
@@ -30,9 +32,24 @@ const STAGE_NAMES: Record<CropStage, string> = {
   ripe: 'Ripe!',
 };
 
+/** Fields are 2×2; the pack's crops cover one tile each. */
+const TILES = [
+  [0, 0],
+  [1, 0],
+  [0, 1],
+  [1, 1],
+] as const;
+
+/** Ripe crops sway this much taller. */
+const SWAY = 1.06;
+
 interface FieldView {
   stage: CropStage | null;
-  plants: Phaser.GameObjects.Image;
+  /** The tilled soil: dry while empty or ripe, watered while growing. */
+  soil: Phaser.GameObjects.Image;
+  /** One crop sprite per tile, back to front, and their shadows. */
+  plants: Phaser.GameObjects.Image[];
+  shadows: Phaser.GameObjects.Image[];
   sparkles: Phaser.GameObjects.Image[];
   tweens: Phaser.Tweens.Tween[];
 }
@@ -42,7 +59,7 @@ const fieldViews = new Map<string, FieldView>();
 function stopRipeEffects(fv: FieldView): void {
   for (const t of fv.tweens) t.remove();
   fv.tweens = [];
-  fv.plants.setScale(1);
+  for (const p of fv.plants) p.setScale(ART_SCALE);
   for (const s of fv.sparkles) s.setVisible(false);
 }
 
@@ -50,7 +67,7 @@ function stopRipeEffects(fv: FieldView): void {
 function startRipeEffects(ctx: FarmContext, fv: FieldView): void {
   const { tweens } = ctx.scene;
   fv.tweens.push(
-    tweens.add({ targets: fv.plants, scaleY: 1.08, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }),
+    tweens.add({ targets: fv.plants, scaleY: ART_SCALE * SWAY, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }),
   );
   fv.sparkles.forEach((s, i) => {
     s.setVisible(true).setAlpha(0).setScale(0.4);
@@ -66,9 +83,16 @@ function syncView(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
   const stage = cropStage(ctx.game.state.clock, obj.state);
   if (stage === fv.stage) return;
   fv.stage = stage;
-  const key = obj.state.crop ? cropTexture(obj.state.crop, stage) : null;
-  fv.plants.setVisible(key !== null);
-  if (key) fv.plants.setTexture(key);
+  const art = obj.state.crop ? cropArt(obj.state.crop, stage) : null;
+  fv.soil.setTexture(textureKey(ctx.scene, art && stage !== 'ripe' ? 'field-watered' : 'field'));
+  fv.plants.forEach((p, i) => {
+    p.setVisible(art !== null);
+    if (art) p.setTexture(textureKey(ctx.scene, art));
+    const shadow = fv.shadows[i];
+    const shadowKey = art ? `${art}${SHADOW}` : '';
+    shadow.setVisible(ctx.scene.textures.exists(shadowKey));
+    if (shadow.visible) shadow.setTexture(shadowKey);
+  });
   stopRipeEffects(fv);
   if (stage === 'ripe') startRipeEffects(ctx, fv);
 }
@@ -82,9 +106,16 @@ function doHarvest(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
 
 registerBehavior<FieldState>(FIELD, {
   create(ctx, obj, view: ObjectView) {
-    // Anchored at the bottom so the ripe sway grows upwards from the soil.
-    // The overlay texture is the field's size plus OVERLAY_TOP, so scale 1 lines it up.
-    const plants = ctx.scene.add.image(0, view.height, 'crop-seeded').setOrigin(0, 1).setVisible(false);
+    // Each crop stands on its own tile's top corner, like the pack's soil tiles.
+    const scene = ctx.scene;
+    const plants = TILES.map(([x, y]) => {
+      const p = footprintLocal(2, 2, x, y);
+      return addArt(scene, p.x, p.y, 'wheat_0_seeded').setVisible(false);
+    });
+    const shadows = TILES.map(([x, y]) => {
+      const p = footprintLocal(2, 2, x, y);
+      return scene.add.image(p.x, p.y, 'missing').setScale(ART_SCALE).setVisible(false); // textured by syncView
+    });
     // Sparkle spots in grid units inside the 2×2 field.
     const sparkles = [
       [0.5, 0.5],
@@ -92,10 +123,11 @@ registerBehavior<FieldState>(FIELD, {
       [0.8, 1.5],
     ].map(([gx, gy]) => {
       const p = footprintLocal(2, 2, gx, gy);
-      return ctx.scene.add.image(p.x, p.y - 8, 'crop-sparkle').setVisible(false);
+      return scene.add.image(p.x, p.y - 30, 'crop-sparkle').setVisible(false);
     });
-    view.container.add([plants, ...sparkles]);
-    fieldViews.set(obj.id, { stage: null, plants, sparkles, tweens: [] });
+    view.container.add([...plants, ...sparkles]);
+    view.shadows.add(shadows);
+    fieldViews.set(obj.id, { stage: null, soil: view.sprite, plants, shadows, sparkles, tweens: [] });
     syncView(ctx, obj);
   },
   update(ctx, obj) {

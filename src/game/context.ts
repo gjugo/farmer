@@ -97,12 +97,24 @@ export interface FarmContext {
 /** The display objects of one placed object, kept by the Farm scene. */
 export interface ObjectView {
   /**
-   * Positioned at the top-left corner of the box around the footprint's isometric diamond, in world
-   * pixels. Place children with `footprintLocal` from `src/scenes/iso.ts`.
+   * What stands on the footprint, depth-sorted against every other standing thing. Positioned at the
+   * top-left corner of the box around the footprint's isometric diamond, in world pixels; place children
+   * with `footprintLocal` from `src/scenes/iso.ts`.
    */
   container: Phaser.GameObjects.Container;
-  /** The base image (the buildable's texture), standing with its bottom edge on the diamond's front corner. */
+  /** Same origin as `container`, but flat on the ground (under every shadow), e.g. a field's soil. */
+  ground: Phaser.GameObjects.Container;
+  /** Same origin as `container`, on the shadow layer (above the ground, below everything standing). */
+  shadows: Phaser.GameObjects.Container;
+  /**
+   * The base image (the buildable's art), anchored on the footprint's top corner (`top`). In `ground` for
+   * flat buildables (paths, fields), otherwise in `container`.
+   */
   sprite: Phaser.GameObjects.Image;
+  /** The base image's shadow in `shadows`, if its art has one. */
+  shadow: Phaser.GameObjects.Image | null;
+  /** The footprint's top corner inside the containers. */
+  top: { x: number; y: number };
   /** Size of the box around the footprint's diamond, in world pixels. */
   width: number;
   height: number;

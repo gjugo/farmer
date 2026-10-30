@@ -346,6 +346,30 @@ button {
   text-align: center;
 }
 
+/* The art pack's item icons. */
+.item-img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.inline-icon {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  margin: -0.2em 0.05em;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.stat-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
 .item-count {
   font-weight: 800;
   font-variant-numeric: tabular-nums;

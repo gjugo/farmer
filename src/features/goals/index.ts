@@ -1,6 +1,7 @@
 import type { FarmContext, SheetSpec } from '../../game/context';
 import { registerHudButton } from '../../game/hooks';
 import { formatMoney, h } from '../../ui/dom';
+import { withIcons } from '../../ui/icons';
 
 /**
  * Goals: three active targets at a time, claimed for money and XP.
@@ -34,7 +35,7 @@ function goalsSheet(ctx: FarmContext): SheetSpec {
             h(
               'li',
               { class: `goal${complete ? ' complete' : ''}`, 'data-testid': `goal-${def.id}` },
-              h('span', { class: 'goal-icon', 'aria-hidden': 'true' }, def.icon),
+              h('span', { class: 'goal-icon', 'aria-hidden': 'true' }, withIcons(def.icon)),
               h(
                 'div',
                 { class: 'goal-main' },

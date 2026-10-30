@@ -12,10 +12,10 @@
  * the map; +x runs down-right and +y runs down-left on screen.
  */
 
-/** Width of one tile's diamond in world pixels. The art pack decides the ratio (2:1 here). */
-export const ISO_W = 64;
+/** Width of one tile's diamond in world pixels: the art pack's 1x ground tile (`public/assets/farm/manifest.json` → tile). */
+export const ISO_W = 128;
 /** Height of one tile's diamond in world pixels. */
-export const ISO_H = 32;
+export const ISO_H = 64;
 
 const HW = ISO_W / 2;
 const HH = ISO_H / 2;
