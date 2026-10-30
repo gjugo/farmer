@@ -679,3 +679,121 @@ button {
     text-align: center;
   }
 }
+
+/* Orders board --------------------------------------------------------------- */
+
+.hud-btn {
+  position: relative;
+}
+
+.hud-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 2px solid var(--paper);
+  border-radius: 11px;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-badge[hidden] {
+  display: none;
+}
+
+.orders-intro {
+  margin-top: 0;
+}
+
+.orders-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-card {
+  padding: 8px 10px;
+  background: #fff;
+  border: 2px solid transparent;
+  border-radius: 10px;
+}
+
+.order-card.ready {
+  border-color: var(--green);
+}
+
+.order-card.waiting p {
+  margin: 4px 0;
+}
+
+.order-countdown {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.order-items {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-have {
+  color: var(--red);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-item.have .order-have {
+  color: var(--green-dark);
+}
+
+.order-pay {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 10px;
+  margin: 4px 0 8px;
+}
+
+.order-reward {
+  font-weight: 800;
+}
+
+.order-market {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.order-bonus {
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+.order-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.order-actions .btn {
+  min-height: 40px;
+  padding: 6px 12px;
+}
