@@ -617,6 +617,26 @@ button {
   justify-content: flex-end;
 }
 
+.dialog.welcome {
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+}
+
+.welcome-list {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-list li {
+  padding: 6px 10px;
+  background: var(--paper-dark);
+  border-radius: 8px;
+}
+
+
 .dialog.levelup {
   text-align: center;
 }
@@ -752,6 +772,12 @@ button {
 
 .debug-panel select {
   min-height: 40px;
+  font: inherit;
+}
+
+.debug-panel input {
+  width: 64px;
+  min-height: 36px;
   font: inherit;
 }
 

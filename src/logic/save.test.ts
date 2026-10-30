@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { registerBuildable } from '../data/buildables';
 import { START_LAND } from './constants';
 import { Game } from './game';
-import { deserialize, loadFromStorage, SAVE_KEY, SAVE_VERSION, saveToStorage, serialize, type SaveStorage } from './save';
+import { deserialize, loadFromStorage, loadSave, parseSave, SAVE_KEY, SAVE_VERSION, saveToStorage, serialize, type SaveStorage } from './save';
 import { getSlice, registerStateSlice } from './slices';
 import { createNewGame } from './state';
 
@@ -74,6 +74,24 @@ describe('save / load', () => {
     expect(s.nextObjectId).toBe(8);
     expect(s.clock).toEqual({ elapsed: 0, speed: 1 });
     expect(s.land).toEqual(createNewGame().land);
+  });
+
+  it('keeps the real time the save was written', () => {
+    const storage = memoryStorage();
+    saveToStorage(storage, createNewGame(), 1_700_000_000_000);
+    expect(loadSave(storage).savedAt).toBe(1_700_000_000_000);
+    expect(parseSave(serialize(createNewGame())).savedAt).toBeNull();
+    expect(parseSave(null).savedAt).toBeNull();
+  });
+
+  it('loads version 1 and 2 saves without a saved time, so the first load does not catch up', () => {
+    for (const version of [1, 2]) {
+      const old = JSON.stringify({ version, savedAt: 1_700_000_000_000, state: { ...createNewGame(), money: 321 } });
+      const loaded = parseSave(old);
+      expect(loaded.state.money).toBe(321);
+      expect(loaded.savedAt).toBeNull();
+    }
+    expect(parseSave(JSON.stringify({ money: 99 })).savedAt).toBeNull(); // version 0 too
   });
 
   it('fills fields that later features add (object state and ext slices)', () => {

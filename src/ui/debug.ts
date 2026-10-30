@@ -10,8 +10,10 @@ export function isDebugMode(search = window.location.search): boolean {
   return new URLSearchParams(search).get('debug') === '1';
 }
 
-/** QA panel, shown only with `?debug=1`. */
-export function mountDebugPanel(root: HTMLElement, ctx: FarmContext): void {
+const AWAY_UNITS = { min: 60_000, h: 3_600_000 } as const;
+
+/** QA panel, shown only with `?debug=1`. `simulateAway` runs the real welcome-back catch-up for a real-time duration. */
+export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAway: (ms: number) => void): void {
   const { game } = ctx;
   const select = h(
     'select',
@@ -45,6 +47,34 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext): void {
   game.events.on('speed', syncSpeed);
   game.events.on('reset', syncSpeed);
 
+  const awayInput = h('input', { type: 'number', min: 0, step: 'any', value: 2, 'data-testid': 'debug-away-amount', 'aria-label': 'Time away' });
+  const awayUnit = h(
+    'select',
+    { 'data-testid': 'debug-away-unit', 'aria-label': 'Unit' },
+    h('option', { value: 'min' }, 'min'),
+    h('option', { value: 'h', selected: true }, 'h'),
+  );
+  const awayRow = h(
+    'div',
+    { class: 'debug-row', role: 'group', 'aria-label': 'Simulate time away' },
+    awayInput,
+    awayUnit,
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn',
+        'data-testid': 'debug-away',
+        onclick: () => {
+          const amount = Number(awayInput.value);
+          if (!(amount > 0)) return ctx.ui.toast('Enter a time away', 'error');
+          simulateAway(amount * AWAY_UNITS[awayUnit.value as keyof typeof AWAY_UNITS]);
+        },
+      },
+      'Simulate time away',
+    ),
+  );
+
   const body = h(
     'div',
     { class: 'debug-body' },
@@ -72,6 +102,7 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext): void {
       ),
     ),
     h('div', { class: 'debug-row', role: 'group', 'aria-label': 'Clock speed' }, h('span', {}, 'Speed'), speedButtons),
+    awayRow,
     h(
       'div',
       { class: 'debug-row' },
