@@ -1,0 +1,5 @@
+# Verified with Python 3.13 on macOS (Homebrew cairo 1.18.4): rebuilds the committed art exactly.
+CairoSVG==2.9.1
+cairocffi==1.7.1
+pillow==13.0.0
+numpy==2.5.4
