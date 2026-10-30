@@ -1,4 +1,5 @@
 import { getBuildable } from '../data/buildables';
+import { migrateOrdersSlice } from './orders';
 import { applySliceDefaults, isPlainObject } from './slices';
 import { createNewGame } from './state';
 import type { GameState, Inventory, LandState, PlacedObject } from './types';
@@ -10,7 +11,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface SaveFile {
   version: number;
@@ -26,6 +27,8 @@ type RawSave = Record<string, unknown>;
  */
 const migrations: Record<number, (raw: RawSave) => RawSave> = {
   0: (raw) => ({ version: 1, savedAt: 0, state: raw }),
+  // Orders board (#7): known goods = what the inventory holds now, fresh orders.
+  1: (raw) => ({ ...raw, version: 2, state: migrateOrdersSlice(isPlainObject(raw.state) ? raw.state : {}) }),
 };
 
 export type SaveStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;

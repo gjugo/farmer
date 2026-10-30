@@ -1,5 +1,6 @@
 import { ITEM_LIST } from '../data/items';
 import type { FarmContext } from '../game/context';
+import { refreshOrders } from '../logic/orders';
 import { h } from './dom';
 
 export const SPEEDS = [1, 10, 60] as const;
@@ -60,6 +61,19 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext): void {
       ),
     ),
     h('div', { class: 'debug-row', role: 'group', 'aria-label': 'Clock speed' }, h('span', {}, 'Speed'), speedButtons),
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn',
+        'data-testid': 'debug-refresh-orders',
+        onclick: () => {
+          refreshOrders(game.state);
+          ctx.ui.toast('Orders refreshed', 'success');
+        },
+      },
+      'Refresh orders',
+    ),
   );
   const panel = h(
     'details',

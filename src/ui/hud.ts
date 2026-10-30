@@ -22,6 +22,7 @@ export class Hud implements UiApi {
   private bannerEl!: HTMLElement;
   private toastsEl!: HTMLElement;
   private buttons = new Map<string, HTMLButtonElement>();
+  private badges: { el: HTMLElement; read: () => number | null }[] = [];
   private sheet: SheetSpec | null = null;
   private sheetSignature = '';
 
@@ -89,7 +90,14 @@ export class Hud implements UiApi {
       }
     });
     addButton('inventory', '🎒', 'Inventory', () => this.toggleSheet(this.inventorySheet()));
-    for (const b of listHudButtons()) addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx));
+    for (const b of listHudButtons()) {
+      addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx));
+      if (b.badge) {
+        const el = h('span', { class: 'hud-badge', 'data-testid': `badge-${b.id}`, hidden: true });
+        this.buttons.get(b.id)!.append(el);
+        this.badges.push({ el, read: () => b.badge!(this.ctx) });
+      }
+    }
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
 
     const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day), tools);
@@ -120,6 +128,12 @@ export class Hud implements UiApi {
     const dayText = `Day ${game.day}`;
     if (this.dayEl.textContent !== dayText) this.dayEl.textContent = dayText;
     this.dayBarEl.style.width = `${(timeOfDay(game.state.clock) * 100).toFixed(1)}%`;
+    for (const { el, read } of this.badges) {
+      const n = read();
+      const text = n ? String(n) : '';
+      if (el.textContent !== text) el.textContent = text;
+      el.hidden = !n;
+    }
   }
 
   /** Re-renders whatever depends on game state. Cheap; called on events and on a timer. */
