@@ -1,6 +1,8 @@
 import { CUSTOMERS } from '../data/customers';
 import { getItem, type ItemDef } from '../data/items';
+import type { ActivityEvents } from './activity';
 import { startTimer, timerDone, type Timer } from './clock';
+import type { Emitter } from './events';
 import { dailyPrice } from './market';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState, Inventory, ItemId } from './types';
@@ -221,6 +223,7 @@ export interface OrderGame {
   removeItem(itemId: ItemId, qty?: number): boolean;
   /** Orders are income: they give XP. */
   earnIncome(amount: number): void;
+  readonly activity: Emitter<ActivityEvents>;
 }
 
 /**
@@ -234,6 +237,7 @@ export function fulfilOrder(game: OrderGame, index: number): number | null {
   for (const it of order.items) game.removeItem(it.itemId, it.qty);
   game.earnIncome(order.reward);
   orders.slots[index] = { order: null, refill: startTimer(game.state.clock, FULFIL_REFILL_MS), reason: 'fulfilled' };
+  game.activity.emit('orderFulfilled', { reward: order.reward });
   return order.reward;
 }
 

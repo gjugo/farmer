@@ -64,6 +64,7 @@ export function plant(game: Game, obj: PlacedObject<FieldState>, cropId: string)
   obj.state.crop = crop.id;
   obj.state.timer = startTimer(game.state.clock, crop.growMs);
   game.touch(obj);
+  game.activity.emit('planted', { crop: crop.id });
   return { ok: true };
 }
 
