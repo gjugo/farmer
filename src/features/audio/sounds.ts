@@ -60,6 +60,7 @@ type SoundMap<E> = { [K in keyof E]?: (payload: E[K]) => SfxKey | null };
 /** Player activity → sound. */
 export const ACTIVITY_SOUNDS: SoundMap<ActivityEvents> = {
   placed: () => 'build',
+  ploughed: () => 'plant',
   planted: () => 'plant',
   harvested: () => 'harvest',
   animalBought: () => 'buy_animal',
