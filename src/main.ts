@@ -1,7 +1,9 @@
 import './ui/styles.css';
 import './features';
+import type { AudioDebugInfo } from './features/audio';
 import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
+import { readDebugInfo } from './game/hooks';
 import { Game, type FarmSnapshot } from './logic/game';
 import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
 import { ordersOf, type OrdersState } from './logic/orders';
@@ -19,13 +21,15 @@ declare global {
   interface Window {
     /**
      * Read-only snapshot of the game state (for debugging and Playwright checks) with level, XP and goals, plus the
-     * real time of the last save (`Date.now()`, null before the first one) and the last offline catch-up.
+     * real time of the last save (`Date.now()`, null before the first one), the last offline catch-up, and the
+     * sound settings with the last sounds played (`audio`).
      */
     readonly farm: Readonly<
       FarmSnapshot & {
         orders: OrdersState;
         lastSavedAt: number | null;
         lastCatchUp: CatchUpResult | null;
+        audio: AudioDebugInfo;
         /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
         iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
       }
@@ -85,6 +89,7 @@ Object.defineProperty(window, 'farm', {
     ordersOf(game.state);
     const snapshot = game.snapshot();
     return Object.freeze({
+      ...readDebugInfo(),
       ...snapshot,
       orders: snapshot.ext.orders as OrdersState,
       lastSavedAt,
@@ -118,5 +123,7 @@ new Phaser.Game({
   backgroundColor: '#2f4a2a',
   scale: { mode: Phaser.Scale.RESIZE, width: '100%', height: '100%' },
   input: { activePointers: 3 },
+  // Sound is ours (src/features/audio): Phaser's own AudioContext would start before any gesture.
+  audio: { noAudio: true },
   scene: [new BootScene(), new FarmScene(ctx)],
 });

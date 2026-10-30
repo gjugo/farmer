@@ -165,9 +165,12 @@ describe('fulfil and discard', () => {
     game.addItem('egg', 4);
     const deltas: number[] = [];
     game.events.on('money', ({ delta }) => deltas.push(delta));
+    const fulfilled: number[] = [];
+    game.activity.on('orderFulfilled', ({ reward }) => fulfilled.push(reward));
 
     expect(fulfillableCount(game.state)).toBeGreaterThanOrEqual(1);
     expect(fulfilOrder(game, 1)).toBe(70);
+    expect(fulfilled).toEqual([70]);
     expect(game.money).toBe(570);
     expect(deltas).toEqual([70]);
     expect(game.count('wheat')).toBe(4);
@@ -178,6 +181,7 @@ describe('fulfil and discard', () => {
     // A second click does nothing.
     expect(fulfilOrder(game, 1)).toBeNull();
     expect(game.money).toBe(570);
+    expect(fulfilled).toEqual([70]);
     // Order rewards are income: 1 XP per $1.
     expect(game.progression.xp).toBe(70);
   });

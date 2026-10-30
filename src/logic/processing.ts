@@ -95,6 +95,7 @@ export function startJob(game: Game, obj: PlacedObject<ProcessorState>, recipeId
   const first = obj.state.queue.length === 0;
   obj.state.queue.push({ recipe: recipeId, timer: first ? startTimer(game.state.clock, recipe.durationMs) : null });
   game.touch(obj);
+  game.activity.emit('jobStarted', { recipe: recipeId });
   return { ok: true };
 }
 

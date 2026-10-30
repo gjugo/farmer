@@ -219,6 +219,7 @@ export class Progression {
     this.refreshStateGoals(true);
     this.game.earn(view.def.reward.money);
     this.addXp(view.def.reward.xp);
+    this.game.activity.emit('goalClaimed', { id });
     return view.def;
   }
 
