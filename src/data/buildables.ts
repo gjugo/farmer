@@ -4,7 +4,7 @@ export interface BuildableDef {
   cost: number;
   /** Size in tiles. */
   footprint: { w: number; h: number };
-  /** Texture key, generated in `src/scenes/textures.ts` (or by the feature via `registerTexture`). */
+  /** Texture key: an art pack sprite, or a game key mapped to one in `TEXTURE_ART` (`src/scenes/art.ts`). */
   texture: string;
   /** Groups the build menu, e.g. `decor`, `crops`, `animals`, `processing`. */
   category?: string;

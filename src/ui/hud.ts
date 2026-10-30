@@ -9,6 +9,7 @@ import type { GameEvents } from '../logic/game';
 import { buildableUnlockLevel } from '../logic/unlocks';
 import type { FarmScene } from '../scenes/FarmScene';
 import { h, formatMoney } from './dom';
+import { itemIcon, packIcon, withIcons } from './icons';
 
 const REFRESH_MS = 250;
 
@@ -67,7 +68,7 @@ export class Hud implements UiApi {
 
   private build(): void {
     this.moneyValueEl = h('span', { class: 'stat-value', 'data-testid': 'hud-money' });
-    this.moneyEl = h('div', { class: 'stat stat-money', title: 'Money' }, h('span', { 'aria-hidden': 'true' }, '💰'), this.moneyValueEl);
+    this.moneyEl = h('div', { class: 'stat stat-money', title: 'Money' }, packIcon('coins', 'stat-icon'), this.moneyValueEl);
     this.dayEl = h('span', { class: 'stat-value', 'data-testid': 'hud-day' });
     this.dayBarEl = h('span', { class: 'day-bar-fill' });
     const day = h(
@@ -182,7 +183,7 @@ export class Hud implements UiApi {
     const sig = this.sheet.signature();
     if (sig !== this.sheetSignature) {
       this.sheetSignature = sig;
-      this.sheetTitleEl.textContent = this.sheet.title();
+      this.sheetTitleEl.replaceChildren(...withIcons(this.sheet.title()));
       this.sheetBodyEl.replaceChildren();
       this.sheet.render(this.sheetBodyEl);
     }
@@ -233,7 +234,7 @@ export class Hud implements UiApi {
         if (!spec) return;
         const current = spec;
         if (current.lines?.length) {
-          body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => h('li', {}, l))));
+          body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => h('li', {}, withIcons(l)))));
         }
         if (current.progress) {
           body.append(
@@ -265,7 +266,7 @@ export class Hud implements UiApi {
                       this.refresh();
                     },
                   },
-                  a.label,
+                  withIcons(a.label),
                 ),
               ),
             ),
@@ -356,7 +357,7 @@ export class Hud implements UiApi {
               return h(
                 'li',
                 { class: 'inventory-item', 'data-testid': `inv-${id}` },
-                h('span', { class: 'item-icon', 'aria-hidden': 'true' }, item?.icon ?? '📦'),
+                itemIcon(id),
                 h('span', { class: 'item-name' }, item?.name ?? id),
                 h('span', { class: 'item-count' }, `×${game.count(id)}`),
               );
@@ -429,7 +430,7 @@ export class Hud implements UiApi {
 
   toast(message: string, kind: 'info' | 'success' | 'error' = 'info'): void {
     if (kind === 'error') uiSignals.emit('refused', { message });
-    const el = h('div', { class: `toast toast-${kind}`, role: kind === 'error' ? 'alert' : 'status', 'data-testid': 'toast' }, message);
+    const el = h('div', { class: `toast toast-${kind}`, role: kind === 'error' ? 'alert' : 'status', 'data-testid': 'toast' }, withIcons(message));
     this.toastsEl.append(el);
     while (this.toastsEl.children.length > 4) this.toastsEl.firstElementChild?.remove();
     window.setTimeout(() => el.classList.add('leaving'), 2200);
@@ -476,7 +477,7 @@ export class Hud implements UiApi {
               h(
                 'ul',
                 { class: 'unlock-list', 'data-testid': 'levelup-unlocks' },
-                unlocks.map((u) => h('li', {}, h('span', { 'aria-hidden': 'true' }, u.icon), ` ${u.name}`)),
+                unlocks.map((u) => h('li', {}, h('span', { 'aria-hidden': 'true' }, withIcons(u.icon)), ` ${u.name}`)),
               ),
             ]
           : null,

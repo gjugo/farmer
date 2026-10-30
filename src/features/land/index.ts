@@ -6,29 +6,14 @@ import { isOwned } from '../../logic/land';
 import type { LandState } from '../../logic/types';
 import { buyParcel, checkBuy, FARM_PARCELS, parcelAt, parcelsForSale, type Parcel } from '../../logic/parcels';
 import { DEPTH } from '../../scenes/depth';
-import { tileToWorld } from '../../scenes/iso';
-import { registerTexture } from '../../scenes/textures';
+import { gridToWorld, tileToWorld } from '../../scenes/iso';
+import { addArt, addShadow } from '../../scenes/sprites';
 import { formatMoney } from '../../ui/dom';
 
 /**
  * Farm expansion: locked parcels next to owned land show a "For sale" sign.
  * Tapping a for-sale parcel opens a buy dialog (see `src/logic/parcels.ts`).
  */
-
-const SIGN_W = 52;
-const SIGN_H = 44;
-
-registerTexture('sale-sign', {
-  width: SIGN_W,
-  height: SIGN_H,
-  draw: (g) => {
-    // Post
-    g.fillStyle(0x6b4423).fillRect(SIGN_W / 2 - 3, 18, 6, SIGN_H - 18);
-    // Board with a darker rim; "FOR SALE" is written on it as text.
-    g.fillStyle(0x7a4e26).fillRoundedRect(1, 1, SIGN_W - 2, 24, 4);
-    g.fillStyle(0xf3e2b8).fillRoundedRect(4, 4, SIGN_W - 8, 18, 3);
-  },
-});
 
 const BUY_ERRORS = {
   owned: 'You already own this land',
@@ -101,6 +86,7 @@ onGameStart((ctx) => {
   const scene = ctx.scene;
   const behind = scene.add.container(0, 0).setDepth(DEPTH.behindFarm);
   const inFront = scene.add.container(0, 0).setDepth(DEPTH.frontOfFarm);
+  const shadows = scene.add.container(0, 0).setDepth(DEPTH.shadow);
   let dirty = true;
   const markDirty = () => {
     dirty = true;
@@ -109,28 +95,29 @@ onGameStart((ctx) => {
   const redraw = () => {
     behind.removeAll(true);
     inFront.removeAll(true);
+    shadows.removeAll(true);
     const { land } = ctx.game.state;
     for (const parcel of parcelsForSale(land, FARM_PARCELS)) {
       const { price } = check(ctx, parcel);
       const spot = signSpot(land, parcel);
+      const top = gridToWorld(spot.x, spot.y);
       const { x: cx, y: cy } = tileToWorld(spot.x, spot.y);
       // The board stands up over other tiles; tapping it means its own tile (see FarmScene.tapTarget).
-      const sign = scene.add.image(cx, cy, 'sale-sign').setOrigin(0.5, 1).setInteractive().setData('tapTile', spot);
-      const label = scene.add
-        .text(cx, cy - SIGN_H + 13, 'FOR SALE', { fontFamily: 'system-ui, sans-serif', fontSize: '8px', fontStyle: 'bold', color: '#b23a2e', resolution: 3 })
-        .setOrigin(0.5);
+      const sign = addArt(scene, top.x, top.y, 'sale-sign').setInteractive().setData('tapTile', spot);
+      const shadow = addShadow(scene, top.x, top.y, 'sale-sign');
+      if (shadow) shadows.add(shadow);
       const priceText = scene.add
-        .text(cx, cy + 3, formatMoney(price), {
+        .text(cx, cy + 6, formatMoney(price), {
           fontFamily: 'system-ui, sans-serif',
-          fontSize: '13px',
+          fontSize: '24px',
           fontStyle: 'bold',
           color: ctx.game.money >= price ? '#ffffff' : '#ffb3a8',
           stroke: '#2b2118',
-          strokeThickness: 4,
+          strokeThickness: 6,
           resolution: 2,
         })
         .setOrigin(0.5, 0);
-      (spot.front ? inFront : behind).add([sign, label, priceText]);
+      (spot.front ? inFront : behind).add([sign, priceText]);
     }
   };
 

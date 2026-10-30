@@ -1,14 +1,19 @@
 import Phaser from 'phaser';
 import { getBuildable } from '../data/buildables';
+import { splitIcons } from '../data/items';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
 import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
 import { demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
+import { ART_RES, ART_SCALE, CURSOR, grassArt, hash, SCENERY, unownedArt } from './art';
+import { GROUND_ATLAS } from './BootScene';
+import { DEPTH } from './depth';
 import {
   depthKey,
   footprintBox,
   footprintCorners,
+  footprintLocal,
   gridToWorld,
   ISO_H,
   ISO_W,
@@ -22,16 +27,22 @@ import {
   type Footprint,
   type Point,
 } from './iso';
-import { DEPTH } from './depth';
-import { fenceLine, vectors } from './textures';
+import { addArt, addShadow, fitScale, packAsset, textureKey } from './sprites';
 
 const DRAG_THRESHOLD = 8;
-const MAX_ZOOM = 3;
+/** At zoom 2 the 2x art is drawn pixel for pixel. */
+const MAX_ZOOM = 2;
 const KEY_PAN_SPEED = 700; // screen px per second
 /** Room above the map's top corner for buildings standing at the back. */
 const MAP_TOP_ROOM = ISO_H * 3;
-/** Build-menu categories that lie flat on the ground (always drawn under tall things). */
+/** Build-menu categories whose base art lies flat on the ground (under every shadow and standing thing). */
 const FLAT_CATEGORIES = new Set(['decor', 'crops']);
+/** Share of locked tiles that get a tree, bush or rock. */
+const SCENERY_CHANCE = 0.07;
+/** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
+const SCENERY_CLEARANCE = 4;
+/** Size of floating text, in world pixels. */
+const FLOAT_FONT = Math.round(ISO_H * 0.45);
 
 
 const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string> = {
@@ -54,17 +65,19 @@ interface TouchState {
 /** The farm world: ground, fences, placed objects, camera and pointer tools. */
 export class FarmScene extends Phaser.Scene {
   private readonly ctx: FarmContext;
-  private ground: Phaser.GameObjects.Image[] = [];
-  /** One Graphics per straight run of the farm's boundary fence, each depth-sorted like a building. */
-  private fences: { fp: Footprint; g: Phaser.GameObjects.Graphics }[] = [];
+  /** The whole ground is one Blitter (in a container that scales it): a bob per tile, created back to front. */
+  private groundLayer: Phaser.GameObjects.Container | null = null;
+  private groundBobs: Phaser.GameObjects.Bob[] = [];
+  /** Trees, bushes and rocks on locked land, each depth-sorted like a building. */
+  private scenery: { fp: Footprint; img: Phaser.GameObjects.Image }[] = [];
+  private sceneryShadows!: Phaser.GameObjects.Container;
   private depthsDirty = true;
-  /** Buying a parcel announces each tile; the fence is redrawn once per frame at most. */
-  private fenceDirty = false;
+  /** Buying a parcel announces each tile; the scenery is redone once per frame at most. */
+  private sceneryDirty = false;
   private views = new Map<string, ObjectView & { obj: PlacedObject }>();
-  private ghost!: Phaser.GameObjects.Container;
-  private ghostImage!: Phaser.GameObjects.Image;
-  private ghostFrame!: Phaser.GameObjects.Graphics;
-  private hover!: Phaser.GameObjects.Graphics;
+  private ghost!: Phaser.GameObjects.Image;
+  /** Tile cursors (pack overlays) for the hover, build preview and demolish target. */
+  private cursors: Phaser.GameObjects.Image[] = [];
   private touches = new Map<number, TouchState>();
   private pinch: { dist: number; zoom: number } | null = null;
   private minZoom = 0.25;
@@ -92,10 +105,8 @@ export class FarmScene extends Phaser.Scene {
     this.ctx.scene = this;
     this.cameras.main.setBackgroundColor('#2f4a2a');
 
-    this.hover = this.add.graphics().setDepth(DEPTH.hover);
-    this.ghostImage = this.add.image(0, 0, 'path').setOrigin(0, 1).setAlpha(0.75);
-    this.ghostFrame = this.add.graphics();
-    this.ghost = this.add.container(0, 0, [this.ghostImage, this.ghostFrame]).setDepth(DEPTH.ghost).setVisible(false);
+    this.ghost = addArt(this, 0, 0, 'path').setAlpha(0.75).setDepth(DEPTH.ghost).setVisible(false);
+    this.sceneryShadows = this.add.container(0, 0).setDepth(DEPTH.shadow);
 
     this.buildWorld();
     this.setupCamera();
@@ -111,7 +122,7 @@ export class FarmScene extends Phaser.Scene {
       }),
       events.on('land', ({ x, y }) => {
         this.paintTile(x, y);
-        this.fenceDirty = true;
+        this.sceneryDirty = true;
       }),
       events.on('reset', () => {
         this.buildWorld();
@@ -130,9 +141,9 @@ export class FarmScene extends Phaser.Scene {
     const dt = this.farm.tick(delta);
     this.panWithKeys(delta);
     this.clampCamera();
-    if (this.fenceDirty) {
-      this.fenceDirty = false;
-      this.drawFence();
+    if (this.sceneryDirty) {
+      this.sceneryDirty = false;
+      this.placeScenery();
     }
     if (this.depthsDirty) this.sortDepths();
     for (const obj of this.farm.state.objects) {
@@ -146,86 +157,76 @@ export class FarmScene extends Phaser.Scene {
 
   private buildWorld(): void {
     for (const id of [...this.views.keys()]) this.destroyView(id);
-    for (const img of this.ground) img.destroy();
-    this.ground = [];
+    this.groundLayer?.destroy();
     const { width, height } = this.farm.state.land;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const c = tileToWorld(x, y);
-        this.ground.push(this.add.image(c.x, c.y, 'grass-0').setDepth(DEPTH.ground));
-        this.paintTile(x, y);
+    // Bobs draw in creation order, so go back to front: overgrown tiles reach up over the tile behind them.
+    // A Blitter ignores its own scale when drawing, so a scaled container brings the 2x tiles to world size.
+    const blitter = this.add.blitter(0, 0, GROUND_ATLAS);
+    this.groundLayer = this.add.container(0, 0, [blitter]).setScale(ART_SCALE).setDepth(DEPTH.ground);
+    this.groundBobs = new Array(width * height);
+    for (let sum = 0; sum <= width + height - 2; sum++) {
+      for (let x = Math.max(0, sum - height + 1); x <= Math.min(sum, width - 1); x++) {
+        this.groundBobs[(sum - x) * width + x] = blitter.create(0, 0, 'grass_0');
       }
     }
-    this.drawFence();
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) this.paintTile(x, y);
+    this.placeScenery();
     for (const obj of this.farm.state.objects) this.createView(obj);
   }
 
   private paintTile(x: number, y: number): void {
     const { land } = this.farm.state;
-    const img = this.ground[y * land.width + x];
-    if (!img) return;
-    const variant = (x * 7 + y * 13 + ((x * y) % 5)) % 3;
-    img.setTexture(`${isOwned(land, x, y) ? 'grass' : 'locked'}-${variant}`);
+    const bob = this.groundBobs[y * land.width + x];
+    if (!bob) return;
+    const art = isOwned(land, x, y) ? grassArt(x, y) : unownedArt(x, y);
+    const [ax, ay] = packAsset(art)?.res[ART_RES].anchor ?? [0, 0];
+    // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
+    const top = gridToWorld(x, y);
+    bob.reset(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, art);
   }
 
-  /** Fence along every edge between owned and locked land (or the map border), one Graphics per straight run. */
-  private drawFence(): void {
+  /**
+   * A few trees, bushes and rocks on locked land, scattered from a fixed seed (not saved), away from the
+   * farm's edge. They go when their land is bought.
+   */
+  private placeScenery(): void {
     const { land } = this.farm.state;
-    for (const f of this.fences) f.g.destroy();
-    this.fences = [];
-    const owned = (x: number, y: number) => isOwned(land, x, y);
-    const runs: Footprint[] = [];
-    // Lines y = k (between rows k-1 and k), then lines x = k (between columns k-1 and k).
-    for (let k = 0; k <= land.height; k++) {
-      for (let x = 0; x < land.width; ) {
-        if (owned(x, k - 1) === owned(x, k)) {
-          x++;
-          continue;
-        }
-        const start = x;
-        while (x < land.width && owned(x, k - 1) !== owned(x, k)) x++;
-        runs.push({ x: start, y: k, w: x - start, h: 0 });
+    for (const s of this.scenery) s.img.destroy();
+    this.sceneryShadows.removeAll(true);
+    this.scenery = [];
+    const nearOwned = (x: number, y: number) => {
+      for (let dy = -SCENERY_CLEARANCE; dy <= SCENERY_CLEARANCE; dy++) {
+        for (let dx = -SCENERY_CLEARANCE; dx <= SCENERY_CLEARANCE; dx++) if (isOwned(land, x + dx, y + dy)) return true;
       }
-    }
-    for (let k = 0; k <= land.width; k++) {
-      for (let y = 0; y < land.height; ) {
-        if (owned(k - 1, y) === owned(k, y)) {
-          y++;
-          continue;
-        }
-        const start = y;
-        while (y < land.height && owned(k - 1, y) !== owned(k, y)) y++;
-        runs.push({ x: k, y: start, w: 0, h: y - start });
+      return false;
+    };
+    for (let y = 0; y < land.height; y++) {
+      for (let x = 0; x < land.width; x++) {
+        if ((hash(x, y, 7) % 1000) / 1000 >= SCENERY_CHANCE || isOwned(land, x, y) || nearOwned(x, y)) continue;
+        const art = SCENERY[hash(x, y, 11) % SCENERY.length];
+        const at = gridToWorld(x, y);
+        this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img: addArt(this, at.x, at.y, art) });
+        const shadow = addShadow(this, at.x, at.y, art);
+        if (shadow) this.sceneryShadows.add(shadow);
       }
-    }
-    for (const fp of runs) {
-      const g = this.add.graphics();
-      const a = gridToWorld(fp.x, fp.y);
-      const b = gridToWorld(fp.x + fp.w, fp.y + fp.h);
-      fenceLine(g, a, b, fp.w + fp.h);
-      this.fences.push({ fp, g });
     }
     this.depthsDirty = true;
   }
 
   /**
-   * Flat things sort by their front corner under every tall thing. Tall things (buildings, pens and
-   * fence runs) get a back-to-front order from their footprints, so whatever stands in front covers
-   * what is behind it. Runs only when something was added, removed or the land changed.
+   * Flat things sort by their front corner under every shadow and standing thing. Standing things (buildings,
+   * crops, pens and scenery) get a back-to-front order from their footprints, so whatever stands in front
+   * covers what is behind it. Runs only when something was added, removed or the land changed.
    */
   private sortDepths(): void {
     this.depthsDirty = false;
-    const tall: { fp: Footprint; target: Phaser.GameObjects.Components.Depth }[] = this.fences.map((f) => ({
-      fp: f.fp,
-      target: f.g,
+    const tall: { fp: Footprint; target: Phaser.GameObjects.Components.Depth }[] = this.scenery.map((s) => ({
+      fp: s.fp,
+      target: s.img,
     }));
     for (const view of this.views.values()) {
-      const fp = { x: view.obj.x, y: view.obj.y, ...footprintOf(view.obj) };
-      if (FLAT_CATEGORIES.has(getBuildable(view.obj.type)?.category ?? '')) {
-        view.container.setDepth(DEPTH.flat + depthKey(fp) * 1e-4);
-      } else {
-        tall.push({ fp, target: view.container });
-      }
+      // A path has nothing standing; leaving it out keeps the sort small on big farms.
+      if (view.container.length > 0) tall.push({ fp: { x: view.obj.x, y: view.obj.y, ...footprintOf(view.obj) }, target: view.container });
     }
     const order = sortFootprints(tall.map((t) => t.fp));
     order.forEach((idx, rank) => tall[idx].target.setDepth(DEPTH.tall + rank / (order.length + 1)));
@@ -234,12 +235,18 @@ export class FarmScene extends Phaser.Scene {
   private createView(obj: PlacedObject): void {
     if (this.views.has(obj.id)) return;
     const def = getBuildable(obj.type);
-    const box = footprintBox({ x: obj.x, y: obj.y, ...footprintOf(obj) });
-    const texture = def && this.textures.exists(def.texture) ? def.texture : 'missing';
-    const sprite = this.add.image(0, 0, texture);
-    this.fitToFootprint(sprite, box);
-    const container = this.add.container(box.left, box.top, [sprite]);
-    const view: ObjectView = { container, sprite, width: box.width, height: box.height };
+    const fp = { x: obj.x, y: obj.y, ...footprintOf(obj) };
+    const box = footprintBox(fp);
+    const key = def?.texture ?? 'missing';
+    const top = footprintLocal(fp.w, fp.h, 0, 0);
+    const scale = fitScale(this, key, fp);
+    const sprite = this.add.image(top.x, top.y, textureKey(this, key)).setScale(scale);
+    const shadow = textureKey(this, key) === 'missing' ? null : addShadow(this, top.x, top.y, key)?.setScale(scale) ?? null;
+    const container = this.add.container(box.left, box.top);
+    const ground = this.add.container(box.left, box.top).setDepth(DEPTH.flat + depthKey(fp) * 1e-4);
+    const shadows = this.add.container(box.left, box.top, shadow ? [shadow] : []).setDepth(DEPTH.shadow);
+    (FLAT_CATEGORIES.has(def?.category ?? '') ? ground : container).add(sprite);
+    const view: ObjectView = { container, ground, shadows, sprite, shadow, top, width: box.width, height: box.height };
     this.views.set(obj.id, { ...view, obj });
     this.depthsDirty = true;
     getBehavior(obj.type)?.create?.(this.ctx, obj, view);
@@ -250,36 +257,43 @@ export class FarmScene extends Phaser.Scene {
     if (!view) return;
     getBehavior(view.obj.type)?.destroy?.(this.ctx, view.obj, view);
     view.container.destroy();
+    view.ground.destroy();
+    view.shadows.destroy();
     this.views.delete(id);
   }
 
-  /**
-   * Stands a texture on a footprint: its bottom edge on the box's bottom (the diamond's front corner),
-   * scaled only when the texture was drawn for a different footprint (e.g. the `missing` fallback).
-   */
-  private fitToFootprint(img: Phaser.GameObjects.Image, box: Box): void {
-    img.setOrigin(0, 1).setPosition(0, box.height);
-    img.setScale(img.frame.width === box.width ? 1 : box.width / img.frame.width);
-  }
-
-  /** Floating text rising from a tile. */
+  /** Floating text rising from a tile; item emoji in it show as the pack's icons. */
   floatText(tileX: number, tileY: number, text: string, color = '#ffffff'): void {
     const at = tileToWorld(tileX, tileY);
+    const style = {
+      fontFamily: 'system-ui, sans-serif',
+      fontSize: `${FLOAT_FONT}px`,
+      fontStyle: 'bold',
+      color,
+      stroke: '#2b2118',
+      strokeThickness: Math.round(FLOAT_FONT / 4),
+      resolution: 2,
+    };
+    const parts: Phaser.GameObjects.GameObject[] = [];
+    let x = 0;
+    for (const part of splitIcons(text)) {
+      if (typeof part === 'string') {
+        const t = this.add.text(x, 0, part, style).setOrigin(0, 1);
+        x += t.width;
+        parts.push(t);
+      } else if (this.textures.exists(part.icon)) {
+        const icon = this.add.image(x, 0, part.icon).setOrigin(0, 1);
+        icon.setScale((FLOAT_FONT * 1.3) / icon.height);
+        x += icon.displayWidth;
+        parts.push(icon);
+      }
+    }
     const t = this.add
-      .text(at.x, at.y - ISO_H / 2, text, {
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: '15px',
-        fontStyle: 'bold',
-        color,
-        stroke: '#2b2118',
-        strokeThickness: 4,
-        resolution: 2,
-      })
-      .setOrigin(0.5, 1)
+      .container(at.x - x / 2, at.y - ISO_H / 2, parts)
       .setDepth(DEPTH.floatText);
     this.tweens.add({
       targets: t,
-      y: t.y - 28,
+      y: t.y - ISO_H * 0.9,
       alpha: 0,
       duration: 1100,
       ease: 'Cubic.easeOut',
@@ -405,7 +419,7 @@ export class FarmScene extends Phaser.Scene {
     this.input.on(Phaser.Input.Events.POINTER_UP_OUTSIDE, this.onPointerUp, this);
     this.input.on(Phaser.Input.Events.GAME_OUT, () => {
       this.ghost.setVisible(false);
-      this.hover.clear();
+      this.showCursors(null, CURSOR.normal);
     });
     this.input.on(
       Phaser.Input.Events.POINTER_WHEEL,
@@ -553,13 +567,12 @@ export class FarmScene extends Phaser.Scene {
   // Tool feedback -------------------------------------------------------------------
 
   private onToolChange(mode: ToolMode): void {
-    this.hover.clear();
+    this.showCursors(null, CURSOR.normal);
     this.ghost.setVisible(false);
     if (mode.kind === 'build') {
       const def = getBuildable(mode.type);
       if (!def) return;
-      this.ghostImage.setTexture(this.textures.exists(def.texture) ? def.texture : 'missing');
-      this.fitToFootprint(this.ghostImage, footprintBox({ x: 0, y: 0, ...def.footprint }));
+      this.ghost.setTexture(textureKey(this, def.texture)).setScale(fitScale(this, def.texture, def.footprint));
     }
     const p = this.input.activePointer;
     if (p && !p.wasTouch && this.input.isOver) this.updateCursor(p);
@@ -568,37 +581,37 @@ export class FarmScene extends Phaser.Scene {
   private updateCursor(p: Phaser.Input.Pointer): void {
     const mode = this.ctx.tools.mode;
     const { tx, ty } = this.pointerTile(p);
-    this.hover.clear();
     if (mode.kind === 'build') {
       // On touch screens there is no hover; the ghost shows where the last tap landed.
       const def = getBuildable(mode.type);
       if (!def) return;
       const { x, y } = this.anchorFor(mode.type, tx, ty);
       const ok = this.ctx.game.checkPlacement(mode.type, x, y).ok && this.ctx.game.canAfford(def.cost);
-      const fp = { x, y, ...def.footprint };
-      const box = footprintBox(fp);
-      const color = ok ? 0x3ddc5a : 0xff4040;
-      // The frame is drawn in the ghost's own space, whose origin is the footprint's box corner.
-      const local = this.diamond(fp).map((q) => ({ x: q.x - box.left, y: q.y - box.top }));
-      this.ghostFrame.clear().fillStyle(color, 0.35).fillPoints(vectors(local), true).lineStyle(2, color, 1).strokePoints(vectors(local), true);
-      this.ghost.setPosition(box.left, box.top).setVisible(true);
+      const top = gridToWorld(x, y);
+      this.showCursors({ x, y, ...def.footprint }, ok ? CURSOR.ok : CURSOR.bad);
+      this.ghost.setPosition(top.x, top.y).setVisible(true);
       this.ghost.setData('valid', ok);
       this.ghost.setData('tile', { x, y });
     } else if (mode.kind === 'demolish') {
       const obj = this.ctx.game.objectAt(tx, ty);
-      if (!obj) return;
-      const points = this.diamond({ x: obj.x, y: obj.y, ...footprintOf(obj) });
-      this.hover.fillStyle(0xff4040, 0.3).fillPoints(vectors(points), true).lineStyle(2, 0xff4040, 1).strokePoints(vectors(points), true);
+      this.showCursors(obj ? { x: obj.x, y: obj.y, ...footprintOf(obj) } : null, CURSOR.bad);
     } else {
-      // Normal mode: outline the tile under a mouse pointer.
-      if (p.wasTouch) return;
-      this.hover.lineStyle(1.5, 0xffffff, 0.55).strokePoints(vectors(this.diamond({ x: tx, y: ty, w: 1, h: 1 })), true);
+      // Normal mode: mark the tile under a mouse pointer.
+      this.showCursors(p.wasTouch ? null : { x: tx, y: ty, w: 1, h: 1 }, CURSOR.normal);
     }
   }
 
-  /** A footprint's diamond in world pixels, as a closed polygon. */
-  private diamond(fp: Footprint): Point[] {
-    const c = footprintCorners(fp);
-    return [c.top, c.right, c.bottom, c.left];
+  /** Lays one cursor overlay on each tile of the footprint (none for null). */
+  private showCursors(fp: Footprint | null, art: string): void {
+    const n = fp ? fp.w * fp.h : 0;
+    while (this.cursors.length < n) this.cursors.push(addArt(this, 0, 0, art));
+    // The plain hover lies on the ground; build and demolish cursors show over whatever stands there.
+    const depth = art === CURSOR.normal ? DEPTH.shadow - 0.5 : DEPTH.hover;
+    this.cursors.forEach((img, i) => {
+      img.setVisible(i < n);
+      if (!fp || i >= n) return;
+      const at = gridToWorld(fp.x + (i % fp.w), fp.y + Math.floor(i / fp.w));
+      img.setTexture(textureKey(this, art)).setPosition(at.x, at.y).setDepth(depth);
+    });
   }
 }

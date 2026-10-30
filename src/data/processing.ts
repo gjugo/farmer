@@ -21,8 +21,8 @@ export interface ProcessorDef {
   /** Size in tiles. */
   footprint: { w: number; h: number };
   description: string;
-  /** How the building shows that it is working. */
-  anim: 'smoke' | 'wheel';
+  /** How the building shows that it is working: smoke from its chimney or the mill's sails turning. */
+  anim: 'smoke' | 'sails';
   /** Farm level that unlocks building it (and so its recipes). */
   unlockLevel: number;
   recipes: readonly RecipeDef[];
@@ -40,7 +40,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     footprint: { w: 2, h: 2 },
     description: 'Grinds wheat and corn into animal feed.',
     unlockLevel: 4,
-    anim: 'wheel',
+    anim: 'sails',
     recipes: [
       { id: 'feed-from-wheat', inputs: { wheat: 2 }, output: { item: 'feed', qty: 3 }, durationMs: 20_000 },
       { id: 'feed-from-corn', inputs: { corn: 1 }, output: { item: 'feed', qty: 2 }, durationMs: 20_000 },
@@ -79,7 +79,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     footprint: { w: 2, h: 2 },
     description: 'Weaves wool into cloth.',
     unlockLevel: 5,
-    anim: 'wheel',
+    anim: 'smoke',
     recipes: [{ id: 'cloth', inputs: { wool: 2 }, output: { item: 'cloth', qty: 1 }, durationMs: 120_000 }],
   },
 };

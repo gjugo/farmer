@@ -17,69 +17,102 @@ import {
   type AnimalStatus,
   type PenState,
 } from '../../logic/animals';
+import { ART_SCALE, facing, penFence, type Facing } from '../../scenes/art';
 import { footprintLocal } from '../../scenes/iso';
+import { addArt, addArtSprite, addShadow, packAsset, textureKey } from '../../scenes/sprites';
 import { WALK_AREA } from './textures';
 
-/** Walking speed in pixels per real second. */
-const SPEED: Record<AnimalKind, number> = { chicken: 30, cow: 13, sheep: 17 };
+/** Walking speed in tiles per real second. */
+const SPEED: Record<AnimalKind, number> = { chicken: 0.55, cow: 0.28, sheep: 0.35 };
 
 const BUBBLE_TINT: Record<Exclude<AnimalStatus, 'producing'>, number> = { hungry: 0xffd4c4, ready: 0xd6ffc4 };
+/** Item icons in bubbles are this many world pixels tall. */
+const BUBBLE_ICON = 24;
 
 interface Critter {
   kind: AnimalKind;
-  body: Phaser.GameObjects.Image;
+  body: Phaser.GameObjects.Sprite;
+  shadow: Phaser.GameObjects.Image | null;
   bubble: Phaser.GameObjects.Container;
   bubbleBg: Phaser.GameObjects.Image;
-  bubbleIcon: Phaser.GameObjects.Text;
+  bubbleIcon: Phaser.GameObjects.Image;
   status: AnimalStatus | null;
+  /** Where it stands, in grid units inside the pen. */
+  at: { x: number; y: number };
   target: { x: number; y: number };
+  facing: Facing;
   /** Real ms to stand still before walking again. */
   rest: number;
 }
 
 const critters = new Map<string, Critter[]>();
-/** The front fences of each pen, kept above the animals. */
-const fronts = new Map<string, Phaser.GameObjects.Image>();
+/** Draw order inside a pen's container: back fences, then animals by how far forward they stand, then front fences. */
+const sortKey = new WeakMap<Phaser.GameObjects.GameObject, number>();
+const penReady = new Set<string>();
 
-/** A random point inside the pen's walk area, picked in tile space and returned in the view's pixels. */
+/** A random point inside the pen's walk area, in grid units. */
 function randomSpot(type: PenType): { x: number; y: number } {
   const a = WALK_AREA[type];
-  const { w, h } = PENS[type].footprint;
-  let gx: number;
-  let gy: number;
-  do {
-    gx = Phaser.Math.FloatBetween(a.min, a.max);
-    gy = Phaser.Math.FloatBetween(a.min, a.max);
-  } while (gx + gy < a.minSum);
-  return footprintLocal(w, h, gx, gy);
+  return { x: Phaser.Math.FloatBetween(a.x0, a.x1), y: Phaser.Math.FloatBetween(a.y0, a.y1) };
+}
+
+/** The pasture is grass with a fence of pack pieces around it; the coop is one pack sprite with its own run. */
+function setUpPen(ctx: FarmContext, obj: PlacedObject<PenState>, view: ObjectView): void {
+  if (penReady.has(obj.id)) return;
+  penReady.add(obj.id);
+  sortKey.set(view.sprite, -1e9);
+  if (obj.type !== 'pasture') return;
+  const { w, h } = PENS.pasture.footprint;
+  view.sprite.setTexture(textureKey(ctx.scene, 'pasture-grass'));
+  view.ground.add(view.sprite);
+  for (const part of penFence(w, h)) {
+    const p = footprintLocal(w, h, part.x, part.y);
+    const piece = addArt(ctx.scene, p.x, p.y, part.art);
+    sortKey.set(piece, (part.front ? 1000 : -1000) + part.x + part.y);
+    view.container.add(piece);
+    const shadow = addShadow(ctx.scene, p.x, p.y, part.art);
+    if (shadow) view.shadows.add(shadow);
+  }
 }
 
 function addCritter(ctx: FarmContext, obj: PlacedObject<PenState>, view: ObjectView, kind: AnimalKind): Critter {
   const scene = ctx.scene;
-  const spot = randomSpot(obj.type as PenType);
-  const body = scene.add.image(spot.x, spot.y, `animal-${kind}`).setOrigin(0.5, 1);
-  body.setFlipX(Math.random() < 0.5);
-  const bubbleBg = scene.add.image(0, 0, 'animal-bubble').setOrigin(0.5, 1);
-  const bubbleIcon = scene.add
-    .text(0, -9, '', { fontFamily: 'system-ui, sans-serif', fontSize: '11px', resolution: 2 })
-    .setOrigin(0.5, 0.5);
-  const bubble = scene.add.container(spot.x, spot.y, [bubbleBg, bubbleIcon]).setVisible(false);
+  const at = randomSpot(obj.type as PenType);
+  const body = addArtSprite(scene, 0, 0, kind);
+  const shadow = addShadow(scene, 0, 0, kind);
+  const bubbleBg = scene.add.image(0, 0, 'animal-bubble');
+  const bubbleIcon = scene.add.image(0, -27, 'missing');
+  const bubble = scene.add.container(0, 0, [bubbleBg, bubbleIcon]).setVisible(false);
+  sortKey.set(bubble, 1e9);
   view.container.add([body, bubble]);
-  return { kind, body, bubble, bubbleBg, bubbleIcon, status: null, target: randomSpot(obj.type as PenType), rest: Math.random() * 2000 };
+  if (shadow) view.shadows.add(shadow);
+  const dirs: Facing[] = ['se', 'sw', 'ne', 'nw'];
+  const c: Critter = {
+    kind,
+    body,
+    shadow,
+    bubble,
+    bubbleBg,
+    bubbleIcon,
+    status: null,
+    at,
+    target: randomSpot(obj.type as PenType),
+    facing: dirs[Math.floor(Math.random() * dirs.length)],
+    rest: Math.random() * 2000,
+  };
+  place(obj, c);
+  return c;
 }
 
 function destroyCritter(c: Critter): void {
   c.body.destroy();
+  c.shadow?.destroy();
   c.bubble.destroy();
 }
 
 /** Matches the sprites to `obj.state.animals` and updates every bubble. */
 function sync(ctx: FarmContext, obj: PlacedObject<PenState>, view: ObjectView): void {
-  if (!fronts.has(obj.id)) {
-    const front = ctx.scene.add.image(0, view.height, `${obj.type}-front`).setOrigin(0, 1);
-    view.container.add(front);
-    fronts.set(obj.id, front);
-  }
+  setUpPen(ctx, obj, view);
   const animals = animalsOf(obj);
   let list = critters.get(obj.id) ?? [];
   // Rebuild from the first sprite whose kind no longer matches (cheap: pens hold ≤ 6).
@@ -107,11 +140,26 @@ function updateBubbles(ctx: FarmContext, obj: PlacedObject<PenState>): void {
       c.bubble.setVisible(false);
       return;
     }
-    const icon = status === 'hungry' ? (getItem('feed')?.icon ?? '!') : (getItem(ANIMALS[c.kind].product)?.icon ?? '?');
-    c.bubbleIcon.setText(icon);
+    const icon = status === 'hungry' ? 'feed' : ANIMALS[c.kind].product;
+    c.bubbleIcon.setTexture(textureKey(ctx.scene, icon));
+    c.bubbleIcon.setScale(BUBBLE_ICON / c.bubbleIcon.height);
     c.bubbleBg.setTint(BUBBLE_TINT[status]);
     c.bubble.setVisible(true);
   });
+}
+
+/** Moves the sprites to the critter's spot and picks its animation: walking, eating while it makes something, or idle. */
+function place(obj: PlacedObject<PenState>, c: Critter): void {
+  const { w, h } = PENS[obj.type as PenType].footprint;
+  const p = footprintLocal(w, h, c.at.x, c.at.y);
+  const walking = c.rest <= 0;
+  const action = walking ? 'walk' : c.status === 'producing' ? 'eat' : 'idle';
+  c.body.setPosition(p.x, p.y).play(`${c.kind}_${action}_${c.facing}`, true);
+  sortKey.set(c.body, c.at.x + c.at.y);
+  if (c.shadow) c.shadow.setPosition(p.x, p.y).setFrame(c.body.frame.name);
+  // The bubble floats over the animal's head: its sprite rises this far above its anchor.
+  const rise = (packAsset(c.kind)?.res['2x'].anchor[1] ?? 60) * ART_SCALE;
+  c.bubble.setPosition(p.x, p.y - rise + 6);
 }
 
 function wander(obj: PlacedObject<PenState>, view: ObjectView, realDt: number): void {
@@ -122,28 +170,24 @@ function wander(obj: PlacedObject<PenState>, view: ObjectView, realDt: number): 
     if (c.rest > 0) {
       c.rest -= realDt;
     } else {
-      const dx = c.target.x - c.body.x;
-      const dy = c.target.y - c.body.y;
+      const dx = c.target.x - c.at.x;
+      const dy = c.target.y - c.at.y;
       const dist = Math.hypot(dx, dy);
       const step = (SPEED[c.kind] * realDt) / 1000;
       if (dist <= step) {
-        c.body.setPosition(c.target.x, c.target.y);
+        c.at = c.target;
         c.target = randomSpot(type);
         c.rest = 600 + Math.random() * 2600;
       } else {
-        c.body.setPosition(c.body.x + (dx / dist) * step, c.body.y + (dy / dist) * step);
-        if (Math.abs(dx) > 0.5) c.body.setFlipX(dx < 0);
+        c.at = { x: c.at.x + (dx / dist) * step, y: c.at.y + (dy / dist) * step };
+        c.facing = facing(dx, dy);
       }
     }
-    c.bubble.setPosition(c.body.x, c.body.y - c.body.height + 1);
-    if (c.status === 'ready') c.bubble.y += Math.sin((view.container.scene.time.now + c.body.x * 40) / 220) * 1.5;
+    place(obj, c);
+    if (c.status === 'ready') c.bubble.y += Math.sin((view.container.scene.time.now + c.at.x * 900) / 220) * 1.5;
   }
-  // Nearer animals overlap farther ones, the front fences overlap them all; bubbles always on top.
-  view.container.sort('y');
-  view.container.sendToBack(view.sprite);
-  const front = fronts.get(obj.id);
-  if (front) view.container.bringToTop(front);
-  for (const c of list) if (c.bubble.visible) view.container.bringToTop(c.bubble);
+  // Back fences, then animals front to back by how far forward they stand, front fences, bubbles on top.
+  view.container.sort('y', (a: Phaser.GameObjects.GameObject, b: Phaser.GameObjects.GameObject) => (sortKey.get(a) ?? 0) - (sortKey.get(b) ?? 0));
 }
 
 function itemLabel(itemId: string): string {
@@ -247,7 +291,7 @@ for (const type of Object.keys(PENS) as PenType[]) {
     destroy(_ctx, obj) {
       critters.get(obj.id)?.forEach(destroyCritter);
       critters.delete(obj.id);
-      fronts.delete(obj.id); // destroyed with the view's container
+      penReady.delete(obj.id); // fence pieces go with the view's containers
     },
     // Clicking a pen with products waiting collects them; otherwise the panel opens.
     onClick(ctx, obj) {

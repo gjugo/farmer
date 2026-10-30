@@ -3,6 +3,7 @@ import type { FarmContext, SheetSpec } from '../../game/context';
 import { registerHudButton } from '../../game/hooks';
 import { dailyPrice, msUntilNextDay, priceTrend, sell, sellAll } from '../../logic/market';
 import { formatMoney, h } from '../../ui/dom';
+import { itemIcon } from '../../ui/icons';
 
 /**
  * The Market: sell anything in the inventory at today's price. Prices change
@@ -68,7 +69,7 @@ function marketSheet(ctx: FarmContext): SheetSpec {
             return h(
               'li',
               { class: 'market-item', 'data-testid': `market-${id}` },
-              h('span', { class: 'item-icon', 'aria-hidden': 'true' }, item?.icon ?? '📦'),
+              itemIcon(id),
               h('span', { class: 'market-name' }, h('span', { class: 'item-name' }, name), h('span', { class: 'item-count', 'data-testid': `market-count-${id}` }, `×${count}`)),
               price === null
                 ? h('span', { class: 'market-price muted' }, 'Not for sale')

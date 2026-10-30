@@ -4,6 +4,7 @@ import { MAX_OFFLINE_MS } from '../data/offline';
 import { formatAway, type CatchUpResult } from '../logic/offline';
 import { uiSignals } from '../game/signals';
 import { h } from './dom';
+import { withIcons } from './icons';
 
 /** Lines of the welcome-back summary, built from the catch-up result alone. */
 export function summaryLines(result: CatchUpResult): string[] {
@@ -54,7 +55,7 @@ export function showWelcomeBack(root: HTMLElement, result: CatchUpResult): void 
           )
         : null,
       lines.length > 0
-        ? h('ul', { class: 'welcome-list', 'data-testid': 'welcome-list' }, lines.map((line) => h('li', {}, line)))
+        ? h('ul', { class: 'welcome-list', 'data-testid': 'welcome-list' }, lines.map((line) => h('li', {}, withIcons(line))))
         : h('p', { 'data-testid': 'welcome-empty' }, 'Nothing finished while you were away.'),
       h('div', { class: 'actions' }, button),
     ),

@@ -16,19 +16,23 @@ import {
   startJob,
   type ProcessorState,
 } from '../../logic/processing';
-import { ANIM_ANCHOR, PROC_TOP } from './textures';
-
-/** The ready bubble floats above the roof (view pixels). */
-const BUBBLE_Y = -PROC_TOP - 12;
+import { ART_RES, ART_SCALE, artFor, MILL, SHADOW } from '../../scenes/art';
+import { addArtSprite, packAsset, textureKey } from '../../scenes/sprites';
+import { BUBBLE, SMOKE_AT } from './textures';
 
 const PUFFS = 3;
+/** Icons in the ready bubble are this many world pixels tall. */
+const BUBBLE_ICON = 28;
 
 interface Decor {
-  wheel: Phaser.GameObjects.Image | null;
+  sails: Phaser.GameObjects.Sprite | null;
   puffs: Phaser.GameObjects.Image[];
+  /** Where the puffs start (the chimney top), in view pixels. */
+  smokeAt: { x: number; y: number };
   bubble: Phaser.GameObjects.Container;
-  bubbleIcon: Phaser.GameObjects.Text;
-  /** What the bubble currently shows, to skip redundant setText calls. */
+  /** Where the bubble's tip floats, just above the roof (view pixels). */
+  bubbleY: number;
+  /** What the bubble currently shows, to skip redundant rebuilds. */
   bubbleKey: string;
 }
 
@@ -41,6 +45,12 @@ function itemLabel(itemId: string): string {
 
 function itemIcon(itemId: string): string {
   return getItem(itemId)?.icon ?? itemId;
+}
+
+/** A point given in pixels of the building's 2x sprite, in view pixels. */
+function spritePoint(view: ObjectView, art: string, px: number, py: number): { x: number; y: number } {
+  const [ax, ay] = packAsset(art)?.res[ART_RES].anchor ?? [0, 0];
+  return { x: view.top.x + (px - ax) * ART_SCALE, y: view.top.y + (py - ay) * ART_SCALE };
 }
 
 function formatTime(ms: number): string {
@@ -58,52 +68,84 @@ function create(ctx: FarmContext, obj: PlacedObject<ProcessorState>, view: Objec
   sanitize(obj, ctx.game.state.clock);
   const scene = ctx.scene;
   const def = PROCESSORS[obj.type as ProcessorType];
-  const a = ANIM_ANCHOR[def.id];
-  const wheel = def.anim === 'wheel' ? scene.add.image(a.x, a.y, 'proc-wheel') : null;
-  const puffs =
-    def.anim === 'smoke'
-      ? Array.from({ length: PUFFS }, () => scene.add.image(a.x, a.y, 'proc-smoke').setVisible(false))
-      : [];
-  const bubbleIcon = scene.add
-    .text(16, 10, '', { fontFamily: 'system-ui, sans-serif', fontSize: '12px', color: '#2b2118', resolution: 2 })
-    .setOrigin(0.5, 0.5);
+  const art = artFor(def.id);
+  let sails: Phaser.GameObjects.Sprite | null = null;
+  if (def.anim === 'sails' && scene.textures.exists(MILL.sails)) {
+    // The placed mill is the body plus separate sails (same canvas and anchor); the build preview shows the
+    // static sprite with the sails baked in.
+    view.sprite.setTexture(textureKey(scene, MILL.body));
+    view.shadow?.setTexture(textureKey(scene, `${MILL.body}${SHADOW}`));
+    sails = addArtSprite(scene, view.top.x, view.top.y, MILL.sails);
+    sails.play(MILL.spin);
+    view.container.add(sails);
+  }
+  const smoke = SMOKE_AT[def.id];
+  const smokeAt = smoke ? spritePoint(view, art, smoke.x, smoke.y) : view.top;
+  const puffs = smoke ? Array.from({ length: PUFFS }, () => scene.add.image(smokeAt.x, smokeAt.y, 'proc-smoke').setVisible(false)) : [];
+  const bubbleY = spritePoint(view, view.sprite.texture.key, 0, 0).y - 4;
   const bubble = scene.add
-    .container(view.width / 2 - 16, BUBBLE_Y, [scene.add.image(0, 0, 'proc-bubble').setOrigin(0), bubbleIcon])
+    .container(view.top.x, bubbleY, [scene.add.image(0, 0, 'proc-bubble')])
     .setVisible(false);
-  view.container.add([...(wheel ? [wheel] : []), ...puffs, bubble]);
-  decor.set(obj.id, { wheel, puffs, bubble, bubbleIcon, bubbleKey: '' });
+  view.container.add([...puffs, bubble]);
+  decor.set(obj.id, { sails, puffs, smokeAt, bubble, bubbleY, bubbleKey: '' });
   refresh(ctx, obj);
 }
 
-/** Shows the ready-output bubble, e.g. "🧀2", when something waits to be collected. */
-function refresh(_ctx: FarmContext, obj: PlacedObject<ProcessorState>): void {
+/** Shows the ready-output bubble, e.g. the cheese icon and "2", when something waits to be collected. */
+function refresh(ctx: FarmContext, obj: PlacedObject<ProcessorState>): void {
   const d = decor.get(obj.id);
   if (!d) return;
-  const entries = Object.entries(obj.state.ready);
-  const key = entries.map(([id, n]) => `${itemIcon(id)}${n > 1 ? n : ''}`).join('');
+  const entries = Object.entries(obj.state.ready).slice(0, 2);
+  const key = entries.map(([id, n]) => `${id}${n}`).join('|');
   if (key === d.bubbleKey) return;
   d.bubbleKey = key;
   d.bubble.setVisible(key !== '');
-  d.bubbleIcon.setText(entries.length > 1 ? entries.map(([id]) => itemIcon(id)).join('') : key);
+  d.bubble.list.slice(1).forEach((child) => child.destroy());
+  const scene = ctx.scene;
+  const parts: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[] = [];
+  for (const [id, n] of entries) {
+    const icon = scene.add.image(0, 0, textureKey(scene, id)).setOrigin(0, 0.5);
+    icon.setScale(BUBBLE_ICON / icon.height);
+    parts.push(icon);
+    if (n > 1) {
+      parts.push(
+        scene.add
+          .text(0, 0, String(n), { fontFamily: 'system-ui, sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#2b2118', resolution: 2 })
+          .setOrigin(0, 0.5),
+      );
+    }
+  }
+  // Centre the row inside the bubble's body (above its tip).
+  const gap = 2;
+  const width = parts.reduce((sum, p) => sum + p.displayWidth + gap, -gap);
+  let x = -width / 2;
+  for (const p of parts) {
+    p.setPosition(x, -(BUBBLE.height - (BUBBLE.height - 12) / 2));
+    x += p.displayWidth + gap;
+  }
+  d.bubble.add(parts);
 }
 
 function animate(ctx: FarmContext, obj: PlacedObject<ProcessorState>, view: ObjectView): void {
   const d = decor.get(obj.id);
   if (!d) return;
-  // Cosmetic only, so it runs on real time: debug speed should not make the wheel blur.
+  // Cosmetic only, so it runs on real time: debug speed should not make the sails blur.
   const t = ctx.scene.time.now;
   const working = isWorking(obj);
-  if (d.wheel && working) d.wheel.rotation = (t / 900) % (Math.PI * 2);
-  const a = ANIM_ANCHOR[obj.type as ProcessorType];
+  if (d.sails) {
+    if (working && d.sails.anims.isPaused) d.sails.anims.resume();
+    else if (!working && d.sails.anims.isPlaying) d.sails.anims.pause();
+  }
+  const a = d.smokeAt;
   d.puffs.forEach((p, i) => {
     p.setVisible(working);
     if (!working) return;
     const phase = (t / 1800 + i / PUFFS) % 1;
-    p.setPosition(a.x + Math.sin(phase * 5 + i) * 3 + phase * 6, a.y - phase * 22);
+    p.setPosition(a.x + Math.sin(phase * 5 + i) * 6 + phase * 12, a.y - phase * 44);
     p.setAlpha(0.75 * (1 - phase));
     p.setScale(0.5 + phase * 0.8);
   });
-  if (d.bubble.visible) d.bubble.y = BUBBLE_Y + Math.sin(t / 260) * 1.5;
+  if (d.bubble.visible) d.bubble.y = d.bubbleY + Math.sin(t / 260) * 2;
   view.container.bringToTop(d.bubble);
 }
 
