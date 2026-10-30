@@ -14,6 +14,7 @@ import {
 } from './animals';
 import { START_LAND } from './constants';
 import { Game } from './game';
+import { maxLevelState } from './test-utils';
 import { deserialize, serialize } from './save';
 import type { PlacedObject } from './types';
 
@@ -40,7 +41,7 @@ function wait(game: Game, ms: number): void {
 
 describe('building pens', () => {
   it('coop costs $150 and pasture $300', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     pen(g, 'coop');
     expect(g.money).toBe(350);
     pen(g, 'pasture', ox + 4, oy);
@@ -50,14 +51,14 @@ describe('building pens', () => {
   });
 
   it('a new pen starts empty', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     expect(animalsOf(pen(g, 'coop'))).toEqual([]);
   });
 });
 
 describe('buying animals', () => {
   it('charges the price and adds a hungry animal', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     expect(buyAnimal(g, coop, 'chicken')).toEqual({ ok: true });
     expect(g.money).toBe(350 - 60);
@@ -66,7 +67,7 @@ describe('buying animals', () => {
   });
 
   it('refuses beyond capacity without charging', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     g.earn(10_000);
     for (let i = 0; i < 6; i++) expect(buyAnimal(g, coop, 'chicken').ok).toBe(true);
@@ -77,7 +78,7 @@ describe('buying animals', () => {
   });
 
   it('a pasture holds 4 cows or sheep, mixed', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
     for (const kind of ['cow', 'sheep', 'cow', 'sheep'] as const) expect(buyAnimal(g, pasture, kind).ok).toBe(true);
@@ -86,7 +87,7 @@ describe('buying animals', () => {
   });
 
   it('refuses when the player cannot afford it, never going negative', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const pasture = pen(g, 'pasture'); // $200 left
     expect(checkBuyAnimal(g, pasture, 'cow')).toEqual({ ok: false, reason: 'money' });
     expect(buyAnimal(g, pasture, 'cow')).toEqual({ ok: false, reason: 'money' });
@@ -97,7 +98,7 @@ describe('buying animals', () => {
   });
 
   it('animals only live in their own kind of pen', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     g.earn(10_000);
     const coop = pen(g, 'coop');
     const pasture = pen(g, 'pasture', ox + 4, oy);
@@ -108,7 +109,7 @@ describe('buying animals', () => {
 
 describe('feeding', () => {
   it('buys 5 feed for $25, refusing when short', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     expect(buyFeed(g)).toBe(true);
     expect(g.count('feed')).toBe(FEED_PACK.qty);
     expect(g.money).toBe(500 - FEED_PACK.price);
@@ -119,7 +120,7 @@ describe('feeding', () => {
   });
 
   it('unfed animals produce nothing', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     wait(g, 10 * ANIMALS.chicken.cycleMs);
@@ -129,7 +130,7 @@ describe('feeding', () => {
   });
 
   it('feeds every hungry animal it can and never takes feed below zero', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
     buyAnimal(g, pasture, 'cow');
@@ -146,7 +147,7 @@ describe('feeding', () => {
   });
 
   it('skips an animal that needs more feed than is left but feeds cheaper ones after it', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
     buyAnimal(g, pasture, 'cow');
@@ -157,7 +158,7 @@ describe('feeding', () => {
   });
 
   it('does not feed an animal that is already producing', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     g.addItem('feed', 5);
@@ -169,7 +170,7 @@ describe('feeding', () => {
 
 describe('production and collection', () => {
   it('a fed chicken lays an egg after 40 s of game time', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     buyFeed(g);
@@ -190,7 +191,7 @@ describe('production and collection', () => {
   });
 
   it('a cow eats 2 feed and gives milk after 90 s; a sheep eats 1 and gives wool after 120 s', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
     buyAnimal(g, pasture, 'cow');
@@ -207,7 +208,7 @@ describe('production and collection', () => {
   });
 
   it('the clock speed shortens the real wait', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     g.addItem('feed', 1);
@@ -220,7 +221,7 @@ describe('production and collection', () => {
 
 describe('saving', () => {
   it('keeps animals, hunger and cycle progress across a reload', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     g.earn(10_000);
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
@@ -237,7 +238,7 @@ describe('saving', () => {
   });
 
   it('drops malformed animals from a save', () => {
-    const g = new Game();
+    const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     coop.state.animals = [{ kind: 'dragon', timer: null }, { kind: 'chicken', timer: 'soon' }] as never;
     expect(animalsOf(coop)).toEqual([{ kind: 'chicken', timer: null }]);

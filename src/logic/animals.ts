@@ -49,7 +49,7 @@ export function animalProgress(clock: ClockState, animal: Animal): number {
   return animal.timer ? timerProgress(clock, animal.timer) : 0;
 }
 
-export type BuyAnimalResult = { ok: true } | { ok: false; reason: 'wrong-pen' | 'full' | 'money' };
+export type BuyAnimalResult = { ok: true } | { ok: false; reason: 'wrong-pen' | 'level' | 'full' | 'money' };
 
 export function capacityOf(obj: PlacedObject<PenState>): number {
   return isPenType(obj.type) ? PENS[obj.type].capacity : 0;
@@ -62,6 +62,7 @@ export function canHouse(obj: PlacedObject<PenState>, kind: AnimalKind): boolean
 /** Checks without changing anything; `buyAnimal` gives the same answer. */
 export function checkBuyAnimal(game: Game, obj: PlacedObject<PenState>, kind: AnimalKind): BuyAnimalResult {
   if (!canHouse(obj, kind)) return { ok: false, reason: 'wrong-pen' };
+  if (!game.isUnlocked(ANIMALS[kind].unlockLevel)) return { ok: false, reason: 'level' };
   if (animalsOf(obj).length >= capacityOf(obj)) return { ok: false, reason: 'full' };
   if (!game.canAfford(ANIMALS[kind].price)) return { ok: false, reason: 'money' };
   return { ok: true };
@@ -123,6 +124,7 @@ export function collect(game: Game, obj: PlacedObject<PenState>): Record<string,
     a.timer = null;
   }
   if (Object.keys(got).length > 0) game.touch(obj);
+  for (const [item, qty] of Object.entries(got)) game.activity.emit('collected', { item, qty });
   return got;
 }
 

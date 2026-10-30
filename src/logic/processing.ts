@@ -138,5 +138,6 @@ export function collect(game: Game, obj: PlacedObject<ProcessorState>): Inventor
   obj.state.ready = {};
   for (const [item, qty] of Object.entries(got)) game.addItem(item, qty);
   game.touch(obj);
+  for (const [item, qty] of Object.entries(got)) game.activity.emit('made', { item, qty });
   return got;
 }

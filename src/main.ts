@@ -2,10 +2,9 @@ import './ui/styles.css';
 import './features';
 import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
-import { Game } from './logic/game';
+import { Game, type FarmSnapshot } from './logic/game';
 import { loadFromStorage, saveToStorage, type SaveStorage } from './logic/save';
 import { createNewGame } from './logic/state';
-import type { GameState } from './logic/types';
 import { BootScene } from './scenes/BootScene';
 import { FarmScene } from './scenes/FarmScene';
 import { isDebugMode, mountDebugPanel } from './ui/debug';
@@ -16,7 +15,7 @@ const AUTOSAVE_MS = 10_000;
 declare global {
   interface Window {
     /** Read-only snapshot of the game state (for debugging and Playwright checks). */
-    readonly farm: Readonly<GameState & { day: number }>;
+    readonly farm: Readonly<FarmSnapshot>;
   }
 }
 

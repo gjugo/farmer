@@ -16,6 +16,7 @@ const FENCE_LIGHT = 0xb07b45;
 const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string> = {
   money: 'Not enough money',
   locked: "That land isn't yours yet",
+  level: 'Not unlocked yet — reach a higher farm level',
   occupied: 'Something is already there',
   'out-of-bounds': "Can't build outside the farm",
   'unknown-type': 'Unknown building',

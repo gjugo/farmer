@@ -1,4 +1,5 @@
 import { getBuildable, type BuildableDef } from '../data/buildables';
+import type { ActivityEvents } from './activity';
 import { advance, dayOf } from './clock';
 import { DEMOLISH_REFUND } from './constants';
 import * as economy from './economy';
@@ -6,8 +7,10 @@ import { Emitter } from './events';
 import * as inventory from './inventory';
 import { setOwned } from './land';
 import { canPlace, objectAt, type Footprint, type PlacementResult } from './placement';
+import { Progression, type GoalView } from './progression';
 import { createNewGame } from './state';
 import type { GameState, ItemId, PlacedObject } from './types';
+import { buildableUnlockLevel, isUnlocked, type Unlock } from './unlocks';
 
 export interface GameEvents {
   /** Money changed by `delta` (negative when spent). */
@@ -20,13 +23,19 @@ export interface GameEvents {
   land: { x: number; y: number; owned: boolean };
   day: number;
   speed: number;
+  /** XP was gained (or set by the debug panel). */
+  xp: { xp: number; level: number; delta: number };
+  /** A new level was reached; its bonus has been paid. */
+  levelUp: { level: number; bonus: number; unlocks: Unlock[] };
+  /** Active goals or their progress changed. */
+  goals: GoalView[];
   /** The whole state was replaced (new game). Re-read everything. */
   reset: GameState;
 }
 
 export type PlaceResult =
   | { ok: true; object: PlacedObject }
-  | { ok: false; reason: 'unknown-type' | 'money' | Exclude<PlacementResult, { ok: true }>['reason'] };
+  | { ok: false; reason: 'unknown-type' | 'money' | 'level' | Exclude<PlacementResult, { ok: true }>['reason'] };
 
 export function footprintOf(obj: PlacedObject): Footprint {
   return getBuildable(obj.type)?.footprint ?? { w: 1, h: 1 };
@@ -42,12 +51,16 @@ export function demolishRefund(def: BuildableDef | undefined): number {
  */
 export class Game {
   readonly events = new Emitter<GameEvents>();
+  /** What the player did (harvests, sales, ...), reported by feature logic. Drives goals and XP. */
+  readonly activity = new Emitter<ActivityEvents>();
+  readonly progression: Progression;
   private _state: GameState;
   private lastDay: number;
 
   constructor(state: GameState = createNewGame()) {
     this._state = state;
     this.lastDay = dayOf(state.clock);
+    this.progression = new Progression(this);
   }
 
   /** The live state. Read freely; mutate only through Game methods (or `touch` after editing `obj.state`). */
@@ -80,9 +93,27 @@ export class Game {
     return true;
   }
 
+  /** Adds money that is not income (refunds, rewards, bonuses): it gives no XP. */
   earn(amount: number): void {
     economy.earn(this._state, amount);
     if (amount > 0) this.events.emit('money', { money: this._state.money, delta: amount });
+  }
+
+  /** The shared income path: sales and other earnings pay through here and give 1 XP per $1. */
+  earnIncome(amount: number): void {
+    this.earn(amount);
+    if (amount > 0) this.activity.emit('income', { amount });
+  }
+
+  // Progression -----------------------------------------------------------------
+
+  get level(): number {
+    return this.progression.level;
+  }
+
+  /** Has the farm reached `unlockLevel` (missing means level 1)? */
+  isUnlocked(unlockLevel: number | undefined): boolean {
+    return isUnlocked(this.level, unlockLevel);
   }
 
   // Inventory -----------------------------------------------------------------
@@ -124,9 +155,10 @@ export class Game {
   }
 
   /** Can `type` be placed with its top-left at (x, y)? Ignores money. */
-  checkPlacement(type: string, x: number, y: number): PlacementResult | { ok: false; reason: 'unknown-type' } {
+  checkPlacement(type: string, x: number, y: number): PlacementResult | { ok: false; reason: 'unknown-type' | 'level' } {
     const def = getBuildable(type);
     if (!def) return { ok: false, reason: 'unknown-type' };
+    if (!this.isUnlocked(buildableUnlockLevel(type))) return { ok: false, reason: 'level' };
     return canPlace(this._state, def.footprint, x, y, footprintOf);
   }
 
@@ -134,7 +166,7 @@ export class Game {
   place(type: string, x: number, y: number): PlaceResult {
     const def = getBuildable(type);
     if (!def) return { ok: false, reason: 'unknown-type' };
-    const check = canPlace(this._state, def.footprint, x, y, footprintOf);
+    const check = this.checkPlacement(type, x, y);
     if (!check.ok) return check;
     if (!this.spend(def.cost)) return { ok: false, reason: 'money' };
     const object: PlacedObject = {
@@ -146,6 +178,7 @@ export class Game {
     };
     this._state.objects.push(object);
     this.events.emit('objectAdded', object);
+    this.activity.emit('placed', { type });
     return { ok: true, object };
   }
 
@@ -198,10 +231,22 @@ export class Game {
   }
 
   /** Deep-copied, frozen snapshot for debugging and tests (`window.farm`). */
-  snapshot(): Readonly<GameState & { day: number }> {
-    return deepFreeze({ ...structuredClone(this._state), day: this.day });
+  snapshot(): Readonly<FarmSnapshot> {
+    const { level, xp, xpToNext } = this.progression.info;
+    const goals = this.progression.goals().map((g) => ({ id: g.def.id, title: g.def.title, progress: g.progress, target: g.target, complete: g.complete }));
+    return deepFreeze({ ...structuredClone(this._state), day: this.day, level, xp, xpToNext, goals });
   }
 }
+
+export type FarmSnapshot = GameState & {
+  day: number;
+  level: number;
+  /** Total XP. */
+  xp: number;
+  /** XP still missing for the next level; null at the top level. */
+  xpToNext: number | null;
+  goals: { id: string; title: string; progress: number; target: number; complete: boolean }[];
+};
 
 function deepFreeze<T>(obj: T): T {
   if (obj && typeof obj === 'object') {

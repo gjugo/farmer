@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_LIST, ITEMS } from '../data/items';
 import { DAY_MS } from './constants';
 import { Game } from './game';
+import { maxLevelState } from './test-utils';
 import { dailyPrice, msUntilNextDay, priceFactor, priceTrend, sell, sellAll } from './market';
 import { deserialize, serialize } from './save';
 
 function gameOnDay(day: number): Game {
-  const game = new Game();
+  const game = new Game(maxLevelState());
   game.state.clock.elapsed = (day - 1) * DAY_MS + 1000;
   return game;
 }

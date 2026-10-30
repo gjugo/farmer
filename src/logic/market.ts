@@ -1,5 +1,7 @@
 import { getItem } from '../data/items';
+import type { ActivityEvents } from './activity';
 import { DAY_MS } from './constants';
+import type { Emitter } from './events';
 import type { ClockState, Inventory, ItemId } from './types';
 
 /** Daily prices swing between these multiples of the base price. */
@@ -58,7 +60,9 @@ export interface Seller {
   readonly state: { inventory: Inventory };
   count(itemId: ItemId): number;
   removeItem(itemId: ItemId, qty?: number): boolean;
-  earn(amount: number): void;
+  /** Sales are income: they give XP. */
+  earnIncome(amount: number): void;
+  readonly activity: Emitter<ActivityEvents>;
 }
 
 /**
@@ -71,7 +75,8 @@ export function sell(game: Seller, itemId: ItemId, qty = game.count(itemId)): nu
   if (price === null || !(n > 0)) return 0;
   if (!game.removeItem(itemId, n)) return 0;
   const total = n * price;
-  game.earn(total);
+  game.earnIncome(total);
+  game.activity.emit('sold', { item: itemId, qty: n, earned: total });
   return total;
 }
 

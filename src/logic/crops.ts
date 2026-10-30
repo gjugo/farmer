@@ -52,12 +52,13 @@ export function timeToRipe(clock: ClockState, field: FieldState): number {
   return fieldCrop(field) && field.timer ? timerRemaining(clock, field.timer) : 0;
 }
 
-export type PlantResult = { ok: true } | { ok: false; reason: 'unknown-crop' | 'occupied' | 'money' };
+export type PlantResult = { ok: true } | { ok: false; reason: 'unknown-crop' | 'level' | 'occupied' | 'money' };
 
 /** Charges the crop's cost and plants it. Nothing changes when it fails. */
 export function plant(game: Game, obj: PlacedObject<FieldState>, cropId: string): PlantResult {
   const crop = getCrop(cropId);
   if (!crop) return { ok: false, reason: 'unknown-crop' };
+  if (!game.isUnlocked(crop.unlockLevel)) return { ok: false, reason: 'level' };
   if (cropStage(game.state.clock, obj.state) !== 'empty') return { ok: false, reason: 'occupied' };
   if (!game.spend(crop.plantCost)) return { ok: false, reason: 'money' };
   obj.state.crop = crop.id;
@@ -74,6 +75,7 @@ export function harvest(game: Game, obj: PlacedObject<FieldState>): { crop: Crop
   obj.state.crop = null;
   obj.state.timer = null;
   game.touch(obj);
+  game.activity.emit('harvested', { item: crop.harvestItem, qty: crop.harvestQty });
   return { crop, qty: crop.harvestQty };
 }
 

@@ -3,6 +3,7 @@ import { CROPS, FIELD } from '../data/crops';
 import { START_LAND } from './constants';
 import { cropStage, formatDuration, growthProgress, harvest, plant, STARTING_FIELDS, timeToRipe, type FieldState } from './crops';
 import { Game } from './game';
+import { maxLevelState } from './test-utils';
 import { deserialize, serialize } from './save';
 import type { PlacedObject } from './types';
 
@@ -18,7 +19,7 @@ function firstField(game: Game): PlacedObject<FieldState> {
 
 describe('fields', () => {
   it('a new game starts with 2 empty fields on owned land', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const fields = game.objectsOfType(FIELD);
     expect(fields.map((f) => [f.x, f.y])).toEqual(STARTING_FIELDS.map((p) => [p.x, p.y]));
     expect(fields.map((f) => f.state)).toEqual([
@@ -29,7 +30,7 @@ describe('fields', () => {
   });
 
   it('builds a field for $25, only on free owned land', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const x = START_LAND.x + 1;
     const y = START_LAND.y + 4;
     const r = game.place(FIELD, x, y);
@@ -43,7 +44,7 @@ describe('fields', () => {
 
 describe('planting', () => {
   it('charges the crop cost', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const field = firstField(game);
     expect(plant(game, field, 'wheat')).toEqual({ ok: true });
     expect(game.money).toBe(500 - 8);
@@ -56,7 +57,7 @@ describe('planting', () => {
   });
 
   it('refuses when the player cannot afford it and takes no money', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     game.state.money = 5;
     const field = firstField(game);
     expect(plant(game, field, 'wheat')).toEqual({ ok: false, reason: 'money' });
@@ -65,7 +66,7 @@ describe('planting', () => {
   });
 
   it('refuses a planted field and unknown crops', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const field = firstField(game);
     plant(game, field, 'carrot');
     expect(plant(game, field, 'wheat')).toEqual({ ok: false, reason: 'occupied' });
@@ -79,7 +80,7 @@ describe('planting', () => {
 
 describe('growth', () => {
   it('goes seeded → sprout → growing → ripe over the grow time', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const field = firstField(game);
     plant(game, field, 'wheat'); // 30 s
     const stage = () => cropStage(game.state.clock, field.state);
@@ -100,7 +101,7 @@ describe('growth', () => {
   });
 
   it('grows 10× faster at debug speed ×10', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const field = firstField(game);
     plant(game, field, 'corn'); // 60 s of game time
     game.setSpeed(10);
@@ -111,7 +112,7 @@ describe('growth', () => {
   });
 
   it('keeps the crop and its progress across save and load', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     plant(game, firstField(game), 'carrot');
     run(game, 20_000);
     const loaded = new Game(deserialize(serialize(game.state)));
@@ -132,7 +133,7 @@ describe('growth', () => {
 
 describe('harvest', () => {
   it('cycles empty → planted → ripe → harvested into the inventory → empty', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const field = firstField(game);
     const stage = () => cropStage(game.state.clock, field.state);
     expect(stage()).toBe('empty');
@@ -152,7 +153,7 @@ describe('harvest', () => {
 
   it('yields 4 of each crop', () => {
     for (const crop of Object.values(CROPS)) {
-      const game = new Game();
+      const game = new Game(maxLevelState());
       const field = firstField(game);
       plant(game, field, crop.id);
       run(game, crop.growMs);

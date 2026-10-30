@@ -12,13 +12,15 @@ export interface CropDef {
   harvestItem: KnownItemId;
   harvestQty: number;
   icon: string;
+  /** Farm level that unlocks planting it. */
+  unlockLevel: number;
 }
 
 /** Every crop that can be planted in a field, in menu order. */
 export const CROPS = {
-  wheat: { id: 'wheat', name: 'Wheat', plantCost: 8, growMs: 30_000, harvestItem: 'wheat', harvestQty: 4, icon: '🌾' },
-  carrot: { id: 'carrot', name: 'Carrot', plantCost: 12, growMs: 45_000, harvestItem: 'carrot', harvestQty: 4, icon: '🥕' },
-  corn: { id: 'corn', name: 'Corn', plantCost: 16, growMs: 60_000, harvestItem: 'corn', harvestQty: 4, icon: '🌽' },
+  wheat: { id: 'wheat', name: 'Wheat', plantCost: 8, growMs: 30_000, harvestItem: 'wheat', harvestQty: 4, icon: '🌾', unlockLevel: 1 },
+  carrot: { id: 'carrot', name: 'Carrot', plantCost: 12, growMs: 45_000, harvestItem: 'carrot', harvestQty: 4, icon: '🥕', unlockLevel: 2 },
+  corn: { id: 'corn', name: 'Corn', plantCost: 16, growMs: 60_000, harvestItem: 'corn', harvestQty: 4, icon: '🌽', unlockLevel: 4 },
 } as const satisfies Record<string, CropDef>;
 
 export type CropId = keyof typeof CROPS;
@@ -37,6 +39,8 @@ registerBuildable({
   cost: 25,
   footprint: { w: 2, h: 2 },
   texture: 'field',
+  icon: '🟫',
+  unlockLevel: 1,
   category: 'crops',
   description: 'Ploughed soil for wheat, carrots and corn.',
   initialState: () => ({ crop: null, timer: null }),

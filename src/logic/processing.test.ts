@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROCESSORS, QUEUE_LIMIT, type RecipeDef } from '../data/processing';
 import { Game } from './game';
+import { maxLevelState } from './test-utils';
 import {
   checkStart,
   collect,
@@ -17,7 +18,7 @@ import { setOwned } from './land';
 import type { PlacedObject } from './types';
 
 function setup(type: keyof typeof PROCESSORS = 'dairy') {
-  const game = new Game();
+  const game = new Game(maxLevelState());
   game.earn(10_000);
   const land = game.state.land;
   for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
