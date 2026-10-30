@@ -233,7 +233,7 @@ export class Hud implements UiApi {
         if (!bar || !spec) return;
         const pct = Math.round(progressOf(spec) * 100);
         bar.setAttribute('aria-valuenow', String(pct));
-        bar.querySelector<HTMLElement>('.progress-fill')!.style.width = `${pct}%`;
+        bar.querySelector<HTMLElement>('.progress-fill')!.style.transform = `scaleX(${pct / 100})`;
       },
     });
   }
