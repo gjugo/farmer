@@ -16,7 +16,10 @@ import {
   startJob,
   type ProcessorState,
 } from '../../logic/processing';
-import { ANIM_ANCHOR } from './textures';
+import { ANIM_ANCHOR, PROC_TOP } from './textures';
+
+/** The ready bubble floats above the roof (view pixels). */
+const BUBBLE_Y = -PROC_TOP - 12;
 
 const PUFFS = 3;
 
@@ -65,7 +68,7 @@ function create(ctx: FarmContext, obj: PlacedObject<ProcessorState>, view: Objec
     .text(16, 10, '', { fontFamily: 'system-ui, sans-serif', fontSize: '12px', color: '#2b2118', resolution: 2 })
     .setOrigin(0.5, 0.5);
   const bubble = scene.add
-    .container(view.width / 2 - 16, -14, [scene.add.image(0, 0, 'proc-bubble').setOrigin(0), bubbleIcon])
+    .container(view.width / 2 - 16, BUBBLE_Y, [scene.add.image(0, 0, 'proc-bubble').setOrigin(0), bubbleIcon])
     .setVisible(false);
   view.container.add([...(wheel ? [wheel] : []), ...puffs, bubble]);
   decor.set(obj.id, { wheel, puffs, bubble, bubbleIcon, bubbleKey: '' });
@@ -100,7 +103,7 @@ function animate(ctx: FarmContext, obj: PlacedObject<ProcessorState>, view: Obje
     p.setAlpha(0.75 * (1 - phase));
     p.setScale(0.5 + phase * 0.8);
   });
-  if (d.bubble.visible) d.bubble.y = -14 + Math.sin(t / 260) * 1.5;
+  if (d.bubble.visible) d.bubble.y = BUBBLE_Y + Math.sin(t / 260) * 1.5;
   view.container.bringToTop(d.bubble);
 }
 

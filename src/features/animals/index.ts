@@ -17,16 +17,11 @@ import {
   type AnimalStatus,
   type PenState,
 } from '../../logic/animals';
-import './textures';
-
-/** Where animals may walk, in pixels inside the pen's footprint (feet position). */
-const WALK_AREA: Record<PenType, { x0: number; y0: number; x1: number; y1: number }> = {
-  coop: { x0: 12, y0: 50, x1: 84, y1: 88 },
-  pasture: { x0: 16, y0: 26, x1: 112, y1: 118 },
-};
+import { footprintLocal } from '../../scenes/iso';
+import { WALK_AREA } from './textures';
 
 /** Walking speed in pixels per real second. */
-const SPEED: Record<AnimalKind, number> = { chicken: 22, cow: 9, sheep: 12 };
+const SPEED: Record<AnimalKind, number> = { chicken: 30, cow: 13, sheep: 17 };
 
 const BUBBLE_TINT: Record<Exclude<AnimalStatus, 'producing'>, number> = { hungry: 0xffd4c4, ready: 0xd6ffc4 };
 
@@ -43,10 +38,20 @@ interface Critter {
 }
 
 const critters = new Map<string, Critter[]>();
+/** The front fences of each pen, kept above the animals. */
+const fronts = new Map<string, Phaser.GameObjects.Image>();
 
+/** A random point inside the pen's walk area, picked in tile space and returned in the view's pixels. */
 function randomSpot(type: PenType): { x: number; y: number } {
   const a = WALK_AREA[type];
-  return { x: Phaser.Math.Between(a.x0, a.x1), y: Phaser.Math.Between(a.y0, a.y1) };
+  const { w, h } = PENS[type].footprint;
+  let gx: number;
+  let gy: number;
+  do {
+    gx = Phaser.Math.FloatBetween(a.min, a.max);
+    gy = Phaser.Math.FloatBetween(a.min, a.max);
+  } while (gx + gy < a.minSum);
+  return footprintLocal(w, h, gx, gy);
 }
 
 function addCritter(ctx: FarmContext, obj: PlacedObject<PenState>, view: ObjectView, kind: AnimalKind): Critter {
@@ -70,6 +75,11 @@ function destroyCritter(c: Critter): void {
 
 /** Matches the sprites to `obj.state.animals` and updates every bubble. */
 function sync(ctx: FarmContext, obj: PlacedObject<PenState>, view: ObjectView): void {
+  if (!fronts.has(obj.id)) {
+    const front = ctx.scene.add.image(0, view.height, `${obj.type}-front`).setOrigin(0, 1);
+    view.container.add(front);
+    fronts.set(obj.id, front);
+  }
   const animals = animalsOf(obj);
   let list = critters.get(obj.id) ?? [];
   // Rebuild from the first sprite whose kind no longer matches (cheap: pens hold ≤ 6).
@@ -128,9 +138,11 @@ function wander(obj: PlacedObject<PenState>, view: ObjectView, realDt: number): 
     c.bubble.setPosition(c.body.x, c.body.y - c.body.height + 1);
     if (c.status === 'ready') c.bubble.y += Math.sin((view.container.scene.time.now + c.body.x * 40) / 220) * 1.5;
   }
-  // Nearer animals overlap farther ones; bubbles always on top.
+  // Nearer animals overlap farther ones, the front fences overlap them all; bubbles always on top.
   view.container.sort('y');
   view.container.sendToBack(view.sprite);
+  const front = fronts.get(obj.id);
+  if (front) view.container.bringToTop(front);
   for (const c of list) if (c.bubble.visible) view.container.bringToTop(c.bubble);
 }
 
@@ -235,6 +247,7 @@ for (const type of Object.keys(PENS) as PenType[]) {
     destroy(_ctx, obj) {
       critters.get(obj.id)?.forEach(destroyCritter);
       critters.delete(obj.id);
+      fronts.delete(obj.id); // destroyed with the view's container
     },
     // Clicking a pen with products waiting collects them; otherwise the panel opens.
     onClick(ctx, obj) {

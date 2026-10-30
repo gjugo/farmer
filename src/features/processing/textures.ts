@@ -1,14 +1,31 @@
 import type Phaser from 'phaser';
 import { PROCESSORS, type ProcessorType } from '../../data/processing';
-import { registerTexture, seeded, TILE } from '../../scenes/textures';
+import { footprintLocal } from '../../scenes/iso';
+import { footprintTexture, isoBox, poly, registerTexture, seeded, texPoint } from '../../scenes/textures';
 
-/** Where the working animation sits, in pixels inside the footprint. */
-export const ANIM_ANCHOR: Record<ProcessorType, { x: number; y: number }> = {
-  'feed-mill': { x: 46, y: 22 },
-  dairy: { x: 74, y: 6 },
-  bakery: { x: 20, y: 6 },
-  loom: { x: 46, y: 30 },
-};
+/** Wall height and roof rise of every processing building, in pixels. */
+const WALL = 30;
+const ROOF = 22;
+const CHIMNEY = 16;
+/** Room each texture leaves above its footprint's diamond (also where the ready bubble floats). */
+export const PROC_TOP = WALL + ROOF + 6;
+/** The building stands slightly inside its footprint. */
+const INSET = 0.12;
+
+/** Where the working animation sits, in pixels relative to the view (the footprint's box). */
+export const ANIM_ANCHOR = Object.fromEntries(
+  (Object.keys(PROCESSORS) as ProcessorType[]).map((type) => {
+    const { w, h } = PROCESSORS[type].footprint;
+    if (PROCESSORS[type].anim === 'smoke') {
+      // Top of the chimney on the back slope of the roof.
+      const p = footprintLocal(w, h, w * 0.7, h * 0.3);
+      return [type, { x: p.x, y: p.y - WALL - ROOF * 0.6 - CHIMNEY }];
+    }
+    // The wheel turns on the front-left wall.
+    const p = footprintLocal(w, h, w * 0.3, h - INSET);
+    return [type, { x: p.x, y: p.y - WALL * 0.6 }];
+  }),
+) as Record<ProcessorType, { x: number; y: number }>;
 
 interface Look {
   wall: number;
@@ -25,54 +42,68 @@ const LOOKS: Record<ProcessorType, Look> = {
   loom: { wall: 0xd9b98a, wallDark: 0xb8986a, roof: 0x9b4f8e, roofDark: 0x7b3b70, door: 0x6a4a2a },
 };
 
-/** A simple house: wall block, sloped roof, door and windows. */
+const mid = (a: { x: number; y: number }, b: { x: number; y: number }) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+/** A simple isometric house: wall box, gable roof along x, door and windows on the front walls. */
 function house(g: Phaser.GameObjects.Graphics, type: ProcessorType): void {
   const { w, h } = PROCESSORS[type].footprint;
-  const W = w * TILE;
-  const H = h * TILE;
   const look = LOOKS[type];
+  const top = PROC_TOP;
   const rnd = seeded(w * 31 + h * 7 + type.length);
-  const roofH = Math.round(H * 0.42);
-  const wallTop = roofH - 4;
+  const p = (gx: number, gy: number) => texPoint(w, h, top, gx, gy);
 
-  // Shadow and walls.
-  g.fillStyle(0x000000, 0.18).fillRect(4, H - 5, W - 6, 4);
-  g.fillStyle(look.wall).fillRect(3, wallTop, W - 6, H - wallTop - 4);
-  g.fillStyle(look.wallDark).fillRect(3, H - 8, W - 6, 4);
-  for (let i = 0; i < 14; i++) g.fillRect(4 + rnd() * (W - 12), wallTop + 4 + rnd() * (H - wallTop - 14), 3, 1);
-
-  // Roof.
-  g.fillStyle(look.roofDark).fillTriangle(0, roofH, W / 2, 2, W, roofH);
-  g.fillStyle(look.roof).fillTriangle(4, roofH - 2, W / 2, 6, W - 4, roofH - 2);
-  g.fillStyle(look.roofDark).fillRect(0, roofH - 2, W, 3);
-
-  // Door and windows.
-  const doorW = 12;
-  g.fillStyle(look.door).fillRect(W / 2 - doorW / 2, H - 22, doorW, 18);
-  g.fillStyle(0x000000, 0.25).fillRect(W / 2 - doorW / 2, H - 22, doorW, 2);
-  g.fillStyle(0xf4d27a).fillCircle(W / 2 + 3, H - 12, 1);
-  for (const wx of [10, W - 22]) {
-    g.fillStyle(0x6a4a2a).fillRect(wx - 1, H - 25, 14, 11);
-    g.fillStyle(0xa8d8f0).fillRect(wx, H - 24, 12, 9);
-    g.fillStyle(0x6a4a2a).fillRect(wx + 5, H - 24, 2, 9);
+  // Shadow, then walls.
+  poly(g, 0x000000, [p(0, 0), p(w, 0), p(w, h), p(0, h)], 0.15);
+  const roof = isoBox(g, w, h, top, { gx0: INSET, gy0: INSET, gx1: w - INSET, gy1: h - INSET }, WALL, {
+    left: look.wall,
+    right: look.wallDark,
+    top: look.wallDark,
+  });
+  for (let i = 0; i < 12; i++) {
+    const q = p(INSET + rnd() * (w - 2 * INSET), h - INSET);
+    g.fillStyle(look.wallDark).fillRect(q.x, q.y - 4 - rnd() * (WALL - 8), 3, 1);
   }
 
-  // Chimney for buildings that smoke.
+  // Gable roof: the ridge runs along x, halfway across y.
+  const lift = (q: { x: number; y: number }) => ({ x: q.x, y: q.y - ROOF });
+  const ridgeBack = lift(mid(roof.top, roof.left));
+  const ridgeFront = lift(mid(roof.right, roof.bottom));
+  poly(g, look.wall, [roof.top, roof.left, ridgeBack]);
+  poly(g, look.roofDark, [roof.top, roof.right, ridgeFront, ridgeBack]);
+  poly(g, look.wallDark, [roof.right, roof.bottom, ridgeFront]);
+  poly(g, look.roof, [roof.left, roof.bottom, ridgeFront, ridgeBack]);
+  g.lineStyle(2, look.roofDark).lineBetween(ridgeBack.x, ridgeBack.y, ridgeFront.x, ridgeFront.y);
+
+  // Door and windows on the front-left wall, a window on the front-right one.
+  const door = p(w * 0.55, h - INSET);
+  g.fillStyle(look.door).fillRect(door.x - 6, door.y - 19, 12, 17);
+  g.fillStyle(0x000000, 0.25).fillRect(door.x - 6, door.y - 19, 12, 2);
+  g.fillStyle(0xf4d27a).fillCircle(door.x + 3, door.y - 9, 1);
+  const windows = [p(w * 0.2, h - INSET), p(w - INSET, h * 0.5)];
+  if (w >= 3) windows.push(p(w * 0.85, h - INSET));
+  for (const q of windows) {
+    g.fillStyle(0x6a4a2a).fillRect(q.x - 6, q.y - 22, 12, 10);
+    g.fillStyle(0xa8d8f0).fillRect(q.x - 5, q.y - 21, 10, 8);
+    g.fillStyle(0x6a4a2a).fillRect(q.x - 1, q.y - 21, 2, 8);
+  }
+
+  // Chimney for buildings that smoke (ANIM_ANCHOR is its top, in view pixels).
   if (PROCESSORS[type].anim === 'smoke') {
     const a = ANIM_ANCHOR[type];
-    g.fillStyle(0x7a6a62).fillRect(a.x - 5, a.y + 4, 10, roofH - a.y - 6);
-    g.fillStyle(0x5a4c46).fillRect(a.x - 6, a.y + 2, 12, 4);
+    const y = a.y + top;
+    g.fillStyle(0x7a6a62).fillRect(a.x - 5, y + 2, 10, CHIMNEY + 4);
+    g.fillStyle(0x5a4c46).fillRect(a.x - 6, y, 12, 4);
   }
   // Hub for buildings with a wheel.
   if (PROCESSORS[type].anim === 'wheel') {
     const a = ANIM_ANCHOR[type];
-    g.fillStyle(0x5a3a1e).fillRect(a.x - 2, a.y, 4, H - a.y - 10);
+    g.fillStyle(0x5a3a1e).fillRect(a.x - 2, a.y + top, 4, WALL * 0.6 - 2);
   }
 }
 
 for (const type of Object.keys(PROCESSORS) as ProcessorType[]) {
   const { w, h } = PROCESSORS[type].footprint;
-  registerTexture(type, { width: w * TILE, height: h * TILE, draw: (g) => house(g, type) });
+  registerTexture(type, { ...footprintTexture(w, h, PROC_TOP), draw: (g) => house(g, type) });
 }
 
 /** Four-spoke wheel (mill sails / spinning wheel), rotated around its centre while working. */

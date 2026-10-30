@@ -22,7 +22,13 @@ declare global {
      * real time of the last save (`Date.now()`, null before the first one) and the last offline catch-up.
      */
     readonly farm: Readonly<
-      FarmSnapshot & { orders: OrdersState; lastSavedAt: number | null; lastCatchUp: CatchUpResult | null }
+      FarmSnapshot & {
+        orders: OrdersState;
+        lastSavedAt: number | null;
+        lastCatchUp: CatchUpResult | null;
+        /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
+        iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
+      }
     >;
   }
 }
@@ -53,6 +59,9 @@ const save = () => {
 };
 
 const ctx = { game, tools: new ToolState() } as FarmContext;
+const iso = Object.freeze({
+  tileToScreen: (x: number, y: number) => (ctx.scene as FarmScene | undefined)?.tileToScreen(x, y) ?? null,
+});
 const uiRoot = document.getElementById('ui')!;
 ctx.ui = new Hud(uiRoot, ctx, () => {
   game.reset(createNewGame());
@@ -80,6 +89,7 @@ Object.defineProperty(window, 'farm', {
       orders: snapshot.ext.orders as OrdersState,
       lastSavedAt,
       lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)),
+      iso,
     });
   },
   configurable: true,
