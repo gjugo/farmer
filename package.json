@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "art": "bash tools/art/art.sh"
   },
   "dependencies": {
     "phaser": "^4.2.1"
