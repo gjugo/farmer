@@ -1,5 +1,8 @@
 import { getBuildable } from '../data/buildables';
+import { FIELD } from '../data/crops';
+import { PLOUGH_SEASONS } from '../data/seasons';
 import { initialProgression, PROGRESSION } from './progression';
+import { seasonAt } from './seasons';
 import { migrateOrdersSlice } from './orders';
 import { applySliceDefaults, isPlainObject } from './slices';
 import { createNewGame } from './state';
@@ -13,7 +16,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export interface SaveFile {
   version: number;
@@ -46,6 +49,19 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     const ext = isPlainObject(state.ext) ? state.ext : {};
     const xp = xpForLevel(requiredLevel(state.objects));
     return { ...raw, version: 4, state: { ...state, ext: { ...ext, [PROGRESSION]: initialProgression(xp) } } };
+  },
+  // Seasons: fields need ploughing. Fields of older farms count as ploughed now, unless it is winter.
+  4: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const clock = isPlainObject(state.clock) ? state.clock : {};
+    const now = isNonNegNumber(clock.elapsed) ? clock.elapsed : 0;
+    const ploughedAt = PLOUGH_SEASONS.includes(seasonAt(now)) ? now : null;
+    const objects = Array.isArray(state.objects)
+      ? state.objects.map((o: unknown) =>
+          isPlainObject(o) && o.type === FIELD ? { ...o, state: { ...(isPlainObject(o.state) ? o.state : {}), ploughedAt } } : o,
+        )
+      : state.objects;
+    return { ...raw, version: 5, state: { ...state, objects } };
   },
 };
 

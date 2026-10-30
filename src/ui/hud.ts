@@ -1,11 +1,13 @@
 import { getBuildable, listBuildables } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
+import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
 import { listHudButtons, listSettingsSections } from '../game/hooks';
 import { uiSignals } from '../game/signals';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
 import type { GameEvents } from '../logic/game';
+import { dayOfSeason, seasonOf } from '../logic/seasons';
 import { buildableUnlockLevel } from '../logic/unlocks';
 import type { FarmScene } from '../scenes/FarmScene';
 import { h, formatMoney } from './dom';
@@ -20,6 +22,9 @@ export class Hud implements UiApi {
   private moneyValueEl!: HTMLElement;
   private dayEl!: HTMLElement;
   private dayBarEl!: HTMLElement;
+  private dayStatEl!: HTMLElement;
+  private seasonIconEl!: HTMLElement;
+  private seasonEl!: HTMLElement;
   private levelEl!: HTMLElement;
   private xpEl!: HTMLElement;
   private xpBarEl!: HTMLElement;
@@ -71,12 +76,20 @@ export class Hud implements UiApi {
     this.moneyEl = h('div', { class: 'stat stat-money', title: 'Money' }, packIcon('coins', 'stat-icon'), this.moneyValueEl);
     this.dayEl = h('span', { class: 'stat-value', 'data-testid': 'hud-day' });
     this.dayBarEl = h('span', { class: 'day-bar-fill' });
-    const day = h(
+    this.seasonIconEl = h('span', { 'aria-hidden': 'true' });
+    this.seasonEl = h('span', { class: 'season-text', 'data-testid': 'hud-season' });
+    this.dayStatEl = h(
       'div',
       { class: 'stat stat-day', title: 'Day' },
-      h('span', { 'aria-hidden': 'true' }, '☀️'),
-      h('span', { class: 'day-text' }, this.dayEl, h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.dayBarEl)),
+      this.seasonIconEl,
+      h(
+        'span',
+        { class: 'day-text' },
+        h('span', { class: 'level-line' }, this.dayEl, this.seasonEl),
+        h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.dayBarEl),
+      ),
     );
+    const day = this.dayStatEl;
 
     this.levelEl = h('span', { class: 'stat-value', 'data-testid': 'hud-level' });
     this.xpEl = h('span', { class: 'xp-text', 'data-testid': 'hud-xp' });
@@ -152,6 +165,13 @@ export class Hud implements UiApi {
     const { game } = this.ctx;
     const dayText = `Day ${game.day}`;
     if (this.dayEl.textContent !== dayText) this.dayEl.textContent = dayText;
+    const season = SEASON_INFO[seasonOf(game.state.clock)];
+    if (this.seasonEl.textContent !== season.name) {
+      this.seasonEl.textContent = season.name;
+      this.seasonIconEl.textContent = season.icon;
+    }
+    const seasonTitle = `Day ${game.day} · ${season.name}, day ${dayOfSeason(game.state.clock)} of ${SEASON_DAYS}`;
+    if (this.dayStatEl.title !== seasonTitle) this.dayStatEl.title = seasonTitle;
     this.dayBarEl.style.width = `${(timeOfDay(game.state.clock) * 100).toFixed(1)}%`;
 
     const { level, xpIntoLevel, xpForNext } = game.progression.info;

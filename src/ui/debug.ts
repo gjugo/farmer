@@ -1,7 +1,9 @@
 import { ITEM_LIST } from '../data/items';
 import { MAX_LEVEL } from '../data/progression';
 import type { FarmContext } from '../game/context';
+import { catchUpGame } from '../logic/offline';
 import { refreshOrders } from '../logic/orders';
+import { nextSeasonAt } from '../logic/seasons';
 import { h } from './dom';
 
 export const SPEEDS = [1, 10, 60] as const;
@@ -103,6 +105,17 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
     ),
     h('div', { class: 'debug-row', role: 'group', 'aria-label': 'Clock speed' }, h('span', {}, 'Speed'), speedButtons),
     awayRow,
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn',
+        'data-testid': 'debug-next-season',
+        // Jumps the clock like time away (crops, animals and jobs move on), without the welcome-back summary.
+        onclick: () => catchUpGame(game, nextSeasonAt(game.now) - game.now),
+      },
+      'Next season',
+    ),
     h(
       'div',
       { class: 'debug-row' },

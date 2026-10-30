@@ -1,21 +1,28 @@
 import type Phaser from 'phaser';
 import { CROP_LIST, FIELD } from '../../data/crops';
 import { getItem } from '../../data/items';
-import { HARVEST_WORK_MS, PLANT_WORK_MS } from '../../data/workers';
-import type { FarmContext, ObjectView, PlacedObject } from '../../game/context';
+import { PLOUGH_COST, PLOUGH_SEASONS, SEASON_INFO, seasonNames } from '../../data/seasons';
+import { HARVEST_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS } from '../../data/workers';
+import type { FarmContext, ObjectView, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
 import { withFarmer } from '../../game/workers';
 import {
+  canPloughNow,
   cropStage,
   fieldCrop,
   formatDuration,
   growthProgress,
   harvest,
+  isPloughed,
   plant,
+  plough,
+  ploughedUntil,
+  seasonCheck,
   timeToRipe,
   type CropStage,
   type FieldState,
 } from '../../logic/crops';
+import { nextSeasonAt, nextSeasonIn, seasonOf } from '../../logic/seasons';
 import { ART_SCALE, cropArt, SHADOW } from '../../scenes/art';
 import { footprintLocal } from '../../scenes/iso';
 import { addArt, textureKey } from '../../scenes/sprites';
@@ -45,8 +52,12 @@ const TILES = [
 /** Ripe crops sway this much taller. */
 const SWAY = 1.06;
 
+/** Unploughed soil is the tilled tiles faded into the grass, like an overgrown plot. */
+const UNPLOUGHED_ALPHA = 0.35;
+
 interface FieldView {
   stage: CropStage | null;
+  ploughed: boolean | null;
   /** The tilled soil: dry while empty or ripe, watered while growing. */
   soil: Phaser.GameObjects.Image;
   /** One crop sprite per tile, back to front, and their shadows. */
@@ -82,11 +93,16 @@ function startRipeEffects(ctx: FarmContext, fv: FieldView): void {
 function syncView(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
   const fv = fieldViews.get(obj.id);
   if (!fv) return;
-  const stage = cropStage(ctx.game.state.clock, obj.state);
-  if (stage === fv.stage) return;
+  const clock = ctx.game.state.clock;
+  const stage = cropStage(clock, obj.state);
+  // A crop stands in ploughed soil; the frost only shows once it is harvested.
+  const ploughed = stage !== 'empty' || isPloughed(clock, obj.state);
+  if (stage === fv.stage && ploughed === fv.ploughed) return;
   fv.stage = stage;
+  fv.ploughed = ploughed;
   const art = obj.state.crop ? cropArt(obj.state.crop, stage) : null;
   fv.soil.setTexture(textureKey(ctx.scene, art && stage !== 'ripe' ? 'field-watered' : 'field'));
+  fv.soil.setAlpha(ploughed ? 1 : UNPLOUGHED_ALPHA);
   fv.plants.forEach((p, i) => {
     p.setVisible(art !== null);
     if (art) p.setTexture(textureKey(ctx.scene, art));
@@ -107,6 +123,78 @@ function doHarvest(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
     ctx.ui.floatText(obj.x + 0.5, obj.y, `+${result.qty} ${item?.name ?? result.crop.name}`, '#fff3a8');
     return true;
   });
+}
+
+/** "🌻 Summer · 3:20 left" */
+function seasonLine(ctx: FarmContext): string {
+  const clock = ctx.game.state.clock;
+  const season = SEASON_INFO[seasonOf(clock)];
+  return `${season.icon} ${season.name} · ${formatDuration(nextSeasonAt(clock.elapsed) - clock.elapsed)} left`;
+}
+
+/** An empty field: plough it (in season), then pick a crop that grows now. */
+function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): PanelSpec {
+  const { game } = ctx;
+  const clock = game.state.clock;
+
+  if (!isPloughed(clock, obj.state)) {
+    if (!canPloughNow(clock)) {
+      const thaw = formatDuration(nextSeasonIn(clock.elapsed, PLOUGH_SEASONS) - clock.elapsed);
+      return {
+        title: 'Field',
+        icon: '🟫',
+        lines: [seasonLine(ctx), `The ground is frozen. Ploughing starts again in ${thaw}.`],
+        actions: [{ label: `🚜 Plough · ${seasonNames(PLOUGH_SEASONS)} only`, variant: 'secondary', disabled: true, onClick: () => {} }],
+      };
+    }
+    return {
+      title: 'Field',
+      icon: '🟫',
+      lines: [seasonLine(ctx), 'Unploughed soil. Plough it before sowing; it stays ploughed until the winter frost.'],
+      actions: [
+        {
+          label: `🚜 Plough · $${PLOUGH_COST}`,
+          disabled: !game.canAfford(PLOUGH_COST),
+          onClick: () => {
+            withFarmer(ctx, 'plough', obj, PLOUGH_WORK_MS, () => {
+              if (!plough(game, obj).ok) return false;
+              ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${PLOUGH_COST}`, '#ffd6a0');
+              return true;
+            });
+          },
+        },
+      ],
+    };
+  }
+
+  const frost = formatDuration((ploughedUntil(clock, obj.state) ?? clock.elapsed) - clock.elapsed);
+  return {
+    title: 'Field',
+    icon: '🟫',
+    lines: [seasonLine(ctx), `Ploughed until the frost (${frost}). Pick a crop to plant:`],
+    actions: CROP_LIST.map((c) => {
+      const item = getItem(c.harvestItem);
+      if (!game.isUnlocked(c.unlockLevel)) {
+        return { label: `🔒 ${c.icon} ${c.name} · Unlocks at level ${c.unlockLevel}`, variant: 'secondary', disabled: true, onClick: () => {} };
+      }
+      const season = seasonCheck(clock, c);
+      if (season !== 'ok') {
+        const why = season === 'late' ? `too late in ${SEASON_INFO[seasonOf(clock)].name.toLowerCase()}` : `sow in ${seasonNames(c.seasons)}`;
+        return { label: `📅 ${c.icon} ${c.name} · ${why}`, variant: 'secondary', disabled: true, onClick: () => {} };
+      }
+      return {
+        label: `${c.icon} ${c.name} · $${c.plantCost} · ${c.growMs / 1000}s → ${c.harvestQty} ${item?.name ?? c.name}`,
+        disabled: !game.canAfford(c.plantCost),
+        onClick: () => {
+          withFarmer(ctx, 'plant', obj, PLANT_WORK_MS, () => {
+            if (!plant(game, obj, c.id).ok) return false;
+            ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${c.plantCost}`, '#ffd6a0');
+            return true;
+          });
+        },
+      };
+    }),
+  };
 }
 
 registerBehavior<FieldState>(FIELD, {
@@ -132,7 +220,7 @@ registerBehavior<FieldState>(FIELD, {
     });
     view.container.add([...plants, ...sparkles]);
     view.shadows.add(shadows);
-    fieldViews.set(obj.id, { stage: null, soil: view.sprite, plants, shadows, sparkles, tweens: [] });
+    fieldViews.set(obj.id, { stage: null, ploughed: null, soil: view.sprite, plants, shadows, sparkles, tweens: [] });
     syncView(ctx, obj);
   },
   update(ctx, obj) {
@@ -157,30 +245,7 @@ registerBehavior<FieldState>(FIELD, {
     const stage = cropStage(clock, obj.state);
     const crop = fieldCrop(obj.state);
 
-    if (stage === 'empty' || !crop) {
-      return {
-        title: 'Field',
-        icon: '🟫',
-        lines: ['Empty field. Pick a crop to plant:'],
-        actions: CROP_LIST.map((c) => {
-          const item = getItem(c.harvestItem);
-          if (!game.isUnlocked(c.unlockLevel)) {
-            return { label: `🔒 ${c.icon} ${c.name} · Unlocks at level ${c.unlockLevel}`, variant: 'secondary', disabled: true, onClick: () => {} };
-          }
-          return {
-            label: `${c.icon} ${c.name} · $${c.plantCost} · ${c.growMs / 1000}s → ${c.harvestQty} ${item?.name ?? c.name}`,
-            disabled: !game.canAfford(c.plantCost),
-            onClick: () => {
-              withFarmer(ctx, 'plant', obj, PLANT_WORK_MS, () => {
-                if (!plant(game, obj, c.id).ok) return false;
-                ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${c.plantCost}`, '#ffd6a0');
-                return true;
-              });
-            },
-          };
-        }),
-      };
-    }
+    if (stage === 'empty' || !crop) return emptyFieldPanel(ctx, obj);
 
     if (stage === 'ripe') {
       return {

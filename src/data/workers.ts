@@ -15,16 +15,18 @@ export const MAX_FARMERS = 8;
 export const BASE_HIRE_COST = 250;
 export const HIRE_COST_GROWTH = 1.6;
 
-export type JobKind = 'build' | 'plant' | 'harvest' | 'feed';
+export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'feed';
 
 export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   build: { label: 'Building', icon: '🔨' },
+  plough: { label: 'Ploughing', icon: '🚜' },
   plant: { label: 'Planting', icon: '🌱' },
   harvest: { label: 'Harvesting', icon: '🧺' },
   feed: { label: 'Feeding animals', icon: '🌰' },
 };
 
 /** Game milliseconds a farmer is busy for each job (building: see `buildWorkMs`). */
+export const PLOUGH_WORK_MS = 3_000;
 export const PLANT_WORK_MS = 4_000;
 export const HARVEST_WORK_MS = 3_000;
 export const FEED_WORK_MS = 4_000;
