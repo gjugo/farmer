@@ -4,6 +4,8 @@ import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, T
 import { listHudButtons } from '../game/hooks';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
+import type { GameEvents } from '../logic/game';
+import { buildableUnlockLevel } from '../logic/unlocks';
 import type { FarmScene } from '../scenes/FarmScene';
 import { h, formatMoney } from './dom';
 
@@ -16,6 +18,10 @@ export class Hud implements UiApi {
   private moneyValueEl!: HTMLElement;
   private dayEl!: HTMLElement;
   private dayBarEl!: HTMLElement;
+  private levelEl!: HTMLElement;
+  private xpEl!: HTMLElement;
+  private xpBarEl!: HTMLElement;
+  private badges = new Map<string, { el: HTMLElement; count: (ctx: FarmContext) => number }>();
   private sheetEl!: HTMLElement;
   private sheetTitleEl!: HTMLElement;
   private sheetBodyEl!: HTMLElement;
@@ -38,7 +44,8 @@ export class Hud implements UiApi {
       this.floatMoney(delta);
       this.refresh();
     });
-    for (const e of ['inventory', 'objectAdded', 'objectRemoved', 'objectChanged', 'land', 'day', 'speed'] as const) {
+    events.on('levelUp', (e) => this.showLevelUp(e));
+    for (const e of ['inventory', 'objectAdded', 'objectRemoved', 'objectChanged', 'land', 'day', 'speed', 'xp', 'goals'] as const) {
       events.on(e, () => this.refresh());
     }
     events.on('reset', () => {
@@ -68,14 +75,34 @@ export class Hud implements UiApi {
       h('span', { class: 'day-text' }, this.dayEl, h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.dayBarEl)),
     );
 
+    this.levelEl = h('span', { class: 'stat-value', 'data-testid': 'hud-level' });
+    this.xpEl = h('span', { class: 'xp-text', 'data-testid': 'hud-xp' });
+    this.xpBarEl = h('span', { class: 'day-bar-fill xp-bar-fill', 'data-testid': 'hud-xp-bar' });
+    const level = h(
+      'div',
+      { class: 'stat stat-level', title: 'Farm level' },
+      h('span', { 'aria-hidden': 'true' }, '⭐'),
+      h(
+        'span',
+        { class: 'day-text' },
+        h('span', { class: 'level-line' }, this.levelEl, this.xpEl),
+        h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.xpBarEl),
+      ),
+    );
+
     const tools = h('nav', { class: 'hud-buttons', 'aria-label': 'Farm tools' });
-    const addButton = (id: string, icon: string, label: string, onClick: () => void) => {
+    const addButton = (id: string, icon: string, label: string, onClick: () => void, badge?: (ctx: FarmContext) => number) => {
       const btn = h(
         'button',
         { class: 'hud-btn', type: 'button', 'data-testid': `btn-${id}`, 'aria-label': label, title: label, onclick: onClick },
         h('span', { class: 'hud-btn-icon', 'aria-hidden': 'true' }, icon),
         h('span', { class: 'hud-btn-label' }, label),
       );
+      if (badge) {
+        const el = h('span', { class: 'hud-badge', 'data-testid': `badge-${id}`, hidden: true });
+        btn.append(el);
+        this.badges.set(id, { el, count: badge });
+      }
       this.buttons.set(id, btn);
       tools.append(btn);
     };
@@ -89,10 +116,10 @@ export class Hud implements UiApi {
       }
     });
     addButton('inventory', '🎒', 'Inventory', () => this.toggleSheet(this.inventorySheet()));
-    for (const b of listHudButtons()) addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx));
+    for (const b of listHudButtons()) addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx), b.badge);
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
 
-    const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day), tools);
+    const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day, level), tools);
 
     this.sheetTitleEl = h('h2', { class: 'sheet-title', id: 'sheet-title', 'data-testid': 'panel-title' });
     this.sheetBodyEl = h('div', { class: 'sheet-body' });
@@ -120,6 +147,17 @@ export class Hud implements UiApi {
     const dayText = `Day ${game.day}`;
     if (this.dayEl.textContent !== dayText) this.dayEl.textContent = dayText;
     this.dayBarEl.style.width = `${(timeOfDay(game.state.clock) * 100).toFixed(1)}%`;
+
+    const { level, xpIntoLevel, xpForNext } = game.progression.info;
+    this.levelEl.textContent = `Lv ${level}`;
+    this.xpEl.textContent = xpForNext === null ? 'MAX' : `${Math.floor(xpIntoLevel)}/${xpForNext}`;
+    this.xpBarEl.style.width = `${xpForNext === null ? 100 : Math.min(100, (xpIntoLevel / xpForNext) * 100).toFixed(1)}%`;
+    for (const [id, { el, count }] of this.badges) {
+      const n = count(this.ctx);
+      el.hidden = n <= 0;
+      el.textContent = String(n);
+      this.buttons.get(id)?.setAttribute('aria-label', n > 0 ? `${this.buttons.get(id)?.title} (${n} ready)` : (this.buttons.get(id)?.title ?? id));
+    }
   }
 
   /** Re-renders whatever depends on game state. Cheap; called on events and on a timer. */
@@ -234,7 +272,7 @@ export class Hud implements UiApi {
     return {
       id: 'build',
       title: () => '🔨 Build',
-      signature: () => listBuildables().map((b) => `${b.id}:${game.canAfford(b.cost)}`).join('|'),
+      signature: () => `${game.level}|${listBuildables().map((b) => `${b.id}:${game.canAfford(b.cost)}`).join('|')}`,
       render: (body) => {
         const groups = new Map<string, ReturnType<typeof listBuildables>>();
         for (const b of listBuildables()) {
@@ -247,25 +285,32 @@ export class Hud implements UiApi {
             h(
               'div',
               { class: 'build-list' },
-              defs.map((b) =>
-                h(
+              defs.map((b) => {
+                const unlockLevel = buildableUnlockLevel(b.id);
+                const locked = !game.isUnlocked(unlockLevel);
+                return h(
                   'button',
                   {
                     type: 'button',
-                    class: 'build-item',
-                    disabled: !game.canAfford(b.cost),
+                    class: `build-item${locked ? ' locked' : ''}`,
+                    disabled: locked || !game.canAfford(b.cost),
                     'data-testid': `build-${b.id}`,
+                    'data-locked': locked ? String(unlockLevel) : undefined,
                     onclick: () => {
                       this.closePanel();
                       tools.set({ kind: 'build', type: b.id });
                     },
                   },
-                  h('span', { class: 'build-name' }, b.name),
+                  h('span', { class: 'build-name' }, `${locked ? '🔒 ' : ''}${b.name}`),
                   h('span', { class: 'build-meta' }, `${b.footprint.w}×${b.footprint.h}`),
                   h('span', { class: 'build-cost' }, formatMoney(b.cost)),
-                  b.description ? h('span', { class: 'build-desc' }, b.description) : null,
-                ),
-              ),
+                  locked
+                    ? h('span', { class: 'build-desc lock-note' }, `Unlocks at level ${unlockLevel}`)
+                    : b.description
+                      ? h('span', { class: 'build-desc' }, b.description)
+                      : null,
+                );
+              }),
             ),
           );
         }
@@ -383,6 +428,47 @@ export class Hud implements UiApi {
     const el = h('span', { class: `money-float ${delta > 0 ? 'gain' : 'loss'}`, 'aria-hidden': 'true' }, `${delta > 0 ? '+' : '-'}${formatMoney(Math.abs(delta))}`);
     this.moneyEl.append(el);
     window.setTimeout(() => el.remove(), 1200);
+  }
+
+  /** "Level N!" popup listing what just unlocked. Several level-ups stack; the newest is on top. */
+  private showLevelUp({ level, bonus, unlocks }: GameEvents['levelUp']): void {
+    const close = () => {
+      window.removeEventListener('keydown', onKey, true);
+      backdrop.remove();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key === 'Escape' || e.key === 'Enter') && this.root.lastElementChild === backdrop) {
+        e.stopPropagation();
+        e.preventDefault();
+        close();
+      }
+    };
+    const ok = h('button', { type: 'button', class: 'btn', 'data-testid': 'levelup-ok', onclick: close }, 'Great!');
+    const backdrop = h(
+      'div',
+      { class: 'dialog-backdrop' },
+      h(
+        'div',
+        { class: 'dialog levelup', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': `levelup-${level}`, 'data-testid': 'levelup-dialog' },
+        h('div', { class: 'levelup-star', 'aria-hidden': 'true' }, '⭐'),
+        h('h2', { id: `levelup-${level}` }, `Level ${level}!`),
+        h('p', { 'data-testid': 'levelup-bonus' }, `Your farm grew. Bonus: ${formatMoney(bonus)}`),
+        unlocks.length
+          ? [
+              h('h3', { class: 'group-title' }, 'Unlocked'),
+              h(
+                'ul',
+                { class: 'unlock-list', 'data-testid': 'levelup-unlocks' },
+                unlocks.map((u) => h('li', {}, h('span', { 'aria-hidden': 'true' }, u.icon), ` ${u.name}`)),
+              ),
+            ]
+          : null,
+        h('div', { class: 'actions' }, ok),
+      ),
+    );
+    window.addEventListener('keydown', onKey, true);
+    this.root.append(backdrop);
+    ok.focus();
   }
 
   /** Modal confirm dialog. Resolves true when confirmed. */

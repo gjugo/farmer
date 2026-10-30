@@ -192,6 +192,51 @@ button {
   line-height: 1;
 }
 
+.hud-btn {
+  position: relative;
+}
+
+.hud-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: var(--red);
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  animation: badge-pop 0.25s ease-out;
+}
+
+@keyframes badge-pop {
+  from {
+    transform: scale(0.4);
+  }
+}
+
+.level-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.xp-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.xp-bar-fill {
+  background: var(--green);
+  transition: width 0.3s ease-out;
+}
+
 /* Side sheet (desktop) / bottom sheet (phone) -------------------------------- */
 
 .sheet {
@@ -592,6 +637,106 @@ button {
 
 .dialog .actions {
   justify-content: flex-end;
+}
+
+.dialog.levelup {
+  text-align: center;
+}
+
+.levelup-star {
+  font-size: 44px;
+  line-height: 1;
+  animation: badge-pop 0.4s ease-out;
+}
+
+.dialog.levelup .actions {
+  justify-content: center;
+}
+
+.unlock-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.unlock-list li {
+  padding: 4px 10px;
+  background: #fff;
+  border: 2px solid var(--wood);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* Locked content and goals ----------------------------------------------------- */
+
+.build-item.locked {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.build-item .lock-note {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.goal-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #fff;
+  border: 2px solid var(--paper-dark);
+  border-radius: 10px;
+}
+
+.goal.complete {
+  border-color: var(--green);
+  background: #f1fbe9;
+}
+
+.goal-icon {
+  font-size: 24px;
+}
+
+.goal-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.goal-title {
+  font-weight: 700;
+}
+
+.goal-progress {
+  height: 18px;
+  margin: 0;
+}
+
+.goal-progress .progress-label {
+  font-size: 12px;
+}
+
+.goal-reward {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.goal-claim {
+  flex: none;
 }
 
 /* Debug panel ---------------------------------------------------------------- */

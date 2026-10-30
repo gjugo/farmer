@@ -41,6 +41,8 @@ export interface HudButton {
   label: string;
   icon?: string;
   onClick(ctx: FarmContext): void;
+  /** Number shown as a badge on the button (hidden when 0). Read a few times per second, so keep it cheap. */
+  badge?(ctx: FarmContext): number;
 }
 
 const hudButtons: HudButton[] = [];

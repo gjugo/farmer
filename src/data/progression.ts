@@ -7,7 +7,7 @@ import type { KnownItemId } from './items';
  * reaches level 2 in a few minutes and level 5 within about 45 minutes
  * (see `src/logic/balance.test.ts`).
  */
-export const LEVEL_XP: readonly number[] = [0, 100, 450, 1200, 2600, 4500, 7000, 10_000, 14_000, 19_000];
+export const LEVEL_XP: readonly number[] = [0, 350, 1400, 3500, 7000, 11_500, 17_000, 24_000, 32_000, 42_000];
 
 export const MAX_LEVEL = LEVEL_XP.length;
 

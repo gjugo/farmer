@@ -196,6 +196,10 @@ function penPanel(ctx: FarmContext, obj: PlacedObject<PenState>): PanelSpec {
   }
   for (const kind of pen.animals) {
     const def = ANIMALS[kind];
+    if (!game.isUnlocked(def.unlockLevel)) {
+      actions.push({ label: `🔒 ${def.name} · Unlocks at level ${def.unlockLevel}`, variant: 'secondary', disabled: true, onClick: () => {} });
+      continue;
+    }
     actions.push({
       label: `Buy ${def.name.toLowerCase()} $${def.price}`,
       variant: 'secondary',

@@ -35,6 +35,12 @@ function growAndHarvest(game: Game, field: PlacedObject<FieldState>, crop = 'whe
   expect(harvest(game, field)).not.toBeNull();
 }
 
+function placePen(game: Game, type: 'coop' | 'pasture'): PlacedObject<PenState> {
+  const r = game.place(type, free.x, free.y);
+  if (!r.ok) throw new Error(`could not place ${type}: ${r.reason}`);
+  return r.object as unknown as PlacedObject<PenState>;
+}
+
 function goalIds(game: Game): string[] {
   return game.progression.goals().map((g) => g.def.id);
 }
@@ -156,9 +162,7 @@ describe('unlocks', () => {
     game.earn(10_000);
     game.progression.setLevel(3);
     expect(plant(game, fields(game)[0], 'carrot').ok).toBe(true);
-    const pasture = game.place('pasture', free.x, free.y);
-    expect(pasture.ok).toBe(true);
-    const pen = (pasture as { object: PlacedObject<PenState> }).object;
+    const pen = placePen(game, 'pasture');
     expect(buyAnimal(game, pen, 'cow').ok).toBe(true);
     expect(buyAnimal(game, pen, 'sheep')).toEqual({ ok: false, reason: 'level' });
   });
@@ -218,7 +222,7 @@ describe('goals', () => {
   it('count goals count only from when they became active', () => {
     const game = new Game();
     // Collect eggs before the egg goal is active: no credit.
-    const pen = (game.place('coop', free.x, free.y) as { object: PlacedObject<PenState> }).object;
+    const pen = placePen(game, 'coop');
     game.earn(1000);
     buyAnimal(game, pen, 'chicken');
     game.addItem('feed', 1);
@@ -240,7 +244,7 @@ describe('goals', () => {
     game.earn(10_000);
     const data = getSlice<ProgressionState>(game.state, PROGRESSION);
     data.goals = [{ id: 'own-chickens', progress: 0 }];
-    const pen = (game.place('coop', free.x, free.y) as { object: PlacedObject<PenState> }).object;
+    const pen = placePen(game, 'coop');
     buyAnimal(game, pen, 'chicken');
     buyAnimal(game, pen, 'chicken');
     expect(game.progression.goals()[0].progress).toBe(2);
