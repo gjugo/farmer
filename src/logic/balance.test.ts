@@ -3,7 +3,7 @@ import { ANIMALS, PENS, type AnimalKind, type PenType } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD } from '../data/crops';
 import { buyAnimal, buyFeed, collect, feedAll, feedNeeded, type PenState } from './animals';
-import { cropStage, harvest, plant, type FieldState } from './crops';
+import { cropStage, harvest, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import { Game } from './game';
 import { sell } from './market';
 import type { PlacedObject } from './types';
@@ -11,8 +11,8 @@ import type { PlacedObject } from './types';
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
  * against the real prices. It looks at the farm every `reactMs` (no instant clicks),
- * keeps fields planted, sells everything, builds up to `maxFields` fields, keeps
- * chickens (and cows from level 3) and claims finished goals. It never uses processing
+ * keeps fields ploughed and planted with the best crop in season, sells everything,
+ * builds up to `maxFields` fields, keeps chickens (and cows from level 3) and claims finished goals. It never uses processing
  * buildings or buys land, so a real player who does should level at least as fast.
  */
 function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields: number; minutes: number }): Map<number, number> {
@@ -36,7 +36,7 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
   };
   const pens = (type: PenType) => game.objectsOfType(type) as PlacedObject<PenState>[];
   const bestCrop = () =>
-    CROP_LIST.filter((c) => game.isUnlocked(c.unlockLevel)).sort((a, b) => b.growMs - a.growMs)[0];
+    CROP_LIST.filter((c) => game.isUnlocked(c.unlockLevel) && seasonCheck(game.state.clock, c) === 'ok').sort((a, b) => b.growMs - a.growMs)[0];
 
   const act = () => {
     for (const g of game.progression.goals()) if (g.complete) game.progression.claim(g.def.id);
@@ -44,7 +44,12 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     for (const f of fields) harvest(game, f);
     for (const type of ['coop', 'pasture'] as const) for (const p of pens(type)) collect(game, p);
     for (const id of Object.keys(game.state.inventory)) if (id !== 'feed') sell(game, id);
-    for (const f of fields) if (cropStage(game.state.clock, f.state) === 'empty') plant(game, f, bestCrop().id);
+    for (const f of fields) {
+      if (cropStage(game.state.clock, f.state) !== 'empty') continue;
+      if (!isPloughed(game.state.clock, f.state)) plough(game, f);
+      const crop = bestCrop();
+      if (crop) plant(game, f, crop.id);
+    }
     for (const type of ['coop', 'pasture'] as const) {
       for (const p of pens(type)) {
         while (game.count('feed') < feedNeeded(game, p) && buyFeed(game));
@@ -81,6 +86,7 @@ const minutes = (ms: number | undefined) => (ms === undefined ? Infinity : ms / 
 
 describe('level curve balance', () => {
   // At the time of tuning: casual L2 2.5 min, L5 28.5 min; relaxed L2 2.0, L5 22.0; busy L2 1.3, L5 15.9.
+  // With seasons (winter from minute 24 to 32 grows nothing): casual L5 32.0; relaxed 21.5; busy L2 1.4, L5 15.7.
   it('a casual player (checks every 30 s, up to 6 fields) reaches level 2 within 5 min and level 5 within 45 min', () => {
     const reached = simulate({ reactMs: 30_000, maxFields: 6, minutes: 50 });
     expect(minutes(reached.get(2))).toBeLessThanOrEqual(5);

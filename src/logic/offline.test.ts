@@ -5,7 +5,7 @@ import { MAX_OFFLINE_MS, SUMMARY_MIN_AWAY_MS } from '../data/offline';
 import { PROCESSORS, QUEUE_LIMIT } from '../data/processing';
 import { animalStatus, buyAnimal, feedAll, type PenState } from './animals';
 import { DAY_MS } from './constants';
-import { cropStage, plant, type FieldState } from './crops';
+import { cropStage, plant, plough, type FieldState } from './crops';
 import { Game } from './game';
 import { setOwned } from './land';
 import { catchUp, catchUpGame, formatAway, shouldShowSummary } from './offline';
@@ -183,6 +183,7 @@ describe('offline catch-up', () => {
       for (let n = 0; n < 4; n++) buyAnimal(game, pasture, n % 2 ? 'cow' : 'sheep');
       feedAll(game, pasture);
       const field = place<FieldState>(game, FIELD, i * 2, 8);
+      plough(game, field);
       plant(game, field, 'wheat');
     }
     const recipes = { 'feed-mill': 'feed-from-wheat', dairy: 'cheese', bakery: 'bread', loom: 'cloth' } as const;
