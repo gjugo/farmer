@@ -578,6 +578,40 @@ def for_sale():
     return c
 
 
+# ================================================================== FARMHOUSE 2x2
+FARMHOUSE_BENCH = (0.3, 0.98, 1.6, 1.78, 0.14)   # x0, x1, y0, y1, seat height: where idle farmers sit
+
+
+def farmhouse():
+    c = bcanvas(2, 2, top=400)
+    pad(c, 2, 2, "#d9c19a", pattern="dirt")
+    x0, y0, x1, y1, zw, zr = 0.22, 0.2, 1.72, 1.55, 0.74, 1.32
+    WALL = "#f4e6c8"
+    ROOF = "#c4503a"
+    WOODC = "#8a5a32"
+    c.box(x0, y0, 0, x1, y1, zw, WALL, WALL, shade(WALL, -0.1))
+    L, R = Plane(c, "y", y1), Plane(c, "x", x1)
+    for pl, u0, u1 in ((L, x0, x1), (R, y0, y1)):
+        pl.rect(u0, u1, 0, 0.12, "#a39a8c" if pl is L else shade("#a39a8c", -0.12), sw=2)
+    L.door(1.3, 0.3, 0.56, "#6f8f4a", frame=WOODC)
+    L.window(0.62, 0.36, 0.3, 0.26, frame=WOODC, shutters="#6f8f4a", flower="#e85d75")
+    R.window((y0 + y1) / 2, 0.36, 0.3, 0.26, frame=WOODC, shutters="#6f8f4a")
+    edge_trim(c, x0, y0, x1, y1, 0, zw, WOODC, 6)
+    c.gable_roof(x0, y0, x1, y1, zw, zr, ROOF, along="x", oh=0.12, gable_color=WALL, rows=5, cols=10)
+    chimney(c, 0.6, 0.62, 0.95, 1.5, color="#9c8f80")
+    # stone step at the door
+    c.box(1.1, y1, 0, 1.5, y1 + 0.16, 0.04, "#cfc8bb", "#b3ab9c", "#a39a8c", sw=2, shadow=False)
+    # the bench along the front wall
+    bx0, bx1, by0, by1, bz = FARMHOUSE_BENCH
+    for lx in (bx0 + 0.05, bx1 - 0.08):
+        c.box(lx, by0 + 0.03, 0, lx + 0.04, by1 - 0.03, bz - 0.03, WOODC, shade(WOODC, 0.05), shade(WOODC, -0.15), sw=2, shadow=False)
+    c.box(bx0, by0, bz - 0.03, bx1, by1, bz, "#c48a4f", shade("#c48a4f", -0.08), shade("#c48a4f", -0.2), sw=2)
+    # a barrel and a watering can by the corner
+    c.cylinder(1.86, 0.4, 0, 0.22, 0.09, WOODC, top="#5b3a1f")
+    c.cylinder(0.1, 1.85, 0, 0.07, 0.05, "#8fb3c9", top="#6b8da3", sw=2)
+    return c
+
+
 def build():
     image("buildings", "barn", barn(), (4, 4), notes="pasture shelter / barn, 4x4")
     image("buildings", "chicken_coop", coop(), (3, 3), notes="chicken coop with run, 3x3")
@@ -593,4 +627,5 @@ def build():
     image("buildings", "bakery", bakery(), (3, 2), notes="bakery, 3x2 (3 tiles along x, 2 along y)")
     image("buildings", "weaving_hut", weaving_hut(), (2, 2), notes="loom / weaving hut, 2x2")
     image("buildings", "market_stall", market_stall(), (2, 1), notes="market stall, 2x1 (2 tiles along x)")
+    image("buildings", "farmhouse", farmhouse(), (2, 2), notes="farmhouse, 2x2: door at x 1.3 on the front-left (+y) face, bench for idle farmers in front")
     image("buildings", "for_sale_sign", for_sale(), (1, 1), notes="'for sale' sign for unowned plots, 1x1")

@@ -13,7 +13,8 @@ The `.py` files are the pack's `source/` folder, unchanged. Colours live at the 
 | `tiles.py` | grass, paths, soil, unowned land, overlays, fences and gates |
 | `crops.py` | wheat, carrot, corn × 4 growth stages |
 | `animals.py` | cow, sheep, chicken sprite sheets |
-| `buildings.py` | barn, coop, feed mill, dairy, bakery, weaving hut, market stall, for-sale sign |
+| `buildings.py` | barn, coop, feed mill, dairy, bakery, weaving hut, farmhouse, market stall, for-sale sign |
+| `people.py` | the farmer sprite sheet: idle, sit, walk and one anim per job (plough, plant, harvest, build, feed) |
 | `props.py` | trees, bushes, rocks, hay, crates, sacks, milk can |
 | `icons.py` | item icons (egg, milk, … coins) |
 | `build.py` | exports 2x + 1x PNGs, shadow layers, sprite sheets and `manifest.json` |
@@ -82,6 +83,7 @@ So a new sprite shows up in the game once its **name** is mapped in `src/scenes/
 | item icons `icons/<item id>` | `ICON_ART` → `iconUrl(id)` |
 | buildings, props | `TEXTURE_ART` (game texture key → sprite), or the sprite name as the buildable's `texture` |
 | animals | `ANIMAL_ART` (sheet + `<animal>_<anim>_<dir>` animations) |
+| the farmer | `FARMER_ART` (sheet + `farmer_<anim>_<dir>` animations) |
 | scenery on locked land | `SCENERY` |
 
 `src/scenes/art.test.ts` fails if a name the game uses is missing from the manifest.
