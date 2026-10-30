@@ -2,8 +2,10 @@ import type Phaser from 'phaser';
 import { CROP_LIST, FIELD } from '../../data/crops';
 import { getItem } from '../../data/items';
 import { PLOUGH_COST, PLOUGH_SEASONS, SEASON_INFO, seasonNames } from '../../data/seasons';
+import { HARVEST_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS } from '../../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
+import { withFarmer } from '../../game/workers';
 import {
   canPloughNow,
   cropStage,
@@ -114,10 +116,13 @@ function syncView(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
 }
 
 function doHarvest(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
-  const result = harvest(ctx.game, obj);
-  if (!result) return;
-  const item = getItem(result.crop.harvestItem);
-  ctx.ui.floatText(obj.x + 0.5, obj.y, `+${result.qty} ${item?.name ?? result.crop.name}`, '#fff3a8');
+  withFarmer(ctx, 'harvest', obj, HARVEST_WORK_MS, () => {
+    const result = harvest(ctx.game, obj);
+    if (!result) return false;
+    const item = getItem(result.crop.harvestItem);
+    ctx.ui.floatText(obj.x + 0.5, obj.y, `+${result.qty} ${item?.name ?? result.crop.name}`, '#fff3a8');
+    return true;
+  });
 }
 
 /** "🌻 Summer · 3:20 left" */
@@ -151,7 +156,11 @@ function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Panel
           label: `🚜 Plough · $${PLOUGH_COST}`,
           disabled: !game.canAfford(PLOUGH_COST),
           onClick: () => {
-            if (plough(game, obj).ok) ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${PLOUGH_COST}`, '#ffd6a0');
+            withFarmer(ctx, 'plough', obj, PLOUGH_WORK_MS, () => {
+              if (!plough(game, obj).ok) return false;
+              ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${PLOUGH_COST}`, '#ffd6a0');
+              return true;
+            });
           },
         },
       ],
@@ -177,7 +186,11 @@ function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Panel
         label: `${c.icon} ${c.name} · $${c.plantCost} · ${c.growMs / 1000}s → ${c.harvestQty} ${item?.name ?? c.name}`,
         disabled: !game.canAfford(c.plantCost),
         onClick: () => {
-          if (plant(game, obj, c.id).ok) ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${c.plantCost}`, '#ffd6a0');
+          withFarmer(ctx, 'plant', obj, PLANT_WORK_MS, () => {
+            if (!plant(game, obj, c.id).ok) return false;
+            ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${c.plantCost}`, '#ffd6a0');
+            return true;
+          });
         },
       };
     }),

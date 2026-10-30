@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import { getBuildable } from '../data/buildables';
 import { splitIcons } from '../data/items';
+import { buildWorkMs } from '../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
 import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
+import { withFarmer } from '../game/workers';
 import { demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
@@ -509,13 +511,16 @@ export class FarmScene extends Phaser.Scene {
     const mode = tools.mode;
     if (mode.kind === 'build') {
       const { x, y } = this.anchorFor(mode.type, tx, ty);
-      const result = game.place(mode.type, x, y);
-      if (result.ok) {
-        const cost = getBuildable(mode.type)?.cost ?? 0;
-        if (cost > 0) this.floatText(x, y, `-$${cost}`, '#ffd6a0');
-      } else {
-        ui.toast(PLACE_ERRORS[result.reason], 'error');
-      }
+      withFarmer(this.ctx, 'build', { type: mode.type, x, y }, buildWorkMs(mode.type), () => {
+        const result = game.place(mode.type, x, y);
+        if (result.ok) {
+          const cost = getBuildable(mode.type)?.cost ?? 0;
+          if (cost > 0) this.floatText(x, y, `-$${cost}`, '#ffd6a0');
+        } else {
+          ui.toast(PLACE_ERRORS[result.reason], 'error');
+        }
+        return result.ok;
+      });
       return;
     }
     const obj = game.objectAt(tx, ty);

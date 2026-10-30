@@ -42,7 +42,8 @@ export const ICON_EMOJI: Readonly<Record<string, string>> = {
   '💰': 'coins',
 };
 
-const ICON_PATTERN = new RegExp(`(${Object.keys(ICON_EMOJI).join('|')})`, 'u');
+// Not after a zero-width joiner: the 🌾 in 👨‍🌾 (farmer) is part of another emoji.
+const ICON_PATTERN = new RegExp(`(?<!\u200D)(${Object.keys(ICON_EMOJI).join('|')})`, 'u');
 
 export type TextPart = string | { icon: string; emoji: string };
 

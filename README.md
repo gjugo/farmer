@@ -40,6 +40,10 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   gets a new order after 2 game-minutes, a discarded one after 5.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
+- **Farmers:** building, ploughing, planting, harvesting and feeding animals each keep a farmer busy for a few game-seconds
+  (building: 1.5 s per footprint tile, 3–20 s; paths need no farmer). The farm starts with one farmer; when all are
+  busy the work is refused until one is free. 👨‍🌾 Farmers in the HUD (it shows free/total) lists what each farmer
+  does and hires more: $250 for the 2nd, ×1.6 for each after, up to 8. Busy farmers stand over their work on the map.
 - **Seasons:** each season lasts 2 game days (day 1–2 spring, 3–4 summer, 5–6 autumn, 7–8 winter, then round again);
   the HUD shows it next to the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
@@ -86,6 +90,7 @@ src/
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, starting fields
+    workers.ts         farmers: hiring, jobs that keep a farmer busy (state slice `workers`)
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
@@ -116,6 +121,8 @@ src/
     seasons/           season-change toasts, `window.farm.season`
     market/            🏪 Market HUD button and sell panel
     orders/            📋 Orders HUD button (with badge) and orders panel
+    workers/           👨‍🌾 Farmers HUD button, hire sheet, farmers at work on the map (data: src/data/workers.ts,
+                       logic: src/logic/workers.ts; work goes through `withFarmer` in src/game/workers.ts)
     land/              "For sale" signs on parcels next to owned land, buy dialog
     audio/             effects, animal voices, ambience, music; mute button, sound settings, credits
                        (files: public/audio/*.mp3, licences: CREDITS.md)
@@ -203,6 +210,8 @@ events. There is no offline progress: time only passes while the game is open.
 - **Custom sheet** (markup of your own, like the Market): `ctx.ui.toggleSheet({ id, title, signature, render, tick })`.
 - **Confirm dialog:** `await ctx.ui.confirm(title, message, { confirmLabel, variant, disabled, hint })`.
 - **Taps on empty tiles** (e.g. locked land): `registerTileTapHandler((ctx, x, y) => true /* handled */)`.
+- **Work that needs a farmer:** wrap it in `withFarmer(ctx, kind, obj, durationMs, () => didIt)` from
+  `src/game/workers.ts`; it refuses with a toast when every farmer is busy and assigns one only if the action succeeded.
 - **Selling:** `sell(game, itemId, qty?)` / `dailyPrice(game.day, itemId)` from `src/logic/market.ts`.
 - **Feedback:** `ctx.ui.toast(msg, 'success' | 'error')`, `ctx.ui.floatText(tileX, tileY, text)`.
   Money changes float next to the money counter automatically.
