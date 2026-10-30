@@ -11,12 +11,19 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveFile {
   version: number;
-  savedAt: number;
+  /** Real time (`Date.now()`) the save was written; null when unknown (older saves). Offline catch-up runs from here. */
+  savedAt: number | null;
   state: GameState;
+}
+
+/** A loaded save: the state plus when it was written (null when unknown, e.g. a new game or an older save). */
+export interface LoadedSave {
+  state: GameState;
+  savedAt: number | null;
 }
 
 type RawSave = Record<string, unknown>;
@@ -29,35 +36,44 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
   0: (raw) => ({ version: 1, savedAt: 0, state: raw }),
   // Orders board (#7): known goods = what the inventory holds now, fresh orders.
   1: (raw) => ({ ...raw, version: 2, state: migrateOrdersSlice(isPlainObject(raw.state) ? raw.state : {}) }),
+  // Version 3 catches up on time away from `savedAt`. Older saves never meant it that way, so their first load skips catch-up.
+  2: (raw) => ({ ...raw, version: 3, savedAt: null }),
 };
 
 export type SaveStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
-export function serialize(state: GameState, savedAt = 0): string {
+export function serialize(state: GameState, savedAt: number | null = null): string {
   const file: SaveFile = { version: SAVE_VERSION, savedAt, state };
   return JSON.stringify(file);
 }
 
 /** Parses a save. Anything unreadable becomes a new game; missing fields get defaults. */
 export function deserialize(json: string | null | undefined): GameState {
-  if (!json) return createNewGame();
+  return parseSave(json).state;
+}
+
+/** Like `deserialize`, but also returns when the save was written. */
+export function parseSave(json: string | null | undefined): LoadedSave {
+  const fresh = (): LoadedSave => ({ state: createNewGame(), savedAt: null });
+  if (!json) return fresh();
   let raw: unknown;
   try {
     raw = JSON.parse(json);
   } catch {
-    return createNewGame();
+    return fresh();
   }
-  if (!isPlainObject(raw)) return createNewGame();
+  if (!isPlainObject(raw)) return fresh();
 
   let file: RawSave = raw;
   let version = typeof file.version === 'number' ? file.version : 0;
   while (version < SAVE_VERSION) {
     const migrate = migrations[version];
-    if (!migrate) return createNewGame();
+    if (!migrate) return fresh();
     file = migrate(file);
     version++;
   }
-  return normalize(file.state);
+  const savedAt = isNonNegNumber(file.savedAt) ? file.savedAt : null;
+  return { state: normalize(file.state), savedAt };
 }
 
 /** Builds a valid GameState from untrusted data, falling back to new-game defaults field by field. */
@@ -128,10 +144,15 @@ export function saveToStorage(storage: SaveStorage, state: GameState, savedAt = 
 }
 
 export function loadFromStorage(storage: SaveStorage): GameState {
+  return loadSave(storage).state;
+}
+
+/** Loads the save and when it was written. Never throws: a broken or missing save is a new game. */
+export function loadSave(storage: SaveStorage): LoadedSave {
   try {
-    return deserialize(storage.getItem(SAVE_KEY));
+    return parseSave(storage.getItem(SAVE_KEY));
   } catch {
-    return createNewGame();
+    return { state: createNewGame(), savedAt: null };
   }
 }
 

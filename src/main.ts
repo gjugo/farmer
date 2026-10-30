@@ -3,21 +3,28 @@ import './features';
 import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
 import { Game } from './logic/game';
+import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
 import { ordersOf, type OrdersState } from './logic/orders';
-import { loadFromStorage, saveToStorage, type SaveStorage } from './logic/save';
+import { loadSave, saveToStorage, type SaveStorage } from './logic/save';
 import { createNewGame } from './logic/state';
 import type { GameState } from './logic/types';
 import { BootScene } from './scenes/BootScene';
 import { FarmScene } from './scenes/FarmScene';
 import { isDebugMode, mountDebugPanel } from './ui/debug';
 import { Hud } from './ui/hud';
+import { showWelcomeBack } from './ui/welcome';
 
 const AUTOSAVE_MS = 10_000;
 
 declare global {
   interface Window {
-    /** Read-only snapshot of the game state (for debugging and Playwright checks). */
-    readonly farm: Readonly<GameState & { day: number; orders: OrdersState }>;
+    /**
+     * Read-only snapshot of the game state (for debugging and Playwright checks), plus the
+     * real time of the last save (`Date.now()`, null before the first one) and the last offline catch-up.
+     */
+    readonly farm: Readonly<
+      GameState & { day: number; orders: OrdersState; lastSavedAt: number | null; lastCatchUp: CatchUpResult | null }
+    >;
   }
 }
 
@@ -31,8 +38,20 @@ function browserStorage(): SaveStorage {
 }
 
 const storage = browserStorage();
-const game = new Game(loadFromStorage(storage));
-const save = () => saveToStorage(storage, game.state);
+const loaded = loadSave(storage);
+// Catch up on the time the game was closed before anyone sees the farm. Older saves have no time: no catch-up.
+let lastCatchUp: CatchUpResult | null = loaded.savedAt === null ? null : catchUp(loaded.state, Date.now() - loaded.savedAt);
+const game = new Game(loaded.state);
+let lastSavedAt = loaded.savedAt;
+
+// While the tab is hidden the scene is paused, so the farm is only up to date as of `hiddenAt`.
+// Saves made then must say so, or the time between would be lost on the next load.
+let hiddenAt: number | null = null;
+let elapsedAtHide = 0;
+const save = () => {
+  const at = hiddenAt ?? Date.now();
+  if (saveToStorage(storage, game.state, at)) lastSavedAt = at;
+};
 
 const ctx = { game, tools: new ToolState() } as FarmContext;
 const uiRoot = document.getElementById('ui')!;
@@ -40,20 +59,47 @@ ctx.ui = new Hud(uiRoot, ctx, () => {
   game.reset(createNewGame());
   save();
 });
-if (isDebugMode()) mountDebugPanel(uiRoot, ctx);
+
+/** Catches up on real time away (at ×1) and shows the summary when it was long enough. */
+function welcomeBack(awayMs: number): void {
+  lastCatchUp = catchUpGame(game, awayMs);
+  if (shouldShowSummary(lastCatchUp)) showWelcomeBack(uiRoot, lastCatchUp);
+}
+
+if (isDebugMode()) mountDebugPanel(uiRoot, ctx, welcomeBack);
+if (lastCatchUp) {
+  save();
+  if (shouldShowSummary(lastCatchUp)) showWelcomeBack(uiRoot, lastCatchUp);
+}
 
 Object.defineProperty(window, 'farm', {
   get: () => {
     ordersOf(game.state);
     const snapshot = game.snapshot();
-    return Object.freeze({ ...snapshot, orders: snapshot.ext.orders as OrdersState });
+    return Object.freeze({
+      ...snapshot,
+      orders: snapshot.ext.orders as OrdersState,
+      lastSavedAt,
+      lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)),
+    });
   },
   configurable: true,
 });
 
 window.setInterval(save, AUTOSAVE_MS);
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') save();
+  if (document.visibilityState === 'hidden') {
+    if (hiddenAt === null) {
+      hiddenAt = Date.now();
+      elapsedAtHide = game.now;
+    }
+    save();
+  } else if (hiddenAt !== null) {
+    // Leave out any game time that still ran after hiding, so nothing is counted twice.
+    const away = Date.now() - hiddenAt - (game.now - elapsedAtHide);
+    hiddenAt = null;
+    welcomeBack(away);
+  }
 });
 window.addEventListener('pagehide', save);
 
