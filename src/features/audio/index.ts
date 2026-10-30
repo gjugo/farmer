@@ -63,6 +63,9 @@ function updateSettings(change: Partial<AudioSettings>): void {
   settings = { ...settings, ...change };
   engine.setSettings(settings);
   saveAudioSettings(storage, settings);
+  // Keep an open Settings sheet in step with the HUD mute button.
+  const mute = document.querySelector<HTMLInputElement>('#sound-mute');
+  if (mute) mute.checked = settings.muted;
 }
 
 /** Plays an effect (throttled) and records it for QA. Silent until the first gesture. */
@@ -88,7 +91,20 @@ function unlock(): void {
   for (const g of GESTURES) window.removeEventListener(g, unlock, true);
   engine.setAmbience(AMBIENCE);
   engine.startMusic(MUSIC);
+  // A welcome-back summary shown on load, before any gesture, chimes now if it is still open.
+  if (pendingWelcome) {
+    pendingWelcome = false;
+    void engine.ready('welcome').then(() => {
+      if (document.querySelector('[data-testid="welcome-back"]')) play('welcome');
+    });
+  }
 }
+
+let pendingWelcome = false;
+// Subscribed at once: the load-time catch-up shows its summary before the game starts.
+uiSignals.on('welcomeBack', () => {
+  if (!engine.unlocked) pendingWelcome = true;
+});
 
 // Wiring ---------------------------------------------------------------------------
 

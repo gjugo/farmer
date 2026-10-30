@@ -1,5 +1,8 @@
+import { readdirSync, statSync } from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ACTIVITY_SOUNDS, ANIMAL_GAP_MS, GAME_EVENT_SOUNDS, nextAnimalDelay, pickAnimalSound, SFX, soundFor, UI_SOUNDS } from './sounds';
+import { AUDIO_CREDITS } from './credits';
+import { ACTIVITY_SOUNDS, AMBIENCE, ANIMAL_GAP_MS, GAME_EVENT_SOUNDS, MUSIC, nextAnimalDelay, pickAnimalSound, SFX, soundFor, UI_SOUNDS } from './sounds';
 import { AUDIO_SETTINGS_KEY, DEFAULT_AUDIO_SETTINGS, loadAudioSettings, saveAudioSettings, sliderGain } from './settings';
 import { SAME_SOUND_GAP_MS, SoundThrottle } from './throttle';
 
@@ -54,11 +57,13 @@ describe('animal sounds', () => {
 
   it('only picks animals that live on the farm', () => {
     expect(pickAnimalSound([], 0.5)).toBeNull();
-    expect(pickAnimalSound(['chicken', 'chicken', 'chicken'], 0.99)).toBe('cluck');
+    expect(pickAnimalSound(['chicken', 'chicken', 'chicken'], 0)).toBe('cluck');
+    expect(pickAnimalSound(['chicken', 'chicken', 'chicken'], 0.99)).toBe('cluck2');
     expect(pickAnimalSound(['cow'], 0)).toBe('moo');
     const both = ['chicken', 'sheep'];
     expect(pickAnimalSound(both, 0)).toBe('cluck');
-    expect(pickAnimalSound(both, 0.99)).toBe('baa');
+    expect(pickAnimalSound(both, 0.99)).toBe('baa2');
+    for (let r = 0; r < 1; r += 0.01) expect(['cluck', 'cluck2', 'baa', 'baa2']).toContain(pickAnimalSound(both, r));
     expect(pickAnimalSound(['dragon'], 0.5)).toBeNull();
   });
 });
@@ -146,5 +151,25 @@ describe('audio settings', () => {
     expect(sliderGain(0)).toBe(0);
     expect(sliderGain(100)).toBe(1);
     expect(sliderGain(50)).toBeCloseTo(0.25);
+  });
+});
+
+describe('audio files', () => {
+  const dir = path.resolve(__dirname, '../../../public/audio');
+  const keys = [...Object.keys(SFX), AMBIENCE, ...MUSIC];
+
+  it('every sound has an MP3 and a credit, and nothing else ships', () => {
+    const files = readdirSync(dir).sort();
+    expect(files).toEqual(keys.map((k) => `${k}.mp3`).sort());
+    expect(AUDIO_CREDITS.map((c) => c.key).sort()).toEqual([...keys].sort());
+  });
+
+  it('uses only CC0, public domain or CC-BY licences', () => {
+    for (const c of AUDIO_CREDITS) expect(c.license).toMatch(/^(CC0|Public Domain|CC-BY [34]\.0)$/);
+  });
+
+  it('stays within 3 MB in total', () => {
+    const total = readdirSync(dir).reduce((sum, f) => sum + statSync(path.join(dir, f)).size, 0);
+    expect(total).toBeLessThanOrEqual(3 * 1024 * 1024);
   });
 });

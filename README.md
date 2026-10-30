@@ -39,6 +39,9 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   gets a new order after 2 game-minutes, a discarded one after 5.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
+- **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
+  Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
+  (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
 
 ### Debug mode (QA)
 
@@ -48,6 +51,8 @@ Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed *
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
 `refill: { start, duration }` with `reason: 'fulfilled' | 'discarded'`).
+`window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
+keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
 ## Folder layout
 
@@ -75,7 +80,8 @@ src/
     customers.ts       customer names for orders
   game/              Glue between logic, scene and UI
     context.ts         FarmContext, PanelSpec, ToolState
-    hooks.ts           registerBehavior / registerHudButton / onGameStart
+    hooks.ts           registerBehavior / registerHudButton / onGameStart / registerSettingsSection / registerDebugInfo
+    signals.ts         uiSignals: UI moments that are not state changes (refused action, welcome-back opened)
   scenes/            Phaser scenes
     textures.ts        runtime-drawn textures (registerTexture)
     BootScene.ts       bakes textures
@@ -91,6 +97,8 @@ src/
     market/            🏪 Market HUD button and sell panel
     orders/            📋 Orders HUD button (with badge) and orders panel
     land/              "For sale" signs on parcels next to owned land, buy dialog
+    audio/             effects, animal voices, ambience, music; mute button, sound settings, credits
+                       (files: public/audio/*.mp3, licences: CREDITS.md)
 ```
 
 ## Extending the game

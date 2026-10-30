@@ -29,6 +29,7 @@ export class AudioEngine {
   private musicBus!: GainNode;
   private readonly files = new Map<string, Promise<ArrayBuffer | null>>();
   private readonly buffers = new Map<string, AudioBuffer>();
+  private readonly decoding = new Map<string, Promise<void>>();
   private ambienceKey: string | null = null;
   private ambienceStarted = false;
   private music: MusicPlayer | null = null;
@@ -88,10 +89,10 @@ export class AudioEngine {
 
   private decodeAll(): void {
     for (const [key, file] of this.files) {
-      if (this.buffers.has(key)) continue;
-      void file.then(async (data) => {
+      if (this.decoding.has(key)) continue;
+      const decoded = file.then(async (data) => {
         // decodeAudioData detaches the bytes, so each file is decoded once.
-        if (!data || !this.ctx || this.buffers.has(key) || data.byteLength === 0) return;
+        if (!data || !this.ctx || data.byteLength === 0) return;
         try {
           this.buffers.set(key, await this.ctx.decodeAudioData(data));
           if (key === this.ambienceKey) this.startAmbience();
@@ -99,7 +100,13 @@ export class AudioEngine {
           // Undecodable file: that sound stays silent.
         }
       });
+      this.decoding.set(key, decoded);
     }
+  }
+
+  /** Resolves once `key` has been decoded (or failed to). Needs `unlock` first. */
+  async ready(key: string): Promise<void> {
+    await this.decoding.get(key);
   }
 
   /** Length of a decoded effect in ms (0 when not loaded). */

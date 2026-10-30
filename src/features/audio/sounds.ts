@@ -28,9 +28,12 @@ export const SFX = {
   land: { volume: 0.8 },
   refused: { volume: 0.6 },
   welcome: { volume: 0.7 },
-  cluck: { volume: 0.55 },
-  moo: { volume: 0.55 },
-  baa: { volume: 0.55 },
+  cluck: { volume: 0.5 },
+  cluck2: { volume: 0.5 },
+  moo: { volume: 0.5 },
+  moo2: { volume: 0.5 },
+  baa: { volume: 0.5 },
+  baa2: { volume: 0.5 },
 } as const satisfies Record<string, { volume: number }>;
 
 export type SfxKey = keyof typeof SFX;
@@ -39,15 +42,15 @@ export type SfxKey = keyof typeof SFX;
 export const AMBIENCE = 'ambience';
 
 /** Calm acoustic tracks, played one after another. */
-export const MUSIC = ['music1', 'music2'] as const;
+export const MUSIC = ['music2', 'music1', 'music3'] as const;
 
 /** Every audio file lives at `audio/<key>.mp3` (MP3 plays in Chrome, Firefox and Safari, desktop and iOS). */
 export function audioUrl(key: string): string {
   return `audio/${key}.mp3`;
 }
 
-/** What each animal says. */
-export const ANIMAL_SOUNDS: Record<string, SfxKey> = { chicken: 'cluck', cow: 'moo', sheep: 'baa' };
+/** What each animal says (a few recordings each). */
+export const ANIMAL_SOUNDS: Record<string, readonly SfxKey[]> = { chicken: ['cluck', 'cluck2'], cow: ['moo', 'moo2'], sheep: ['baa', 'baa2'] };
 
 /** Product collected from a pen → its sound. */
 const COLLECT_SOUNDS: Record<string, SfxKey> = { egg: 'collect_egg', milk: 'collect_milk', wool: 'collect_wool' };
@@ -96,9 +99,14 @@ export function nextAnimalDelay(random: number): number {
   return ANIMAL_GAP_MS.min + random * (ANIMAL_GAP_MS.max - ANIMAL_GAP_MS.min);
 }
 
-/** Picks the voice of one animal kind present on the farm, or null when there are no animals. */
+/**
+ * Picks a voice of one animal kind present on the farm (each kind equally likely, whatever
+ * the head count), or null when there are no animals. `random` is in [0, 1).
+ */
 export function pickAnimalSound(kinds: readonly string[], random: number): SfxKey | null {
-  const voices = [...new Set(kinds)].flatMap((k) => (ANIMAL_SOUNDS[k] ? [ANIMAL_SOUNDS[k]] : []));
-  if (voices.length === 0) return null;
-  return voices[Math.min(voices.length - 1, Math.floor(random * voices.length))];
+  const choirs = [...new Set(kinds)].flatMap((k) => (ANIMAL_SOUNDS[k] ? [ANIMAL_SOUNDS[k]] : []));
+  if (choirs.length === 0) return null;
+  const scaled = random * choirs.length;
+  const voices = choirs[Math.min(choirs.length - 1, Math.floor(scaled))];
+  return voices[Math.min(voices.length - 1, Math.floor((scaled % 1) * voices.length))];
 }
