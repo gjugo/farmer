@@ -41,6 +41,8 @@ export interface HudButton {
   label: string;
   icon?: string;
   onClick(ctx: FarmContext): void;
+  /** Small count shown on the button (e.g. orders ready to fulfil); re-read on every HUD refresh. Hidden when null or 0. */
+  badge?(ctx: FarmContext): number | null;
 }
 
 const hudButtons: HudButton[] = [];

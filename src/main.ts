@@ -4,6 +4,7 @@ import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
 import { Game } from './logic/game';
 import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
+import { ordersOf, type OrdersState } from './logic/orders';
 import { loadSave, saveToStorage, type SaveStorage } from './logic/save';
 import { createNewGame } from './logic/state';
 import type { GameState } from './logic/types';
@@ -21,7 +22,9 @@ declare global {
      * Read-only snapshot of the game state (for debugging and Playwright checks), plus the
      * real time of the last save (`Date.now()`, null before the first one) and the last offline catch-up.
      */
-    readonly farm: Readonly<GameState & { day: number; lastSavedAt: number | null; lastCatchUp: CatchUpResult | null }>;
+    readonly farm: Readonly<
+      GameState & { day: number; orders: OrdersState; lastSavedAt: number | null; lastCatchUp: CatchUpResult | null }
+    >;
   }
 }
 
@@ -70,7 +73,16 @@ if (lastCatchUp) {
 }
 
 Object.defineProperty(window, 'farm', {
-  get: () => Object.freeze({ ...game.snapshot(), lastSavedAt, lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)) }),
+  get: () => {
+    ordersOf(game.state);
+    const snapshot = game.snapshot();
+    return Object.freeze({
+      ...snapshot,
+      orders: snapshot.ext.orders as OrdersState,
+      lastSavedAt,
+      lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)),
+    });
+  },
   configurable: true,
 });
 

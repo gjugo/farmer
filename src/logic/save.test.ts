@@ -84,11 +84,13 @@ describe('save / load', () => {
     expect(parseSave(null).savedAt).toBeNull();
   });
 
-  it('loads a version 1 save without a saved time, so the first load does not catch up', () => {
-    const v1 = JSON.stringify({ version: 1, savedAt: 1_700_000_000_000, state: { ...createNewGame(), money: 321 } });
-    const loaded = parseSave(v1);
-    expect(loaded.state.money).toBe(321);
-    expect(loaded.savedAt).toBeNull();
+  it('loads version 1 and 2 saves without a saved time, so the first load does not catch up', () => {
+    for (const version of [1, 2]) {
+      const old = JSON.stringify({ version, savedAt: 1_700_000_000_000, state: { ...createNewGame(), money: 321 } });
+      const loaded = parseSave(old);
+      expect(loaded.state.money).toBe(321);
+      expect(loaded.savedAt).toBeNull();
+    }
     expect(parseSave(JSON.stringify({ money: 99 })).savedAt).toBeNull(); // version 0 too
   });
 

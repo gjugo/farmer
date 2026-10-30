@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ANIMALS } from '../data/animals';
 import { CROPS, FIELD } from '../data/crops';
 import { MAX_OFFLINE_MS, SUMMARY_MIN_AWAY_MS } from '../data/offline';
@@ -35,6 +35,10 @@ function fields(game: Game): PlacedObject<FieldState>[] {
 }
 
 describe('offline catch-up', () => {
+  // A new farm seeds its orders from Math.random; pin it so two farms built alike are equal.
+  beforeEach(() => void vi.spyOn(Math, 'random').mockReturnValue(0.5));
+  afterEach(() => vi.restoreAllMocks());
+
   it('ripens crops that would have finished, and leaves the rest growing', () => {
     const game = new Game();
     const [a, b] = fields(game);
