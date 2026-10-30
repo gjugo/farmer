@@ -32,6 +32,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - Click an object to open its action panel.
 - **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
   after their cycle; click the pen (or **Collect**) to pick up eggs, milk and wool.
+- **Processing:** build a Feed Mill, Dairy, Bakery or Loom, open it and pick a recipe. Inputs are taken at once;
+  up to 3 jobs queue and run one at a time. Click the building (or **Collect**) to pick up finished goods.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
 
@@ -76,6 +78,7 @@ src/
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
+    processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plant/harvest panel
     market/            🏪 Market HUD button and sell panel
     land/              "For sale" signs on parcels next to owned land, buy dialog
