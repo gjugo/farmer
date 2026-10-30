@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import '../data/animals';
 import { listBuildables } from '../data/buildables';
 import { CROP_LIST } from '../data/crops';
+import '../data/farmhouse';
 import { ITEM_LIST, splitIcons } from '../data/items';
 import '../data/processing';
 import {
@@ -12,6 +13,8 @@ import {
   COMPOSED,
   cropArt,
   facing,
+  FARMER_ART,
+  type FarmerAnim,
   fencePiece,
   GATE,
   ICON_ART,
@@ -138,6 +141,13 @@ describe('art pack', () => {
       if (b.id === 'path') continue; // a 1×1 tile
       expect(fp, b.id).toEqual([b.footprint.w, b.footprint.h]);
     }
+  });
+
+  it('has the farmer walking, sitting and at every job, in every direction', () => {
+    const anims: FarmerAnim[] = ['idle', 'sit', 'walk', 'plough', 'plant', 'harvest', 'build', 'feed'];
+    const keys = assets.get(FARMER_ART)!.animations!.map((a) => a.key);
+    for (const anim of anims) for (const dir of ['se', 'sw', 'ne', 'nw']) expect(keys).toContain(`${FARMER_ART}_${anim}_${dir}`);
+    expect(usedArt()).toContain(FARMER_ART);
   });
 
   it('has an icon for every item, plus coins', () => {

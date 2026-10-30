@@ -43,7 +43,12 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Farmers:** building, ploughing, planting, harvesting and feeding animals each keep a farmer busy for a few game-seconds
   (building: 1.5 s per footprint tile, 3–20 s; paths need no farmer). The farm starts with one farmer; when all are
   busy the work is refused until one is free. 👨‍🌾 Farmers in the HUD (it shows free/total) lists what each farmer
-  does and hires more: $250 for the 2nd, ×1.6 for each after, up to 8. Busy farmers stand over their work on the map.
+  does and hires more: $250 for the 2nd, ×1.6 for each after, up to 8.
+- **Farmhouse and roads:** every farm has a farmhouse (it can't be built or demolished). Idle farmers rest on its bench;
+  for a job a farmer walks out of the door **along paths** to the work (0.4 game-s per tile), works there (hoeing,
+  sowing, harvesting, hammering, feeding) and walks back, busy the whole way. Work on a field, pen or building is refused
+  until a path joins it to the door ("No path leads there"), and the build ghost turns red where no path reaches.
+  New farms start with a road from the door to both fields; older saves get a farmhouse and roads to what they built.
 - **Seasons:** each season lasts 2 game days (day 1–2 spring, 3–4 summer, 5–6 autumn, 7–8 winter, then round again);
   the HUD shows it next to the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
@@ -91,6 +96,7 @@ src/
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, starting fields
     workers.ts         farmers: hiring, jobs that keep a farmer busy (state slice `workers`)
+    roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
@@ -211,7 +217,8 @@ events. There is no offline progress: time only passes while the game is open.
 - **Confirm dialog:** `await ctx.ui.confirm(title, message, { confirmLabel, variant, disabled, hint })`.
 - **Taps on empty tiles** (e.g. locked land): `registerTileTapHandler((ctx, x, y) => true /* handled */)`.
 - **Work that needs a farmer:** wrap it in `withFarmer(ctx, kind, obj, durationMs, () => didIt)` from
-  `src/game/workers.ts`; it refuses with a toast when every farmer is busy and assigns one only if the action succeeded.
+  `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the farmhouse to the
+  site, and sends a farmer along the path only if the action succeeded.
 - **Selling:** `sell(game, itemId, qty?)` / `dailyPrice(game.day, itemId)` from `src/logic/market.ts`.
 - **Feedback:** `ctx.ui.toast(msg, 'success' | 'error')`, `ctx.ui.floatText(tileX, tileY, text)`.
   Money changes float next to the money counter automatically.

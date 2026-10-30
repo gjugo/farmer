@@ -4,13 +4,13 @@ import { splitIcons } from '../data/items';
 import { buildWorkMs } from '../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
 import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
-import { withFarmer } from '../game/workers';
+import { reachable, withFarmer } from '../game/workers';
 import { demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
 import { ART_RES, ART_SCALE, CURSOR, grassArt, hash, SCENERY, unownedArt } from './art';
 import { GROUND_ATLAS } from './BootScene';
-import { DEPTH } from './depth';
+import { DEPTH, setStandingDepths } from './depth';
 import {
   depthKey,
   footprintBox,
@@ -232,6 +232,7 @@ export class FarmScene extends Phaser.Scene {
     }
     const order = sortFootprints(tall.map((t) => t.fp));
     order.forEach((idx, rank) => tall[idx].target.setDepth(DEPTH.tall + rank / (order.length + 1)));
+    setStandingDepths(order.map((idx, rank) => ({ fp: tall[idx].fp, depth: DEPTH.tall + rank / (order.length + 1) })));
   }
 
   private createView(obj: PlacedObject): void {
@@ -511,6 +512,12 @@ export class FarmScene extends Phaser.Scene {
     const mode = tools.mode;
     if (mode.kind === 'build') {
       const { x, y } = this.anchorFor(mode.type, tx, ty);
+      // Say why the spot itself is wrong before asking for a farmer and a path.
+      const check = game.checkPlacement(mode.type, x, y);
+      if (!check.ok) {
+        ui.toast(PLACE_ERRORS[check.reason], 'error');
+        return;
+      }
       withFarmer(this.ctx, 'build', { type: mode.type, x, y }, buildWorkMs(mode.type), () => {
         const result = game.place(mode.type, x, y);
         if (result.ok) {
@@ -527,6 +534,10 @@ export class FarmScene extends Phaser.Scene {
     if (mode.kind === 'demolish') {
       if (!obj) {
         ui.toast('Nothing to demolish here', 'error');
+        return;
+      }
+      if (getBuildable(obj.type)?.fixed) {
+        ui.toast(`The ${getBuildable(obj.type)!.name.toLowerCase()} stays`, 'error');
         return;
       }
       const refund = game.demolish(obj.id) ?? 0;
@@ -552,6 +563,7 @@ export class FarmScene extends Phaser.Scene {
         lines: def?.description ? [def.description] : [],
       };
       const refund = demolishRefund(def);
+      if (def?.fixed) return spec;
       return {
         ...spec,
         actions: [
@@ -591,7 +603,10 @@ export class FarmScene extends Phaser.Scene {
       const def = getBuildable(mode.type);
       if (!def) return;
       const { x, y } = this.anchorFor(mode.type, tx, ty);
-      const ok = this.ctx.game.checkPlacement(mode.type, x, y).ok && this.ctx.game.canAfford(def.cost);
+      const ok =
+        this.ctx.game.checkPlacement(mode.type, x, y).ok &&
+        this.ctx.game.canAfford(def.cost) &&
+        (buildWorkMs(mode.type) === 0 || reachable(this.ctx, { type: mode.type, x, y }));
       const top = gridToWorld(x, y);
       this.showCursors({ x, y, ...def.footprint }, ok ? CURSOR.ok : CURSOR.bad);
       this.ghost.setPosition(top.x, top.y).setVisible(true);

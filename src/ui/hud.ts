@@ -1,4 +1,4 @@
-import { getBuildable, listBuildables } from '../data/buildables';
+import { getBuildable, listBuildMenu } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
@@ -308,10 +308,10 @@ export class Hud implements UiApi {
     return {
       id: 'build',
       title: () => '🔨 Build',
-      signature: () => `${game.level}|${listBuildables().map((b) => `${b.id}:${game.canAfford(b.cost)}`).join('|')}`,
+      signature: () => `${game.level}|${listBuildMenu().map((b) => `${b.id}:${game.canAfford(b.cost)}`).join('|')}`,
       render: (body) => {
-        const groups = new Map<string, ReturnType<typeof listBuildables>>();
-        for (const b of listBuildables()) {
+        const groups = new Map<string, ReturnType<typeof listBuildMenu>>();
+        for (const b of listBuildMenu()) {
           const key = b.category ?? 'other';
           groups.set(key, [...(groups.get(key) ?? []), b]);
         }

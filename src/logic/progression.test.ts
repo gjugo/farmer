@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ANIMALS, PENS } from '../data/animals';
-import { listBuildables } from '../data/buildables';
+import { listBuildables, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, FIELD } from '../data/crops';
 import { PROCESSORS } from '../data/processing';
 import { ACTIVE_GOALS, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL } from '../data/progression';
@@ -123,7 +123,7 @@ describe('unlocks', () => {
   it('level 1 offers only the field, wheat, chickens and their coop', () => {
     expect(CROP_LIST.filter((c) => c.unlockLevel === 1).map((c) => c.id)).toEqual(['wheat']);
     expect(Object.values(ANIMALS).filter((a) => a.unlockLevel === 1).map((a) => a.id)).toEqual(['chicken']);
-    expect(listBuildables().filter((b) => b.unlockLevel === 1).map((b) => b.id).sort()).toEqual(['coop', 'field', 'path']);
+    expect(listBuildMenu().filter((b) => b.unlockLevel === 1).map((b) => b.id).sort()).toEqual(['coop', 'field', 'path']);
   });
 
   it('every animal unlocks no earlier than its pen', () => {
@@ -340,7 +340,7 @@ describe('save', () => {
     for (const [objects, level] of cases) {
       const game = new Game(deserialize(v1Save(objects)));
       expect(game.level, JSON.stringify(objects)).toBe(level);
-      expect(game.state.objects).toHaveLength(1);
+      expect(game.state.objects.filter((o) => o.type !== 'farmhouse' && o.type !== 'path')).toHaveLength(1);
       expect(requiredLevel(objects)).toBe(level);
     }
   });

@@ -1,5 +1,5 @@
 import { ANIMALS, isAnimalKind, PENS } from '../data/animals';
-import { getBuildable, listBuildables } from '../data/buildables';
+import { getBuildable, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, getCrop } from '../data/crops';
 import { PROCESSORS } from '../data/processing';
 import { LEVEL_XP, MAX_LEVEL } from '../data/progression';
@@ -54,7 +54,7 @@ export function unlocksAt(level: number): Unlock[] {
   const out: Unlock[] = [];
   for (const crop of CROP_LIST) if (crop.unlockLevel === level) out.push({ icon: crop.icon, name: crop.name });
   for (const animal of Object.values(ANIMALS)) if (animal.unlockLevel === level) out.push({ icon: animal.icon, name: animal.name });
-  for (const b of listBuildables()) if ((b.unlockLevel ?? 1) === level) out.push({ icon: b.icon ?? '🔨', name: b.name });
+  for (const b of listBuildMenu()) if ((b.unlockLevel ?? 1) === level) out.push({ icon: b.icon ?? '🔨', name: b.name });
   return out;
 }
 

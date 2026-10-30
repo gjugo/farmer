@@ -143,7 +143,7 @@ describe('growth', () => {
     const state = deserialize(
       JSON.stringify({ version: 1, state: { objects: [{ id: 'o1', type: FIELD, x: START_LAND.x, y: START_LAND.y }] } }),
     );
-    expect(state.objects).toEqual([{ id: 'o1', type: FIELD, x: START_LAND.x, y: START_LAND.y, state: { crop: null, timer: null, ploughedAt: 0 } }]); // older farms' fields count as ploughed
+    expect(state.objects[0]).toEqual({ id: 'o1', type: FIELD, x: START_LAND.x, y: START_LAND.y, state: { crop: null, timer: null, ploughedAt: 0 } }); // older farms' fields count as ploughed
   });
 });
 

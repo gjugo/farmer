@@ -43,6 +43,6 @@ registerBehavior('path', {
   panel: (ctx, obj) => ({
     title: 'Path',
     icon: '🟫',
-    lines: ['A tidy dirt path. Purely decorative — for now.', `Tile ${obj.x}, ${obj.y} · Day ${ctx.game.day}`],
+    lines: ['A dirt path. Farmers walk along paths from the farmhouse door to their work.', `Tile ${obj.x}, ${obj.y} · Day ${ctx.game.day}`],
   }),
 });
