@@ -1,0 +1,4353 @@
+{
+ "name": "Isometric Farm Pack",
+ "version": "1.0",
+ "projection": "2:1 dimetric (isometric) \u2013 tile diamond is twice as wide as it is tall",
+ "tile": {
+  "2x": {
+   "width": 256,
+   "height": 128
+  },
+  "1x": {
+   "width": 128,
+   "height": 64
+  }
+ },
+ "conventions": {
+  "world": "tile x runs screen down-right, tile y runs screen down-left",
+  "anchor": "pixel inside the image that sits on the footprint's TOP (north) corner of tile (tx,ty) \u2013 for animals: the ground point under the animal. Use origin=[ax/w, ay/h] with Phaser setOrigin().",
+  "screen_position": "screenX = originX + (tx - ty) * tileWidth/2 ; screenY = originY + (tx + ty) * tileHeight/2",
+  "depth": "sort objects by (tx + ty + footprintW + footprintH) or by the screen Y of their footprint's bottom corner; draw all shadow layers below sprites",
+  "footprint": "[tiles along x, tiles along y]",
+  "directions": "se = toward +x, sw = toward +y, ne = toward -y, nw = toward -x"
+ },
+ "assets": [
+  {
+   "name": "grass_0",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": null,
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_0.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_0.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_1",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": null,
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_1.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_1.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_2",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": null,
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_2.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_2.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_single",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path single; connects to edges: none",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_single.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_single.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path end; connects to edges: ne",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path end; connects to edges: se",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path end; connects to edges: sw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path end; connects to edges: nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path corner; connects to edges: ne, se",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path straight; connects to edges: ne, sw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path corner; connects to edges: ne, nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path corner; connects to edges: se, sw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path straight; connects to edges: se, nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path corner; connects to edges: sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path t; connects to edges: ne, se, sw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path t; connects to edges: ne, se, nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path t; connects to edges: ne, sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path t; connects to edges: se, sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "dirt path cross; connects to edges: ne, se, sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_x",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil bed; furrows run along world x",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_x.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_x.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_x",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered tilled soil",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_x.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_x.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_y",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil bed; furrows run along world y",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_y.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_y.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_y",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered tilled soil",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_y.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_y.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_0",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "unowned land (dark)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_0.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_0.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_1",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "unowned land (overgrown)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_1.png",
+     "w": 256,
+     "h": 168,
+     "anchor": [
+      128.0,
+      40.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_1.png",
+     "w": 128,
+     "h": 84,
+     "anchor": [
+      64.0,
+      20.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    }
+   }
+  },
+  {
+   "name": "overlay_locked",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "semi-transparent overlay to dim any tile as not-owned",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/overlay_locked.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/overlay_locked.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "overlay_cursor",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tile selection cursor",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/overlay_cursor.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/overlay_cursor.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "overlay_cursor_ok",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tile selection cursor",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/overlay_cursor_ok.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/overlay_cursor_ok.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "overlay_cursor_bad",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tile selection cursor",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/overlay_cursor_bad.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/overlay_cursor_bad.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_post",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: none",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_post.png",
+     "w": 64,
+     "h": 108,
+     "shadow": "2x/fences/fence_post_shadow.png",
+     "anchor": [
+      22.0,
+      8.0
+     ],
+     "origin": [
+      0.34375,
+      0.07407
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_post.png",
+     "w": 32,
+     "h": 54,
+     "shadow": "1x/fences/fence_post_shadow.png",
+     "anchor": [
+      11.0,
+      4.0
+     ],
+     "origin": [
+      0.34375,
+      0.07407
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne.png",
+     "w": 114,
+     "h": 124,
+     "shadow": "2x/fences/fence_ne_shadow.png",
+     "anchor": [
+      22.0,
+      24.0
+     ],
+     "origin": [
+      0.19298,
+      0.19355
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne.png",
+     "w": 57,
+     "h": 62,
+     "shadow": "1x/fences/fence_ne_shadow.png",
+     "anchor": [
+      11.0,
+      12.0
+     ],
+     "origin": [
+      0.19298,
+      0.19355
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_se",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: se",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_se.png",
+     "w": 110,
+     "h": 128,
+     "shadow": "2x/fences/fence_se_shadow.png",
+     "anchor": [
+      22.0,
+      8.0
+     ],
+     "origin": [
+      0.2,
+      0.0625
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_se.png",
+     "w": 55,
+     "h": 64,
+     "shadow": "1x/fences/fence_se_shadow.png",
+     "anchor": [
+      11.0,
+      4.0
+     ],
+     "origin": [
+      0.2,
+      0.0625
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_sw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: sw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_sw.png",
+     "w": 116,
+     "h": 130,
+     "shadow": "2x/fences/fence_sw_shadow.png",
+     "anchor": [
+      74.0,
+      8.0
+     ],
+     "origin": [
+      0.63793,
+      0.06154
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_sw.png",
+     "w": 58,
+     "h": 65,
+     "shadow": "1x/fences/fence_sw_shadow.png",
+     "anchor": [
+      37.0,
+      4.0
+     ],
+     "origin": [
+      0.63793,
+      0.06154
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_nw.png",
+     "w": 114,
+     "h": 124,
+     "shadow": "2x/fences/fence_nw_shadow.png",
+     "anchor": [
+      72.0,
+      24.0
+     ],
+     "origin": [
+      0.63158,
+      0.19355
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_nw.png",
+     "w": 57,
+     "h": 62,
+     "shadow": "1x/fences/fence_nw_shadow.png",
+     "anchor": [
+      36.0,
+      12.0
+     ],
+     "origin": [
+      0.63158,
+      0.19355
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne_se",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne, se",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne_se.png",
+     "w": 114,
+     "h": 144,
+     "shadow": "2x/fences/fence_ne_se_shadow.png",
+     "anchor": [
+      22.0,
+      24.0
+     ],
+     "origin": [
+      0.19298,
+      0.16667
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne_se.png",
+     "w": 57,
+     "h": 72,
+     "shadow": "1x/fences/fence_ne_se_shadow.png",
+     "anchor": [
+      11.0,
+      12.0
+     ],
+     "origin": [
+      0.19298,
+      0.16667
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne_sw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne, sw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne_sw.png",
+     "w": 166,
+     "h": 146,
+     "shadow": "2x/fences/fence_ne_sw_shadow.png",
+     "anchor": [
+      74.0,
+      24.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne_sw.png",
+     "w": 83,
+     "h": 73,
+     "shadow": "1x/fences/fence_ne_sw_shadow.png",
+     "anchor": [
+      37.0,
+      12.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne, nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne_nw.png",
+     "w": 164,
+     "h": 124,
+     "shadow": "2x/fences/fence_ne_nw_shadow.png",
+     "anchor": [
+      72.0,
+      24.0
+     ],
+     "origin": [
+      0.43902,
+      0.19355
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne_nw.png",
+     "w": 82,
+     "h": 62,
+     "shadow": "1x/fences/fence_ne_nw_shadow.png",
+     "anchor": [
+      36.0,
+      12.0
+     ],
+     "origin": [
+      0.43902,
+      0.19355
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_se_sw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: se, sw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_se_sw.png",
+     "w": 162,
+     "h": 130,
+     "shadow": "2x/fences/fence_se_sw_shadow.png",
+     "anchor": [
+      74.0,
+      8.0
+     ],
+     "origin": [
+      0.45679,
+      0.06154
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_se_sw.png",
+     "w": 81,
+     "h": 65,
+     "shadow": "1x/fences/fence_se_sw_shadow.png",
+     "anchor": [
+      37.0,
+      4.0
+     ],
+     "origin": [
+      0.45679,
+      0.06154
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_se_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: se, nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_se_nw.png",
+     "w": 160,
+     "h": 144,
+     "shadow": "2x/fences/fence_se_nw_shadow.png",
+     "anchor": [
+      72.0,
+      24.0
+     ],
+     "origin": [
+      0.45,
+      0.16667
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_se_nw.png",
+     "w": 80,
+     "h": 72,
+     "shadow": "1x/fences/fence_se_nw_shadow.png",
+     "anchor": [
+      36.0,
+      12.0
+     ],
+     "origin": [
+      0.45,
+      0.16667
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_sw_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_sw_nw.png",
+     "w": 116,
+     "h": 146,
+     "shadow": "2x/fences/fence_sw_nw_shadow.png",
+     "anchor": [
+      74.0,
+      24.0
+     ],
+     "origin": [
+      0.63793,
+      0.16438
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_sw_nw.png",
+     "w": 58,
+     "h": 73,
+     "shadow": "1x/fences/fence_sw_nw_shadow.png",
+     "anchor": [
+      37.0,
+      12.0
+     ],
+     "origin": [
+      0.63793,
+      0.16438
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne_se_sw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne, se, sw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne_se_sw.png",
+     "w": 166,
+     "h": 146,
+     "shadow": "2x/fences/fence_ne_se_sw_shadow.png",
+     "anchor": [
+      74.0,
+      24.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne_se_sw.png",
+     "w": 83,
+     "h": 73,
+     "shadow": "1x/fences/fence_ne_se_sw_shadow.png",
+     "anchor": [
+      37.0,
+      12.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne_se_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne, se, nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne_se_nw.png",
+     "w": 164,
+     "h": 144,
+     "shadow": "2x/fences/fence_ne_se_nw_shadow.png",
+     "anchor": [
+      72.0,
+      24.0
+     ],
+     "origin": [
+      0.43902,
+      0.16667
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne_se_nw.png",
+     "w": 82,
+     "h": 72,
+     "shadow": "1x/fences/fence_ne_se_nw_shadow.png",
+     "anchor": [
+      36.0,
+      12.0
+     ],
+     "origin": [
+      0.43902,
+      0.16667
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne_sw_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne, sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne_sw_nw.png",
+     "w": 166,
+     "h": 146,
+     "shadow": "2x/fences/fence_ne_sw_nw_shadow.png",
+     "anchor": [
+      74.0,
+      24.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne_sw_nw.png",
+     "w": 83,
+     "h": 73,
+     "shadow": "1x/fences/fence_ne_sw_nw_shadow.png",
+     "anchor": [
+      37.0,
+      12.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_se_sw_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: se, sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_se_sw_nw.png",
+     "w": 162,
+     "h": 146,
+     "shadow": "2x/fences/fence_se_sw_nw_shadow.png",
+     "anchor": [
+      74.0,
+      24.0
+     ],
+     "origin": [
+      0.45679,
+      0.16438
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_se_sw_nw.png",
+     "w": 81,
+     "h": 73,
+     "shadow": "1x/fences/fence_se_sw_nw_shadow.png",
+     "anchor": [
+      37.0,
+      12.0
+     ],
+     "origin": [
+      0.45679,
+      0.16438
+     ]
+    }
+   }
+  },
+  {
+   "name": "fence_ne_se_sw_nw",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "fence through tile centre; rails reach edges: ne, se, sw, nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/fence_ne_se_sw_nw.png",
+     "w": 166,
+     "h": 146,
+     "shadow": "2x/fences/fence_ne_se_sw_nw_shadow.png",
+     "anchor": [
+      74.0,
+      24.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/fence_ne_se_sw_nw.png",
+     "w": 83,
+     "h": 73,
+     "shadow": "1x/fences/fence_ne_se_sw_nw_shadow.png",
+     "anchor": [
+      37.0,
+      12.0
+     ],
+     "origin": [
+      0.44578,
+      0.16438
+     ]
+    }
+   }
+  },
+  {
+   "name": "gate_se_nw_closed",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "gate in a fence running se_nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/gate_se_nw_closed.png",
+     "w": 176,
+     "h": 174,
+     "shadow": "2x/fences/gate_se_nw_closed_shadow.png",
+     "anchor": [
+      76.0,
+      46.0
+     ],
+     "origin": [
+      0.43182,
+      0.26437
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/gate_se_nw_closed.png",
+     "w": 88,
+     "h": 87,
+     "shadow": "1x/fences/gate_se_nw_closed_shadow.png",
+     "anchor": [
+      38.0,
+      23.0
+     ],
+     "origin": [
+      0.43182,
+      0.26437
+     ]
+    }
+   }
+  },
+  {
+   "name": "gate_se_nw_open",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "open gate in a fence running se_nw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/gate_se_nw_open.png",
+     "w": 220,
+     "h": 174,
+     "shadow": "2x/fences/gate_se_nw_open_shadow.png",
+     "anchor": [
+      120.0,
+      46.0
+     ],
+     "origin": [
+      0.54545,
+      0.26437
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/gate_se_nw_open.png",
+     "w": 110,
+     "h": 87,
+     "shadow": "1x/fences/gate_se_nw_open_shadow.png",
+     "anchor": [
+      60.0,
+      23.0
+     ],
+     "origin": [
+      0.54545,
+      0.26437
+     ]
+    }
+   }
+  },
+  {
+   "name": "gate_ne_sw_closed",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "gate in a fence running ne_sw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/gate_ne_sw_closed.png",
+     "w": 176,
+     "h": 174,
+     "shadow": "2x/fences/gate_ne_sw_closed_shadow.png",
+     "anchor": [
+      76.0,
+      46.0
+     ],
+     "origin": [
+      0.43182,
+      0.26437
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/gate_ne_sw_closed.png",
+     "w": 88,
+     "h": 87,
+     "shadow": "1x/fences/gate_ne_sw_closed_shadow.png",
+     "anchor": [
+      38.0,
+      23.0
+     ],
+     "origin": [
+      0.43182,
+      0.26437
+     ]
+    }
+   }
+  },
+  {
+   "name": "gate_ne_sw_open",
+   "category": "fences",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "open gate in a fence running ne_sw",
+   "res": {
+    "2x": {
+     "file": "2x/fences/gate_ne_sw_open.png",
+     "w": 196,
+     "h": 174,
+     "shadow": "2x/fences/gate_ne_sw_open_shadow.png",
+     "anchor": [
+      76.0,
+      46.0
+     ],
+     "origin": [
+      0.38776,
+      0.26437
+     ]
+    },
+    "1x": {
+     "file": "1x/fences/gate_ne_sw_open.png",
+     "w": 98,
+     "h": 87,
+     "shadow": "1x/fences/gate_ne_sw_open_shadow.png",
+     "anchor": [
+      38.0,
+      23.0
+     ],
+     "origin": [
+      0.38776,
+      0.26437
+     ]
+    }
+   }
+  },
+  {
+   "name": "wheat_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wheat stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/wheat_0_seeded.png",
+     "w": 186,
+     "h": 94,
+     "anchor": [
+      94.0,
+      -12.0
+     ],
+     "origin": [
+      0.50538,
+      -0.12766
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/wheat_0_seeded.png",
+     "w": 93,
+     "h": 47,
+     "anchor": [
+      47.0,
+      -6.0
+     ],
+     "origin": [
+      0.50538,
+      -0.12766
+     ]
+    }
+   }
+  },
+  {
+   "name": "wheat_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wheat stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/wheat_1_sprout.png",
+     "w": 194,
+     "h": 124,
+     "shadow": "2x/crops/wheat_1_sprout_shadow.png",
+     "anchor": [
+      98.0,
+      4.0
+     ],
+     "origin": [
+      0.50515,
+      0.03226
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/wheat_1_sprout.png",
+     "w": 97,
+     "h": 62,
+     "shadow": "1x/crops/wheat_1_sprout_shadow.png",
+     "anchor": [
+      49.0,
+      2.0
+     ],
+     "origin": [
+      0.50515,
+      0.03226
+     ]
+    }
+   }
+  },
+  {
+   "name": "wheat_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wheat stage 2 (growing); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/wheat_2_growing.png",
+     "w": 226,
+     "h": 164,
+     "shadow": "2x/crops/wheat_2_growing_shadow.png",
+     "anchor": [
+      110.0,
+      36.0
+     ],
+     "origin": [
+      0.48673,
+      0.21951
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/wheat_2_growing.png",
+     "w": 113,
+     "h": 82,
+     "shadow": "1x/crops/wheat_2_growing_shadow.png",
+     "anchor": [
+      55.0,
+      18.0
+     ],
+     "origin": [
+      0.48673,
+      0.21951
+     ]
+    }
+   }
+  },
+  {
+   "name": "wheat_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wheat stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/wheat_3_ripe.png",
+     "w": 246,
+     "h": 186,
+     "shadow": "2x/crops/wheat_3_ripe_shadow.png",
+     "anchor": [
+      126.0,
+      58.0
+     ],
+     "origin": [
+      0.5122,
+      0.31183
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/wheat_3_ripe.png",
+     "w": 123,
+     "h": 93,
+     "shadow": "1x/crops/wheat_3_ripe_shadow.png",
+     "anchor": [
+      63.0,
+      29.0
+     ],
+     "origin": [
+      0.5122,
+      0.31183
+     ]
+    }
+   }
+  },
+  {
+   "name": "carrot_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "carrot stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/carrot_0_seeded.png",
+     "w": 186,
+     "h": 94,
+     "anchor": [
+      94.0,
+      -12.0
+     ],
+     "origin": [
+      0.50538,
+      -0.12766
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/carrot_0_seeded.png",
+     "w": 93,
+     "h": 47,
+     "anchor": [
+      47.0,
+      -6.0
+     ],
+     "origin": [
+      0.50538,
+      -0.12766
+     ]
+    }
+   }
+  },
+  {
+   "name": "carrot_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "carrot stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/carrot_1_sprout.png",
+     "w": 202,
+     "h": 120,
+     "shadow": "2x/crops/carrot_1_sprout_shadow.png",
+     "anchor": [
+      98.0,
+      2.0
+     ],
+     "origin": [
+      0.48515,
+      0.01667
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/carrot_1_sprout.png",
+     "w": 101,
+     "h": 60,
+     "shadow": "1x/crops/carrot_1_sprout_shadow.png",
+     "anchor": [
+      49.0,
+      1.0
+     ],
+     "origin": [
+      0.48515,
+      0.01667
+     ]
+    }
+   }
+  },
+  {
+   "name": "carrot_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "carrot stage 2 (growing); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/carrot_2_growing.png",
+     "w": 214,
+     "h": 140,
+     "shadow": "2x/crops/carrot_2_growing_shadow.png",
+     "anchor": [
+      100.0,
+      14.0
+     ],
+     "origin": [
+      0.46729,
+      0.1
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/carrot_2_growing.png",
+     "w": 107,
+     "h": 70,
+     "shadow": "1x/crops/carrot_2_growing_shadow.png",
+     "anchor": [
+      50.0,
+      7.0
+     ],
+     "origin": [
+      0.46729,
+      0.1
+     ]
+    }
+   }
+  },
+  {
+   "name": "carrot_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "carrot stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/carrot_3_ripe.png",
+     "w": 220,
+     "h": 154,
+     "shadow": "2x/crops/carrot_3_ripe_shadow.png",
+     "anchor": [
+      106.0,
+      28.0
+     ],
+     "origin": [
+      0.48182,
+      0.18182
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/carrot_3_ripe.png",
+     "w": 110,
+     "h": 77,
+     "shadow": "1x/crops/carrot_3_ripe_shadow.png",
+     "anchor": [
+      53.0,
+      14.0
+     ],
+     "origin": [
+      0.48182,
+      0.18182
+     ]
+    }
+   }
+  },
+  {
+   "name": "corn_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "corn stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/corn_0_seeded.png",
+     "w": 186,
+     "h": 94,
+     "anchor": [
+      94.0,
+      -12.0
+     ],
+     "origin": [
+      0.50538,
+      -0.12766
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/corn_0_seeded.png",
+     "w": 93,
+     "h": 47,
+     "anchor": [
+      47.0,
+      -6.0
+     ],
+     "origin": [
+      0.50538,
+      -0.12766
+     ]
+    }
+   }
+  },
+  {
+   "name": "corn_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "corn stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/corn_1_sprout.png",
+     "w": 204,
+     "h": 128,
+     "shadow": "2x/crops/corn_1_sprout_shadow.png",
+     "anchor": [
+      102.0,
+      4.0
+     ],
+     "origin": [
+      0.5,
+      0.03125
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/corn_1_sprout.png",
+     "w": 102,
+     "h": 64,
+     "shadow": "1x/crops/corn_1_sprout_shadow.png",
+     "anchor": [
+      51.0,
+      2.0
+     ],
+     "origin": [
+      0.5,
+      0.03125
+     ]
+    }
+   }
+  },
+  {
+   "name": "corn_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "corn stage 2 (growing); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/corn_2_growing.png",
+     "w": 226,
+     "h": 186,
+     "shadow": "2x/crops/corn_2_growing_shadow.png",
+     "anchor": [
+      114.0,
+      58.0
+     ],
+     "origin": [
+      0.50442,
+      0.31183
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/corn_2_growing.png",
+     "w": 113,
+     "h": 93,
+     "shadow": "1x/crops/corn_2_growing_shadow.png",
+     "anchor": [
+      57.0,
+      29.0
+     ],
+     "origin": [
+      0.50442,
+      0.31183
+     ]
+    }
+   }
+  },
+  {
+   "name": "corn_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "corn stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it",
+   "res": {
+    "2x": {
+     "file": "2x/crops/corn_3_ripe.png",
+     "w": 240,
+     "h": 242,
+     "shadow": "2x/crops/corn_3_ripe_shadow.png",
+     "anchor": [
+      122.0,
+      114.0
+     ],
+     "origin": [
+      0.50833,
+      0.47107
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/corn_3_ripe.png",
+     "w": 120,
+     "h": 121,
+     "shadow": "1x/crops/corn_3_ripe_shadow.png",
+     "anchor": [
+      61.0,
+      57.0
+     ],
+     "origin": [
+      0.50833,
+      0.47107
+     ]
+    }
+   }
+  },
+  {
+   "name": "cow",
+   "category": "animals",
+   "type": "spritesheet",
+   "notes": "rows = anim x direction; anchor = ground point under the animal's centre",
+   "res": {
+    "2x": {
+     "file": "2x/animals/cow.png",
+     "frameWidth": 192,
+     "frameHeight": 206,
+     "columns": 6,
+     "rows": 12,
+     "shadow": "2x/animals/cow_shadow.png",
+     "anchor": [
+      96.0,
+      169.0
+     ],
+     "origin": [
+      0.5,
+      0.82039
+     ]
+    },
+    "1x": {
+     "file": "1x/animals/cow.png",
+     "frameWidth": 98,
+     "frameHeight": 106,
+     "columns": 6,
+     "rows": 12,
+     "shadow": "1x/animals/cow_shadow.png",
+     "anchor": [
+      49.0,
+      85.5
+     ],
+     "origin": [
+      0.5,
+      0.8066
+     ]
+    }
+   },
+   "animations": [
+    {
+     "key": "cow_idle_se",
+     "anim": "idle",
+     "dir": "se",
+     "start": 0,
+     "end": 3,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "cow_idle_sw",
+     "anim": "idle",
+     "dir": "sw",
+     "start": 6,
+     "end": 9,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "cow_idle_ne",
+     "anim": "idle",
+     "dir": "ne",
+     "start": 12,
+     "end": 15,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "cow_idle_nw",
+     "anim": "idle",
+     "dir": "nw",
+     "start": 18,
+     "end": 21,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "cow_walk_se",
+     "anim": "walk",
+     "dir": "se",
+     "start": 24,
+     "end": 29,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "cow_walk_sw",
+     "anim": "walk",
+     "dir": "sw",
+     "start": 30,
+     "end": 35,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "cow_walk_ne",
+     "anim": "walk",
+     "dir": "ne",
+     "start": 36,
+     "end": 41,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "cow_walk_nw",
+     "anim": "walk",
+     "dir": "nw",
+     "start": 42,
+     "end": 47,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "cow_eat_se",
+     "anim": "eat",
+     "dir": "se",
+     "start": 48,
+     "end": 51,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "cow_eat_sw",
+     "anim": "eat",
+     "dir": "sw",
+     "start": 54,
+     "end": 57,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "cow_eat_ne",
+     "anim": "eat",
+     "dir": "ne",
+     "start": 60,
+     "end": 63,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "cow_eat_nw",
+     "anim": "eat",
+     "dir": "nw",
+     "start": 66,
+     "end": 69,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    }
+   ]
+  },
+  {
+   "name": "sheep",
+   "category": "animals",
+   "type": "spritesheet",
+   "notes": "rows = anim x direction; anchor = ground point under the animal's centre",
+   "res": {
+    "2x": {
+     "file": "2x/animals/sheep.png",
+     "frameWidth": 140,
+     "frameHeight": 148,
+     "columns": 6,
+     "rows": 12,
+     "shadow": "2x/animals/sheep_shadow.png",
+     "anchor": [
+      70.0,
+      115.0
+     ],
+     "origin": [
+      0.5,
+      0.77703
+     ]
+    },
+    "1x": {
+     "file": "1x/animals/sheep.png",
+     "frameWidth": 74,
+     "frameHeight": 76,
+     "columns": 6,
+     "rows": 12,
+     "shadow": "1x/animals/sheep_shadow.png",
+     "anchor": [
+      37.0,
+      58.5
+     ],
+     "origin": [
+      0.5,
+      0.76974
+     ]
+    }
+   },
+   "animations": [
+    {
+     "key": "sheep_idle_se",
+     "anim": "idle",
+     "dir": "se",
+     "start": 0,
+     "end": 3,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_idle_sw",
+     "anim": "idle",
+     "dir": "sw",
+     "start": 6,
+     "end": 9,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_idle_ne",
+     "anim": "idle",
+     "dir": "ne",
+     "start": 12,
+     "end": 15,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_idle_nw",
+     "anim": "idle",
+     "dir": "nw",
+     "start": 18,
+     "end": 21,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_walk_se",
+     "anim": "walk",
+     "dir": "se",
+     "start": 24,
+     "end": 29,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_walk_sw",
+     "anim": "walk",
+     "dir": "sw",
+     "start": 30,
+     "end": 35,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_walk_ne",
+     "anim": "walk",
+     "dir": "ne",
+     "start": 36,
+     "end": 41,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_walk_nw",
+     "anim": "walk",
+     "dir": "nw",
+     "start": 42,
+     "end": 47,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_eat_se",
+     "anim": "eat",
+     "dir": "se",
+     "start": 48,
+     "end": 51,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_eat_sw",
+     "anim": "eat",
+     "dir": "sw",
+     "start": 54,
+     "end": 57,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_eat_ne",
+     "anim": "eat",
+     "dir": "ne",
+     "start": 60,
+     "end": 63,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "sheep_eat_nw",
+     "anim": "eat",
+     "dir": "nw",
+     "start": 66,
+     "end": 69,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    }
+   ]
+  },
+  {
+   "name": "chicken",
+   "category": "animals",
+   "type": "spritesheet",
+   "notes": "rows = anim x direction; anchor = ground point under the animal's centre",
+   "res": {
+    "2x": {
+     "file": "2x/animals/chicken.png",
+     "frameWidth": 76,
+     "frameHeight": 94,
+     "columns": 6,
+     "rows": 12,
+     "shadow": "2x/animals/chicken_shadow.png",
+     "anchor": [
+      38.0,
+      73.0
+     ],
+     "origin": [
+      0.5,
+      0.7766
+     ]
+    },
+    "1x": {
+     "file": "1x/animals/chicken.png",
+     "frameWidth": 40,
+     "frameHeight": 50,
+     "columns": 6,
+     "rows": 12,
+     "shadow": "1x/animals/chicken_shadow.png",
+     "anchor": [
+      20.0,
+      38.5
+     ],
+     "origin": [
+      0.5,
+      0.77
+     ]
+    }
+   },
+   "animations": [
+    {
+     "key": "chicken_idle_se",
+     "anim": "idle",
+     "dir": "se",
+     "start": 0,
+     "end": 3,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_idle_sw",
+     "anim": "idle",
+     "dir": "sw",
+     "start": 6,
+     "end": 9,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_idle_ne",
+     "anim": "idle",
+     "dir": "ne",
+     "start": 12,
+     "end": 15,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_idle_nw",
+     "anim": "idle",
+     "dir": "nw",
+     "start": 18,
+     "end": 21,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_walk_se",
+     "anim": "walk",
+     "dir": "se",
+     "start": 24,
+     "end": 29,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_walk_sw",
+     "anim": "walk",
+     "dir": "sw",
+     "start": 30,
+     "end": 35,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_walk_ne",
+     "anim": "walk",
+     "dir": "ne",
+     "start": 36,
+     "end": 41,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_walk_nw",
+     "anim": "walk",
+     "dir": "nw",
+     "start": 42,
+     "end": 47,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_eat_se",
+     "anim": "eat",
+     "dir": "se",
+     "start": 48,
+     "end": 51,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_eat_sw",
+     "anim": "eat",
+     "dir": "sw",
+     "start": 54,
+     "end": 57,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_eat_ne",
+     "anim": "eat",
+     "dir": "ne",
+     "start": 60,
+     "end": 63,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "chicken_eat_nw",
+     "anim": "eat",
+     "dir": "nw",
+     "start": 66,
+     "end": 69,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    }
+   ]
+  },
+  {
+   "name": "barn",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    4,
+    4
+   ],
+   "notes": "pasture shelter / barn, 4x4",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/barn.png",
+     "w": 1008,
+     "h": 676,
+     "shadow": "2x/buildings/barn_shadow.png",
+     "anchor": [
+      504.0,
+      168.0
+     ],
+     "origin": [
+      0.5,
+      0.24852
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/barn.png",
+     "w": 504,
+     "h": 338,
+     "shadow": "1x/buildings/barn_shadow.png",
+     "anchor": [
+      252.0,
+      84.0
+     ],
+     "origin": [
+      0.5,
+      0.24852
+     ]
+    }
+   }
+  },
+  {
+   "name": "chicken_coop",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "chicken coop with run, 3x3",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/chicken_coop.png",
+     "w": 752,
+     "h": 504,
+     "shadow": "2x/buildings/chicken_coop_shadow.png",
+     "anchor": [
+      376.0,
+      120.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/chicken_coop.png",
+     "w": 376,
+     "h": 252,
+     "shadow": "1x/buildings/chicken_coop_shadow.png",
+     "anchor": [
+      188.0,
+      60.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    }
+   }
+  },
+  {
+   "name": "feed_mill",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "windmill / feed mill body without sails, 2x2 \u2013 layer feed_mill_sails on top",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/feed_mill.png",
+     "w": 496,
+     "h": 456,
+     "shadow": "2x/buildings/feed_mill_shadow.png",
+     "anchor": [
+      248.0,
+      202.0
+     ],
+     "origin": [
+      0.5,
+      0.44298
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/feed_mill.png",
+     "w": 248,
+     "h": 228,
+     "shadow": "1x/buildings/feed_mill_shadow.png",
+     "anchor": [
+      124.0,
+      101.0
+     ],
+     "origin": [
+      0.5,
+      0.44298
+     ]
+    }
+   }
+  },
+  {
+   "name": "feed_mill_sails",
+   "category": "buildings",
+   "type": "spritesheet",
+   "notes": "looping sails; same canvas + anchor as feed_mill, draw directly above it",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/feed_mill_sails.png",
+     "frameWidth": 460,
+     "frameHeight": 428,
+     "columns": 8,
+     "rows": 1,
+     "anchor": [
+      230.0,
+      280.0
+     ],
+     "origin": [
+      0.5,
+      0.65421
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/feed_mill_sails.png",
+     "frameWidth": 234,
+     "frameHeight": 218,
+     "columns": 8,
+     "rows": 1,
+     "anchor": [
+      117.0,
+      142.0
+     ],
+     "origin": [
+      0.5,
+      0.65138
+     ]
+    }
+   },
+   "animations": [
+    {
+     "key": "feed_mill_sails_spin",
+     "anim": "spin",
+     "dir": "-",
+     "start": 0,
+     "end": 7,
+     "frames": 8,
+     "fps": 10,
+     "repeat": -1
+    }
+   ]
+  },
+  {
+   "name": "feed_mill_static",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "feed mill with sails baked in (single image)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/feed_mill_static.png",
+     "w": 496,
+     "h": 522,
+     "shadow": "2x/buildings/feed_mill_static_shadow.png",
+     "anchor": [
+      248.0,
+      268.0
+     ],
+     "origin": [
+      0.5,
+      0.51341
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/feed_mill_static.png",
+     "w": 248,
+     "h": 261,
+     "shadow": "1x/buildings/feed_mill_static_shadow.png",
+     "anchor": [
+      124.0,
+      134.0
+     ],
+     "origin": [
+      0.5,
+      0.51341
+     ]
+    }
+   }
+  },
+  {
+   "name": "dairy",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "dairy, 3x2 (3 tiles along x, 2 along y)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/dairy.png",
+     "w": 624,
+     "h": 470,
+     "shadow": "2x/buildings/dairy_shadow.png",
+     "anchor": [
+      248.0,
+      146.0
+     ],
+     "origin": [
+      0.39744,
+      0.31064
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/dairy.png",
+     "w": 312,
+     "h": 235,
+     "shadow": "1x/buildings/dairy_shadow.png",
+     "anchor": [
+      124.0,
+      73.0
+     ],
+     "origin": [
+      0.39744,
+      0.31064
+     ]
+    }
+   }
+  },
+  {
+   "name": "bakery",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "bakery, 3x2 (3 tiles along x, 2 along y)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/bakery.png",
+     "w": 624,
+     "h": 566,
+     "shadow": "2x/buildings/bakery_shadow.png",
+     "anchor": [
+      248.0,
+      242.0
+     ],
+     "origin": [
+      0.39744,
+      0.42756
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/bakery.png",
+     "w": 312,
+     "h": 283,
+     "shadow": "1x/buildings/bakery_shadow.png",
+     "anchor": [
+      124.0,
+      121.0
+     ],
+     "origin": [
+      0.39744,
+      0.42756
+     ]
+    }
+   }
+  },
+  {
+   "name": "weaving_hut",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "loom / weaving hut, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/weaving_hut.png",
+     "w": 496,
+     "h": 396,
+     "shadow": "2x/buildings/weaving_hut_shadow.png",
+     "anchor": [
+      248.0,
+      140.0
+     ],
+     "origin": [
+      0.5,
+      0.35354
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/weaving_hut.png",
+     "w": 248,
+     "h": 198,
+     "shadow": "1x/buildings/weaving_hut_shadow.png",
+     "anchor": [
+      124.0,
+      70.0
+     ],
+     "origin": [
+      0.5,
+      0.35354
+     ]
+    }
+   }
+  },
+  {
+   "name": "market_stall",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    1
+   ],
+   "notes": "market stall, 2x1 (2 tiles along x)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/market_stall.png",
+     "w": 416,
+     "h": 382,
+     "shadow": "2x/buildings/market_stall_shadow.png",
+     "anchor": [
+      122.0,
+      148.0
+     ],
+     "origin": [
+      0.29327,
+      0.38743
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/market_stall.png",
+     "w": 208,
+     "h": 191,
+     "shadow": "1x/buildings/market_stall_shadow.png",
+     "anchor": [
+      61.0,
+      74.0
+     ],
+     "origin": [
+      0.29327,
+      0.38743
+     ]
+    }
+   }
+  },
+  {
+   "name": "for_sale_sign",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "'for sale' sign for unowned plots, 1x1",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/for_sale_sign.png",
+     "w": 162,
+     "h": 230,
+     "shadow": "2x/buildings/for_sale_sign_shadow.png",
+     "anchor": [
+      68.0,
+      92.0
+     ],
+     "origin": [
+      0.41975,
+      0.4
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/for_sale_sign.png",
+     "w": 81,
+     "h": 115,
+     "shadow": "1x/buildings/for_sale_sign_shadow.png",
+     "anchor": [
+      34.0,
+      46.0
+     ],
+     "origin": [
+      0.41975,
+      0.4
+     ]
+    }
+   }
+  },
+  {
+   "name": "egg",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/egg.png",
+     "w": 172,
+     "h": 222,
+     "anchor": [
+      86.0,
+      106.0
+     ],
+     "origin": [
+      0.5,
+      0.47748
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/egg.png",
+     "w": 86,
+     "h": 111,
+     "anchor": [
+      43.0,
+      53.0
+     ],
+     "origin": [
+      0.5,
+      0.47748
+     ]
+    }
+   }
+  },
+  {
+   "name": "milk",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/milk.png",
+     "w": 156,
+     "h": 214,
+     "anchor": [
+      78.0,
+      98.0
+     ],
+     "origin": [
+      0.5,
+      0.45794
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/milk.png",
+     "w": 78,
+     "h": 107,
+     "anchor": [
+      39.0,
+      49.0
+     ],
+     "origin": [
+      0.5,
+      0.45794
+     ]
+    }
+   }
+  },
+  {
+   "name": "wool",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/wool.png",
+     "w": 206,
+     "h": 206,
+     "anchor": [
+      94.0,
+      90.0
+     ],
+     "origin": [
+      0.45631,
+      0.43689
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/wool.png",
+     "w": 103,
+     "h": 103,
+     "anchor": [
+      47.0,
+      45.0
+     ],
+     "origin": [
+      0.45631,
+      0.43689
+     ]
+    }
+   }
+  },
+  {
+   "name": "feed",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/feed.png",
+     "w": 164,
+     "h": 226,
+     "anchor": [
+      82.0,
+      110.0
+     ],
+     "origin": [
+      0.5,
+      0.48673
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/feed.png",
+     "w": 82,
+     "h": 113,
+     "anchor": [
+      41.0,
+      55.0
+     ],
+     "origin": [
+      0.5,
+      0.48673
+     ]
+    }
+   }
+  },
+  {
+   "name": "cheese",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/cheese.png",
+     "w": 216,
+     "h": 170,
+     "anchor": [
+      106.0,
+      54.0
+     ],
+     "origin": [
+      0.49074,
+      0.31765
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/cheese.png",
+     "w": 108,
+     "h": 85,
+     "anchor": [
+      53.0,
+      27.0
+     ],
+     "origin": [
+      0.49074,
+      0.31765
+     ]
+    }
+   }
+  },
+  {
+   "name": "butter",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/butter.png",
+     "w": 204,
+     "h": 160,
+     "anchor": [
+      102.0,
+      42.0
+     ],
+     "origin": [
+      0.5,
+      0.2625
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/butter.png",
+     "w": 102,
+     "h": 80,
+     "anchor": [
+      51.0,
+      21.0
+     ],
+     "origin": [
+      0.5,
+      0.2625
+     ]
+    }
+   }
+  },
+  {
+   "name": "bread",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/bread.png",
+     "w": 216,
+     "h": 170,
+     "anchor": [
+      108.0,
+      54.0
+     ],
+     "origin": [
+      0.5,
+      0.31765
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/bread.png",
+     "w": 108,
+     "h": 85,
+     "anchor": [
+      54.0,
+      27.0
+     ],
+     "origin": [
+      0.5,
+      0.31765
+     ]
+    }
+   }
+  },
+  {
+   "name": "cloth",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/cloth.png",
+     "w": 196,
+     "h": 190,
+     "anchor": [
+      98.0,
+      74.0
+     ],
+     "origin": [
+      0.5,
+      0.38947
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/cloth.png",
+     "w": 98,
+     "h": 95,
+     "anchor": [
+      49.0,
+      37.0
+     ],
+     "origin": [
+      0.5,
+      0.38947
+     ]
+    }
+   }
+  },
+  {
+   "name": "wheat",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/wheat.png",
+     "w": 162,
+     "h": 218,
+     "anchor": [
+      88.0,
+      102.0
+     ],
+     "origin": [
+      0.54321,
+      0.46789
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/wheat.png",
+     "w": 81,
+     "h": 109,
+     "anchor": [
+      44.0,
+      51.0
+     ],
+     "origin": [
+      0.54321,
+      0.46789
+     ]
+    }
+   }
+  },
+  {
+   "name": "carrot",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/carrot.png",
+     "w": 170,
+     "h": 244,
+     "anchor": [
+      92.0,
+      128.0
+     ],
+     "origin": [
+      0.54118,
+      0.52459
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/carrot.png",
+     "w": 85,
+     "h": 122,
+     "anchor": [
+      46.0,
+      64.0
+     ],
+     "origin": [
+      0.54118,
+      0.52459
+     ]
+    }
+   }
+  },
+  {
+   "name": "corn",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/corn.png",
+     "w": 180,
+     "h": 230,
+     "anchor": [
+      90.0,
+      114.0
+     ],
+     "origin": [
+      0.5,
+      0.49565
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/corn.png",
+     "w": 90,
+     "h": 115,
+     "anchor": [
+      45.0,
+      57.0
+     ],
+     "origin": [
+      0.5,
+      0.49565
+     ]
+    }
+   }
+  },
+  {
+   "name": "coins",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/coins.png",
+     "w": 196,
+     "h": 206,
+     "anchor": [
+      98.0,
+      90.0
+     ],
+     "origin": [
+      0.5,
+      0.43689
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/coins.png",
+     "w": 98,
+     "h": 103,
+     "anchor": [
+      49.0,
+      45.0
+     ],
+     "origin": [
+      0.5,
+      0.43689
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_oak",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "round tree on 1 tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_oak.png",
+     "w": 190,
+     "h": 280,
+     "shadow": "2x/props/tree_oak_shadow.png",
+     "anchor": [
+      78.0,
+      144.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_oak.png",
+     "w": 95,
+     "h": 140,
+     "shadow": "1x/props/tree_oak_shadow.png",
+     "anchor": [
+      39.0,
+      72.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_apple",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "apple tree",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_apple.png",
+     "w": 198,
+     "h": 280,
+     "shadow": "2x/props/tree_apple_shadow.png",
+     "anchor": [
+      86.0,
+      144.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_apple.png",
+     "w": 99,
+     "h": 140,
+     "shadow": "1x/props/tree_apple_shadow.png",
+     "anchor": [
+      43.0,
+      72.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_pine",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pine tree",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_pine.png",
+     "w": 152,
+     "h": 290,
+     "shadow": "2x/props/tree_pine_shadow.png",
+     "anchor": [
+      66.0,
+      168.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_pine.png",
+     "w": 76,
+     "h": 145,
+     "shadow": "1x/props/tree_pine_shadow.png",
+     "anchor": [
+      33.0,
+      84.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "bush",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_berry",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "berry bush",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_berry.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_berry_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_berry.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_berry_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_small",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small rock",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_small.png",
+     "w": 70,
+     "h": 60,
+     "shadow": "2x/props/rock_small_shadow.png",
+     "anchor": [
+      32.0,
+      -32.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_small.png",
+     "w": 35,
+     "h": 30,
+     "shadow": "1x/props/rock_small_shadow.png",
+     "anchor": [
+      16.0,
+      -16.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_large",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rock cluster",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_large.png",
+     "w": 148,
+     "h": 82,
+     "shadow": "2x/props/rock_large_shadow.png",
+     "anchor": [
+      70.0,
+      -18.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_large.png",
+     "w": 74,
+     "h": 41,
+     "shadow": "1x/props/rock_large_shadow.png",
+     "anchor": [
+      35.0,
+      -9.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    }
+   }
+  },
+  {
+   "name": "hay_bale",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "square hay bale",
+   "res": {
+    "2x": {
+     "file": "2x/props/hay_bale.png",
+     "w": 120,
+     "h": 106,
+     "shadow": "2x/props/hay_bale_shadow.png",
+     "anchor": [
+      54.0,
+      -2.0
+     ],
+     "origin": [
+      0.45,
+      -0.01887
+     ]
+    },
+    "1x": {
+     "file": "1x/props/hay_bale.png",
+     "w": 60,
+     "h": 53,
+     "shadow": "1x/props/hay_bale_shadow.png",
+     "anchor": [
+      27.0,
+      -1.0
+     ],
+     "origin": [
+      0.45,
+      -0.01887
+     ]
+    }
+   }
+  },
+  {
+   "name": "hay_roll",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "round hay bale",
+   "res": {
+    "2x": {
+     "file": "2x/props/hay_roll.png",
+     "w": 118,
+     "h": 116,
+     "shadow": "2x/props/hay_roll_shadow.png",
+     "anchor": [
+      52.0,
+      6.0
+     ],
+     "origin": [
+      0.44068,
+      0.05172
+     ]
+    },
+    "1x": {
+     "file": "1x/props/hay_roll.png",
+     "w": 59,
+     "h": 58,
+     "shadow": "1x/props/hay_roll_shadow.png",
+     "anchor": [
+      26.0,
+      3.0
+     ],
+     "origin": [
+      0.44068,
+      0.05172
+     ]
+    }
+   }
+  },
+  {
+   "name": "crate",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "empty crate",
+   "res": {
+    "2x": {
+     "file": "2x/props/crate.png",
+     "w": 118,
+     "h": 108,
+     "shadow": "2x/props/crate_shadow.png",
+     "anchor": [
+      52.0,
+      0.0
+     ],
+     "origin": [
+      0.44068,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/props/crate.png",
+     "w": 59,
+     "h": 54,
+     "shadow": "1x/props/crate_shadow.png",
+     "anchor": [
+      26.0,
+      0.0
+     ],
+     "origin": [
+      0.44068,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "crate_apples",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crate with apples",
+   "res": {
+    "2x": {
+     "file": "2x/props/crate_apples.png",
+     "w": 118,
+     "h": 112,
+     "shadow": "2x/props/crate_apples_shadow.png",
+     "anchor": [
+      52.0,
+      4.0
+     ],
+     "origin": [
+      0.44068,
+      0.03571
+     ]
+    },
+    "1x": {
+     "file": "1x/props/crate_apples.png",
+     "w": 59,
+     "h": 56,
+     "shadow": "1x/props/crate_apples_shadow.png",
+     "anchor": [
+      26.0,
+      2.0
+     ],
+     "origin": [
+      0.44068,
+      0.03571
+     ]
+    }
+   }
+  },
+  {
+   "name": "crate_carrots",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crate with carrots",
+   "res": {
+    "2x": {
+     "file": "2x/props/crate_carrots.png",
+     "w": 118,
+     "h": 112,
+     "shadow": "2x/props/crate_carrots_shadow.png",
+     "anchor": [
+      52.0,
+      4.0
+     ],
+     "origin": [
+      0.44068,
+      0.03571
+     ]
+    },
+    "1x": {
+     "file": "1x/props/crate_carrots.png",
+     "w": 59,
+     "h": 56,
+     "shadow": "1x/props/crate_carrots_shadow.png",
+     "anchor": [
+      26.0,
+      2.0
+     ],
+     "origin": [
+      0.44068,
+      0.03571
+     ]
+    }
+   }
+  },
+  {
+   "name": "crate_stack",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stacked crates",
+   "res": {
+    "2x": {
+     "file": "2x/props/crate_stack.png",
+     "w": 114,
+     "h": 156,
+     "shadow": "2x/props/crate_stack_shadow.png",
+     "anchor": [
+      46.0,
+      32.0
+     ],
+     "origin": [
+      0.40351,
+      0.20513
+     ]
+    },
+    "1x": {
+     "file": "1x/props/crate_stack.png",
+     "w": 57,
+     "h": 78,
+     "shadow": "1x/props/crate_stack_shadow.png",
+     "anchor": [
+      23.0,
+      16.0
+     ],
+     "origin": [
+      0.40351,
+      0.20513
+     ]
+    }
+   }
+  },
+  {
+   "name": "sack_feed",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "feed sack",
+   "res": {
+    "2x": {
+     "file": "2x/props/sack_feed.png",
+     "w": 68,
+     "h": 80,
+     "shadow": "2x/props/sack_feed_shadow.png",
+     "anchor": [
+      34.0,
+      -8.0
+     ],
+     "origin": [
+      0.5,
+      -0.1
+     ]
+    },
+    "1x": {
+     "file": "1x/props/sack_feed.png",
+     "w": 34,
+     "h": 40,
+     "shadow": "1x/props/sack_feed_shadow.png",
+     "anchor": [
+      17.0,
+      -4.0
+     ],
+     "origin": [
+      0.5,
+      -0.1
+     ]
+    }
+   }
+  },
+  {
+   "name": "milk_can",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "milk can",
+   "res": {
+    "2x": {
+     "file": "2x/props/milk_can.png",
+     "w": 74,
+     "h": 106,
+     "shadow": "2x/props/milk_can_shadow.png",
+     "anchor": [
+      30.0,
+      8.0
+     ],
+     "origin": [
+      0.40541,
+      0.07547
+     ]
+    },
+    "1x": {
+     "file": "1x/props/milk_can.png",
+     "w": 37,
+     "h": 53,
+     "shadow": "1x/props/milk_can_shadow.png",
+     "anchor": [
+      15.0,
+      4.0
+     ],
+     "origin": [
+      0.40541,
+      0.07547
+     ]
+    }
+   }
+  }
+ ]
+}
