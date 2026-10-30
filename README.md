@@ -30,6 +30,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   Esc, right-click or **Cancel** leaves build mode.
 - **Demolish:** 🧹 → click an object (refunds 50% of its cost).
 - Click an object to open its action panel.
+- **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
+  its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
 
 ### Debug mode (QA)
 
@@ -52,9 +54,11 @@ src/
     clock.ts           game clock, Day N, game-time timers
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
+    crops.ts           planting, growth stages, harvest, starting fields
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
     buildables.ts      build menu registry (+ the core Path)
+    crops.ts           crop catalogue + the Field buildable
   game/              Glue between logic, scene and UI
     context.ts         FarmContext, PanelSpec, ToolState
     hooks.ts           registerBehavior / registerHudButton / onGameStart
@@ -67,6 +71,7 @@ src/
     debug.ts           ?debug=1 panel
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
+    fields/            field + crop views, ripe effects, plant/harvest panel
 ```
 
 ## Extending the game
@@ -155,6 +160,8 @@ events. There is no offline progress: time only passes while the game is open.
 - **Events:** `game.events.on('money' | 'inventory' | 'objectAdded' | 'objectRemoved' | 'objectChanged' | 'land' | 'day' | 'speed' | 'reset', fn)`.
 - **Land:** `game.setLandOwned(x, y, true)` repaints tiles and fences.
 - **Startup logic:** `onGameStart((ctx) => { ... })`.
+- **New-game content:** `onNewGame((state) => addStartingObject(state, 'field', x, y))` from
+  `src/logic/state.ts` (runs only for brand-new farms, not loaded saves).
 
 ## Save data
 
