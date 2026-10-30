@@ -43,6 +43,8 @@ export interface HudButton {
   onClick(ctx: FarmContext): void;
   /** Small count shown on the button (e.g. orders ready to fulfil); re-read on every HUD refresh. Hidden when null or 0. */
   badge?(ctx: FarmContext): number | null;
+  /** Live icon and label (e.g. a mute toggle); re-read on every HUD refresh. */
+  live?(ctx: FarmContext): { icon: string; label: string };
 }
 
 const hudButtons: HudButton[] = [];
@@ -83,4 +85,33 @@ export function registerTileTapHandler(handler: TileTapHandler): void {
 
 export function runTileTapHandlers(ctx: FarmContext, x: number, y: number): boolean {
   return tileTapHandlers.some((handler) => handler(ctx, x, y) === true);
+}
+
+/** A block in the Settings sheet (e.g. sound). Rendered each time the sheet opens. */
+export interface SettingsSection {
+  id: string;
+  render(ctx: FarmContext, body: HTMLElement): void;
+}
+
+const settingsSections: SettingsSection[] = [];
+
+export function registerSettingsSection(section: SettingsSection): void {
+  if (settingsSections.some((s) => s.id === section.id)) throw new Error(`Settings section "${section.id}" is already registered`);
+  settingsSections.push(section);
+}
+
+export function listSettingsSections(): readonly SettingsSection[] {
+  return settingsSections;
+}
+
+/** Extra read-only debug info exposed on `window.farm` under `key` (e.g. `window.farm.audio`). */
+const debugInfo = new Map<string, () => unknown>();
+
+export function registerDebugInfo(key: string, read: () => unknown): void {
+  if (debugInfo.has(key)) throw new Error(`Debug info "${key}" is already registered`);
+  debugInfo.set(key, read);
+}
+
+export function readDebugInfo(): Record<string, unknown> {
+  return Object.fromEntries([...debugInfo].map(([key, read]) => [key, read()]));
 }
