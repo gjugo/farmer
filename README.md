@@ -30,6 +30,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   Esc, right-click or **Cancel** leaves build mode.
 - **Demolish:** 🧹 → click an object (refunds 50% of its cost).
 - Click an object to open its action panel.
+- **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
+  after their cycle; click the pen (or **Collect**) to pick up eggs, milk and wool.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
 
@@ -71,6 +73,7 @@ src/
     debug.ts           ?debug=1 panel
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
+    animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
     fields/            field + crop views, ripe effects, plant/harvest panel
 ```
 
