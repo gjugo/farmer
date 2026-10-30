@@ -1,1 +1,169 @@
 # farmer
+
+A cheerful 2D farming game for the browser, built with **Phaser 4**, **Vite** and **TypeScript**.
+Grow the farm, build fields and pastures, raise animals, turn crops and animal products into
+milk, cheese, eggs and more, and sell them to expand.
+
+## Running it
+
+```bash
+npm ci
+npm run dev                          # http://localhost:5173
+npm run dev -- --port 5243 --strictPort
+```
+
+| Script              | What it does                                   |
+| ------------------- | ---------------------------------------------- |
+| `npm run dev`       | Vite dev server with hot reload                |
+| `npm run build`     | Typecheck and production build into `dist/`    |
+| `npm run preview`   | Serve the production build                     |
+| `npm run typecheck` | `tsc --noEmit` (strict)                        |
+| `npm run lint`      | ESLint                                         |
+| `npm test`          | Vitest unit tests (`src/**/*.test.ts`)         |
+
+CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build on every PR and on `main`.
+
+### Controls
+
+- **Pan:** drag the map, or WASD / arrow keys. **Zoom:** mouse wheel or pinch.
+- **Build:** 🔨 Build → pick an item → click/tap a tile. A green ghost means the spot is valid.
+  Esc, right-click or **Cancel** leaves build mode.
+- **Demolish:** 🧹 → click an object (refunds 50% of its cost).
+- Click an object to open its action panel.
+
+### Debug mode (QA)
+
+Open `/?debug=1` for a panel with **+$1000**, **+10 of any item** and clock speed **×1 / ×10 / ×60**.
+`window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
+`window.farm.money`, `window.farm.inventory`, `window.farm.objects`.
+
+## Folder layout
+
+```
+src/
+  main.ts            Wires everything: load save, HUD, Phaser game, autosave, window.farm
+  logic/             Plain TypeScript, no Phaser (lint-enforced), unit-tested
+    types.ts           GameState and friends
+    game.ts            Game: the single owner of the state + typed events
+    economy.ts         canAfford / spend / earn (money never goes negative)
+    inventory.ts       add / remove / count (counts never go negative)
+    land.ts            land ownership grid
+    placement.ts       canPlace / objectAt
+    clock.ts           game clock, Day N, game-time timers
+    save.ts            versioned save/load + migrations + defaults
+    slices.ts          feature-owned global state (GameState.ext)
+  data/              Content as data
+    items.ts           item catalogue (ids shared by every feature)
+    buildables.ts      build menu registry (+ the core Path)
+  game/              Glue between logic, scene and UI
+    context.ts         FarmContext, PanelSpec, ToolState
+    hooks.ts           registerBehavior / registerHudButton / onGameStart
+  scenes/            Phaser scenes
+    textures.ts        runtime-drawn textures (registerTexture)
+    BootScene.ts       bakes textures
+    FarmScene.ts       map, fences, objects, camera, build/demolish input
+  ui/                HTML/CSS overlay above the canvas
+    hud.ts             top bar, side sheet (build, inventory, settings, action panel), toasts, dialogs
+    debug.ts           ?debug=1 panel
+  features/          One folder per feature, auto-loaded (see below)
+    path/              reference feature
+```
+
+## Extending the game
+
+Features live in `src/features/<name>/index.ts`. Every such file is imported automatically
+(`import.meta.glob` in `src/features/index.ts`), and registers what it needs as a side effect.
+**A new feature should not need to edit any shared file**, so parallel work rarely conflicts.
+
+### Add an item
+
+Items are shared ids, so they live in one place: add an entry to `ITEMS` in `src/data/items.ts`
+(`id`, `name`, `category`, base sell `price`, emoji `icon`). Use the id everywhere else
+(`game.addItem('egg', 3)`, `game.count('milk')`).
+
+### Add a buildable
+
+```ts
+// src/features/coop/index.ts
+import { registerBuildable } from '../../data/buildables';
+import { registerTexture, TILE } from '../../scenes/textures';
+import { registerBehavior } from '../../game/hooks';
+import { startTimer, timerDone, timerProgress, type Timer } from '../../logic/clock';
+
+interface CoopState { hens: number; timer: Timer | null }
+
+registerTexture('coop', {
+  width: TILE * 2,
+  height: TILE * 2,
+  draw: (g) => g.fillStyle(0xc0503a).fillRect(0, 0, TILE * 2, TILE * 2),
+});
+
+registerBuildable({
+  id: 'coop',
+  name: 'Chicken coop',
+  cost: 120,
+  footprint: { w: 2, h: 2 },
+  texture: 'coop',
+  category: 'animals',
+  initialState: (): CoopState => ({ hens: 0, timer: null }), // also fills old saves
+});
+
+registerBehavior<CoopState>('coop', {
+  create(ctx, obj, view) { /* add sprites to view.container */ },
+  update(ctx, obj, view, gameDt) { /* animate; runs every frame */ },
+  refresh(ctx, obj, view) { /* obj.state changed: update the view */ },
+  panel: (ctx, obj) => ({
+    title: 'Chicken coop',
+    icon: '🐔',
+    lines: [`Hens: ${obj.state.hens}`],
+    progress: obj.state.timer ? { value: timerProgress(ctx.game.state.clock, obj.state.timer) } : undefined,
+    actions: [
+      {
+        label: 'Collect eggs',
+        disabled: !obj.state.timer || !timerDone(ctx.game.state.clock, obj.state.timer),
+        onClick: () => {
+          ctx.game.addItem('egg', obj.state.hens);
+          obj.state.timer = startTimer(ctx.game.state.clock, 60_000);
+          ctx.game.touch(obj); // announce the state change
+          ctx.ui.floatText(obj.x, obj.y, `+${obj.state.hens} 🥚`);
+        },
+      },
+    ],
+  }),
+});
+```
+
+The build menu, ghost preview, placement rules, charging, demolish refunds, saving and the
+action panel all come for free. A "Demolish" action is appended to every object panel.
+
+### Add a timer
+
+Never use `setTimeout`, `setInterval` or `Date.now()` for gameplay. Store a `Timer`
+(`startTimer(clock, durationMs)`) in the object's state and read it with `timerProgress`,
+`timerRemaining` and `timerDone`. Timers run on game time, so they survive save/load and
+speed up with the debug clock speed. `game.now` is the current game time in ms;
+1 day = 4 real minutes at ×1 (`DAY_MS`). Subscribe to `game.events.on('day', ...)` for daily
+events. There is no offline progress: time only passes while the game is open.
+
+### Other extension points
+
+- **HUD button** (e.g. Market): `registerHudButton({ id, label, icon, onClick: (ctx) => ctx.ui.openPanel(...) })`.
+- **Global feature state** (e.g. market prices): `registerStateSlice('market', () => ({ ... }))`
+  and `getSlice(game.state, 'market')`. Defaults are merged into old saves.
+- **Feedback:** `ctx.ui.toast(msg, 'success' | 'error')`, `ctx.ui.floatText(tileX, tileY, text)`.
+  Money changes float next to the money counter automatically.
+- **Events:** `game.events.on('money' | 'inventory' | 'objectAdded' | 'objectRemoved' | 'objectChanged' | 'land' | 'day' | 'speed' | 'reset', fn)`.
+- **Land:** `game.setLandOwned(x, y, true)` repaints tiles and fences.
+- **Startup logic:** `onGameStart((ctx) => { ... })`.
+
+## Save data
+
+Autosaved to `localStorage` (`farmer.save`) every 10 s and when the tab is hidden or closed.
+Saves are versioned (`SAVE_VERSION` in `src/logic/save.ts`). Missing fields fall back to
+defaults, so adding state needs no migration; restructuring does (add one to `migrations`).
+Settings → **New game** resets the farm after a confirmation.
+
+## Art
+
+All art is original placeholder art drawn at runtime with Phaser Graphics (`src/scenes/textures.ts`);
+HUD icons are emoji. No external assets.
