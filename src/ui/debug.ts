@@ -1,6 +1,7 @@
 import { ITEM_LIST } from '../data/items';
 import { MAX_LEVEL } from '../data/progression';
 import type { FarmContext } from '../game/context';
+import { refreshOrders } from '../logic/orders';
 import { h } from './dom';
 
 export const SPEEDS = [1, 10, 60] as const;
@@ -86,6 +87,19 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext): void {
       'button',
       { type: 'button', class: 'btn', 'data-testid': 'debug-complete-goals', onclick: () => game.progression.completeAll() },
       'Complete goals',
+    ),
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn',
+        'data-testid': 'debug-refresh-orders',
+        onclick: () => {
+          refreshOrders(game.state);
+          ctx.ui.toast('Orders refreshed', 'success');
+        },
+      },
+      'Refresh orders',
     ),
   );
   const panel = h(

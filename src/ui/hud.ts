@@ -21,13 +21,13 @@ export class Hud implements UiApi {
   private levelEl!: HTMLElement;
   private xpEl!: HTMLElement;
   private xpBarEl!: HTMLElement;
-  private badges = new Map<string, { el: HTMLElement; count: (ctx: FarmContext) => number }>();
   private sheetEl!: HTMLElement;
   private sheetTitleEl!: HTMLElement;
   private sheetBodyEl!: HTMLElement;
   private bannerEl!: HTMLElement;
   private toastsEl!: HTMLElement;
   private buttons = new Map<string, HTMLButtonElement>();
+  private badges: { el: HTMLElement; read: () => number | null }[] = [];
   private sheet: SheetSpec | null = null;
   private sheetSignature = '';
 
@@ -91,18 +91,13 @@ export class Hud implements UiApi {
     );
 
     const tools = h('nav', { class: 'hud-buttons', 'aria-label': 'Farm tools' });
-    const addButton = (id: string, icon: string, label: string, onClick: () => void, badge?: (ctx: FarmContext) => number) => {
+    const addButton = (id: string, icon: string, label: string, onClick: () => void) => {
       const btn = h(
         'button',
         { class: 'hud-btn', type: 'button', 'data-testid': `btn-${id}`, 'aria-label': label, title: label, onclick: onClick },
         h('span', { class: 'hud-btn-icon', 'aria-hidden': 'true' }, icon),
         h('span', { class: 'hud-btn-label' }, label),
       );
-      if (badge) {
-        const el = h('span', { class: 'hud-badge', 'data-testid': `badge-${id}`, hidden: true });
-        btn.append(el);
-        this.badges.set(id, { el, count: badge });
-      }
       this.buttons.set(id, btn);
       tools.append(btn);
     };
@@ -116,7 +111,14 @@ export class Hud implements UiApi {
       }
     });
     addButton('inventory', '🎒', 'Inventory', () => this.toggleSheet(this.inventorySheet()));
-    for (const b of listHudButtons()) addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx), b.badge);
+    for (const b of listHudButtons()) {
+      addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx));
+      if (b.badge) {
+        const el = h('span', { class: 'hud-badge', 'data-testid': `badge-${b.id}`, hidden: true });
+        this.buttons.get(b.id)!.append(el);
+        this.badges.push({ el, read: () => b.badge!(this.ctx) });
+      }
+    }
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
 
     const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day, level), tools);
@@ -152,11 +154,11 @@ export class Hud implements UiApi {
     this.levelEl.textContent = `Lv ${level}`;
     this.xpEl.textContent = xpForNext === null ? 'MAX' : `${Math.floor(xpIntoLevel)}/${xpForNext}`;
     this.xpBarEl.style.width = `${xpForNext === null ? 100 : Math.min(100, (xpIntoLevel / xpForNext) * 100).toFixed(1)}%`;
-    for (const [id, { el, count }] of this.badges) {
-      const n = count(this.ctx);
-      el.hidden = n <= 0;
-      el.textContent = String(n);
-      this.buttons.get(id)?.setAttribute('aria-label', n > 0 ? `${this.buttons.get(id)?.title} (${n} ready)` : (this.buttons.get(id)?.title ?? id));
+    for (const { el, read } of this.badges) {
+      const n = read();
+      const text = n ? String(n) : '';
+      if (el.textContent !== text) el.textContent = text;
+      el.hidden = !n;
     }
   }
 

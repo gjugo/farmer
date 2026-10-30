@@ -34,14 +34,20 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   after their cycle; click the pen (or **Collect**) to pick up eggs, milk and wool.
 - **Processing:** build a Feed Mill, Dairy, Bakery or Loom, open it and pick a recipe. Inputs are taken at once;
   up to 3 jobs queue and run one at a time. Click the building (or **Collect**) to pick up finished goods.
+- **Orders:** 📋 Orders shows 3 customer orders for goods you have had before. Fulfil hands over the goods
+  for a reward above today's market value; the HUD badge counts orders you can fulfil now. A fulfilled slot
+  gets a new order after 2 game-minutes, a discarded one after 5.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
 
 ### Debug mode (QA)
 
-Open `/?debug=1` for a panel with **+$1000**, **+10 of any item** and clock speed **×1 / ×10 / ×60**.
+Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60** and
+**Refresh orders** (fills every order slot now).
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
-`window.farm.money`, `window.farm.inventory`, `window.farm.objects`.
+`window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
+orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
+`refill: { start, duration }` with `reason: 'fulfilled' | 'discarded'`).
 
 ## Folder layout
 
@@ -61,10 +67,12 @@ src/
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           planting, growth stages, harvest, starting fields
+    orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
     buildables.ts      build menu registry (+ the core Path)
     crops.ts           crop catalogue + the Field buildable
+    customers.ts       customer names for orders
   game/              Glue between logic, scene and UI
     context.ts         FarmContext, PanelSpec, ToolState
     hooks.ts           registerBehavior / registerHudButton / onGameStart
@@ -81,6 +89,7 @@ src/
     processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plant/harvest panel
     market/            🏪 Market HUD button and sell panel
+    orders/            📋 Orders HUD button (with badge) and orders panel
     land/              "For sale" signs on parcels next to owned land, buy dialog
 ```
 
@@ -163,6 +172,7 @@ events. There is no offline progress: time only passes while the game is open.
 ### Other extension points
 
 - **HUD button** (e.g. Market): `registerHudButton({ id, label, icon, onClick: (ctx) => ctx.ui.openPanel(...) })`.
+  Add `badge: (ctx) => n` to show a count on the button (hidden at 0).
 - **Global feature state** (e.g. market prices): `registerStateSlice('market', () => ({ ... }))`
   and `getSlice(game.state, 'market')`. Defaults are merged into old saves.
 - **Custom sheet** (markup of your own, like the Market): `ctx.ui.toggleSheet({ id, title, signature, render, tick })`.

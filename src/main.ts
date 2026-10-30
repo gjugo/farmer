@@ -3,6 +3,7 @@ import './features';
 import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
 import { Game, type FarmSnapshot } from './logic/game';
+import { ordersOf, type OrdersState } from './logic/orders';
 import { loadFromStorage, saveToStorage, type SaveStorage } from './logic/save';
 import { createNewGame } from './logic/state';
 import { BootScene } from './scenes/BootScene';
@@ -15,7 +16,7 @@ const AUTOSAVE_MS = 10_000;
 declare global {
   interface Window {
     /** Read-only snapshot of the game state (for debugging and Playwright checks). */
-    readonly farm: Readonly<FarmSnapshot>;
+    readonly farm: Readonly<FarmSnapshot & { orders: OrdersState }>;
   }
 }
 
@@ -40,7 +41,14 @@ ctx.ui = new Hud(uiRoot, ctx, () => {
 });
 if (isDebugMode()) mountDebugPanel(uiRoot, ctx);
 
-Object.defineProperty(window, 'farm', { get: () => game.snapshot(), configurable: true });
+Object.defineProperty(window, 'farm', {
+  get: () => {
+    ordersOf(game.state);
+    const snapshot = game.snapshot();
+    return Object.freeze({ ...snapshot, orders: snapshot.ext.orders as OrdersState });
+  },
+  configurable: true,
+});
 
 window.setInterval(save, AUTOSAVE_MS);
 document.addEventListener('visibilitychange', () => {
