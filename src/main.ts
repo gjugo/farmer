@@ -25,7 +25,14 @@ declare global {
      * sound settings with the last sounds played (`audio`).
      */
     readonly farm: Readonly<
-      FarmSnapshot & { orders: OrdersState; lastSavedAt: number | null; lastCatchUp: CatchUpResult | null; audio: AudioDebugInfo }
+      FarmSnapshot & {
+        orders: OrdersState;
+        lastSavedAt: number | null;
+        lastCatchUp: CatchUpResult | null;
+        audio: AudioDebugInfo;
+        /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
+        iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
+      }
     >;
   }
 }
@@ -56,6 +63,9 @@ const save = () => {
 };
 
 const ctx = { game, tools: new ToolState() } as FarmContext;
+const iso = Object.freeze({
+  tileToScreen: (x: number, y: number) => (ctx.scene as FarmScene | undefined)?.tileToScreen(x, y) ?? null,
+});
 const uiRoot = document.getElementById('ui')!;
 ctx.ui = new Hud(uiRoot, ctx, () => {
   game.reset(createNewGame());
@@ -84,6 +94,7 @@ Object.defineProperty(window, 'farm', {
       orders: snapshot.ext.orders as OrdersState,
       lastSavedAt,
       lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)),
+      iso,
     });
   },
   configurable: true,

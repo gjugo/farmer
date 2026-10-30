@@ -96,11 +96,14 @@ export interface FarmContext {
 
 /** The display objects of one placed object, kept by the Farm scene. */
 export interface ObjectView {
-  /** Positioned at the top-left corner of the footprint, in world pixels. */
+  /**
+   * Positioned at the top-left corner of the box around the footprint's isometric diamond, in world
+   * pixels. Place children with `footprintLocal` from `src/scenes/iso.ts`.
+   */
   container: Phaser.GameObjects.Container;
-  /** The base image (the buildable's texture, stretched over the footprint). */
+  /** The base image (the buildable's texture), standing with its bottom edge on the diamond's front corner. */
   sprite: Phaser.GameObjects.Image;
-  /** Footprint size in world pixels. */
+  /** Size of the box around the footprint's diamond, in world pixels. */
   width: number;
   height: number;
 }

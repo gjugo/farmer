@@ -51,6 +51,9 @@ Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed *
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
 `refill: { start, duration }` with `reason: 'fulfilled' | 'discarded'`).
+`window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
+script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
+so to click "just inside" an edge, stay at least 2 px inside it.
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
@@ -83,7 +86,9 @@ src/
     hooks.ts           registerBehavior / registerHudButton / onGameStart / registerSettingsSection / registerDebugInfo
     signals.ts         uiSignals: UI moments that are not state changes (refused action, welcome-back opened)
   scenes/            Phaser scenes
-    textures.ts        runtime-drawn textures (registerTexture)
+    iso.ts             isometric projection (no Phaser, unit-tested): ISO_W/ISO_H, tile ↔ world, picking, depth order
+    depth.ts           depth layers (ground, flat, tall, signs, ghost…)
+    textures.ts        runtime-drawn textures (registerTexture) + isometric drawing helpers
     BootScene.ts       bakes textures
     FarmScene.ts       map, fences, objects, camera, build/demolish input
   ui/                HTML/CSS overlay above the canvas
@@ -118,16 +123,17 @@ Items are shared ids, so they live in one place: add an entry to `ITEMS` in `src
 ```ts
 // src/features/coop/index.ts
 import { registerBuildable } from '../../data/buildables';
-import { registerTexture, TILE } from '../../scenes/textures';
+import { diamondPoints, footprintTexture, poly, registerTexture } from '../../scenes/textures';
 import { registerBehavior } from '../../game/hooks';
 import { startTimer, timerDone, timerProgress, type Timer } from '../../logic/clock';
 
 interface CoopState { hens: number; timer: Timer | null }
 
+// The map is drawn in isometric view: a texture is the box around the footprint's diamond, plus room
+// above it for anything that stands up (the sprite is anchored at the diamond's front corner).
 registerTexture('coop', {
-  width: TILE * 2,
-  height: TILE * 2,
-  draw: (g) => g.fillStyle(0xc0503a).fillRect(0, 0, TILE * 2, TILE * 2),
+  ...footprintTexture(2, 2, 24),
+  draw: (g) => poly(g, 0xc0503a, diamondPoints(2, 2, 24)),
 });
 
 registerBuildable({

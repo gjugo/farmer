@@ -14,6 +14,7 @@ import {
   type CropStage,
   type FieldState,
 } from '../../logic/crops';
+import { footprintLocal } from '../../scenes/iso';
 import { cropTexture } from './textures';
 
 /**
@@ -84,11 +85,15 @@ registerBehavior<FieldState>(FIELD, {
     // Anchored at the bottom so the ripe sway grows upwards from the soil.
     // The overlay texture is the field's size plus OVERLAY_TOP, so scale 1 lines it up.
     const plants = ctx.scene.add.image(0, view.height, 'crop-seeded').setOrigin(0, 1).setVisible(false);
+    // Sparkle spots in grid units inside the 2×2 field.
     const sparkles = [
-      [0.25, 0.2],
-      [0.75, 0.45],
-      [0.4, 0.75],
-    ].map(([fx, fy]) => ctx.scene.add.image(view.width * fx, view.height * fy, 'crop-sparkle').setVisible(false));
+      [0.5, 0.5],
+      [1.5, 0.8],
+      [0.8, 1.5],
+    ].map(([gx, gy]) => {
+      const p = footprintLocal(2, 2, gx, gy);
+      return ctx.scene.add.image(p.x, p.y - 8, 'crop-sparkle').setVisible(false);
+    });
     view.container.add([plants, ...sparkles]);
     fieldViews.set(obj.id, { stage: null, plants, sparkles, tweens: [] });
     syncView(ctx, obj);

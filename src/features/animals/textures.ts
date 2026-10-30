@@ -1,84 +1,95 @@
 import type Phaser from 'phaser';
-import { PENS } from '../../data/animals';
-import { registerTexture, seeded, TILE } from '../../scenes/textures';
+import { PENS, type PenType } from '../../data/animals';
+import {
+  diamondPoints,
+  FENCE_H,
+  fenceLine,
+  footprintTexture,
+  isoBox,
+  poly,
+  registerTexture,
+  seeded,
+  texPoint,
+} from '../../scenes/textures';
 
-const WOOD = 0x8a5a2e;
-const WOOD_LIGHT = 0xb07b45;
+type G = Phaser.GameObjects.Graphics;
 
-/** A post-and-rail fence around the edge of a w×h rectangle. */
-function fence(g: Phaser.GameObjects.Graphics, w: number, h: number, inset: number): void {
-  const a = inset;
-  const bx = w - inset;
-  const by = h - inset;
-  g.fillStyle(WOOD);
-  for (const off of [-2, 2]) {
-    g.fillRect(a, a + off, bx - a, 2).fillRect(a, by + off - 1, bx - a, 2);
-    g.fillRect(a + off, a, 2, by - a).fillRect(bx + off - 1, a, 2, by - a);
-  }
-  const posts: [number, number][] = [];
-  for (let x = a; x <= bx; x += 16) posts.push([x, a], [x, by]);
-  for (let y = a + 16; y < by; y += 16) posts.push([a, y], [bx, y]);
-  for (const [x, y] of posts) {
-    g.fillStyle(WOOD).fillRect(x - 2, y - 4, 5, 8);
-    g.fillStyle(WOOD_LIGHT).fillRect(x - 1, y - 3, 3, 2);
-  }
+/**
+ * Pens are drawn in two layers so animals walk between them: the base (ground, back fences and
+ * anything at the back) and `<type>-front` (the two front fences), drawn over the animals.
+ */
+export const PEN_TOP: Record<PenType, number> = { coop: 56, pasture: FENCE_H + 4 };
+
+/** Where animals may walk, in grid units inside the pen; `minSum` keeps them in front of the hen house / trough. */
+export const WALK_AREA: Record<PenType, { min: number; max: number; minSum: number }> = {
+  coop: { min: 0.4, max: PENS.coop.footprint.w - 0.4, minSum: 2.7 },
+  pasture: { min: 0.4, max: PENS.pasture.footprint.w - 0.4, minSum: 2 },
+};
+
+/** Back fences: along the top-left (x = 0) and top-right (y = 0) edges. */
+function backFence(g: G, w: number, h: number, top: number): void {
+  const p = (gx: number, gy: number) => texPoint(w, h, top, gx, gy);
+  fenceLine(g, p(0.08, h - 0.08), p(0.08, 0.08), h);
+  fenceLine(g, p(0.08, 0.08), p(w - 0.08, 0.08), w);
 }
 
-function speckle(g: Phaser.GameObjects.Graphics, seed: number, w: number, h: number, colors: number[], n: number): void {
+/** Front fences: along the bottom-left (y = h) and bottom-right (x = w) edges. */
+function frontFence(g: G, w: number, h: number, top: number): void {
+  const p = (gx: number, gy: number) => texPoint(w, h, top, gx, gy);
+  fenceLine(g, p(0.08, h - 0.08), p(w - 0.08, h - 0.08), w);
+  fenceLine(g, p(w - 0.08, h - 0.08), p(w - 0.08, 0.08), h);
+}
+
+function speckle(g: G, seed: number, w: number, h: number, top: number, colors: number[], n: number): void {
   const rnd = seeded(seed);
   for (let i = 0; i < n; i++) {
+    const p = texPoint(w, h, top, 0.1 + rnd() * (w - 0.2), 0.1 + rnd() * (h - 0.2));
     g.fillStyle(colors[Math.floor(rnd() * colors.length)]);
-    g.fillRect(Math.floor(rnd() * (w - 2)), Math.floor(rnd() * (h - 3)), 1, 2 + Math.floor(rnd() * 2));
+    g.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 2 + Math.floor(rnd() * 2));
   }
 }
 
-const COOP_W = PENS.coop.footprint.w * TILE;
-const COOP_H = PENS.coop.footprint.h * TILE;
+function registerPen(type: PenType, drawBase: (g: G, w: number, h: number, top: number) => void): void {
+  const { w, h } = PENS[type].footprint;
+  const top = PEN_TOP[type];
+  const size = footprintTexture(w, h, top);
+  registerTexture(type, { ...size, draw: (g) => drawBase(g, w, h, top) });
+  registerTexture(`${type}-front`, { ...size, draw: (g) => frontFence(g, w, h, top) });
+}
 
-registerTexture('coop', {
-  width: COOP_W,
-  height: COOP_H,
-  draw: (g) => {
-    // Packed-earth yard.
-    g.fillStyle(0xcfae78).fillRect(0, 0, COOP_W, COOP_H);
-    speckle(g, 21, COOP_W, COOP_H, [0xb8935c, 0xe2c792, 0xa98552], 70);
-    // Hen house along the top.
-    const hx = 18;
-    const hw = COOP_W - 36;
-    g.fillStyle(0x7a3b2a).fillTriangle(hx - 6, 18, hx + hw / 2, 2, hx + hw + 6, 18);
-    g.fillStyle(0x9c4a33).fillTriangle(hx - 2, 17, hx + hw / 2, 5, hx + hw + 2, 17);
-    g.fillStyle(0xc0503a).fillRect(hx, 17, hw, 22);
-    g.fillStyle(0xa8422f);
-    for (let y = 21; y < 39; y += 5) g.fillRect(hx, y, hw, 1);
-    g.fillStyle(0x3a2318).fillRoundedRect(hx + hw / 2 - 6, 25, 12, 14, { tl: 6, tr: 6, bl: 0, br: 0 });
-    g.fillStyle(0xd9b56a).fillRect(hx + hw / 2 - 9, 38, 18, 3); // ramp
-    g.fillStyle(0xf3e3b0).fillRect(hx + 6, 22, 8, 6).fillRect(hx + hw - 14, 22, 8, 6);
-    // Feed trough.
-    g.fillStyle(WOOD).fillRect(COOP_W - 26, COOP_H - 16, 16, 6);
-    g.fillStyle(0xe8c25a).fillRect(COOP_W - 25, COOP_H - 16, 14, 2);
-    fence(g, COOP_W, COOP_H, 3);
-  },
+registerPen('coop', (g, w, h, top) => {
+  // Packed-earth yard.
+  poly(g, 0xcfae78, diamondPoints(w, h, top));
+  speckle(g, 21, w, h, top, [0xb8935c, 0xe2c792, 0xa98552], 90);
+  backFence(g, w, h, top);
+  // Hen house in the back corner: a box with a red roof and a door facing the yard.
+  const roof = isoBox(g, w, h, top, { gx0: 0.15, gy0: 0.15, gx1: 1.25, gy1: 1.25 }, 26, {
+    left: 0xc0503a,
+    right: 0x9c4a33,
+    top: 0xc0503a,
+  });
+  const peak = { x: (roof.left.x + roof.right.x) / 2, y: (roof.top.y + roof.bottom.y) / 2 - 16 };
+  poly(g, 0x7a3b2a, [roof.top, roof.right, peak]);
+  poly(g, 0x7a3b2a, [roof.left, roof.top, peak]);
+  poly(g, 0xa8422f, [roof.left, roof.bottom, peak]);
+  poly(g, 0x8a3626, [roof.bottom, roof.right, peak]);
+  const door = texPoint(w, h, top, 0.7, 1.25);
+  g.fillStyle(0x3a2318).fillRect(door.x - 4, door.y - 13, 8, 12);
+  g.fillStyle(0xd9b56a).fillRect(door.x - 5, door.y - 1, 10, 3); // ramp
 });
 
-const PASTURE_W = PENS.pasture.footprint.w * TILE;
-const PASTURE_H = PENS.pasture.footprint.h * TILE;
-
-registerTexture('pasture', {
-  width: PASTURE_W,
-  height: PASTURE_H,
-  draw: (g) => {
-    g.fillStyle(0x6fbf4d).fillRect(0, 0, PASTURE_W, PASTURE_H);
-    speckle(g, 37, PASTURE_W, PASTURE_H, [0x86d460, 0x5aa83f, 0x93dc6c], 160);
-    // A few flowers.
-    const rnd = seeded(41);
-    for (let i = 0; i < 8; i++) {
-      g.fillStyle(rnd() < 0.5 ? 0xfff3a0 : 0xffffff).fillCircle(10 + rnd() * (PASTURE_W - 20), 10 + rnd() * (PASTURE_H - 20), 1.5);
-    }
-    // Water trough.
-    g.fillStyle(WOOD).fillRect(PASTURE_W - 34, 10, 24, 9);
-    g.fillStyle(0x5ab4e6).fillRect(PASTURE_W - 32, 12, 20, 4);
-    fence(g, PASTURE_W, PASTURE_H, 3);
-  },
+registerPen('pasture', (g, w, h, top) => {
+  poly(g, 0x6fbf4d, diamondPoints(w, h, top));
+  speckle(g, 37, w, h, top, [0x86d460, 0x5aa83f, 0x93dc6c], 200);
+  // A few flowers.
+  const rnd = seeded(41);
+  for (let i = 0; i < 10; i++) {
+    const p = texPoint(w, h, top, 0.3 + rnd() * (w - 0.6), 0.3 + rnd() * (h - 0.6));
+    g.fillStyle(rnd() < 0.5 ? 0xfff3a0 : 0xffffff).fillCircle(p.x, p.y, 1.5);
+  }
+  backFence(g, w, h, top);
+  // Water trough in the back corner.
+  isoBox(g, w, h, top, { gx0: 0.35, gy0: 0.25, gx1: 1.3, gy1: 0.6 }, 6, { left: 0x8a5a2e, right: 0x6c4422, top: 0x5ab4e6 });
 });
 
 registerTexture('animal-chicken', {

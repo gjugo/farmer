@@ -5,7 +5,9 @@ import { START_LAND } from '../../logic/constants';
 import { isOwned } from '../../logic/land';
 import type { LandState } from '../../logic/types';
 import { buyParcel, checkBuy, FARM_PARCELS, parcelAt, parcelsForSale, type Parcel } from '../../logic/parcels';
-import { registerTexture, TILE } from '../../scenes/textures';
+import { DEPTH } from '../../scenes/depth';
+import { tileToWorld } from '../../scenes/iso';
+import { registerTexture } from '../../scenes/textures';
 import { formatMoney } from '../../ui/dom';
 
 /**
@@ -15,7 +17,6 @@ import { formatMoney } from '../../ui/dom';
 
 const SIGN_W = 52;
 const SIGN_H = 44;
-const SIGN_DEPTH = 5;
 
 registerTexture('sale-sign', {
   width: SIGN_W,
@@ -64,18 +65,22 @@ async function openBuyDialog(ctx: FarmContext, parcel: Parcel): Promise<void> {
 }
 
 /**
- * Where a parcel's sign stands (bottom-centre of the post, in world px): just inside
- * the edge it shares with owned land, so it is visible from the farm.
+ * Where a parcel's sign stands: on a tile just inside the edge it shares with owned land, so it is
+ * visible from the farm. `front` says whether the parcel lies in front of the farm on screen (higher x
+ * or y), which decides whether the sign is drawn over the farm or behind it.
  */
-function signSpot(land: LandState, p: Parcel): { x: number; y: number } {
+function signSpot(land: LandState, p: Parcel): { x: number; y: number; front: boolean } {
   const along = (n: number, at: (i: number) => boolean) => Array.from({ length: n }, (_, i) => i).some(at);
-  const cx = (p.x + p.w / 2) * TILE;
-  const cy = (p.y + p.h / 2) * TILE;
-  if (along(p.w, (i) => isOwned(land, p.x + i, p.y + p.h))) return { x: cx, y: (p.y + p.h) * TILE - 22 };
-  if (along(p.w, (i) => isOwned(land, p.x + i, p.y - 1))) return { x: cx, y: p.y * TILE + SIGN_H };
-  if (along(p.h, (i) => isOwned(land, p.x - 1, p.y + i))) return { x: p.x * TILE + 1.5 * TILE, y: cy };
-  if (along(p.h, (i) => isOwned(land, p.x + p.w, p.y + i))) return { x: (p.x + p.w) * TILE - 1.5 * TILE, y: cy };
-  return { x: cx, y: cy };
+  const midX = p.x + Math.floor(p.w / 2);
+  const midY = p.y + Math.floor(p.h / 2);
+  // Behind the farm the sign stands two tiles back, so the fence and front row don't hide it.
+  const backX = p.x + p.w - Math.min(2, p.w);
+  const backY = p.y + p.h - Math.min(2, p.h);
+  if (along(p.w, (i) => isOwned(land, p.x + i, p.y + p.h))) return { x: midX, y: backY, front: false };
+  if (along(p.h, (i) => isOwned(land, p.x + p.w, p.y + i))) return { x: backX, y: midY, front: false };
+  if (along(p.w, (i) => isOwned(land, p.x + i, p.y - 1))) return { x: midX, y: p.y, front: true };
+  if (along(p.h, (i) => isOwned(land, p.x - 1, p.y + i))) return { x: p.x, y: midY, front: true };
+  return { x: midX, y: midY, front: true };
 }
 
 registerTileTapHandler((ctx, x, y) => {
@@ -94,19 +99,23 @@ registerTileTapHandler((ctx, x, y) => {
 
 onGameStart((ctx) => {
   const scene = ctx.scene;
-  const layer = scene.add.container(0, 0).setDepth(SIGN_DEPTH);
+  const behind = scene.add.container(0, 0).setDepth(DEPTH.behindFarm);
+  const inFront = scene.add.container(0, 0).setDepth(DEPTH.frontOfFarm);
   let dirty = true;
   const markDirty = () => {
     dirty = true;
   };
 
   const redraw = () => {
-    layer.removeAll(true);
+    behind.removeAll(true);
+    inFront.removeAll(true);
     const { land } = ctx.game.state;
     for (const parcel of parcelsForSale(land, FARM_PARCELS)) {
       const { price } = check(ctx, parcel);
-      const { x: cx, y: cy } = signSpot(land, parcel);
-      const sign = scene.add.image(cx, cy, 'sale-sign').setOrigin(0.5, 1);
+      const spot = signSpot(land, parcel);
+      const { x: cx, y: cy } = tileToWorld(spot.x, spot.y);
+      // The board stands up over other tiles; tapping it means its own tile (see FarmScene.tapTarget).
+      const sign = scene.add.image(cx, cy, 'sale-sign').setOrigin(0.5, 1).setInteractive().setData('tapTile', spot);
       const label = scene.add
         .text(cx, cy - SIGN_H + 13, 'FOR SALE', { fontFamily: 'system-ui, sans-serif', fontSize: '8px', fontStyle: 'bold', color: '#b23a2e', resolution: 3 })
         .setOrigin(0.5);
@@ -121,7 +130,7 @@ onGameStart((ctx) => {
           resolution: 2,
         })
         .setOrigin(0.5, 0);
-      layer.add([sign, label, priceText]);
+      (spot.front ? inFront : behind).add([sign, label, priceText]);
     }
   };
 

@@ -1,32 +1,34 @@
 import type Phaser from 'phaser';
 import { CROP_LIST } from '../../data/crops';
 import type { CropStage } from '../../logic/crops';
-import { registerTexture, seeded, TILE } from '../../scenes/textures';
+import { diamondPoints, footprintTexture, poly, registerTexture, seeded, texPoint } from '../../scenes/textures';
 
-/** Fields are 2×2 tiles; crop overlays cover the same area. */
-const SIZE = TILE * 2;
-/** Crop overlays are taller than the field so plants in the back row can stick out above it. */
-export const OVERLAY_TOP = 12;
-const ROWS = [14, 30, 46, 58];
-const COLS = [11, 25, 39, 53];
+/** Fields are 2×2 tiles; crop overlays cover the same diamond. */
+const N = 2;
+/** Crop overlays are taller than the field so plants in the back rows can stick out above it. */
+export const OVERLAY_TOP = 22;
+/** Plant rows and columns, in grid units inside the field. */
+const ROWS = [0.3, 0.75, 1.25, 1.7];
+const COLS = [0.3, 0.75, 1.25, 1.7];
 
 type G = Phaser.GameObjects.Graphics;
 
 registerTexture('field', {
-  width: SIZE,
-  height: SIZE,
+  ...footprintTexture(N, N),
   draw: (g) => {
     const rnd = seeded(23);
-    g.fillStyle(0x7a5232).fillRoundedRect(0, 0, SIZE, SIZE, 4);
-    g.lineStyle(2, 0x5e3d22, 1).strokeRoundedRect(1, 1, SIZE - 2, SIZE - 2, 4);
-    // Furrows: a dark trench with a lit ridge above it.
-    for (const y of ROWS) {
-      g.fillStyle(0x5a3a20).fillRect(4, y - 1, SIZE - 8, 3);
-      g.fillStyle(0x93653e).fillRect(4, y - 4, SIZE - 8, 2);
+    poly(g, 0x5e3d22, diamondPoints(N, N));
+    poly(g, 0x7a5232, diamondPoints(N, N).map((p, i) => ({ x: p.x + [0, -3, 0, 3][i], y: p.y + [2, 0, -2, 0][i] })));
+    // Furrows along the field: a dark trench with a lit ridge behind it.
+    for (const gy of ROWS) {
+      const a = texPoint(N, N, 0, 0.12, gy);
+      const b = texPoint(N, N, 0, N - 0.12, gy);
+      g.lineStyle(2, 0x93653e).lineBetween(a.x, a.y - 2, b.x, b.y - 2);
+      g.lineStyle(2, 0x5a3a20).lineBetween(a.x, a.y, b.x, b.y);
     }
-    for (let i = 0; i < 18; i++) {
-      g.fillStyle(rnd() < 0.5 ? 0x8c6038 : 0x664326);
-      g.fillRect(4 + rnd() * (SIZE - 10), 4 + rnd() * (SIZE - 10), 2, 2);
+    for (let i = 0; i < 24; i++) {
+      const p = texPoint(N, N, 0, 0.15 + rnd() * (N - 0.3), 0.15 + rnd() * (N - 0.3));
+      g.fillStyle(rnd() < 0.5 ? 0x8c6038 : 0x664326).fillRect(p.x, p.y, 2, 2);
     }
   },
 });
@@ -105,17 +107,22 @@ export function cropTexture(cropId: string, stage: CropStage): string | null {
 
 function overlay(draw: PlantDrawer) {
   return (g: G) => {
-    ROWS.forEach((y, r) => {
-      for (const x of COLS) draw(g, x + (r % 2 ? 2 : -2), y + OVERLAY_TOP);
-    });
+    // Back to front, so nearer plants overlap the ones behind them.
+    const spots = ROWS.flatMap((gy) => COLS.map((gx) => ({ gx, gy }))).sort((a, b) => a.gx + a.gy - (b.gx + b.gy));
+    for (const { gx, gy } of spots) {
+      const p = texPoint(N, N, OVERLAY_TOP, gx, gy);
+      draw(g, p.x, p.y);
+    }
   };
 }
 
-registerTexture('crop-seeded', { width: SIZE, height: SIZE + OVERLAY_TOP, draw: overlay(seed) });
-registerTexture('crop-sprout', { width: SIZE, height: SIZE + OVERLAY_TOP, draw: overlay(sprout) });
+const OVERLAY = footprintTexture(N, N, OVERLAY_TOP);
+
+registerTexture('crop-seeded', { ...OVERLAY, draw: overlay(seed) });
+registerTexture('crop-sprout', { ...OVERLAY, draw: overlay(sprout) });
 for (const crop of CROP_LIST) {
   const plants = PLANTS[crop.id];
   if (!plants) continue;
-  registerTexture(`crop-${crop.id}-growing`, { width: SIZE, height: SIZE + OVERLAY_TOP, draw: overlay(plants.growing) });
-  registerTexture(`crop-${crop.id}-ripe`, { width: SIZE, height: SIZE + OVERLAY_TOP, draw: overlay(plants.ripe) });
+  registerTexture(`crop-${crop.id}-growing`, { ...OVERLAY, draw: overlay(plants.growing) });
+  registerTexture(`crop-${crop.id}-ripe`, { ...OVERLAY, draw: overlay(plants.ripe) });
 }

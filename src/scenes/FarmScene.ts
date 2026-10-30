@@ -5,13 +5,34 @@ import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
 import { demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
-import { TILE } from './textures';
+import {
+  depthKey,
+  footprintBox,
+  footprintCorners,
+  gridToWorld,
+  ISO_H,
+  ISO_W,
+  mapBox,
+  screenToWorld,
+  sortFootprints,
+  tileToWorld,
+  worldToScreen,
+  worldToTile,
+  type Box,
+  type Footprint,
+  type Point,
+} from './iso';
+import { DEPTH } from './depth';
+import { fenceLine, vectors } from './textures';
 
 const DRAG_THRESHOLD = 8;
 const MAX_ZOOM = 3;
 const KEY_PAN_SPEED = 700; // screen px per second
-const FENCE = 0x8a5a2e;
-const FENCE_LIGHT = 0xb07b45;
+/** Room above the map's top corner for buildings standing at the back. */
+const MAP_TOP_ROOM = ISO_H * 3;
+/** Build-menu categories that lie flat on the ground (always drawn under tall things). */
+const FLAT_CATEGORIES = new Set(['decor', 'crops']);
+
 
 const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string> = {
   money: 'Not enough money',
@@ -34,7 +55,11 @@ interface TouchState {
 export class FarmScene extends Phaser.Scene {
   private readonly ctx: FarmContext;
   private ground: Phaser.GameObjects.Image[] = [];
-  private fence!: Phaser.GameObjects.Graphics;
+  /** One Graphics per straight run of the farm's boundary fence, each depth-sorted like a building. */
+  private fences: { fp: Footprint; g: Phaser.GameObjects.Graphics }[] = [];
+  private depthsDirty = true;
+  /** Buying a parcel announces each tile; the fence is redrawn once per frame at most. */
+  private fenceDirty = false;
   private views = new Map<string, ObjectView & { obj: PlacedObject }>();
   private ghost!: Phaser.GameObjects.Container;
   private ghostImage!: Phaser.GameObjects.Image;
@@ -56,23 +81,21 @@ export class FarmScene extends Phaser.Scene {
     return this.ctx.game;
   }
 
-  private get mapW(): number {
-    return this.farm.state.land.width * TILE;
-  }
-
-  private get mapH(): number {
-    return this.farm.state.land.height * TILE;
+  /** World box around the map's diamond, with room above it for tall things at the back. */
+  private get mapBounds(): Box {
+    const { width, height } = this.farm.state.land;
+    const box = mapBox(width, height);
+    return { ...box, top: box.top - MAP_TOP_ROOM, height: box.height + MAP_TOP_ROOM };
   }
 
   create(): void {
     this.ctx.scene = this;
     this.cameras.main.setBackgroundColor('#2f4a2a');
 
-    this.fence = this.add.graphics().setDepth(2);
-    this.hover = this.add.graphics().setDepth(900);
-    this.ghostImage = this.add.image(0, 0, 'path').setOrigin(0).setAlpha(0.75);
+    this.hover = this.add.graphics().setDepth(DEPTH.hover);
+    this.ghostImage = this.add.image(0, 0, 'path').setOrigin(0, 1).setAlpha(0.75);
     this.ghostFrame = this.add.graphics();
-    this.ghost = this.add.container(0, 0, [this.ghostImage, this.ghostFrame]).setDepth(1000).setVisible(false);
+    this.ghost = this.add.container(0, 0, [this.ghostImage, this.ghostFrame]).setDepth(DEPTH.ghost).setVisible(false);
 
     this.buildWorld();
     this.setupCamera();
@@ -88,7 +111,7 @@ export class FarmScene extends Phaser.Scene {
       }),
       events.on('land', ({ x, y }) => {
         this.paintTile(x, y);
-        this.drawFence();
+        this.fenceDirty = true;
       }),
       events.on('reset', () => {
         this.buildWorld();
@@ -107,6 +130,11 @@ export class FarmScene extends Phaser.Scene {
     const dt = this.farm.tick(delta);
     this.panWithKeys(delta);
     this.clampCamera();
+    if (this.fenceDirty) {
+      this.fenceDirty = false;
+      this.drawFence();
+    }
+    if (this.depthsDirty) this.sortDepths();
     for (const obj of this.farm.state.objects) {
       const behavior = getBehavior(obj.type);
       const view = this.views.get(obj.id);
@@ -123,7 +151,8 @@ export class FarmScene extends Phaser.Scene {
     const { width, height } = this.farm.state.land;
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        this.ground.push(this.add.image(x * TILE, y * TILE, 'grass-0').setOrigin(0).setDepth(0));
+        const c = tileToWorld(x, y);
+        this.ground.push(this.add.image(c.x, c.y, 'grass-0').setDepth(DEPTH.ground));
         this.paintTile(x, y);
       }
     }
@@ -139,49 +168,80 @@ export class FarmScene extends Phaser.Scene {
     img.setTexture(`${isOwned(land, x, y) ? 'grass' : 'locked'}-${variant}`);
   }
 
-  /** Fence along every edge between owned and locked land (or the map border). */
+  /** Fence along every edge between owned and locked land (or the map border), one Graphics per straight run. */
   private drawFence(): void {
     const { land } = this.farm.state;
-    const g = this.fence.clear();
-    const posts = new Set<string>();
-    const rail = (x1: number, y1: number, x2: number, y2: number) => {
-      const horizontal = y1 === y2;
-      g.fillStyle(FENCE);
-      if (horizontal) g.fillRect(x1, y1 - 3, x2 - x1, 2).fillRect(x1, y1 + 1, x2 - x1, 2);
-      else g.fillRect(x1 - 3, y1, 2, y2 - y1).fillRect(x1 + 1, y1, 2, y2 - y1);
-      posts.add(`${x1},${y1}`).add(`${x2},${y2}`);
-    };
-    for (let y = 0; y < land.height; y++) {
-      for (let x = 0; x < land.width; x++) {
-        if (!isOwned(land, x, y)) continue;
-        const px = x * TILE;
-        const py = y * TILE;
-        if (!isOwned(land, x, y - 1)) rail(px, py, px + TILE, py);
-        if (!isOwned(land, x, y + 1)) rail(px, py + TILE, px + TILE, py + TILE);
-        if (!isOwned(land, x - 1, y)) rail(px, py, px, py + TILE);
-        if (!isOwned(land, x + 1, y)) rail(px + TILE, py, px + TILE, py + TILE);
+    for (const f of this.fences) f.g.destroy();
+    this.fences = [];
+    const owned = (x: number, y: number) => isOwned(land, x, y);
+    const runs: Footprint[] = [];
+    // Lines y = k (between rows k-1 and k), then lines x = k (between columns k-1 and k).
+    for (let k = 0; k <= land.height; k++) {
+      for (let x = 0; x < land.width; ) {
+        if (owned(x, k - 1) === owned(x, k)) {
+          x++;
+          continue;
+        }
+        const start = x;
+        while (x < land.width && owned(x, k - 1) !== owned(x, k)) x++;
+        runs.push({ x: start, y: k, w: x - start, h: 0 });
       }
     }
-    for (const p of posts) {
-      const [x, y] = p.split(',').map(Number);
-      g.fillStyle(FENCE).fillRect(x - 3, y - 5, 6, 9);
-      g.fillStyle(FENCE_LIGHT).fillRect(x - 2, y - 4, 4, 2);
+    for (let k = 0; k <= land.width; k++) {
+      for (let y = 0; y < land.height; ) {
+        if (owned(k - 1, y) === owned(k, y)) {
+          y++;
+          continue;
+        }
+        const start = y;
+        while (y < land.height && owned(k - 1, y) !== owned(k, y)) y++;
+        runs.push({ x: k, y: start, w: 0, h: y - start });
+      }
     }
+    for (const fp of runs) {
+      const g = this.add.graphics();
+      const a = gridToWorld(fp.x, fp.y);
+      const b = gridToWorld(fp.x + fp.w, fp.y + fp.h);
+      fenceLine(g, a, b, fp.w + fp.h);
+      this.fences.push({ fp, g });
+    }
+    this.depthsDirty = true;
+  }
+
+  /**
+   * Flat things sort by their front corner under every tall thing. Tall things (buildings, pens and
+   * fence runs) get a back-to-front order from their footprints, so whatever stands in front covers
+   * what is behind it. Runs only when something was added, removed or the land changed.
+   */
+  private sortDepths(): void {
+    this.depthsDirty = false;
+    const tall: { fp: Footprint; target: Phaser.GameObjects.Components.Depth }[] = this.fences.map((f) => ({
+      fp: f.fp,
+      target: f.g,
+    }));
+    for (const view of this.views.values()) {
+      const fp = { x: view.obj.x, y: view.obj.y, ...footprintOf(view.obj) };
+      if (FLAT_CATEGORIES.has(getBuildable(view.obj.type)?.category ?? '')) {
+        view.container.setDepth(DEPTH.flat + depthKey(fp) * 1e-4);
+      } else {
+        tall.push({ fp, target: view.container });
+      }
+    }
+    const order = sortFootprints(tall.map((t) => t.fp));
+    order.forEach((idx, rank) => tall[idx].target.setDepth(DEPTH.tall + rank / (order.length + 1)));
   }
 
   private createView(obj: PlacedObject): void {
     if (this.views.has(obj.id)) return;
     const def = getBuildable(obj.type);
-    const fp = footprintOf(obj);
-    const width = fp.w * TILE;
-    const height = fp.h * TILE;
+    const box = footprintBox({ x: obj.x, y: obj.y, ...footprintOf(obj) });
     const texture = def && this.textures.exists(def.texture) ? def.texture : 'missing';
-    const sprite = this.add.image(0, 0, texture).setOrigin(0).setDisplaySize(width, height);
-    const container = this.add.container(obj.x * TILE, obj.y * TILE, [sprite]);
-    // Flat things (paths, fields) sit under tall things; tall things sort by their bottom edge.
-    container.setDepth(10 + (obj.y + fp.h) * 0.01 + (def?.category === 'decor' ? 0 : 1));
-    const view: ObjectView = { container, sprite, width, height };
+    const sprite = this.add.image(0, 0, texture);
+    this.fitToFootprint(sprite, box);
+    const container = this.add.container(box.left, box.top, [sprite]);
+    const view: ObjectView = { container, sprite, width: box.width, height: box.height };
     this.views.set(obj.id, { ...view, obj });
+    this.depthsDirty = true;
     getBehavior(obj.type)?.create?.(this.ctx, obj, view);
   }
 
@@ -193,10 +253,20 @@ export class FarmScene extends Phaser.Scene {
     this.views.delete(id);
   }
 
+  /**
+   * Stands a texture on a footprint: its bottom edge on the box's bottom (the diamond's front corner),
+   * scaled only when the texture was drawn for a different footprint (e.g. the `missing` fallback).
+   */
+  private fitToFootprint(img: Phaser.GameObjects.Image, box: Box): void {
+    img.setOrigin(0, 1).setPosition(0, box.height);
+    img.setScale(img.frame.width === box.width ? 1 : box.width / img.frame.width);
+  }
+
   /** Floating text rising from a tile. */
   floatText(tileX: number, tileY: number, text: string, color = '#ffffff'): void {
+    const at = tileToWorld(tileX, tileY);
     const t = this.add
-      .text((tileX + 0.5) * TILE, tileY * TILE, text, {
+      .text(at.x, at.y - ISO_H / 2, text, {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '15px',
         fontStyle: 'bold',
@@ -206,7 +276,7 @@ export class FarmScene extends Phaser.Scene {
         resolution: 2,
       })
       .setOrigin(0.5, 1)
-      .setDepth(2000);
+      .setDepth(DEPTH.floatText);
     this.tweens.add({
       targets: t,
       y: t.y - 28,
@@ -230,7 +300,8 @@ export class FarmScene extends Phaser.Scene {
     const cam = this.cameras.main;
     cam.setSize(size.width, size.height);
     // Zooming out stops when the whole map is visible.
-    this.minZoom = Math.min(MAX_ZOOM, Math.max(0.2, Math.min(size.width / this.mapW, size.height / this.mapH)));
+    const map = this.mapBounds;
+    this.minZoom = Math.min(MAX_ZOOM, Math.max(0.1, Math.min(size.width / map.width, size.height / map.height)));
     cam.setZoom(Phaser.Math.Clamp(cam.zoom, this.minZoom, MAX_ZOOM));
     this.clampCamera();
   }
@@ -241,38 +312,55 @@ export class FarmScene extends Phaser.Scene {
    */
   private clampCamera(): void {
     const cam = this.cameras.main;
-    const clampAxis = (scroll: number, view: number, size: number) => {
+    const map = this.mapBounds;
+    const clampAxis = (scroll: number, view: number, min: number, size: number) => {
       const half = view / (2 * cam.zoom);
       const centre = scroll + view / 2;
-      const c = 2 * half >= size ? size / 2 : Phaser.Math.Clamp(centre, half, size - half);
+      const c = 2 * half >= size ? min + size / 2 : Phaser.Math.Clamp(centre, min + half, min + size - half);
       return c - view / 2;
     };
-    cam.setScroll(clampAxis(cam.scrollX, cam.width, this.mapW), clampAxis(cam.scrollY, cam.height, this.mapH));
+    cam.setScroll(clampAxis(cam.scrollX, cam.width, map.left, map.width), clampAxis(cam.scrollY, cam.height, map.top, map.height));
   }
 
-  /** Centres and zooms the camera on the owned land. */
+  /** Centres and zooms the camera on the owned land's diamonds. */
   private focusOwnedLand(): void {
     const { land } = this.farm.state;
-    let minX = land.width;
-    let minY = land.height;
-    let maxX = 0;
-    let maxY = 0;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    const add = (p: Point) => {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    };
     for (let y = 0; y < land.height; y++) {
       for (let x = 0; x < land.width; x++) {
         if (!isOwned(land, x, y)) continue;
-        minX = Math.min(minX, x);
-        minY = Math.min(minY, y);
-        maxX = Math.max(maxX, x + 1);
-        maxY = Math.max(maxY, y + 1);
+        const c = footprintCorners({ x, y, w: 1, h: 1 });
+        [c.top, c.right, c.bottom, c.left].forEach(add);
       }
     }
-    if (maxX <= minX) [minX, minY, maxX, maxY] = [0, 0, land.width, land.height];
+    if (minX > maxX) {
+      const map = mapBox(land.width, land.height);
+      add({ x: map.left, y: map.top });
+      add({ x: map.left + map.width, y: map.top + map.height });
+    }
     const cam = this.cameras.main;
-    const margin = 2;
-    const zoom = Math.min(cam.width / ((maxX - minX + margin * 2) * TILE), cam.height / ((maxY - minY + margin * 2) * TILE));
+    const margin = ISO_W;
+    const zoom = Math.min(cam.width / (maxX - minX + margin * 2), cam.height / (maxY - minY + margin * 2));
     cam.setZoom(Phaser.Math.Clamp(zoom, this.minZoom, MAX_ZOOM));
-    cam.centerOn(((minX + maxX) / 2) * TILE, ((minY + maxY) / 2) * TILE);
+    cam.centerOn((minX + maxX) / 2, (minY + maxY) / 2);
     this.clampCamera();
+  }
+
+  /** Screen (page) pixel of a tile's centre at the current camera; for QA scripts that click tiles. */
+  tileToScreen(x: number, y: number): Point {
+    const c = tileToWorld(x, y);
+    const s = worldToScreen(this.cameras.main, c.x, c.y);
+    const rect = this.game.canvas.getBoundingClientRect();
+    return { x: rect.left + s.x * (rect.width / this.scale.width), y: rect.top + s.y * (rect.height / this.scale.height) };
   }
 
   /** Zooms keeping the world point under (sx, sy) fixed on screen. */
@@ -371,14 +459,29 @@ export class FarmScene extends Phaser.Scene {
     this.touches.delete(p.id);
     if (this.activeTouches().length < 2) this.pinch = null;
     if (!t || t.dragging) return;
-    const { tx, ty } = this.pointerTile(p);
+    const { tx, ty } = this.tapTarget(p);
     this.handleTap(tx, ty);
     this.updateCursor(p);
   }
 
   private pointerTile(p: Phaser.Input.Pointer): { tx: number; ty: number } {
-    const world = this.cameras.main.getWorldPoint(p.x, p.y);
-    return { tx: Math.floor(world.x / TILE), ty: Math.floor(world.y / TILE) };
+    const world = screenToWorld(this.cameras.main, p.x, p.y);
+    const t = worldToTile(world.x, world.y);
+    return { tx: t.x, ty: t.y };
+  }
+
+  /**
+   * The tile a tap means. In normal mode, an interactive display object carrying a `tapTile`
+   * ({ x, y }) wins over the ground under it, e.g. a "for sale" sign standing up over other tiles.
+   */
+  private tapTarget(p: Phaser.Input.Pointer): { tx: number; ty: number } {
+    if (this.ctx.tools.mode.kind === 'normal') {
+      for (const obj of this.input.hitTestPointer(p)) {
+        const tile = obj.getData('tapTile') as Point | undefined;
+        if (tile) return { tx: tile.x, ty: tile.y };
+      }
+    }
+    return this.pointerTile(p);
   }
 
   /** Top-left tile for a footprint centred under the pointer. */
@@ -456,7 +559,7 @@ export class FarmScene extends Phaser.Scene {
       const def = getBuildable(mode.type);
       if (!def) return;
       this.ghostImage.setTexture(this.textures.exists(def.texture) ? def.texture : 'missing');
-      this.ghostImage.setDisplaySize(def.footprint.w * TILE, def.footprint.h * TILE);
+      this.fitToFootprint(this.ghostImage, footprintBox({ x: 0, y: 0, ...def.footprint }));
     }
     const p = this.input.activePointer;
     if (p && !p.wasTouch && this.input.isOver) this.updateCursor(p);
@@ -472,21 +575,30 @@ export class FarmScene extends Phaser.Scene {
       if (!def) return;
       const { x, y } = this.anchorFor(mode.type, tx, ty);
       const ok = this.ctx.game.checkPlacement(mode.type, x, y).ok && this.ctx.game.canAfford(def.cost);
-      const w = def.footprint.w * TILE;
-      const h = def.footprint.h * TILE;
+      const fp = { x, y, ...def.footprint };
+      const box = footprintBox(fp);
       const color = ok ? 0x3ddc5a : 0xff4040;
-      this.ghostFrame.clear().fillStyle(color, 0.35).fillRect(0, 0, w, h).lineStyle(2, color, 1).strokeRect(1, 1, w - 2, h - 2);
-      this.ghost.setPosition(x * TILE, y * TILE).setVisible(true);
+      // The frame is drawn in the ghost's own space, whose origin is the footprint's box corner.
+      const local = this.diamond(fp).map((q) => ({ x: q.x - box.left, y: q.y - box.top }));
+      this.ghostFrame.clear().fillStyle(color, 0.35).fillPoints(vectors(local), true).lineStyle(2, color, 1).strokePoints(vectors(local), true);
+      this.ghost.setPosition(box.left, box.top).setVisible(true);
       this.ghost.setData('valid', ok);
+      this.ghost.setData('tile', { x, y });
     } else if (mode.kind === 'demolish') {
       const obj = this.ctx.game.objectAt(tx, ty);
       if (!obj) return;
-      const fp = footprintOf(obj);
-      this.hover
-        .fillStyle(0xff4040, 0.3)
-        .fillRect(obj.x * TILE, obj.y * TILE, fp.w * TILE, fp.h * TILE)
-        .lineStyle(2, 0xff4040, 1)
-        .strokeRect(obj.x * TILE + 1, obj.y * TILE + 1, fp.w * TILE - 2, fp.h * TILE - 2);
+      const points = this.diamond({ x: obj.x, y: obj.y, ...footprintOf(obj) });
+      this.hover.fillStyle(0xff4040, 0.3).fillPoints(vectors(points), true).lineStyle(2, 0xff4040, 1).strokePoints(vectors(points), true);
+    } else {
+      // Normal mode: outline the tile under a mouse pointer.
+      if (p.wasTouch) return;
+      this.hover.lineStyle(1.5, 0xffffff, 0.55).strokePoints(vectors(this.diamond({ x: tx, y: ty, w: 1, h: 1 })), true);
     }
+  }
+
+  /** A footprint's diamond in world pixels, as a closed polygon. */
+  private diamond(fp: Footprint): Point[] {
+    const c = footprintCorners(fp);
+    return [c.top, c.right, c.bottom, c.left];
   }
 }
