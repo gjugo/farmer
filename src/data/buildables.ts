@@ -10,6 +10,10 @@ export interface BuildableDef {
   category?: string;
   /** Short line shown in the build menu. */
   description?: string;
+  /** Emoji shown in the level-up popup. */
+  icon?: string;
+  /** Farm level that unlocks building it (default 1). Already-built ones keep working. */
+  unlockLevel?: number;
   /**
    * Initial per-type state for a newly placed object. Also used as defaults when
    * loading a save, so fields added later get filled in. Must be JSON-serialisable.
@@ -47,4 +51,5 @@ registerBuildable({
   texture: 'path',
   category: 'decor',
   description: 'A tidy dirt path.',
+  unlockLevel: 1,
 });

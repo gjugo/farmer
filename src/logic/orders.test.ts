@@ -178,6 +178,8 @@ describe('fulfil and discard', () => {
     // A second click does nothing.
     expect(fulfilOrder(game, 1)).toBeNull();
     expect(game.money).toBe(570);
+    // Order rewards are income: 1 XP per $1.
+    expect(game.progression.xp).toBe(70);
   });
 
   it('refills a fulfilled slot after 2 game-minutes', () => {

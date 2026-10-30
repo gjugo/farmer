@@ -11,13 +11,14 @@ import { setOwned } from './land';
 import { catchUp, catchUpGame, formatAway, shouldShowSummary } from './offline';
 import { settle, startJob, type ProcessorState } from './processing';
 import { parseSave, serialize } from './save';
+import { maxLevelState } from './test-utils';
 import type { PlacedObject } from './types';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
 
 function farm(): Game {
-  const game = new Game();
+  const game = new Game(maxLevelState());
   game.earn(1_000_000);
   const land = game.state.land;
   for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
@@ -40,7 +41,7 @@ describe('offline catch-up', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('ripens crops that would have finished, and leaves the rest growing', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const [a, b] = fields(game);
     plant(game, a, 'wheat');
     plant(game, b, 'corn');
@@ -130,7 +131,7 @@ describe('offline catch-up', () => {
   });
 
   it('moves the market to the right day', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const r = catchUp(game.state, 2 * DAY_MS + 1);
     expect(r.dayBefore).toBe(1);
     expect(r.dayAfter).toBe(3);
@@ -138,7 +139,7 @@ describe('offline catch-up', () => {
   });
 
   it('caps the catch-up at 7 days and says so', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const r = catchUp(game.state, MAX_OFFLINE_MS + 5 * HOUR);
     expect(r.appliedMs).toBe(MAX_OFFLINE_MS);
     expect(r.capped).toBe(true);
@@ -147,7 +148,7 @@ describe('offline catch-up', () => {
   });
 
   it('applies nothing when the device clock went backwards (or the time is garbage)', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     plant(game, fields(game)[0], 'wheat');
     const before = structuredClone(game.state);
     for (const away of [-HOUR, 0, Number.NaN, Number.NEGATIVE_INFINITY]) {
@@ -159,7 +160,7 @@ describe('offline catch-up', () => {
   });
 
   it('always runs at ×1, whatever the debug speed is', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     game.setSpeed(60);
     catchUp(game.state, 10 * MIN);
     expect(game.now).toBe(10 * MIN);
@@ -209,7 +210,7 @@ describe('offline catch-up', () => {
 
   it('a save whose time was moved back gives the same result as simulating that time away', () => {
     const build = () => {
-      const game = new Game();
+      const game = new Game(maxLevelState());
       plant(game, fields(game)[0], 'wheat');
       return game;
     };
@@ -225,7 +226,7 @@ describe('offline catch-up', () => {
   });
 
   it('on a live game, announces the new day and the changed objects', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     const field = fields(game)[0];
     plant(game, field, 'wheat');
     const days: number[] = [];
@@ -242,7 +243,7 @@ describe('offline catch-up', () => {
 
 describe('welcome-back summary', () => {
   it('is shown only after more than a minute away', () => {
-    const game = new Game();
+    const game = new Game(maxLevelState());
     expect(shouldShowSummary(catchUp(game.state, SUMMARY_MIN_AWAY_MS - 1))).toBe(false);
     expect(shouldShowSummary(catchUp(game.state, SUMMARY_MIN_AWAY_MS))).toBe(false);
     expect(shouldShowSummary(catchUp(game.state, SUMMARY_MIN_AWAY_MS + 1))).toBe(true);

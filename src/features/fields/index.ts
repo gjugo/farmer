@@ -122,6 +122,9 @@ registerBehavior<FieldState>(FIELD, {
         lines: ['Empty field. Pick a crop to plant:'],
         actions: CROP_LIST.map((c) => {
           const item = getItem(c.harvestItem);
+          if (!game.isUnlocked(c.unlockLevel)) {
+            return { label: `🔒 ${c.icon} ${c.name} · Unlocks at level ${c.unlockLevel}`, variant: 'secondary', disabled: true, onClick: () => {} };
+          }
           return {
             label: `${c.icon} ${c.name} · $${c.plantCost} · ${c.growMs / 1000}s → ${c.harvestQty} ${item?.name ?? c.name}`,
             disabled: !game.canAfford(c.plantCost),

@@ -1,5 +1,7 @@
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { isOwned, type Rect } from './land';
+import type { ActivityEvents } from './activity';
+import type { Emitter } from './events';
 import type { LandState } from './types';
 
 /** Locked land is cut into parcels at most this many tiles wide/tall. */
@@ -110,6 +112,7 @@ export interface LandBuyer {
   readonly state: { land: LandState };
   spend(amount: number): boolean;
   setLandOwned(x: number, y: number, owned: boolean): void;
+  readonly activity: Emitter<ActivityEvents>;
 }
 
 /** Buys a parcel: charges its price and makes its tiles owned. Nothing changes when it fails. */
@@ -118,6 +121,7 @@ export function buyParcel(game: LandBuyer, parcels: readonly Parcel[], start: Re
   if (!check.ok) return check;
   if (!game.spend(check.price)) return { ok: false, reason: 'money', price: check.price };
   for (const [x, y] of tiles(p)) if (!isOwned(game.state.land, x, y)) game.setLandOwned(x, y, true);
+  game.activity.emit('landBought', { parcel: p.id, price: check.price });
   return check;
 }
 

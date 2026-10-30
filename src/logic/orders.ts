@@ -219,11 +219,12 @@ export function fulfillableCount(state: GameState): number {
 export interface OrderGame {
   readonly state: GameState;
   removeItem(itemId: ItemId, qty?: number): boolean;
-  earn(amount: number): void;
+  /** Orders are income: they give XP. */
+  earnIncome(amount: number): void;
 }
 
 /**
- * Hands over the goods and collects the reward (through `earn`, the shared income path).
+ * Hands over the goods and collects the reward (through `earnIncome`, the shared income path).
  * Returns the reward, or null (nothing changes) when the slot has no order or goods are missing.
  */
 export function fulfilOrder(game: OrderGame, index: number): number | null {
@@ -231,7 +232,7 @@ export function fulfilOrder(game: OrderGame, index: number): number | null {
   const order = orders.slots[index]?.order;
   if (!order || !hasGoods(game.state.inventory, order)) return null;
   for (const it of order.items) game.removeItem(it.itemId, it.qty);
-  game.earn(order.reward);
+  game.earnIncome(order.reward);
   orders.slots[index] = { order: null, refill: startTimer(game.state.clock, FULFIL_REFILL_MS), reason: 'fulfilled' };
   return order.reward;
 }

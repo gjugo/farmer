@@ -16,6 +16,8 @@ export interface AnimalDef {
   product: KnownItemId;
   /** Length of a production cycle in game milliseconds. */
   cycleMs: number;
+  /** Farm level that unlocks buying it. */
+  unlockLevel: number;
 }
 
 export interface PenDef {
@@ -29,12 +31,14 @@ export interface PenDef {
   /** Animals that may live here (mixing is fine). */
   animals: readonly AnimalKind[];
   description: string;
+  /** Farm level that unlocks building it. */
+  unlockLevel: number;
 }
 
 export const ANIMALS: Record<AnimalKind, AnimalDef> = {
-  chicken: { id: 'chicken', name: 'Chicken', icon: '🐔', price: 60, pen: 'coop', feedPerCycle: 1, product: 'egg', cycleMs: 40_000 },
-  cow: { id: 'cow', name: 'Cow', icon: '🐄', price: 250, pen: 'pasture', feedPerCycle: 2, product: 'milk', cycleMs: 90_000 },
-  sheep: { id: 'sheep', name: 'Sheep', icon: '🐑', price: 180, pen: 'pasture', feedPerCycle: 1, product: 'wool', cycleMs: 120_000 },
+  chicken: { id: 'chicken', name: 'Chicken', icon: '🐔', price: 60, pen: 'coop', feedPerCycle: 1, product: 'egg', cycleMs: 40_000, unlockLevel: 1 },
+  cow: { id: 'cow', name: 'Cow', icon: '🐄', price: 250, pen: 'pasture', feedPerCycle: 2, product: 'milk', cycleMs: 90_000, unlockLevel: 3 },
+  sheep: { id: 'sheep', name: 'Sheep', icon: '🐑', price: 180, pen: 'pasture', feedPerCycle: 1, product: 'wool', cycleMs: 120_000, unlockLevel: 5 },
 };
 
 export const PENS: Record<PenType, PenDef> = {
@@ -47,6 +51,7 @@ export const PENS: Record<PenType, PenDef> = {
     capacity: 6,
     animals: ['chicken'],
     description: 'Holds up to 6 chickens. Fed chickens lay eggs.',
+    unlockLevel: 1,
   },
   pasture: {
     id: 'pasture',
@@ -57,6 +62,7 @@ export const PENS: Record<PenType, PenDef> = {
     capacity: 4,
     animals: ['cow', 'sheep'],
     description: 'Fenced grass for up to 4 cows or sheep. Cows give milk, sheep give wool.',
+    unlockLevel: 3,
   },
 };
 
@@ -77,6 +83,8 @@ for (const pen of Object.values(PENS)) {
     texture: pen.id,
     category: 'animals',
     description: pen.description,
+    icon: pen.icon,
+    unlockLevel: pen.unlockLevel,
     initialState: () => ({ animals: [] }),
   });
 }

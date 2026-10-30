@@ -1,4 +1,5 @@
 import { ITEM_LIST } from '../data/items';
+import { MAX_LEVEL } from '../data/progression';
 import type { FarmContext } from '../game/context';
 import { refreshOrders } from '../logic/orders';
 import { h } from './dom';
@@ -32,6 +33,16 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
       `×${speed}`,
     ),
   );
+  const levelSelect = h(
+    'select',
+    { 'data-testid': 'debug-level', 'aria-label': 'Level' },
+    Array.from({ length: MAX_LEVEL }, (_, i) => h('option', { value: String(i + 1) }, `Level ${i + 1}`)),
+  );
+  const syncLevel = () => (levelSelect.value = String(game.level));
+  syncLevel();
+  game.events.on('xp', syncLevel);
+  game.events.on('reset', syncLevel);
+
   const syncSpeed = () => speedButtons.forEach((b, i) => b.setAttribute('aria-pressed', String(game.speed === SPEEDS[i])));
   game.events.on('speed', syncSpeed);
   game.events.on('reset', syncSpeed);
@@ -92,6 +103,22 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
     ),
     h('div', { class: 'debug-row', role: 'group', 'aria-label': 'Clock speed' }, h('span', {}, 'Speed'), speedButtons),
     awayRow,
+    h(
+      'div',
+      { class: 'debug-row' },
+      h('button', { type: 'button', class: 'btn', 'data-testid': 'debug-xp', onclick: () => game.progression.addXp(100) }, '+100 XP'),
+      levelSelect,
+      h(
+        'button',
+        { type: 'button', class: 'btn', 'data-testid': 'debug-set-level', onclick: () => game.progression.setLevel(Number(levelSelect.value)) },
+        'Set',
+      ),
+    ),
+    h(
+      'button',
+      { type: 'button', class: 'btn', 'data-testid': 'debug-complete-goals', onclick: () => game.progression.completeAll() },
+      'Complete goals',
+    ),
     h(
       'button',
       {

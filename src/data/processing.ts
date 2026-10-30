@@ -23,6 +23,8 @@ export interface ProcessorDef {
   description: string;
   /** How the building shows that it is working. */
   anim: 'smoke' | 'wheel';
+  /** Farm level that unlocks building it (and so its recipes). */
+  unlockLevel: number;
   recipes: readonly RecipeDef[];
 }
 
@@ -37,6 +39,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     cost: 200,
     footprint: { w: 2, h: 2 },
     description: 'Grinds wheat and corn into animal feed.',
+    unlockLevel: 4,
     anim: 'wheel',
     recipes: [
       { id: 'feed-from-wheat', inputs: { wheat: 2 }, output: { item: 'feed', qty: 3 }, durationMs: 20_000 },
@@ -50,6 +53,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     cost: 400,
     footprint: { w: 3, h: 2 },
     description: 'Turns milk into cheese and butter.',
+    unlockLevel: 3,
     anim: 'smoke',
     recipes: [
       { id: 'cheese', inputs: { milk: 2 }, output: { item: 'cheese', qty: 1 }, durationMs: 90_000 },
@@ -63,6 +67,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     cost: 350,
     footprint: { w: 3, h: 2 },
     description: 'Bakes bread from wheat and eggs.',
+    unlockLevel: 2,
     anim: 'smoke',
     recipes: [{ id: 'bread', inputs: { wheat: 3, egg: 1 }, output: { item: 'bread', qty: 1 }, durationMs: 60_000 }],
   },
@@ -73,6 +78,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     cost: 450,
     footprint: { w: 2, h: 2 },
     description: 'Weaves wool into cloth.',
+    unlockLevel: 5,
     anim: 'wheel',
     recipes: [{ id: 'cloth', inputs: { wool: 2 }, output: { item: 'cloth', qty: 1 }, durationMs: 120_000 }],
   },
@@ -96,6 +102,8 @@ for (const p of Object.values(PROCESSORS)) {
     texture: p.id,
     category: 'processing',
     description: p.description,
+    icon: p.icon,
+    unlockLevel: p.unlockLevel,
     initialState: () => ({ queue: [], ready: {} }),
   });
 }

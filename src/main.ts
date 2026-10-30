@@ -2,12 +2,11 @@ import './ui/styles.css';
 import './features';
 import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
-import { Game } from './logic/game';
+import { Game, type FarmSnapshot } from './logic/game';
 import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
 import { ordersOf, type OrdersState } from './logic/orders';
 import { loadSave, saveToStorage, type SaveStorage } from './logic/save';
 import { createNewGame } from './logic/state';
-import type { GameState } from './logic/types';
 import { BootScene } from './scenes/BootScene';
 import { FarmScene } from './scenes/FarmScene';
 import { isDebugMode, mountDebugPanel } from './ui/debug';
@@ -19,11 +18,11 @@ const AUTOSAVE_MS = 10_000;
 declare global {
   interface Window {
     /**
-     * Read-only snapshot of the game state (for debugging and Playwright checks), plus the
+     * Read-only snapshot of the game state (for debugging and Playwright checks) with level, XP and goals, plus the
      * real time of the last save (`Date.now()`, null before the first one) and the last offline catch-up.
      */
     readonly farm: Readonly<
-      GameState & { day: number; orders: OrdersState; lastSavedAt: number | null; lastCatchUp: CatchUpResult | null }
+      FarmSnapshot & { orders: OrdersState; lastSavedAt: number | null; lastCatchUp: CatchUpResult | null }
     >;
   }
 }
