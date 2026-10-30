@@ -6,6 +6,11 @@ Every image in `public/assets/farm/` (sprites, tiles, icons; `manifest.json`) is
 supplied for this game (see its `public/assets/farm/README.md`). Licence, from that README: *"You can use,
 modify and ship these in commercial games. No attribution required."* So it is not listed in the in-game
 Credits sheet. Unchanged: the 1x and 2x PNGs are committed as shipped; the game draws the 2x set at half size.
+The pack's generator is in `tools/art/` (`npm run art`).
+
+`tools/art/fonts/DejaVuSans-Bold.ttf` (DejaVu fonts 2.37, used only by the generator for the text on the
+for-sale sign, market stall and coins) is under the Bitstream Vera / DejaVu licence, free to use and
+redistribute: see `tools/art/fonts/LICENSE-DejaVu.txt`.
 
 ## Audio
 
