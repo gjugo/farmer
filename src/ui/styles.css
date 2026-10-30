@@ -328,6 +328,85 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+.market-day {
+  margin: 0 0 10px;
+}
+
+.market-countdown {
+  font-variant-numeric: tabular-nums;
+}
+
+.market-list {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.market-item {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  grid-template-areas:
+    'icon name price'
+    'icon actions actions';
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 10px;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.market-item .item-icon {
+  grid-area: icon;
+}
+
+.market-name {
+  grid-area: name;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.market-price {
+  grid-area: price;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.market-price .trend {
+  font-size: 12px;
+}
+
+.trend-1 .trend {
+  color: var(--green-dark);
+}
+
+.trend--1 .trend {
+  color: var(--red);
+}
+
+.trend-0 .trend {
+  color: var(--muted);
+}
+
+.market-actions {
+  grid-area: actions;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.market-actions .btn {
+  min-height: 40px;
+  padding: 6px 12px;
+}
+
+.market-footer .btn {
+  flex: 1;
+}
+
 .empty,
 .muted {
   color: var(--muted);
@@ -503,6 +582,12 @@ button {
 .dialog p {
   margin: 0 0 16px;
   color: var(--muted);
+}
+
+.dialog p.dialog-hint {
+  margin-top: -8px;
+  color: #8a2a20;
+  font-weight: 600;
 }
 
 .dialog .actions {

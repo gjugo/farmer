@@ -66,3 +66,19 @@ export function onGameStart(hook: StartHook): void {
 export function runStartHooks(ctx: FarmContext): void {
   for (const hook of startHooks) hook(ctx);
 }
+
+/**
+ * Handles a tap on a tile without an object, in normal mode (e.g. a "For sale" sign
+ * on locked land). Return true when handled; otherwise the open panel is closed.
+ */
+export type TileTapHandler = (ctx: FarmContext, x: number, y: number) => boolean | void;
+
+const tileTapHandlers: TileTapHandler[] = [];
+
+export function registerTileTapHandler(handler: TileTapHandler): void {
+  tileTapHandlers.push(handler);
+}
+
+export function runTileTapHandlers(ctx: FarmContext, x: number, y: number): boolean {
+  return tileTapHandlers.some((handler) => handler(ctx, x, y) === true);
+}
