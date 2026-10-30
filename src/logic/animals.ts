@@ -75,6 +75,7 @@ export function buyAnimal(game: Game, obj: PlacedObject<PenState>, kind: AnimalK
   if (!game.spend(ANIMALS[kind].price)) return { ok: false, reason: 'money' };
   obj.state.animals.push({ kind, timer: null });
   game.touch(obj);
+  game.activity.emit('animalBought', { kind });
   return { ok: true };
 }
 
@@ -99,7 +100,10 @@ export function feedAll(game: Game, obj: PlacedObject<PenState>): number {
     a.timer = startTimer(game.state.clock, def.cycleMs);
     fed++;
   }
-  if (fed > 0) game.touch(obj);
+  if (fed > 0) {
+    game.touch(obj);
+    game.activity.emit('fed', { count: fed });
+  }
   return fed;
 }
 

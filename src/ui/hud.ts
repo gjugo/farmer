@@ -1,7 +1,8 @@
 import { getBuildable, listBuildables } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
-import { listHudButtons } from '../game/hooks';
+import { listHudButtons, listSettingsSections } from '../game/hooks';
+import { uiSignals } from '../game/signals';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
 import type { GameEvents } from '../logic/game';
@@ -28,6 +29,7 @@ export class Hud implements UiApi {
   private toastsEl!: HTMLElement;
   private buttons = new Map<string, HTMLButtonElement>();
   private badges: { el: HTMLElement; read: () => number | null }[] = [];
+  private liveButtons: { btn: HTMLButtonElement; read: () => { icon: string; label: string } }[] = [];
   private sheet: SheetSpec | null = null;
   private sheetSignature = '';
 
@@ -118,6 +120,7 @@ export class Hud implements UiApi {
         this.buttons.get(b.id)!.append(el);
         this.badges.push({ el, read: () => b.badge!(this.ctx) });
       }
+      if (b.live) this.liveButtons.push({ btn: this.buttons.get(b.id)!, read: () => b.live!(this.ctx) });
     }
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
 
@@ -159,6 +162,16 @@ export class Hud implements UiApi {
       const text = n ? String(n) : '';
       if (el.textContent !== text) el.textContent = text;
       el.hidden = !n;
+    }
+    for (const { btn, read } of this.liveButtons) {
+      const { icon, label } = read();
+      const iconEl = btn.querySelector('.hud-btn-icon')!;
+      if (iconEl.textContent !== icon) iconEl.textContent = icon;
+      if (btn.title !== label) {
+        btn.title = label;
+        btn.setAttribute('aria-label', label);
+        btn.querySelector('.hud-btn-label')!.textContent = label;
+      }
     }
   }
 
@@ -360,6 +373,7 @@ export class Hud implements UiApi {
       title: () => '⚙️ Settings',
       signature: () => 'settings',
       render: (body) => {
+        for (const section of listSettingsSections()) section.render(this.ctx, body);
         body.append(
           h('p', { class: 'muted' }, 'Your farm is saved automatically in this browser.'),
           h(
@@ -414,6 +428,7 @@ export class Hud implements UiApi {
   // Feedback --------------------------------------------------------------------
 
   toast(message: string, kind: 'info' | 'success' | 'error' = 'info'): void {
+    if (kind === 'error') uiSignals.emit('refused', { message });
     const el = h('div', { class: `toast toast-${kind}`, role: kind === 'error' ? 'alert' : 'status', 'data-testid': 'toast' }, message);
     this.toastsEl.append(el);
     while (this.toastsEl.children.length > 4) this.toastsEl.firstElementChild?.remove();

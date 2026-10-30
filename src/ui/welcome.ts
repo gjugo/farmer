@@ -2,6 +2,7 @@ import { getCrop } from '../data/crops';
 import { getItem } from '../data/items';
 import { MAX_OFFLINE_MS } from '../data/offline';
 import { formatAway, type CatchUpResult } from '../logic/offline';
+import { uiSignals } from '../game/signals';
 import { h } from './dom';
 
 /** Lines of the welcome-back summary, built from the catch-up result alone. */
@@ -61,4 +62,5 @@ export function showWelcomeBack(root: HTMLElement, result: CatchUpResult): void 
   window.addEventListener('keydown', onKey, true);
   root.append(backdrop);
   button.focus();
+  uiSignals.emit('welcomeBack', { awayMs: result.awayMs });
 }

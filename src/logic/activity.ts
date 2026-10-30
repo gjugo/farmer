@@ -19,4 +19,18 @@ export interface ActivityEvents {
   placed: { type: string };
   /** The player bought a parcel of land. */
   landBought: { parcel: string; price: number };
+  /** A crop was planted in a field. */
+  planted: { crop: string };
+  /** An animal was bought into a pen. */
+  animalBought: { kind: string };
+  /** Hungry animals in a pen were fed. */
+  fed: { count: number };
+  /** A processing job was queued. */
+  jobStarted: { recipe: string };
+  /** Processing jobs finished while the farm was running (offline catch-up does not report these). */
+  jobsFinished: { count: number };
+  /** A customer order was fulfilled. */
+  orderFulfilled: { reward: number };
+  /** A finished goal was claimed. */
+  goalClaimed: { id: string };
 }

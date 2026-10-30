@@ -167,7 +167,11 @@ for (const type of Object.keys(PROCESSORS) as ProcessorType[]) {
     create,
     refresh,
     update(ctx, obj, view) {
-      if (settle(ctx.game.state.clock, obj) > 0) ctx.game.touch(obj);
+      const finished = settle(ctx.game.state.clock, obj);
+      if (finished > 0) {
+        ctx.game.touch(obj);
+        ctx.game.activity.emit('jobsFinished', { count: finished });
+      }
       animate(ctx, obj, view);
     },
     destroy(_ctx, obj) {
