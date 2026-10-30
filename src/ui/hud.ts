@@ -1,0 +1,433 @@
+import { getBuildable, listBuildables } from '../data/buildables';
+import { getItem, ITEM_LIST } from '../data/items';
+import type { FarmContext, PanelBuilder, PanelSpec, ToolMode, UiApi } from '../game/context';
+import { listHudButtons } from '../game/hooks';
+import { timeOfDay } from '../logic/clock';
+import { DEMOLISH_REFUND } from '../logic/constants';
+import type { FarmScene } from '../scenes/FarmScene';
+import { h, formatMoney } from './dom';
+
+/** Content of the side sheet. `signature` decides when the body is rebuilt; `tick` updates it in place. */
+interface Sheet {
+  id: string;
+  title(): string;
+  signature(): string;
+  render(body: HTMLElement): void;
+  tick?(body: HTMLElement): void;
+}
+
+const REFRESH_MS = 250;
+
+/** The HTML overlay: top bar, side sheet (menus and action panels), tool banner, toasts and dialogs. */
+export class Hud implements UiApi {
+  private readonly ctx: FarmContext;
+  private moneyEl!: HTMLElement;
+  private moneyValueEl!: HTMLElement;
+  private dayEl!: HTMLElement;
+  private dayBarEl!: HTMLElement;
+  private sheetEl!: HTMLElement;
+  private sheetTitleEl!: HTMLElement;
+  private sheetBodyEl!: HTMLElement;
+  private bannerEl!: HTMLElement;
+  private toastsEl!: HTMLElement;
+  private buttons = new Map<string, HTMLButtonElement>();
+  private sheet: Sheet | null = null;
+  private sheetSignature = '';
+
+  constructor(
+    private readonly root: HTMLElement,
+    ctx: FarmContext,
+    private readonly onNewGame: () => void,
+  ) {
+    this.ctx = ctx;
+    this.build();
+    const { events } = ctx.game;
+    events.on('money', ({ delta }) => {
+      this.updateStats();
+      this.floatMoney(delta);
+      this.refresh();
+    });
+    for (const e of ['inventory', 'objectAdded', 'objectRemoved', 'objectChanged', 'land', 'day', 'speed'] as const) {
+      events.on(e, () => this.refresh());
+    }
+    events.on('reset', () => {
+      this.ctx.tools.cancel();
+      this.closePanel();
+      this.updateStats();
+    });
+    ctx.tools.events.on('change', (mode) => this.onToolChange(mode));
+    window.setInterval(() => this.refresh(), REFRESH_MS);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.root.querySelector('.dialog-backdrop')) this.closePanel();
+    });
+    this.updateStats();
+  }
+
+  // Layout ----------------------------------------------------------------------
+
+  private build(): void {
+    this.moneyValueEl = h('span', { class: 'stat-value', 'data-testid': 'hud-money' });
+    this.moneyEl = h('div', { class: 'stat stat-money', title: 'Money' }, h('span', { 'aria-hidden': 'true' }, '💰'), this.moneyValueEl);
+    this.dayEl = h('span', { class: 'stat-value', 'data-testid': 'hud-day' });
+    this.dayBarEl = h('span', { class: 'day-bar-fill' });
+    const day = h(
+      'div',
+      { class: 'stat stat-day', title: 'Day' },
+      h('span', { 'aria-hidden': 'true' }, '☀️'),
+      h('span', { class: 'day-text' }, this.dayEl, h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.dayBarEl)),
+    );
+
+    const tools = h('nav', { class: 'hud-buttons', 'aria-label': 'Farm tools' });
+    const addButton = (id: string, icon: string, label: string, onClick: () => void) => {
+      const btn = h(
+        'button',
+        { class: 'hud-btn', type: 'button', 'data-testid': `btn-${id}`, 'aria-label': label, title: label, onclick: onClick },
+        h('span', { class: 'hud-btn-icon', 'aria-hidden': 'true' }, icon),
+        h('span', { class: 'hud-btn-label' }, label),
+      );
+      this.buttons.set(id, btn);
+      tools.append(btn);
+    };
+    addButton('build', '🔨', 'Build', () => this.toggleSheet(this.buildSheet()));
+    addButton('demolish', '🧹', 'Demolish', () => {
+      const tools = this.ctx.tools;
+      if (tools.mode.kind === 'demolish') tools.cancel();
+      else {
+        this.closePanel();
+        tools.set({ kind: 'demolish' });
+      }
+    });
+    addButton('inventory', '🎒', 'Inventory', () => this.toggleSheet(this.inventorySheet()));
+    for (const b of listHudButtons()) addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx));
+    addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
+
+    const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day), tools);
+
+    this.sheetTitleEl = h('h2', { class: 'sheet-title', id: 'sheet-title', 'data-testid': 'panel-title' });
+    this.sheetBodyEl = h('div', { class: 'sheet-body' });
+    this.sheetEl = h(
+      'section',
+      { class: 'sheet', role: 'dialog', 'aria-labelledby': 'sheet-title', 'data-testid': 'panel', hidden: true },
+      h(
+        'div',
+        { class: 'sheet-head' },
+        this.sheetTitleEl,
+        h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', 'data-testid': 'panel-close', onclick: () => this.closePanel() }, '✕'),
+      ),
+      this.sheetBodyEl,
+    );
+
+    this.bannerEl = h('div', { class: 'tool-banner', 'data-testid': 'tool-banner', hidden: true });
+    this.toastsEl = h('div', { class: 'toasts', 'aria-live': 'polite', 'data-testid': 'toasts' });
+
+    this.root.append(topbar, this.sheetEl, this.bannerEl, this.toastsEl);
+  }
+
+  private updateStats(): void {
+    this.moneyValueEl.textContent = formatMoney(this.ctx.game.money);
+    const { game } = this.ctx;
+    const dayText = `Day ${game.day}`;
+    if (this.dayEl.textContent !== dayText) this.dayEl.textContent = dayText;
+    this.dayBarEl.style.width = `${(timeOfDay(game.state.clock) * 100).toFixed(1)}%`;
+  }
+
+  /** Re-renders whatever depends on game state. Cheap; called on events and on a timer. */
+  refresh(): void {
+    this.updateStats();
+    if (!this.sheet) return;
+    const sig = this.sheet.signature();
+    if (sig !== this.sheetSignature) {
+      this.sheetSignature = sig;
+      this.sheetTitleEl.textContent = this.sheet.title();
+      this.sheetBodyEl.replaceChildren();
+      this.sheet.render(this.sheetBodyEl);
+    }
+    this.sheet?.tick?.(this.sheetBodyEl);
+  }
+
+  // Sheets ----------------------------------------------------------------------
+
+  private showSheet(sheet: Sheet): void {
+    this.sheet = sheet;
+    this.sheetSignature = '';
+    this.sheetEl.hidden = false;
+    this.sheetEl.dataset.sheet = sheet.id;
+    for (const [id, btn] of this.buttons) btn.classList.toggle('active', id === sheet.id);
+    this.refresh();
+  }
+
+  private toggleSheet(sheet: Sheet): void {
+    if (this.sheet?.id === sheet.id) this.closePanel();
+    else this.showSheet(sheet);
+  }
+
+  closePanel(): void {
+    if (!this.sheet) return;
+    this.sheet = null;
+    this.sheetEl.hidden = true;
+    this.sheetBodyEl.replaceChildren();
+    for (const [id, btn] of this.buttons) if (id !== 'demolish') btn.classList.remove('active');
+  }
+
+  openPanel(build: PanelBuilder): void {
+    let spec: PanelSpec | null = build();
+    if (!spec) return;
+    const progressOf = (s: PanelSpec) => Math.max(0, Math.min(1, s.progress?.value ?? 0));
+    this.showSheet({
+      id: 'action',
+      title: () => (spec ? `${spec.icon ? `${spec.icon} ` : ''}${spec.title}` : ''),
+      signature: () => {
+        spec = build();
+        if (!spec) {
+          queueMicrotask(() => this.closePanel());
+          return 'closed';
+        }
+        // Progress is updated in place by tick(); everything else rebuilds the body.
+        return JSON.stringify({ ...spec, progress: spec.progress ? spec.progress.label ?? true : null });
+      },
+      render: (body) => {
+        if (!spec) return;
+        const current = spec;
+        if (current.lines?.length) {
+          body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => h('li', {}, l))));
+        }
+        if (current.progress) {
+          body.append(
+            h(
+              'div',
+              { class: 'progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'data-testid': 'panel-progress' },
+              h('div', { class: 'progress-fill' }),
+              current.progress.label ? h('span', { class: 'progress-label' }, current.progress.label) : null,
+            ),
+          );
+        }
+        if (current.actions?.length) {
+          body.append(
+            h(
+              'div',
+              { class: 'actions' },
+              current.actions.map((a, i) =>
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    class: `btn btn-${a.variant ?? 'primary'}`,
+                    disabled: !!a.disabled,
+                    'data-testid': `panel-action-${i}`,
+                    // Look the action up again at click time so the handler is never stale.
+                    onclick: () => {
+                      const action = spec?.actions?.[i];
+                      if (action && !action.disabled) action.onClick();
+                      this.refresh();
+                    },
+                  },
+                  a.label,
+                ),
+              ),
+            ),
+          );
+        }
+      },
+      tick: (body) => {
+        const bar = body.querySelector<HTMLElement>('.progress');
+        if (!bar || !spec) return;
+        const pct = Math.round(progressOf(spec) * 100);
+        bar.setAttribute('aria-valuenow', String(pct));
+        bar.querySelector<HTMLElement>('.progress-fill')!.style.transform = `scaleX(${pct / 100})`;
+      },
+    });
+  }
+
+  private buildSheet(): Sheet {
+    const { game, tools } = this.ctx;
+    return {
+      id: 'build',
+      title: () => '🔨 Build',
+      signature: () => listBuildables().map((b) => `${b.id}:${game.canAfford(b.cost)}`).join('|'),
+      render: (body) => {
+        const groups = new Map<string, ReturnType<typeof listBuildables>>();
+        for (const b of listBuildables()) {
+          const key = b.category ?? 'other';
+          groups.set(key, [...(groups.get(key) ?? []), b]);
+        }
+        for (const [category, defs] of groups) {
+          body.append(
+            h('h3', { class: 'group-title' }, category),
+            h(
+              'div',
+              { class: 'build-list' },
+              defs.map((b) =>
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    class: 'build-item',
+                    disabled: !game.canAfford(b.cost),
+                    'data-testid': `build-${b.id}`,
+                    onclick: () => {
+                      this.closePanel();
+                      tools.set({ kind: 'build', type: b.id });
+                    },
+                  },
+                  h('span', { class: 'build-name' }, b.name),
+                  h('span', { class: 'build-meta' }, `${b.footprint.w}×${b.footprint.h}`),
+                  h('span', { class: 'build-cost' }, formatMoney(b.cost)),
+                  b.description ? h('span', { class: 'build-desc' }, b.description) : null,
+                ),
+              ),
+            ),
+          );
+        }
+      },
+    };
+  }
+
+  private inventorySheet(): Sheet {
+    const { game } = this.ctx;
+    return {
+      id: 'inventory',
+      title: () => '🎒 Inventory',
+      signature: () => JSON.stringify(game.state.inventory),
+      render: (body) => {
+        const known = new Set(ITEM_LIST.map((i) => i.id));
+        const ids = [...ITEM_LIST.map((i) => i.id), ...Object.keys(game.state.inventory).filter((id) => !known.has(id))];
+        const rows = ids.filter((id) => game.count(id) > 0);
+        if (!rows.length) {
+          body.append(h('p', { class: 'empty' }, 'Your barn is empty. Grow crops and raise animals to fill it.'));
+          return;
+        }
+        body.append(
+          h(
+            'ul',
+            { class: 'inventory-list', 'data-testid': 'inventory-list' },
+            rows.map((id) => {
+              const item = getItem(id);
+              return h(
+                'li',
+                { class: 'inventory-item', 'data-testid': `inv-${id}` },
+                h('span', { class: 'item-icon', 'aria-hidden': 'true' }, item?.icon ?? '📦'),
+                h('span', { class: 'item-name' }, item?.name ?? id),
+                h('span', { class: 'item-count' }, `×${game.count(id)}`),
+              );
+            }),
+          ),
+        );
+      },
+    };
+  }
+
+  private settingsSheet(): Sheet {
+    return {
+      id: 'settings',
+      title: () => '⚙️ Settings',
+      signature: () => 'settings',
+      render: (body) => {
+        body.append(
+          h('p', { class: 'muted' }, 'Your farm is saved automatically in this browser.'),
+          h(
+            'div',
+            { class: 'actions' },
+            h(
+              'button',
+              {
+                type: 'button',
+                class: 'btn btn-danger',
+                'data-testid': 'btn-new-game',
+                onclick: async () => {
+                  const ok = await this.confirm('Start a new game?', 'Your current farm, money and items will be lost.', 'New game');
+                  if (ok) {
+                    this.onNewGame();
+                    this.toast('A fresh start! Welcome to your new farm.', 'success');
+                  }
+                },
+              },
+              'New game',
+            ),
+          ),
+        );
+      },
+    };
+  }
+
+  // Tools -----------------------------------------------------------------------
+
+  private onToolChange(mode: ToolMode): void {
+    this.buttons.get('demolish')?.classList.toggle('active', mode.kind === 'demolish');
+    this.buttons.get('build')?.classList.toggle('active', mode.kind === 'build' || this.sheet?.id === 'build');
+    document.body.dataset.tool = mode.kind;
+    if (mode.kind === 'normal') {
+      this.bannerEl.hidden = true;
+      return;
+    }
+    let text: string;
+    if (mode.kind === 'build') {
+      const def = getBuildable(mode.type);
+      text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}) — tap a tile`;
+    } else {
+      text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% refund)`;
+    }
+    this.bannerEl.replaceChildren(
+      h('span', {}, text),
+      h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'btn-cancel-tool', onclick: () => this.ctx.tools.cancel() }, 'Cancel'),
+    );
+    this.bannerEl.hidden = false;
+  }
+
+  // Feedback --------------------------------------------------------------------
+
+  toast(message: string, kind: 'info' | 'success' | 'error' = 'info'): void {
+    const el = h('div', { class: `toast toast-${kind}`, role: kind === 'error' ? 'alert' : 'status', 'data-testid': 'toast' }, message);
+    this.toastsEl.append(el);
+    while (this.toastsEl.children.length > 4) this.toastsEl.firstElementChild?.remove();
+    window.setTimeout(() => el.classList.add('leaving'), 2200);
+    window.setTimeout(() => el.remove(), 2600);
+  }
+
+  floatText(tileX: number, tileY: number, text: string, color?: string): void {
+    (this.ctx.scene as FarmScene | undefined)?.floatText?.(tileX, tileY, text, color);
+  }
+
+  private floatMoney(delta: number): void {
+    if (!delta) return;
+    const el = h('span', { class: `money-float ${delta > 0 ? 'gain' : 'loss'}`, 'aria-hidden': 'true' }, `${delta > 0 ? '+' : '-'}${formatMoney(Math.abs(delta))}`);
+    this.moneyEl.append(el);
+    window.setTimeout(() => el.remove(), 1200);
+  }
+
+  /** Modal confirm dialog. Resolves true when confirmed. */
+  confirm(title: string, message: string, confirmLabel = 'OK'): Promise<boolean> {
+    return new Promise((resolve) => {
+      const close = (result: boolean) => {
+        window.removeEventListener('keydown', onKey, true);
+        backdrop.remove();
+        resolve(result);
+      };
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          close(false);
+        }
+      };
+      const confirmBtn = h('button', { type: 'button', class: 'btn btn-danger', 'data-testid': 'confirm-ok', onclick: () => close(true) }, confirmLabel);
+      const backdrop = h(
+        'div',
+        { class: 'dialog-backdrop' },
+        h(
+          'div',
+          { class: 'dialog', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'dialog-title', 'data-testid': 'confirm-dialog' },
+          h('h2', { id: 'dialog-title' }, title),
+          h('p', {}, message),
+          h(
+            'div',
+            { class: 'actions' },
+            h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'confirm-cancel', onclick: () => close(false) }, 'Cancel'),
+            confirmBtn,
+          ),
+        ),
+      );
+      window.addEventListener('keydown', onKey, true);
+      this.root.append(backdrop);
+      confirmBtn.focus();
+    });
+  }
+}
