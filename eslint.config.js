@@ -13,12 +13,12 @@ export default tseslint.config(
     },
   },
   {
-    // The logic layer must stay engine-free so it can be unit-tested in Node.
-    files: ['src/logic/**/*.ts', 'src/data/**/*.ts'],
+    // The logic layer (and the isometric projection) must stay engine-free so it can be unit-tested in Node.
+    files: ['src/logic/**/*.ts', 'src/data/**/*.ts', 'src/scenes/iso.ts', 'src/scenes/iso.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
-        { paths: [{ name: 'phaser', message: 'src/logic and src/data must not depend on Phaser.' }] },
+        { paths: [{ name: 'phaser', message: 'src/logic, src/data and src/scenes/iso.ts must not depend on Phaser.' }] },
       ],
     },
   },
