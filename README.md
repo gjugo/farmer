@@ -30,6 +30,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   Esc, right-click or **Cancel** leaves build mode.
 - **Demolish:** 🧹 → click an object (refunds 50% of its cost).
 - Click an object to open its action panel.
+- **Processing:** build a Feed Mill, Dairy, Bakery or Loom, open it and pick a recipe. Inputs are taken at once;
+  up to 3 jobs queue and run one at a time. Click the building (or **Collect**) to pick up finished goods.
 
 ### Debug mode (QA)
 
@@ -67,6 +69,7 @@ src/
     debug.ts           ?debug=1 panel
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
+    processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
 ```
 
 ## Extending the game
