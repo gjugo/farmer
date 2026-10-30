@@ -204,7 +204,8 @@ button {
   gap: 6px;
 }
 
-.xp-text {
+.xp-text,
+.season-text {
   font-size: 12px;
   font-weight: 600;
   color: var(--muted);
@@ -818,8 +819,9 @@ button {
 /* Phones --------------------------------------------------------------------- */
 
 @media (max-width: 640px) {
-  .hud-btn-label {
-    display: none;
+  .hud-btn-label,
+  .season-text {
+    display: none; /* the season still shows as the day's icon */
   }
 
   .hud-btn {

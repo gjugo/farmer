@@ -40,13 +40,21 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   gets a new order after 2 game-minutes, a discarded one after 5.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
+- **Seasons:** each season lasts 2 game days (day 1–2 spring, 3–4 summer, 5–6 autumn, 7–8 winter, then round again);
+  the HUD shows it next to the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
+  Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
+  which turns every empty field back to unploughed (faded soil); in winter nothing can be ploughed or sown.
+  Each crop is sown only in its seasons (wheat: spring–autumn, carrot: spring and autumn, corn: spring and summer),
+  and only while it will be ripe before they end. A ripe crop keeps in the field, even into winter.
+  The new farm's two starting fields come ploughed.
 - **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
   Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
   (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
 
 ### Debug mode (QA)
 
-Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60** and
+Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60**,
+**Next season** (jumps the clock to the start of the next season, like time away but without the summary) and
 **Refresh orders** (fills every order slot now).
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
@@ -55,6 +63,7 @@ orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId
 `window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
+`window.farm.season` is `{ season, dayOfSeason, msLeft }` (e.g. `season: 'winter'`, game ms until the next season).
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
@@ -71,16 +80,18 @@ src/
     land.ts            land ownership grid
     placement.ts       canPlace / objectAt
     clock.ts           game clock, Day N, game-time timers
+    seasons.ts         seasons from the game clock (2 days each), season runs for ploughing and sowing windows
     market.ts          daily sell prices (base × 0.8–1.2 by day + item id), sell / sellAll
     parcels.ts         land parcels, adjacency, parcel prices ($500, ×1.5), buyParcel
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
-    crops.ts           planting, growth stages, harvest, starting fields
+    crops.ts           ploughing, planting (in season), growth stages, harvest, starting fields
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
     buildables.ts      build menu registry (+ the core Path)
-    crops.ts           crop catalogue + the Field buildable
+    crops.ts           crop catalogue (with each crop's seasons) + the Field buildable
+    seasons.ts         season names, icons, length, ploughing seasons and cost
     customers.ts       customer names for orders
   game/              Glue between logic, scene and UI
     context.ts         FarmContext, PanelSpec, ToolState
@@ -101,7 +112,8 @@ src/
     path/              reference feature
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
     processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
-    fields/            field + crop views, ripe effects, plant/harvest panel
+    fields/            field + crop views, ripe effects, plough/plant/harvest panel
+    seasons/           season-change toasts, `window.farm.season`
     market/            🏪 Market HUD button and sell panel
     orders/            📋 Orders HUD button (with badge) and orders panel
     land/              "For sale" signs on parcels next to owned land, buy dialog
