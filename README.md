@@ -54,6 +54,8 @@ src/
     land.ts            land ownership grid
     placement.ts       canPlace / objectAt
     clock.ts           game clock, Day N, game-time timers
+    market.ts          daily sell prices (base × 0.8–1.2 by day + item id), sell / sellAll
+    parcels.ts         land parcels, adjacency, parcel prices ($500, ×1.5), buyParcel
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           planting, growth stages, harvest, starting fields
@@ -75,6 +77,8 @@ src/
     path/              reference feature
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
     fields/            field + crop views, ripe effects, plant/harvest panel
+    market/            🏪 Market HUD button and sell panel
+    land/              "For sale" signs on parcels next to owned land, buy dialog
 ```
 
 ## Extending the game
@@ -158,6 +162,10 @@ events. There is no offline progress: time only passes while the game is open.
 - **HUD button** (e.g. Market): `registerHudButton({ id, label, icon, onClick: (ctx) => ctx.ui.openPanel(...) })`.
 - **Global feature state** (e.g. market prices): `registerStateSlice('market', () => ({ ... }))`
   and `getSlice(game.state, 'market')`. Defaults are merged into old saves.
+- **Custom sheet** (markup of your own, like the Market): `ctx.ui.toggleSheet({ id, title, signature, render, tick })`.
+- **Confirm dialog:** `await ctx.ui.confirm(title, message, { confirmLabel, variant, disabled, hint })`.
+- **Taps on empty tiles** (e.g. locked land): `registerTileTapHandler((ctx, x, y) => true /* handled */)`.
+- **Selling:** `sell(game, itemId, qty?)` / `dailyPrice(game.day, itemId)` from `src/logic/market.ts`.
 - **Feedback:** `ctx.ui.toast(msg, 'success' | 'error')`, `ctx.ui.floatText(tileX, tileY, text)`.
   Money changes float next to the money counter automatically.
 - **Events:** `game.events.on('money' | 'inventory' | 'objectAdded' | 'objectRemoved' | 'objectChanged' | 'land' | 'day' | 'speed' | 'reset', fn)`.

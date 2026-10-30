@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { getBuildable } from '../data/buildables';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
-import { getBehavior, runStartHooks } from '../game/hooks';
+import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
 import { demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
@@ -411,7 +411,7 @@ export class FarmScene extends Phaser.Scene {
       return;
     }
     if (!obj) {
-      ui.closePanel();
+      if (!runTileTapHandlers(this.ctx, tx, ty)) ui.closePanel();
       return;
     }
     this.openObjectPanel(obj);

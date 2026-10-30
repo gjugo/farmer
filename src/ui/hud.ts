@@ -1,20 +1,11 @@
 import { getBuildable, listBuildables } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
-import type { FarmContext, PanelBuilder, PanelSpec, ToolMode, UiApi } from '../game/context';
+import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
 import { listHudButtons } from '../game/hooks';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
 import type { FarmScene } from '../scenes/FarmScene';
 import { h, formatMoney } from './dom';
-
-/** Content of the side sheet. `signature` decides when the body is rebuilt; `tick` updates it in place. */
-interface Sheet {
-  id: string;
-  title(): string;
-  signature(): string;
-  render(body: HTMLElement): void;
-  tick?(body: HTMLElement): void;
-}
 
 const REFRESH_MS = 250;
 
@@ -31,7 +22,7 @@ export class Hud implements UiApi {
   private bannerEl!: HTMLElement;
   private toastsEl!: HTMLElement;
   private buttons = new Map<string, HTMLButtonElement>();
-  private sheet: Sheet | null = null;
+  private sheet: SheetSpec | null = null;
   private sheetSignature = '';
 
   constructor(
@@ -147,7 +138,7 @@ export class Hud implements UiApi {
 
   // Sheets ----------------------------------------------------------------------
 
-  private showSheet(sheet: Sheet): void {
+  private showSheet(sheet: SheetSpec): void {
     this.sheet = sheet;
     this.sheetSignature = '';
     this.sheetEl.hidden = false;
@@ -156,7 +147,7 @@ export class Hud implements UiApi {
     this.refresh();
   }
 
-  private toggleSheet(sheet: Sheet): void {
+  toggleSheet(sheet: SheetSpec): void {
     if (this.sheet?.id === sheet.id) this.closePanel();
     else this.showSheet(sheet);
   }
@@ -238,7 +229,7 @@ export class Hud implements UiApi {
     });
   }
 
-  private buildSheet(): Sheet {
+  private buildSheet(): SheetSpec {
     const { game, tools } = this.ctx;
     return {
       id: 'build',
@@ -282,7 +273,7 @@ export class Hud implements UiApi {
     };
   }
 
-  private inventorySheet(): Sheet {
+  private inventorySheet(): SheetSpec {
     const { game } = this.ctx;
     return {
       id: 'inventory',
@@ -316,7 +307,7 @@ export class Hud implements UiApi {
     };
   }
 
-  private settingsSheet(): Sheet {
+  private settingsSheet(): SheetSpec {
     return {
       id: 'settings',
       title: () => '⚙️ Settings',
@@ -334,7 +325,7 @@ export class Hud implements UiApi {
                 class: 'btn btn-danger',
                 'data-testid': 'btn-new-game',
                 onclick: async () => {
-                  const ok = await this.confirm('Start a new game?', 'Your current farm, money and items will be lost.', 'New game');
+                  const ok = await this.confirm('Start a new game?', 'Your current farm, money and items will be lost.', { confirmLabel: 'New game' });
                   if (ok) {
                     this.onNewGame();
                     this.toast('A fresh start! Welcome to your new farm.', 'success');
@@ -395,7 +386,7 @@ export class Hud implements UiApi {
   }
 
   /** Modal confirm dialog. Resolves true when confirmed. */
-  confirm(title: string, message: string, confirmLabel = 'OK'): Promise<boolean> {
+  confirm(title: string, message: string, { confirmLabel = 'OK', variant = 'danger', disabled, hint }: ConfirmOptions = {}): Promise<boolean> {
     return new Promise((resolve) => {
       const close = (result: boolean) => {
         window.removeEventListener('keydown', onKey, true);
@@ -408,7 +399,12 @@ export class Hud implements UiApi {
           close(false);
         }
       };
-      const confirmBtn = h('button', { type: 'button', class: 'btn btn-danger', 'data-testid': 'confirm-ok', onclick: () => close(true) }, confirmLabel);
+      const confirmBtn = h(
+        'button',
+        { type: 'button', class: `btn btn-${variant}`, 'data-testid': 'confirm-ok', disabled: !!disabled, onclick: () => close(true) },
+        confirmLabel,
+      );
+      const cancelBtn = h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'confirm-cancel', onclick: () => close(false) }, 'Cancel');
       const backdrop = h(
         'div',
         { class: 'dialog-backdrop' },
@@ -417,17 +413,13 @@ export class Hud implements UiApi {
           { class: 'dialog', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'dialog-title', 'data-testid': 'confirm-dialog' },
           h('h2', { id: 'dialog-title' }, title),
           h('p', {}, message),
-          h(
-            'div',
-            { class: 'actions' },
-            h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'confirm-cancel', onclick: () => close(false) }, 'Cancel'),
-            confirmBtn,
-          ),
+          hint ? h('p', { class: 'dialog-hint', 'data-testid': 'confirm-hint' }, hint) : null,
+          h('div', { class: 'actions' }, cancelBtn, confirmBtn),
         ),
       );
       window.addEventListener('keydown', onKey, true);
       this.root.append(backdrop);
-      confirmBtn.focus();
+      (disabled ? cancelBtn : confirmBtn).focus();
     });
   }
 }

@@ -28,6 +28,28 @@ export interface PanelSpec {
 
 export type PanelBuilder = () => PanelSpec | null;
 
+/**
+ * A custom side sheet with its own markup (e.g. the Market). `render` rebuilds the body
+ * whenever `signature()` changes; `tick` updates it in place a few times per second.
+ */
+export interface SheetSpec {
+  id: string;
+  title(): string;
+  signature(): string;
+  render(body: HTMLElement): void;
+  tick?(body: HTMLElement): void;
+}
+
+export interface ConfirmOptions {
+  confirmLabel?: string;
+  /** Visual emphasis of the confirm button (default `danger`). */
+  variant?: 'primary' | 'danger';
+  /** Disables the confirm button, e.g. when the player cannot afford it. */
+  disabled?: boolean;
+  /** Small note under the message, e.g. why the button is disabled. */
+  hint?: string;
+}
+
 export interface UiApi {
   /** Short message in the toast stack. */
   toast(message: string, kind?: 'info' | 'success' | 'error'): void;
@@ -35,7 +57,11 @@ export interface UiApi {
   floatText(tileX: number, tileY: number, text: string, color?: string): void;
   /** Opens the generic action panel. Returning null from the builder closes it. */
   openPanel(build: PanelBuilder): void;
+  /** Opens a custom sheet, or closes it when a sheet with the same id is already open. */
+  toggleSheet(sheet: SheetSpec): void;
   closePanel(): void;
+  /** Modal confirm dialog. Resolves true when confirmed. */
+  confirm(title: string, message: string, options?: ConfirmOptions): Promise<boolean>;
 }
 
 export type ToolMode = { kind: 'normal' } | { kind: 'build'; type: string } | { kind: 'demolish' };
