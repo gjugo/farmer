@@ -18,8 +18,9 @@ import { maxLevelState } from './test-utils';
 import { deserialize, serialize } from './save';
 import type { PlacedObject } from './types';
 
+// Free land below the starting fields, the farmhouse and the road between them.
 const ox = START_LAND.x;
-const oy = START_LAND.y;
+const oy = START_LAND.y + 4;
 
 function pen(game: Game, type: 'coop' | 'pasture', x = ox, y = oy): PlacedObject<PenState> {
   const r = game.place(type, x, y);

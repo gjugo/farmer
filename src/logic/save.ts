@@ -4,6 +4,7 @@ import { PLOUGH_SEASONS } from '../data/seasons';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
 import { migrateOrdersSlice } from './orders';
+import { ensureFarmhouse } from './roads';
 import { applySliceDefaults, isPlainObject } from './slices';
 import { createNewGame } from './state';
 import type { GameState, Inventory, LandState, PlacedObject } from './types';
@@ -117,7 +118,10 @@ export function normalize(input: unknown): GameState {
   const ext = isPlainObject(input.ext) ? { ...input.ext } : {};
   applySliceDefaults(ext);
 
-  return { money, inventory, land, objects, nextObjectId, clock, ext };
+  const state: GameState = { money, inventory, land, objects, nextObjectId, clock, ext };
+  // Farms from before farmhouses get one, with paths to what they have built.
+  ensureFarmhouse(state);
+  return state;
 }
 
 function isNonNegNumber(v: unknown): v is number {

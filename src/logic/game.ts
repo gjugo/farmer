@@ -182,10 +182,10 @@ export class Game {
     return { ok: true, object };
   }
 
-  /** Removes an object and refunds part of its cost. Returns the refund, or null if not found. */
+  /** Removes an object and refunds part of its cost. Returns the refund, or null if not found or fixed (the farmhouse). */
   demolish(id: string): number | null {
     const i = this._state.objects.findIndex((o) => o.id === id);
-    if (i < 0) return null;
+    if (i < 0 || getBuildable(this._state.objects[i].type)?.fixed) return null;
     const [object] = this._state.objects.splice(i, 1);
     const refund = demolishRefund(getBuildable(object.type));
     this.events.emit('objectRemoved', object);

@@ -14,6 +14,8 @@ export interface BuildableDef {
   icon?: string;
   /** Farm level that unlocks building it (default 1). Already-built ones keep working. */
   unlockLevel?: number;
+  /** Part of every farm (the farmhouse): not in the build menu and never demolished. */
+  fixed?: boolean;
   /**
    * Initial per-type state for a newly placed object. Also used as defaults when
    * loading a save, so fields added later get filled in. Must be JSON-serialisable.
@@ -41,6 +43,11 @@ export function listBuildables(): BuildableDef[] {
   return [...registry.values()];
 }
 
+/** What the player can build: every buildable but the fixed ones. */
+export function listBuildMenu(): BuildableDef[] {
+  return listBuildables().filter((b) => !b.fixed);
+}
+
 // Core buildables -------------------------------------------------------------
 
 registerBuildable({
@@ -50,6 +57,6 @@ registerBuildable({
   footprint: { w: 1, h: 1 },
   texture: 'path',
   category: 'decor',
-  description: 'A tidy dirt path.',
+  description: 'A dirt path. Farmers walk along paths to get to their work.',
   unlockLevel: 1,
 });

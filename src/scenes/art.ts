@@ -145,6 +145,7 @@ export const TEXTURE_ART: Record<string, string> = {
   bakery: 'bakery',
   loom: 'weaving_hut',
   'sale-sign': 'for_sale_sign',
+  farmhouse: 'farmhouse',
 };
 
 /**
@@ -201,6 +202,10 @@ export function facing(dx: number, dy: number): Facing {
   return dy >= 0 ? 'sw' : 'ne';
 }
 
+/** The farmer's sprite sheet: `farmer_<anim>_<facing>` animations. */
+export const FARMER_ART = 'farmer';
+export type FarmerAnim = 'idle' | 'sit' | 'walk' | 'plough' | 'plant' | 'harvest' | 'build' | 'feed';
+
 /** Feed mill body and its turning sails (same canvas and anchor). */
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;
 
@@ -230,6 +235,7 @@ export function usedArt(): string[] {
     MILL.sails,
     ...CROP_ART_IDS.flatMap((c) => Object.keys(CROP_STAGES).map((s) => cropArt(c, s)!)),
     ...ANIMAL_ART,
+    FARMER_ART,
     ...ICON_ART,
     ...SCENERY,
   ]);

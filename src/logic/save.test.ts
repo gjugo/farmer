@@ -16,8 +16,9 @@ function memoryStorage(): SaveStorage & { data: Map<string, string> } {
   };
 }
 
+// Free land below the starting fields, the farmhouse and the road between them.
 const ix = START_LAND.x + 2;
-const iy = START_LAND.y + 2;
+const iy = START_LAND.y + 5;
 
 describe('save / load', () => {
   it('round-trips money, inventory, objects, land and day', () => {
@@ -37,7 +38,8 @@ describe('save / load', () => {
 
     expect(loaded.money).toBe(1490);
     expect(loaded.inventory).toEqual({ milk: 3, egg: 10 });
-    expect(loaded.objects.map((o) => [o.type, o.x, o.y])).toEqual([
+    expect(loaded.objects).toEqual(g.state.objects);
+    expect(loaded.objects.slice(-2).map((o) => [o.type, o.x, o.y])).toEqual([
       ['path', ix, iy],
       ['path', ix + 1, iy],
     ]);
@@ -50,7 +52,8 @@ describe('save / load', () => {
     // New ids never collide with loaded ones.
     const g2 = new Game(loaded);
     const r = g2.place('path', ix + 2, iy);
-    expect(r.ok && r.object.id).toBe('o3');
+    expect(r.ok && r.object.id).toBe(`o${g.state.nextObjectId}`);
+    expect(new Set(g2.state.objects.map((o) => o.id)).size).toBe(g2.state.objects.length);
   });
 
   it('writes a versioned save file', () => {
@@ -70,8 +73,13 @@ describe('save / load', () => {
     const s = deserialize(old);
     expect(s.money).toBe(742);
     expect(s.inventory).toEqual({ wheat: 12 });
-    expect(s.objects).toEqual([{ id: 'o7', type: 'path', x: ix, y: iy, state: {} }]);
-    expect(s.nextObjectId).toBe(8);
+    expect(s.objects[0]).toEqual({ id: 'o7', type: 'path', x: ix, y: iy, state: {} });
+    // A farm from before farmhouses gets one, with a path at its door.
+    expect(s.objects.slice(1).map((o) => [o.id, o.type])).toEqual([
+      ['o8', 'farmhouse'],
+      ['o9', 'path'],
+    ]);
+    expect(s.nextObjectId).toBe(10);
     expect(s.clock).toEqual({ elapsed: 0, speed: 1 });
     expect(s.land).toEqual(createNewGame().land);
   });
