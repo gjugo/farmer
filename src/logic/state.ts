@@ -1,13 +1,25 @@
+import { getBuildable } from '../data/buildables';
 import { createClock } from './clock';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND, STARTING_MONEY } from './constants';
 import { createLand } from './land';
+import { canPlace } from './placement';
 import { applySliceDefaults } from './slices';
-import type { GameState } from './types';
+import type { GameState, PlacedObject } from './types';
+
+/** Fills a brand-new farm, e.g. with starting fields. Not run for loaded saves. */
+export type NewGameSetup = (state: GameState) => void;
+
+const setups: NewGameSetup[] = [];
+
+/** Registers starting content for new games. Features call this from their own module. */
+export function onNewGame(setup: NewGameSetup): void {
+  setups.push(setup);
+}
 
 export function createNewGame(): GameState {
   const ext: Record<string, unknown> = {};
   applySliceDefaults(ext);
-  return {
+  const state: GameState = {
     money: STARTING_MONEY,
     inventory: {},
     land: createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND),
@@ -16,4 +28,20 @@ export function createNewGame(): GameState {
     clock: createClock(),
     ext,
   };
+  for (const setup of setups) setup(state);
+  return state;
+}
+
+/**
+ * Places a buildable for free, for new-game setups. Returns null (and changes
+ * nothing) when the type is unknown or the spot is not free owned land.
+ */
+export function addStartingObject(state: GameState, type: string, x: number, y: number): PlacedObject | null {
+  const def = getBuildable(type);
+  if (!def) return null;
+  const footprintOf = (o: PlacedObject) => getBuildable(o.type)?.footprint ?? { w: 1, h: 1 };
+  if (!canPlace(state, def.footprint, x, y, footprintOf).ok) return null;
+  const object: PlacedObject = { id: `o${state.nextObjectId++}`, type, x, y, state: def.initialState?.() ?? {} };
+  state.objects.push(object);
+  return object;
 }
