@@ -121,6 +121,19 @@ describe('demolishing', () => {
     expect(game.state.inventory).toEqual({ wood: 3, stone: 4, iron: 1 });
   });
 
+  it('cancelling an unfinished construction site gives back all the money and materials', () => {
+    const game = new Game(maxLevelState());
+    game.state.inventory = { wood: 6, stone: 8, iron: 2 };
+    const money = game.money;
+    const r = game.place('dairy', fx, fy, { site: true });
+    if (!r.ok) throw new Error(r.reason);
+    expect(r.object.site).toBeDefined();
+    expect(game.state.inventory).toEqual({});
+    expect(game.demolish(r.object.id)).toBe(265);
+    expect(game.money).toBe(money);
+    expect(game.state.inventory).toEqual({ wood: 6, stone: 8, iron: 2 });
+  });
+
   it('rounds odd amounts down', () => {
     const loom = getBuildable('loom')!;
     expect(loom.materials).toEqual({ wood: 10, iron: 3 });

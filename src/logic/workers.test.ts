@@ -25,7 +25,7 @@ function fakeCtx(game: Game): FarmContext & { toast: ReturnType<typeof vi.fn> } 
 describe('farmers', () => {
   it('a new farm starts with one free farmer', () => {
     const game = new Game();
-    expect(workersOf(game.state)).toEqual({ farmers: 1, jobs: [] });
+    expect(workersOf(game.state)).toEqual({ farmers: 1, jobs: [], workplaces: [null], plans: {}, recipes: {} });
     expect(freeFarmers(game.state)).toBe(1);
   });
 
@@ -97,7 +97,7 @@ describe('farmers', () => {
 
     const broken = new Game();
     broken.state.ext.workers = { farmers: -3, jobs: [null, { kind: 'plant' }] };
-    expect(workersOf(broken.state)).toEqual({ farmers: 1, jobs: [] });
+    expect(workersOf(broken.state)).toEqual({ farmers: 1, jobs: [], workplaces: [null], plans: {}, recipes: {} });
   });
 
   it('building time grows with the footprint, within limits; paths need no farmer', () => {

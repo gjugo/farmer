@@ -27,14 +27,16 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 ### Controls
 
 - **Pan:** drag the map, or WASD / arrow keys. **Zoom:** mouse wheel or pinch.
-- **Build:** 🔨 Build → pick an item → click/tap a tile. A green ghost means the spot is valid.
-  Esc, right-click or **Cancel** leaves build mode. Each item shows its money cost and the **building materials**
-  it takes (🪵 wood, 🪨 stone, 🔩 iron); what you can't pay for is greyed out with what is missing
+- **Build:** 🔨 Build → pick an item → click/tap a tile. A green ghost means the spot is valid (and a path from the
+  farmhouse reaches it). Esc, right-click or **Cancel** leaves build mode. Each item shows its money cost and the
+  **building materials** it takes (🪵 wood, 🪨 stone, 🔩 iron); what you can't pay for is greyed out with what is missing
   ("Needs 4 more 🪵 Wood"), its ghost turns red, and placing it says to buy the rest at the 🏪 Market.
   Paths and fields cost money only; coops, pastures and processing buildings need wood and/or stone,
-  and the dairy and loom also need iron.
+  and the dairy and loom also need iron. Money and materials are paid on placing. Paths are laid at once; everything
+  else becomes a **construction site** (drawn faded, with 🚧 and a progress bar) that a free farmer walks to and builds:
+  1.5 game-s per footprint tile, 3–20 s. A site can't be used until it is finished; its panel shows the build only.
 - **Demolish:** 🧹 → click an object, or **Demolish** in its panel (which asks first and says what comes back).
-  Gives back 50% of its money cost and 50% of its materials (rounded down).
+  Gives back 50% of its money cost and 50% of its materials (rounded down); an unfinished site gives back everything.
 - **Market:** 🏪 Market sells anything in the inventory at today's price (**Sell everything** keeps building
   materials). Its **Buy building materials** section sells wood, stone and (from level 3) iron: **Buy 1/5/10**, or
   pick any amount with the − / + stepper. Buy prices change daily like sell prices and are always above anything the
@@ -51,10 +53,24 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   gets a new order after 2 game-minutes, a discarded one after 5.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
-- **Farmers:** building, ploughing, planting, harvesting and feeding animals each keep a farmer busy for a few game-seconds
-  (building: 1.5 s per footprint tile, 3–20 s; paths need no farmer). The farm starts with one farmer; when all are
-  busy the work is refused until one is free. 👨‍🌾 Farmers in the HUD (it shows free/total) lists what each farmer
-  does and hires more: $250 for the 2nd, ×1.6 for each after, up to 8.
+- **Farmers:** building, ploughing, planting, harvesting, feeding, collecting and starting a batch each keep a farmer
+  busy for a few game-seconds. The farm starts with one farmer; hire more in 👨‍🌾 Farmers: $150 for the 2nd, ×1.2 for
+  each after, up to 20.
+  - **Workplaces:** fields, coops, pastures and processing buildings take one farmer each. Assign one with
+    **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in the 👨‍🌾 Farmers
+    sheet, which lists every farmer with their workplace and what they are doing now. A farmer works at one place.
+  - **Automatic work:** an assigned farmer does the next job there by themselves. A **field** is ploughed (in a
+    ploughing season), sown with its **🌱 Crop plan** (a crop, **Best in season**, the default: the longest grower that is
+    ripe before its seasons end, or **None**) and harvested when ripe; ploughing and seed are paid as by hand, and the
+    work waits while money is short. A **coop or pasture** gets its products collected and its hungry animals fed from
+    stock (it waits without feed). A **processing building** keeps queueing its **⚙️ Keep making** recipe while the
+    inputs are in stock and the queue has room, and its finished goods are collected. The panel says why a farmer waits.
+  - **Free farmers** (no workplace, or nothing to do there now) build construction sites, oldest first, and take what
+    you tap: an unassigned workplace works by hand, and any free farmer does the job (one without a workplace first).
+    When work appears at their own workplace again, they go back after their current job. When every farmer is busy,
+    tapped work is refused until one is free.
+  - The work runs on game time, so speed ×60 and offline catch-up give the same farm; the welcome-back summary
+    reports what the farmers harvested, sowed, collected, made and built while you were away.
 - **Farmhouse and roads:** every farm has a farmhouse (it can't be built or demolished). Idle farmers rest on its bench;
   for a job a farmer walks out of the door **along paths** to the work (0.4 game-s per tile), works there (hoeing,
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. Work on a field, pen or building is refused
@@ -84,6 +100,12 @@ orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
 `window.farm.season` is `{ season, dayOfSeason, msLeft }` (e.g. `season: 'winter'`, game ms until the next season).
+`window.farm.workers` is `{ farmers, free, hireCost, list, assignments, plans, recipes, sites }`: `list[i]` is
+`{ farmer, workplace, job, activity }` (workplace: object id or null; job: the running job's kind or null; activity:
+the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
+(`best`, `none` or a crop id), `recipes` building id → "Keep making" recipe, and `sites` lists the construction sites
+oldest first (`{ id, type, x, y, workMs, paid, builder: { farmer, progress } | null }`). A placed object that is still a
+site carries `site: { workMs, paid }` in `window.farm.objects`.
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
@@ -106,7 +128,8 @@ src/
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, starting fields
-    workers.ts         farmers: hiring, jobs that keep a farmer busy (state slice `workers`)
+    workers.ts         farmers: hiring, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
+    work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
   data/              Content as data
@@ -139,8 +162,9 @@ src/
     seasons/           season-change toasts, `window.farm.season`
     market/            🏪 Market HUD button: sell panel and Buy section for building materials
     orders/            📋 Orders HUD button (with badge) and orders panel
-    workers/           👨‍🌾 Farmers HUD button, hire sheet, farmers at work on the map (data: src/data/workers.ts,
-                       logic: src/logic/workers.ts; work goes through `withFarmer` in src/game/workers.ts)
+    workers/           👨‍🌾 Farmers HUD button, hire and workplace sheet, farmers at work on the map, `window.farm.workers`
+                       (data: src/data/workers.ts, logic: src/logic/workers.ts and work.ts; hand work goes through
+                       `withFarmer`, workplace panels get their farmer block from `workplacePanel`, src/game/workers.ts)
     land/              "For sale" signs on parcels next to owned land, buy dialog
     audio/             effects, animal voices, ambience, music; mute button, sound settings, credits
                        (files: public/audio/*.mp3, licences: CREDITS.md)
@@ -209,9 +233,19 @@ registerBehavior<CoopState>('coop', {
 ```
 
 The build menu (with money and material costs), ghost preview, placement rules, charging money and
-materials (`game.place` refuses with reason `money` or `materials` and changes nothing), demolish refunds
-(half of both), saving and the action panel all come for free. Keep money + materials at their usual buy
-prices (about $6 wood, $7 stone, $22 iron) in line with the level curve (`src/logic/balance.test.ts`). A "Demolish" action is appended to every object panel.
+materials (`game.place` refuses with reason `money` or `materials` and changes nothing), construction sites, demolish
+refunds (half of both; everything for an unfinished site), saving and the action panel all come for free. Keep money +
+materials at their usual buy prices (about $6 wood, $7 stone, $22 iron) in line with the level curve
+(`src/logic/balance.test.ts`). A "Demolish" action is appended to every object panel. Placed from the build menu, it is
+a construction site (`obj.site`) until a farmer has built it: no `onClick` and no `panel` run for it until then.
+
+### Add a workplace
+
+A buildable becomes a workplace (a farmer can be assigned; the panel gets the farmer block) by adding its type to
+`isWorkplaceType` in `src/logic/workers.ts`, and its automatic work by a case in `workplaceNext` (`src/logic/work.ts`):
+return `{ task: { kind, workMs, run } }` when there is a job (`run` does it now, as a tap would, and returns whether it
+did) or `{ wait: reason }` when there is none. If its work can appear when a timer ends, add that end time in
+`nextWorkEvent`, so the scheduler (and offline catch-up) wakes up then. Game time only: never frames or `Date.now()`.
 
 ### Add a timer
 
@@ -220,7 +254,9 @@ Never use `setTimeout`, `setInterval` or `Date.now()` for gameplay. Store a `Tim
 `timerRemaining` and `timerDone`. Timers run on game time, so they survive save/load and
 speed up with the debug clock speed. `game.now` is the current game time in ms;
 1 day = 4 real minutes at ×1 (`DAY_MS`). Subscribe to `game.events.on('day', ...)` for daily
-events. There is no offline progress: time only passes while the game is open.
+events. Time away is caught up when the game opens again (`src/logic/offline.ts`): timers simply end, and farmers do
+their work on the way. Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setting
+`clock.elapsed` directly skips the farmers.
 
 ### Other extension points
 
@@ -231,6 +267,8 @@ events. There is no offline progress: time only passes while the game is open.
 - **Custom sheet** (markup of your own, like the Market): `ctx.ui.toggleSheet({ id, title, signature, render, tick })`.
 - **Confirm dialog:** `await ctx.ui.confirm(title, message, { confirmLabel, variant, disabled, hint })`.
 - **Taps on empty tiles** (e.g. locked land): `registerTileTapHandler((ctx, x, y) => true /* handled */)`.
+- **Panel drop-downs:** a `PanelSpec` may have `choices: [{ id, label, value, options, onChange }]`, rendered as
+  `<select data-testid="panel-choice-<id>">` above the actions (e.g. the crop plan).
 - **Work that needs a farmer:** wrap it in `withFarmer(ctx, kind, obj, durationMs, () => didIt)` from
   `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the farmhouse to the
   site, and sends a farmer along the path only if the action succeeded.

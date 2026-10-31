@@ -46,7 +46,7 @@ describe('offline catch-up', () => {
     plant(game, a, 'wheat');
     plant(game, b, 'corn');
 
-    const r = catchUp(game.state, CROPS.wheat.growMs + 1000);
+    const r = catchUp(game, CROPS.wheat.growMs + 1000);
 
     expect(cropStage(game.state.clock, a.state)).toBe('ripe');
     expect(cropStage(game.state.clock, b.state)).not.toBe('ripe');
@@ -54,7 +54,7 @@ describe('offline catch-up', () => {
     expect(r.changed).toEqual([a.id]);
 
     // Long after, the crops are still there and ripe (no wilting).
-    const r2 = catchUp(game.state, 3 * 24 * HOUR);
+    const r2 = catchUp(game, 3 * 24 * HOUR);
     expect(cropStage(game.state.clock, a.state)).toBe('ripe');
     expect(a.state.crop).toBe('wheat');
     expect(r2.cropsReady).toEqual({ corn: 1 }); // wheat was already ripe, so it is not counted again
@@ -68,7 +68,7 @@ describe('offline catch-up', () => {
     expect(feedAll(game, coop)).toBe(2);
     expect(game.count('feed')).toBe(0);
 
-    const r = catchUp(game.state, 2 * HOUR);
+    const r = catchUp(game, 2 * HOUR);
 
     expect(r.produced).toEqual({ egg: 2 });
     expect(coop.state.animals.map((a) => animalStatus(game.state.clock, a))).toEqual(['ready', 'ready', 'hungry']);
@@ -84,9 +84,9 @@ describe('offline catch-up', () => {
     feedAll(game, pasture);
 
     // The cow (90 s) finishes, the sheep (120 s) does not.
-    const r = catchUp(game.state, ANIMALS.cow.cycleMs);
+    const r = catchUp(game, ANIMALS.cow.cycleMs);
     expect(r.produced).toEqual({ milk: 1 });
-    expect(catchUp(game.state, ANIMALS.sheep.cycleMs).produced).toEqual({ wool: 1 });
+    expect(catchUp(game, ANIMALS.sheep.cycleMs).produced).toEqual({ wool: 1 });
   });
 
   it('finishes queued jobs in order, each starting when the previous one ended', () => {
@@ -98,7 +98,7 @@ describe('offline catch-up', () => {
     startJob(game, dairy, 'cheese'); // 90 s
     expect(dairy.state.queue).toHaveLength(QUEUE_LIMIT);
 
-    const r = catchUp(game.state, 90_000 + 45_000 + 10_000);
+    const r = catchUp(game, 90_000 + 45_000 + 10_000);
 
     expect(r.jobsFinished).toBe(2);
     expect(r.produced).toEqual({ cheese: 1, butter: 1 });
@@ -126,13 +126,13 @@ describe('offline catch-up', () => {
       settle(played.game.state.clock, played.dairy);
     }
     const caught = build();
-    catchUp(caught.game.state, away);
+    catchUp(caught.game, away);
     expect(caught.game.state).toEqual(played.game.state);
   });
 
   it('moves the market to the right day', () => {
     const game = new Game(maxLevelState());
-    const r = catchUp(game.state, 2 * DAY_MS + 1);
+    const r = catchUp(game, 2 * DAY_MS + 1);
     expect(r.dayBefore).toBe(1);
     expect(r.dayAfter).toBe(3);
     expect(game.day).toBe(3);
@@ -140,11 +140,11 @@ describe('offline catch-up', () => {
 
   it('caps the catch-up at 7 days and says so', () => {
     const game = new Game(maxLevelState());
-    const r = catchUp(game.state, MAX_OFFLINE_MS + 5 * HOUR);
+    const r = catchUp(game, MAX_OFFLINE_MS + 5 * HOUR);
     expect(r.appliedMs).toBe(MAX_OFFLINE_MS);
     expect(r.capped).toBe(true);
     expect(game.now).toBe(MAX_OFFLINE_MS);
-    expect(catchUp(game.state, MAX_OFFLINE_MS).capped).toBe(false);
+    expect(catchUp(game, MAX_OFFLINE_MS).capped).toBe(false);
   });
 
   it('applies nothing when the device clock went backwards (or the time is garbage)', () => {
@@ -152,7 +152,7 @@ describe('offline catch-up', () => {
     plant(game, fields(game)[0], 'wheat');
     const before = structuredClone(game.state);
     for (const away of [-HOUR, 0, Number.NaN, Number.NEGATIVE_INFINITY]) {
-      const r = catchUp(game.state, away);
+      const r = catchUp(game, away);
       expect(r.appliedMs).toBe(0);
       expect(shouldShowSummary(r)).toBe(false);
     }
@@ -162,7 +162,7 @@ describe('offline catch-up', () => {
   it('always runs at ×1, whatever the debug speed is', () => {
     const game = new Game(maxLevelState());
     game.setSpeed(60);
-    catchUp(game.state, 10 * MIN);
+    catchUp(game, 10 * MIN);
     expect(game.now).toBe(10 * MIN);
     expect(game.speed).toBe(60);
   });
@@ -197,7 +197,7 @@ describe('offline catch-up', () => {
     }
 
     const t0 = performance.now();
-    const r = catchUp(game.state, 30 * 24 * HOUR);
+    const r = catchUp(game, 30 * 24 * HOUR);
     const ms = performance.now() - t0;
 
     expect(ms).toBeLessThan(200);
@@ -245,9 +245,9 @@ describe('offline catch-up', () => {
 describe('welcome-back summary', () => {
   it('is shown only after more than a minute away', () => {
     const game = new Game(maxLevelState());
-    expect(shouldShowSummary(catchUp(game.state, SUMMARY_MIN_AWAY_MS - 1))).toBe(false);
-    expect(shouldShowSummary(catchUp(game.state, SUMMARY_MIN_AWAY_MS))).toBe(false);
-    expect(shouldShowSummary(catchUp(game.state, SUMMARY_MIN_AWAY_MS + 1))).toBe(true);
+    expect(shouldShowSummary(catchUp(game, SUMMARY_MIN_AWAY_MS - 1))).toBe(false);
+    expect(shouldShowSummary(catchUp(game, SUMMARY_MIN_AWAY_MS))).toBe(false);
+    expect(shouldShowSummary(catchUp(game, SUMMARY_MIN_AWAY_MS + 1))).toBe(true);
   });
 
   it('formats the time away', () => {

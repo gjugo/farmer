@@ -4,10 +4,25 @@ import { MAX_OFFLINE_MS, SUMMARY_MIN_AWAY_MS } from '../data/offline';
 import { isProcessorType } from '../data/processing';
 import { animalsOf, isPenType, type PenState } from './animals';
 import { dayOf, type Timer } from './clock';
-import type { Game } from './game';
+import { Game } from './game';
 import * as inventory from './inventory';
 import { sanitize, settle, type ProcessorState } from './processing';
 import type { GameState, Inventory, PlacedObject } from './types';
+import { runWork } from './work';
+
+/** What the farmers did while the player was away. */
+export interface FarmerWork {
+  /** Item id → harvested from fields. */
+  harvested: Inventory;
+  /** Crop id → times sown (one field sown twice counts 2). */
+  sown: Record<string, number>;
+  /** Item id → collected from pens (eggs, milk, wool). */
+  collected: Inventory;
+  /** Item id → finished goods collected from processing buildings. */
+  made: Inventory;
+  /** Buildable type → construction sites finished. */
+  built: Record<string, number>;
+}
 
 /** What happened while the player was away. Built from the timers that ended, never by diffing the whole state. */
 export interface CatchUpResult {
@@ -23,6 +38,8 @@ export interface CatchUpResult {
   produced: Inventory;
   /** Processing jobs that finished. */
   jobsFinished: number;
+  /** What the farmers did: assigned ones work their workplaces, free ones build sites. */
+  work: FarmerWork;
   dayBefore: number;
   dayAfter: number;
   /** Ids of objects whose state changed, so their views can refresh. */
@@ -38,10 +55,13 @@ function endOf(timer: Timer): number {
  * Moves the farm forward by the real time the player was away, at ×1 whatever the
  * debug speed is. Every timer lives on the game clock as an end time, so jumping the
  * clock finishes crops and animal cycles exactly, and processing queues are settled
- * job by job (each next job starts when the previous one ended). Features that use
- * the clock properly follow without special cases; this only gathers the summary.
+ * job by job (each next job starts when the previous one ended). Farmers work on the
+ * way: the work scheduler (`runWork`) steps from one event to the next, exactly as it
+ * does while playing. This also gathers the summary.
  */
-export function catchUp(state: GameState, awayMs: number): CatchUpResult {
+export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult {
+  const game = target instanceof Game ? target : new Game(target);
+  const state = game.state;
   const clock = state.clock;
   const appliedMs = Number.isFinite(awayMs) && awayMs > 0 ? Math.min(awayMs, MAX_OFFLINE_MS) : 0;
   const from = clock.elapsed;
@@ -52,6 +72,7 @@ export function catchUp(state: GameState, awayMs: number): CatchUpResult {
     cropsReady: {},
     produced: {},
     jobsFinished: 0,
+    work: { harvested: {}, sown: {}, collected: {}, made: {}, built: {} },
     dayBefore: dayOf(clock),
     dayAfter: dayOf(clock),
     changed: [],
@@ -64,11 +85,27 @@ export function catchUp(state: GameState, awayMs: number): CatchUpResult {
     sanitize(obj, clock);
     settle(clock, obj);
   }
+  const readyBefore = new Map(processors.map((o) => [o.id, { ...o.state.ready }]));
 
-  clock.elapsed = from + appliedMs;
+  const { work } = result;
+  const { activity } = game;
+  const listening = [
+    activity.on('harvested', ({ item, qty }) => inventory.add(work.harvested, item, qty)),
+    activity.on('planted', ({ crop }) => inventory.add(work.sown, crop, 1)),
+    activity.on('collected', ({ item, qty }) => inventory.add(work.collected, item, qty)),
+    activity.on('made', ({ item, qty }) => inventory.add(work.made, item, qty)),
+    activity.on('built', ({ type }) => inventory.add(work.built, type, 1)),
+  ];
+  const changed = new Set<string>();
+  const settled = (obj: PlacedObject, finished: number) => {
+    if (finished === 0) return;
+    result.jobsFinished += finished;
+    changed.add(obj.id);
+  };
+  runWork(game, from + appliedMs, { onSettled: settled });
+  listening.forEach((off) => off());
   const to = clock.elapsed;
   const endedAway = (timer: Timer | null) => !!timer && endOf(timer) > from && endOf(timer) <= to;
-  const changed = new Set<string>();
 
   for (const obj of state.objects) {
     if (obj.type === FIELD) {
@@ -87,12 +124,10 @@ export function catchUp(state: GameState, awayMs: number): CatchUpResult {
   }
 
   for (const obj of processors) {
-    const before = { ...obj.state.ready };
-    const finished = settle(clock, obj);
-    if (finished === 0) continue;
-    result.jobsFinished += finished;
-    for (const [item, qty] of Object.entries(obj.state.ready)) inventory.add(result.produced, item, qty - (before[item] ?? 0));
-    changed.add(obj.id);
+    const before = readyBefore.get(obj.id) ?? {};
+    settled(obj, settle(clock, obj));
+    // Goods a farmer collected meanwhile are in `work.made`: count only what waits now and did not before.
+    for (const [item, qty] of Object.entries(obj.state.ready)) inventory.add(result.produced, item, Math.max(0, qty - (before[item] ?? 0)));
   }
 
   result.dayAfter = dayOf(clock);
@@ -102,7 +137,7 @@ export function catchUp(state: GameState, awayMs: number): CatchUpResult {
 
 /** Runs `catchUp` on a live game and tells the HUD, the scene and features about it. */
 export function catchUpGame(game: Game, awayMs: number): CatchUpResult {
-  const result = catchUp(game.state, awayMs);
+  const result = catchUp(game, awayMs);
   // A zero tick moves nothing but announces a new day.
   game.tick(0);
   for (const id of result.changed) {

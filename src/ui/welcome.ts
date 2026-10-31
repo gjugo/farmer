@@ -1,3 +1,4 @@
+import { getBuildable } from '../data/buildables';
 import { getCrop } from '../data/crops';
 import { getItem } from '../data/items';
 import { MAX_OFFLINE_MS } from '../data/offline';
@@ -6,9 +7,37 @@ import { uiSignals } from '../game/signals';
 import { h } from './dom';
 import { withIcons } from './icons';
 
+/** "🌾 Wheat ×12, 🥕 Carrot ×4" */
+function goods(inv: Record<string, number>): string {
+  return Object.entries(inv)
+    .map(([id, qty]) => {
+      const item = getItem(id);
+      return `${item?.icon ?? ''} ${item?.name ?? id} ×${qty}`.trim();
+    })
+    .join(', ');
+}
+
+/** What the farmers did while away: harvested, sown (times a crop was sown), collected, made, built. */
+function workLines(result: CatchUpResult): string[] {
+  const { work } = result;
+  if (!work) return [];
+  const lines: string[] = [];
+  if (Object.keys(work.harvested).length) lines.push(`👨‍🌾 Harvested ${goods(work.harvested)}`);
+  const sown = Object.entries(work.sown).map(([id, n]) => {
+    const crop = getCrop(id);
+    return `${crop?.icon ?? ''} ${crop?.name ?? id} ×${n}`.trim();
+  });
+  if (sown.length) lines.push(`👨‍🌾 Sowed ${sown.join(', ')}`);
+  if (Object.keys(work.collected).length) lines.push(`👨‍🌾 Collected ${goods(work.collected)}`);
+  if (Object.keys(work.made).length) lines.push(`👨‍🌾 Made ${goods(work.made)}`);
+  const built = Object.entries(work.built).map(([type, n]) => `${getBuildable(type)?.name ?? type}${n > 1 ? ` ×${n}` : ''}`);
+  if (built.length) lines.push(`🔨 Built ${built.join(', ')}`);
+  return lines;
+}
+
 /** Lines of the welcome-back summary, built from the catch-up result alone. */
 export function summaryLines(result: CatchUpResult): string[] {
-  const lines: string[] = [];
+  const lines: string[] = workLines(result);
   for (const [id, fields] of Object.entries(result.cropsReady)) {
     const crop = getCrop(id);
     lines.push(`${crop?.icon ?? ''} ${crop?.name ?? id} ready to harvest${fields > 1 ? ` in ${fields} fields` : ''}`.trim());
