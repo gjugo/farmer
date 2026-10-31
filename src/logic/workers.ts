@@ -34,10 +34,11 @@ export interface Job {
 
 export type JobPhase = 'out' | 'work' | 'back';
 
-/** What an assigned field sows: a crop id, the best crop in season, or nothing. */
+/** What an assigned field sows: a crop id, the best crop in season, or nothing ("Fallow": the soil rests). */
 export type CropPlan = string;
 export const PLAN_BEST: CropPlan = 'best';
-export const PLAN_NONE: CropPlan = 'none';
+/** Saved as 'none', its name before soil fertility. */
+export const PLAN_FALLOW: CropPlan = 'none';
 
 export interface WorkersState {
   /** Farmers employed, including the starting one. */
@@ -46,7 +47,7 @@ export interface WorkersState {
   jobs: Job[];
   /** Each farmer's workplace (object id), by farmer number; null when they have none. One farmer per workplace. */
   workplaces: (string | null)[];
-  /** Field id → crop plan. A field without one sows nothing. */
+  /** Field id → crop plan. A field without one lies fallow. */
   plans: Record<string, CropPlan>;
   /** Processing building id → the recipe its farmer keeps making. */
   recipes: Record<string, string>;
@@ -245,9 +246,9 @@ export function unassignFarmer(game: Game, farmer: number): void {
   if (obj) game.touch(obj);
 }
 
-/** The field's crop plan (`PLAN_NONE` when it has none). */
+/** The field's crop plan (`PLAN_FALLOW` when it has none). */
 export function cropPlanOf(state: GameState, fieldId: string): CropPlan {
-  return workersOf(state).plans[fieldId] ?? PLAN_NONE;
+  return workersOf(state).plans[fieldId] ?? PLAN_FALLOW;
 }
 
 export function setCropPlan(game: Game, fieldId: string, plan: CropPlan): void {

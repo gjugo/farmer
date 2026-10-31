@@ -304,7 +304,7 @@ describe('save', () => {
     expect(loaded.progression.xp).toBe(150);
     expect(loaded.progression.goals().map((g) => [g.def.id, g.progress])).toEqual([
       ['first-field', 1],
-      ['harvest-wheat', 10],
+      ['harvest-wheat', 12], // a starting field, on rich soil
       ['build-granary', 0],
     ]);
   });

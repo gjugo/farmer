@@ -1,6 +1,6 @@
 import { getBuildable, listBuildMenu } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
-import { formatMaterials, formatMissing, isMaterial } from '../data/materials';
+import { formatMaterials, formatMissing, isStoredMaterial } from '../data/materials';
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
 import { STORAGE_POOLS, type StoragePool } from '../data/storage';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
@@ -453,8 +453,8 @@ export class Hud implements UiApi {
               );
             }),
           );
-        const goods = rows.filter((id) => !isMaterial(id));
-        const materials = rows.filter(isMaterial);
+        const goods = rows.filter((id) => !isStoredMaterial(id));
+        const materials = rows.filter(isStoredMaterial);
         if (goods.length) body.append(list('inventory-list', goods));
         if (materials.length) {
           body.append(h('h3', { class: 'group-title' }, 'Building materials'), list('inventory-materials', materials));

@@ -202,9 +202,10 @@ describe('harvest', () => {
     expect(game.state).toEqual(before);
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
 
-    sell(game, 'egg', 8);
+    // The starting field lies on rich soil: its harvest is 12 wheat.
+    sell(game, 'egg', 10);
     expect(harvest(game, field).ok).toBe(true);
-    expect(game.count('wheat')).toBe(10);
+    expect(game.count('wheat')).toBe(12);
     expect(used(game.state, 'goods')).toBe(30);
   });
 });
@@ -363,8 +364,9 @@ describe('old saves', () => {
     // Offered everything up to "own-fields": "upgrade a granary" now comes next.
     const late = deserialize(oldSave({}, 10));
     expect(GOALS[getSlice<ProgressionState>(late, PROGRESSION).nextGoal].id).toBe('upgrade-granary');
+    // Not offered "make-cheese" yet: "spread-manure" (version 10), inserted just before it, comes first.
     const later = deserialize(oldSave({}, 12));
-    expect(GOALS[getSlice<ProgressionState>(later, PROGRESSION).nextGoal].id).toBe('make-cheese');
+    expect(GOALS[getSlice<ProgressionState>(later, PROGRESSION).nextGoal].id).toBe('spread-manure');
   });
 });
 

@@ -250,7 +250,7 @@ export class Game {
       type,
       x,
       y,
-      state: def.initialState?.() ?? {},
+      state: def.initialState?.({ x, y, now: this._state.clock.elapsed }) ?? {},
     };
     const workMs = options.site ? buildWorkMs(type) : 0;
     if (workMs > 0) object.site = { workMs, paid: def.cost };

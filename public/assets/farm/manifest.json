@@ -4264,6 +4264,44 @@
    }
   },
   {
+   "name": "manure",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/manure.png",
+     "w": 220,
+     "h": 230,
+     "anchor": [
+      110.0,
+      114.0
+     ],
+     "origin": [
+      0.5,
+      0.49565
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/manure.png",
+     "w": 110,
+     "h": 115,
+     "anchor": [
+      55.0,
+      57.0
+     ],
+     "origin": [
+      0.5,
+      0.49565
+     ]
+    }
+   }
+  },
+  {
    "name": "tree_oak",
    "category": "props",
    "type": "image",
