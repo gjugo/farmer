@@ -2,7 +2,7 @@ import { PENS } from '../data/animals';
 import { FIELD } from '../data/crops';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { PROCESSORS } from '../data/processing';
-import { RESOURCES } from '../data/resources';
+import { RESOURCES } from '../data/resourceBuildings';
 import { BASE_HIRE_COST, HIRE_COST_GROWTH, MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Game } from './game';

@@ -2,7 +2,7 @@ import { ANIMALS } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD, getCrop, type CropDef } from '../data/crops';
 import { findRecipe, isProcessorType } from '../data/processing';
-import { isResourceType } from '../data/resources';
+import { isResourceType } from '../data/resourceBuildings';
 import { PLOUGH_COST } from '../data/seasons';
 import { COLLECT_WORK_MS, FEED_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
 import * as animals from './animals';

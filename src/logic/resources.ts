@@ -1,4 +1,4 @@
-import { RESOURCES, SLOW_SEASONS, type ResourceDef, type ResourceType } from '../data/resources';
+import { RESOURCES, SLOW_SEASONS, type ResourceDef, type ResourceType } from '../data/resourceBuildings';
 import { dayOf, timerDone, timerProgress, type Timer } from './clock';
 import type { Game } from './game';
 import { findRoute } from './roads';

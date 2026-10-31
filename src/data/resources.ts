@@ -1,107 +1,79 @@
-import { registerBuildable } from './buildables';
-import type { MaterialCost, MaterialId } from './materials';
-import type { Season } from './seasons';
+import { getItem, ITEM_LIST, type ItemCategory } from './items';
+import { isMaterial } from './materials';
+import type { StoragePool } from './storage';
 
 /**
- * Resource buildings: the farm's own building materials. A woodcutter's lodge makes wood, a quarry stone and a
- * mine iron. Each is a workplace: nothing is made without an assigned farmer, who walks there, works one cycle and
- * puts the yield in the storehouses. Rules live in `src/logic/resources.ts`; the look and panel in
- * `src/features/resources`. Buying at the Market stays as the dearer fallback.
+ * Resource categories, as the HUD's resource bar and the stock piles at the granaries and storehouses show
+ * them. An item falls into a category by its `ItemDef.category`, so a new item needs no change here.
  */
 
-export type ResourceType = 'woodcutter' | 'quarry' | 'mine';
+export type ResourceCategory = 'crops' | 'animal' | 'feed' | 'goods' | 'materials';
 
-/** The farmer jobs of the resource buildings (see `JOBS` in `src/data/workers.ts`). */
-export type ResourceJob = 'chop' | 'quarry' | 'mine';
-
-export interface ResourceDef {
-  id: ResourceType;
+export interface ResourceCategoryDef {
+  id: ResourceCategory;
   name: string;
+  /** Pack icon of the category's chip (an item icon, see `ICON_ART`). */
   icon: string;
-  cost: number;
-  /** Never the building's own output, so no material deadlocks: the lodge costs money only, the mine no iron. */
-  materials: MaterialCost;
-  footprint: { w: number; h: number };
-  description: string;
-  unlockLevel: number;
-  output: MaterialId;
-  /** Made per cycle. */
-  yield: number;
-  /** Game ms of work per cycle (outside winter). */
-  cycleMs: number;
-  job: ResourceJob;
-  /** "cut wood": what the farmer does, for "Assign a farmer to cut wood". */
-  verb: string;
+  /** Item categories that belong here. */
+  itemCategories: readonly ItemCategory[];
+  /** The storage pool its items are kept in. */
+  pool: StoragePool;
 }
 
-export const RESOURCES: Record<ResourceType, ResourceDef> = {
-  woodcutter: {
-    id: 'woodcutter',
-    name: "Woodcutter's Lodge",
-    icon: '🪓',
-    cost: 80,
-    materials: {},
-    footprint: { w: 2, h: 2 },
-    description: 'A farmer working here cuts wood for your buildings.',
-    unlockLevel: 1,
-    output: 'wood',
-    yield: 4,
-    cycleMs: 240_000,
-    job: 'chop',
-    verb: 'cut wood',
-  },
-  quarry: {
-    id: 'quarry',
-    name: 'Quarry',
-    icon: '⛏️',
-    cost: 120,
-    materials: { wood: 10 },
-    footprint: { w: 2, h: 2 },
-    description: 'A farmer working here breaks stone for your buildings.',
-    unlockLevel: 2,
-    output: 'stone',
-    yield: 3,
-    cycleMs: 300_000,
-    job: 'quarry',
-    verb: 'quarry stone',
-  },
-  mine: {
-    id: 'mine',
-    name: 'Mine',
-    icon: '⚒️',
-    cost: 140,
-    materials: { wood: 15, stone: 10 },
-    footprint: { w: 2, h: 2 },
-    description: 'A farmer working here digs iron ore. Slow, but cheaper than the Market.',
-    unlockLevel: 4,
-    output: 'iron',
-    yield: 1,
-    cycleMs: 360_000,
-    job: 'mine',
-    verb: 'mine iron',
-  },
-};
+/** Bar order: left to right. */
+export const RESOURCE_CATEGORIES: readonly ResourceCategoryDef[] = [
+  { id: 'crops', name: 'Crops', icon: 'wheat', itemCategories: ['crop'], pool: 'goods' },
+  { id: 'animal', name: 'Animal products', icon: 'egg', itemCategories: ['animal-product'], pool: 'goods' },
+  { id: 'feed', name: 'Feed', icon: 'feed', itemCategories: ['feed'], pool: 'goods' },
+  { id: 'goods', name: 'Goods', icon: 'cheese', itemCategories: ['processed'], pool: 'goods' },
+  { id: 'materials', name: 'Materials', icon: 'wood', itemCategories: ['material'], pool: 'materials' },
+];
 
-/** Cold slows the work: a cycle started in these seasons takes this many times longer. */
-export const SLOW_SEASONS: Partial<Record<Season, number>> = { winter: 1.25 };
-
-export function isResourceType(v: unknown): v is ResourceType {
-  return typeof v === 'string' && Object.hasOwn(RESOURCES, v);
+export function getResourceCategory(id: ResourceCategory): ResourceCategoryDef {
+  return RESOURCE_CATEGORIES.find((c) => c.id === id)!;
 }
 
-// Resource buildings are buildables; their textures and behaviour live in `src/features/resources`.
-for (const r of Object.values(RESOURCES)) {
-  registerBuildable({
-    id: r.id,
-    name: r.name,
-    cost: r.cost,
-    materials: r.materials,
-    footprint: r.footprint,
-    texture: r.id,
-    category: 'resources',
-    description: r.description,
-    icon: r.icon,
-    unlockLevel: r.unlockLevel,
-    initialState: () => ({ cycle: null, waiting: 0, day: 0, today: 0 }),
-  });
+/**
+ * The category an item is counted in. Unknown ids (e.g. from an old save) count as materials when they are a
+ * material and as goods otherwise, like the storage pools.
+ */
+export function categoryOf(itemId: string): ResourceCategory {
+  const item = getItem(itemId);
+  const found = item && RESOURCE_CATEGORIES.find((c) => c.itemCategories.includes(item.category));
+  if (found) return found.id;
+  return isMaterial(itemId) ? 'materials' : 'goods';
 }
+
+/** The catalogue's items of a category, in catalogue order. */
+export function itemsOf(category: ResourceCategory): string[] {
+  return ITEM_LIST.filter((i) => categoryOf(i.id) === category).map((i) => i.id);
+}
+
+/** Each category's total in an inventory (every category present, 0 when empty). */
+export function categoryTotals(inventory: Readonly<Record<string, number>>): Record<ResourceCategory, number> {
+  const totals = Object.fromEntries(RESOURCE_CATEGORIES.map((c) => [c.id, 0])) as Record<ResourceCategory, number>;
+  for (const [id, n] of Object.entries(inventory)) totals[categoryOf(id)] += n;
+  return totals;
+}
+
+// Stock piles in the world --------------------------------------------------------------
+
+/**
+ * The piles a storage building shows in its yard: a granary one per goods category, a storehouse one per
+ * material. Listed back to front, the order they are drawn in.
+ */
+export const GRANARY_PILES = ['crops', 'animal', 'feed', 'goods'] as const;
+export const STOREHOUSE_PILES = ['wood', 'stone', 'iron'] as const;
+
+export type PileKind = (typeof GRANARY_PILES)[number] | (typeof STOREHOUSE_PILES)[number];
+
+/** The pile an item lies on: its category at a granary, the item itself at a storehouse (a new material on the stone pile). */
+export function pileOf(itemId: string): PileKind {
+  const category = categoryOf(itemId);
+  if (category !== 'materials') return category;
+  return (STOREHOUSE_PILES as readonly string[]).includes(itemId) ? (itemId as PileKind) : 'stone';
+}
+
+/** Fill stages of a pile: 0 none, then ¼, ½, ¾ and full. */
+export const PILE_STAGES = 4;
+export type PileStage = 0 | 1 | 2 | 3 | 4;

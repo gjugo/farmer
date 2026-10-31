@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getBuildable } from '../data/buildables';
 import { getItem } from '../data/items';
 import { GOALS } from '../data/progression';
-import { RESOURCES, SLOW_SEASONS, type ResourceType } from '../data/resources';
+import { RESOURCES, SLOW_SEASONS, type ResourceType } from '../data/resourceBuildings';
 import { FARMHOUSE_STORE } from '../data/storage';
 import { COLLECT_WORK_MS } from '../data/workers';
 import { START_LAYOUT } from './constants';

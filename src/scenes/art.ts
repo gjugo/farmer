@@ -232,6 +232,17 @@ export function iconUrl(name: string): string {
   return `${ART_BASE}1x/icons/${name}.png`;
 }
 
+/** Stock piles in the yards of the granaries, storehouses and the farmhouse (see `src/features/storage/piles.ts`). */
+export const PILE_ART = ['crops', 'animal', 'feed', 'goods', 'wood', 'stone', 'iron', 'house_goods', 'house_materials'] as const;
+/** Fill stages drawn per pile: 1 (a quarter) to 4 (full); stage 0 draws nothing. */
+export const PILE_ART_STAGES = 4;
+
+/** The sprite of a pile at a fill stage, e.g. `pile_wood_3`; null when nothing is drawn (stage 0, or a pile without art). */
+export function pileArt(kind: string, stage: number): string | null {
+  if (!(PILE_ART as readonly string[]).includes(kind) || !Number.isInteger(stage) || stage < 1) return null;
+  return `pile_${kind}_${Math.min(PILE_ART_STAGES, stage)}`;
+}
+
 /** Scenery standing on locked land (gone once the land is bought). */
 export const SCENERY = ['tree_oak', 'tree_apple', 'tree_pine', 'bush', 'bush_berry', 'rock_small', 'rock_large'] as const;
 /** A small decorative pond on locked land (no gameplay); scattered apart from the other scenery. */
@@ -323,6 +334,7 @@ export function usedArt(): string[] {
     ...ICON_ART,
     ...SCENERY,
     POND,
+    ...PILE_ART.flatMap((k) => Array.from({ length: PILE_ART_STAGES }, (_, i) => pileArt(k, i + 1)!)),
   ]);
   // Every season's version of what is used (ground and scenery in four seasons, buildings in winter).
   for (const name of [...names]) for (const season of SEASONS) names.add(seasonalArt(name, season));

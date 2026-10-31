@@ -5264,6 +5264,1446 @@
    ]
   },
   {
+   "name": "pile_crops_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crops stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_crops_1.png",
+     "w": 72,
+     "h": 70,
+     "shadow": "2x/piles/pile_crops_1_shadow.png",
+     "anchor": [
+      36.0,
+      -20.0
+     ],
+     "origin": [
+      0.5,
+      -0.28571
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_crops_1.png",
+     "w": 36,
+     "h": 35,
+     "shadow": "1x/piles/pile_crops_1_shadow.png",
+     "anchor": [
+      18.0,
+      -10.0
+     ],
+     "origin": [
+      0.5,
+      -0.28571
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_crops_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crops stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_crops_2.png",
+     "w": 78,
+     "h": 80,
+     "shadow": "2x/piles/pile_crops_2_shadow.png",
+     "anchor": [
+      36.0,
+      -20.0
+     ],
+     "origin": [
+      0.46154,
+      -0.25
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_crops_2.png",
+     "w": 39,
+     "h": 40,
+     "shadow": "1x/piles/pile_crops_2_shadow.png",
+     "anchor": [
+      18.0,
+      -10.0
+     ],
+     "origin": [
+      0.46154,
+      -0.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_crops_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crops stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_crops_3.png",
+     "w": 108,
+     "h": 80,
+     "shadow": "2x/piles/pile_crops_3_shadow.png",
+     "anchor": [
+      66.0,
+      -20.0
+     ],
+     "origin": [
+      0.61111,
+      -0.25
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_crops_3.png",
+     "w": 54,
+     "h": 40,
+     "shadow": "1x/piles/pile_crops_3_shadow.png",
+     "anchor": [
+      33.0,
+      -10.0
+     ],
+     "origin": [
+      0.61111,
+      -0.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_crops_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crops stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_crops_4.png",
+     "w": 110,
+     "h": 92,
+     "shadow": "2x/piles/pile_crops_4_shadow.png",
+     "anchor": [
+      66.0,
+      -8.0
+     ],
+     "origin": [
+      0.6,
+      -0.08696
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_crops_4.png",
+     "w": 55,
+     "h": 46,
+     "shadow": "1x/piles/pile_crops_4_shadow.png",
+     "anchor": [
+      33.0,
+      -4.0
+     ],
+     "origin": [
+      0.6,
+      -0.08696
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_animal_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "animal stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_animal_1.png",
+     "w": 90,
+     "h": 82,
+     "shadow": "2x/piles/pile_animal_1_shadow.png",
+     "anchor": [
+      38.0,
+      -14.0
+     ],
+     "origin": [
+      0.42222,
+      -0.17073
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_animal_1.png",
+     "w": 45,
+     "h": 41,
+     "shadow": "1x/piles/pile_animal_1_shadow.png",
+     "anchor": [
+      19.0,
+      -7.0
+     ],
+     "origin": [
+      0.42222,
+      -0.17073
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_animal_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "animal stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_animal_2.png",
+     "w": 130,
+     "h": 82,
+     "shadow": "2x/piles/pile_animal_2_shadow.png",
+     "anchor": [
+      78.0,
+      -14.0
+     ],
+     "origin": [
+      0.6,
+      -0.17073
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_animal_2.png",
+     "w": 65,
+     "h": 41,
+     "shadow": "1x/piles/pile_animal_2_shadow.png",
+     "anchor": [
+      39.0,
+      -7.0
+     ],
+     "origin": [
+      0.6,
+      -0.17073
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_animal_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "animal stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_animal_3.png",
+     "w": 132,
+     "h": 96,
+     "shadow": "2x/piles/pile_animal_3_shadow.png",
+     "anchor": [
+      78.0,
+      -14.0
+     ],
+     "origin": [
+      0.59091,
+      -0.14583
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_animal_3.png",
+     "w": 66,
+     "h": 48,
+     "shadow": "1x/piles/pile_animal_3_shadow.png",
+     "anchor": [
+      39.0,
+      -7.0
+     ],
+     "origin": [
+      0.59091,
+      -0.14583
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_animal_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "animal stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_animal_4.png",
+     "w": 132,
+     "h": 102,
+     "shadow": "2x/piles/pile_animal_4_shadow.png",
+     "anchor": [
+      78.0,
+      -8.0
+     ],
+     "origin": [
+      0.59091,
+      -0.07843
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_animal_4.png",
+     "w": 66,
+     "h": 51,
+     "shadow": "1x/piles/pile_animal_4_shadow.png",
+     "anchor": [
+      39.0,
+      -4.0
+     ],
+     "origin": [
+      0.59091,
+      -0.07843
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_feed_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "feed stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_feed_1.png",
+     "w": 46,
+     "h": 54,
+     "shadow": "2x/piles/pile_feed_1_shadow.png",
+     "anchor": [
+      34.0,
+      -22.0
+     ],
+     "origin": [
+      0.73913,
+      -0.40741
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_feed_1.png",
+     "w": 23,
+     "h": 27,
+     "shadow": "1x/piles/pile_feed_1_shadow.png",
+     "anchor": [
+      17.0,
+      -11.0
+     ],
+     "origin": [
+      0.73913,
+      -0.40741
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_feed_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "feed stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_feed_2.png",
+     "w": 102,
+     "h": 68,
+     "shadow": "2x/piles/pile_feed_2_shadow.png",
+     "anchor": [
+      64.0,
+      -22.0
+     ],
+     "origin": [
+      0.62745,
+      -0.32353
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_feed_2.png",
+     "w": 51,
+     "h": 34,
+     "shadow": "1x/piles/pile_feed_2_shadow.png",
+     "anchor": [
+      32.0,
+      -11.0
+     ],
+     "origin": [
+      0.62745,
+      -0.32353
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_feed_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "feed stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_feed_3.png",
+     "w": 102,
+     "h": 84,
+     "shadow": "2x/piles/pile_feed_3_shadow.png",
+     "anchor": [
+      64.0,
+      -22.0
+     ],
+     "origin": [
+      0.62745,
+      -0.2619
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_feed_3.png",
+     "w": 51,
+     "h": 42,
+     "shadow": "1x/piles/pile_feed_3_shadow.png",
+     "anchor": [
+      32.0,
+      -11.0
+     ],
+     "origin": [
+      0.62745,
+      -0.2619
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_feed_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "feed stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_feed_4.png",
+     "w": 102,
+     "h": 98,
+     "shadow": "2x/piles/pile_feed_4_shadow.png",
+     "anchor": [
+      64.0,
+      -8.0
+     ],
+     "origin": [
+      0.62745,
+      -0.08163
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_feed_4.png",
+     "w": 51,
+     "h": 49,
+     "shadow": "1x/piles/pile_feed_4_shadow.png",
+     "anchor": [
+      32.0,
+      -4.0
+     ],
+     "origin": [
+      0.62745,
+      -0.08163
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_goods_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "goods stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_goods_1.png",
+     "w": 78,
+     "h": 70,
+     "shadow": "2x/piles/pile_goods_1_shadow.png",
+     "anchor": [
+      48.0,
+      -18.0
+     ],
+     "origin": [
+      0.61538,
+      -0.25714
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_goods_1.png",
+     "w": 39,
+     "h": 35,
+     "shadow": "1x/piles/pile_goods_1_shadow.png",
+     "anchor": [
+      24.0,
+      -9.0
+     ],
+     "origin": [
+      0.61538,
+      -0.25714
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_goods_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "goods stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_goods_2.png",
+     "w": 106,
+     "h": 84,
+     "shadow": "2x/piles/pile_goods_2_shadow.png",
+     "anchor": [
+      48.0,
+      -18.0
+     ],
+     "origin": [
+      0.45283,
+      -0.21429
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_goods_2.png",
+     "w": 53,
+     "h": 42,
+     "shadow": "1x/piles/pile_goods_2_shadow.png",
+     "anchor": [
+      24.0,
+      -9.0
+     ],
+     "origin": [
+      0.45283,
+      -0.21429
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_goods_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "goods stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_goods_3.png",
+     "w": 140,
+     "h": 92,
+     "shadow": "2x/piles/pile_goods_3_shadow.png",
+     "anchor": [
+      82.0,
+      -18.0
+     ],
+     "origin": [
+      0.58571,
+      -0.19565
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_goods_3.png",
+     "w": 70,
+     "h": 46,
+     "shadow": "1x/piles/pile_goods_3_shadow.png",
+     "anchor": [
+      41.0,
+      -9.0
+     ],
+     "origin": [
+      0.58571,
+      -0.19565
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_goods_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "goods stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_goods_4.png",
+     "w": 140,
+     "h": 108,
+     "shadow": "2x/piles/pile_goods_4_shadow.png",
+     "anchor": [
+      82.0,
+      -2.0
+     ],
+     "origin": [
+      0.58571,
+      -0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_goods_4.png",
+     "w": 70,
+     "h": 54,
+     "shadow": "1x/piles/pile_goods_4_shadow.png",
+     "anchor": [
+      41.0,
+      -1.0
+     ],
+     "origin": [
+      0.58571,
+      -0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_wood_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wood stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_wood_1.png",
+     "w": 132,
+     "h": 88,
+     "shadow": "2x/piles/pile_wood_1_shadow.png",
+     "anchor": [
+      64.0,
+      -16.0
+     ],
+     "origin": [
+      0.48485,
+      -0.18182
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_wood_1.png",
+     "w": 66,
+     "h": 44,
+     "shadow": "1x/piles/pile_wood_1_shadow.png",
+     "anchor": [
+      32.0,
+      -8.0
+     ],
+     "origin": [
+      0.48485,
+      -0.18182
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_wood_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wood stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_wood_2.png",
+     "w": 136,
+     "h": 100,
+     "shadow": "2x/piles/pile_wood_2_shadow.png",
+     "anchor": [
+      64.0,
+      -4.0
+     ],
+     "origin": [
+      0.47059,
+      -0.04
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_wood_2.png",
+     "w": 68,
+     "h": 50,
+     "shadow": "1x/piles/pile_wood_2_shadow.png",
+     "anchor": [
+      32.0,
+      -2.0
+     ],
+     "origin": [
+      0.47059,
+      -0.04
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_wood_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wood stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_wood_3.png",
+     "w": 140,
+     "h": 110,
+     "shadow": "2x/piles/pile_wood_3_shadow.png",
+     "anchor": [
+      64.0,
+      6.0
+     ],
+     "origin": [
+      0.45714,
+      0.05455
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_wood_3.png",
+     "w": 70,
+     "h": 55,
+     "shadow": "1x/piles/pile_wood_3_shadow.png",
+     "anchor": [
+      32.0,
+      3.0
+     ],
+     "origin": [
+      0.45714,
+      0.05455
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_wood_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "wood stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_wood_4.png",
+     "w": 146,
+     "h": 110,
+     "shadow": "2x/piles/pile_wood_4_shadow.png",
+     "anchor": [
+      64.0,
+      6.0
+     ],
+     "origin": [
+      0.43836,
+      0.05455
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_wood_4.png",
+     "w": 73,
+     "h": 55,
+     "shadow": "1x/piles/pile_wood_4_shadow.png",
+     "anchor": [
+      32.0,
+      3.0
+     ],
+     "origin": [
+      0.43836,
+      0.05455
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_stone_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_stone_1.png",
+     "w": 90,
+     "h": 70,
+     "shadow": "2x/piles/pile_stone_1_shadow.png",
+     "anchor": [
+      52.0,
+      -32.0
+     ],
+     "origin": [
+      0.57778,
+      -0.45714
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_stone_1.png",
+     "w": 45,
+     "h": 35,
+     "shadow": "1x/piles/pile_stone_1_shadow.png",
+     "anchor": [
+      26.0,
+      -16.0
+     ],
+     "origin": [
+      0.57778,
+      -0.45714
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_stone_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_stone_2.png",
+     "w": 110,
+     "h": 80,
+     "shadow": "2x/piles/pile_stone_2_shadow.png",
+     "anchor": [
+      52.0,
+      -22.0
+     ],
+     "origin": [
+      0.47273,
+      -0.275
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_stone_2.png",
+     "w": 55,
+     "h": 40,
+     "shadow": "1x/piles/pile_stone_2_shadow.png",
+     "anchor": [
+      26.0,
+      -11.0
+     ],
+     "origin": [
+      0.47273,
+      -0.275
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_stone_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_stone_3.png",
+     "w": 110,
+     "h": 98,
+     "shadow": "2x/piles/pile_stone_3_shadow.png",
+     "anchor": [
+      52.0,
+      -4.0
+     ],
+     "origin": [
+      0.47273,
+      -0.04082
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_stone_3.png",
+     "w": 55,
+     "h": 49,
+     "shadow": "1x/piles/pile_stone_3_shadow.png",
+     "anchor": [
+      26.0,
+      -2.0
+     ],
+     "origin": [
+      0.47273,
+      -0.04082
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_stone_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_stone_4.png",
+     "w": 110,
+     "h": 104,
+     "shadow": "2x/piles/pile_stone_4_shadow.png",
+     "anchor": [
+      52.0,
+      2.0
+     ],
+     "origin": [
+      0.47273,
+      0.01923
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_stone_4.png",
+     "w": 55,
+     "h": 52,
+     "shadow": "1x/piles/pile_stone_4_shadow.png",
+     "anchor": [
+      26.0,
+      1.0
+     ],
+     "origin": [
+      0.47273,
+      0.01923
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_iron_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_iron_1.png",
+     "w": 110,
+     "h": 68,
+     "shadow": "2x/piles/pile_iron_1_shadow.png",
+     "anchor": [
+      54.0,
+      -30.0
+     ],
+     "origin": [
+      0.49091,
+      -0.44118
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_iron_1.png",
+     "w": 55,
+     "h": 34,
+     "shadow": "1x/piles/pile_iron_1_shadow.png",
+     "anchor": [
+      27.0,
+      -15.0
+     ],
+     "origin": [
+      0.49091,
+      -0.44118
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_iron_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_iron_2.png",
+     "w": 110,
+     "h": 74,
+     "shadow": "2x/piles/pile_iron_2_shadow.png",
+     "anchor": [
+      54.0,
+      -24.0
+     ],
+     "origin": [
+      0.49091,
+      -0.32432
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_iron_2.png",
+     "w": 55,
+     "h": 37,
+     "shadow": "1x/piles/pile_iron_2_shadow.png",
+     "anchor": [
+      27.0,
+      -12.0
+     ],
+     "origin": [
+      0.49091,
+      -0.32432
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_iron_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_iron_3.png",
+     "w": 110,
+     "h": 84,
+     "shadow": "2x/piles/pile_iron_3_shadow.png",
+     "anchor": [
+      54.0,
+      -16.0
+     ],
+     "origin": [
+      0.49091,
+      -0.19048
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_iron_3.png",
+     "w": 55,
+     "h": 42,
+     "shadow": "1x/piles/pile_iron_3_shadow.png",
+     "anchor": [
+      27.0,
+      -8.0
+     ],
+     "origin": [
+      0.49091,
+      -0.19048
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_iron_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_iron_4.png",
+     "w": 110,
+     "h": 92,
+     "shadow": "2x/piles/pile_iron_4_shadow.png",
+     "anchor": [
+      54.0,
+      -8.0
+     ],
+     "origin": [
+      0.49091,
+      -0.08696
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_iron_4.png",
+     "w": 55,
+     "h": 46,
+     "shadow": "1x/piles/pile_iron_4_shadow.png",
+     "anchor": [
+      27.0,
+      -4.0
+     ],
+     "origin": [
+      0.49091,
+      -0.08696
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_goods_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_goods stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_goods_1.png",
+     "w": 42,
+     "h": 48,
+     "shadow": "2x/piles/pile_house_goods_1_shadow.png",
+     "anchor": [
+      24.0,
+      -32.0
+     ],
+     "origin": [
+      0.57143,
+      -0.66667
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_goods_1.png",
+     "w": 21,
+     "h": 24,
+     "shadow": "1x/piles/pile_house_goods_1_shadow.png",
+     "anchor": [
+      12.0,
+      -16.0
+     ],
+     "origin": [
+      0.57143,
+      -0.66667
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_goods_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_goods stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_goods_2.png",
+     "w": 68,
+     "h": 70,
+     "shadow": "2x/piles/pile_house_goods_2_shadow.png",
+     "anchor": [
+      26.0,
+      -32.0
+     ],
+     "origin": [
+      0.38235,
+      -0.45714
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_goods_2.png",
+     "w": 34,
+     "h": 35,
+     "shadow": "1x/piles/pile_house_goods_2_shadow.png",
+     "anchor": [
+      13.0,
+      -16.0
+     ],
+     "origin": [
+      0.38235,
+      -0.45714
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_goods_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_goods stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_goods_3.png",
+     "w": 88,
+     "h": 70,
+     "shadow": "2x/piles/pile_house_goods_3_shadow.png",
+     "anchor": [
+      46.0,
+      -32.0
+     ],
+     "origin": [
+      0.52273,
+      -0.45714
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_goods_3.png",
+     "w": 44,
+     "h": 35,
+     "shadow": "1x/piles/pile_house_goods_3_shadow.png",
+     "anchor": [
+      23.0,
+      -16.0
+     ],
+     "origin": [
+      0.52273,
+      -0.45714
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_goods_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_goods stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_goods_4.png",
+     "w": 88,
+     "h": 72,
+     "shadow": "2x/piles/pile_house_goods_4_shadow.png",
+     "anchor": [
+      46.0,
+      -30.0
+     ],
+     "origin": [
+      0.52273,
+      -0.41667
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_goods_4.png",
+     "w": 44,
+     "h": 36,
+     "shadow": "1x/piles/pile_house_goods_4_shadow.png",
+     "anchor": [
+      23.0,
+      -15.0
+     ],
+     "origin": [
+      0.52273,
+      -0.41667
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_materials_1",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_materials stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_materials_1.png",
+     "w": 90,
+     "h": 60,
+     "shadow": "2x/piles/pile_house_materials_1_shadow.png",
+     "anchor": [
+      40.0,
+      -28.0
+     ],
+     "origin": [
+      0.44444,
+      -0.46667
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_materials_1.png",
+     "w": 45,
+     "h": 30,
+     "shadow": "1x/piles/pile_house_materials_1_shadow.png",
+     "anchor": [
+      20.0,
+      -14.0
+     ],
+     "origin": [
+      0.44444,
+      -0.46667
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_materials_2",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_materials stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_materials_2.png",
+     "w": 104,
+     "h": 68,
+     "shadow": "2x/piles/pile_house_materials_2_shadow.png",
+     "anchor": [
+      40.0,
+      -28.0
+     ],
+     "origin": [
+      0.38462,
+      -0.41176
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_materials_2.png",
+     "w": 52,
+     "h": 34,
+     "shadow": "1x/piles/pile_house_materials_2_shadow.png",
+     "anchor": [
+      20.0,
+      -14.0
+     ],
+     "origin": [
+      0.38462,
+      -0.41176
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_materials_3",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_materials stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_materials_3.png",
+     "w": 108,
+     "h": 88,
+     "shadow": "2x/piles/pile_house_materials_3_shadow.png",
+     "anchor": [
+      40.0,
+      -18.0
+     ],
+     "origin": [
+      0.37037,
+      -0.20455
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_materials_3.png",
+     "w": 54,
+     "h": 44,
+     "shadow": "1x/piles/pile_house_materials_3_shadow.png",
+     "anchor": [
+      20.0,
+      -9.0
+     ],
+     "origin": [
+      0.37037,
+      -0.20455
+     ]
+    }
+   }
+  },
+  {
+   "name": "pile_house_materials_4",
+   "category": "piles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "house_materials stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "res": {
+    "2x": {
+     "file": "2x/piles/pile_house_materials_4.png",
+     "w": 108,
+     "h": 88,
+     "shadow": "2x/piles/pile_house_materials_4_shadow.png",
+     "anchor": [
+      40.0,
+      -18.0
+     ],
+     "origin": [
+      0.37037,
+      -0.20455
+     ]
+    },
+    "1x": {
+     "file": "1x/piles/pile_house_materials_4.png",
+     "w": 54,
+     "h": 44,
+     "shadow": "1x/piles/pile_house_materials_4_shadow.png",
+     "anchor": [
+      20.0,
+      -9.0
+     ],
+     "origin": [
+      0.37037,
+      -0.20455
+     ]
+    }
+   }
+  },
+  {
    "name": "grass_0_spring",
    "category": "tiles",
    "type": "image",

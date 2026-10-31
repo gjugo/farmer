@@ -1,6 +1,6 @@
 import type Phaser from 'phaser';
 import { getItem } from '../../data/items';
-import { RESOURCES, SLOW_SEASONS, type ResourceType } from '../../data/resources';
+import { RESOURCES, SLOW_SEASONS, type ResourceType } from '../../data/resourceBuildings';
 import type { FarmContext, ObjectView, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
 import { timerRemaining } from '../../logic/clock';
@@ -16,7 +16,7 @@ import { BUBBLE } from '../processing/textures';
 /**
  * Woodcutter's lodge, quarry and mine on the map and in their panel: chips or dust fly while a farmer works there,
  * and a bubble shows the output waiting for room in the storehouse. Rules live in `src/logic/resources.ts`, the
- * content in `src/data/resources.ts`; the farmers' cycles are run by the work scheduler (`src/logic/work.ts`).
+ * content in `src/data/resourceBuildings.ts`; the farmers' cycles are run by the work scheduler (`src/logic/work.ts`).
  */
 
 /** Where the work happens in each sprite (grid point on the footprint): the chopping block, the cut blocks, the tunnel. */

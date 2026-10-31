@@ -157,6 +157,198 @@ button {
   }
 }
 
+/* Resource bar: a chip per category under the top bar, with the storage room of each pool. */
+.resource-bar {
+  position: relative;
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.res-group {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 2px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+.res-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 2px 8px 2px 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.res-chip:hover,
+.res-chip[aria-expanded='true'] {
+  background: var(--paper-dark);
+}
+
+.res-chip:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: -1px;
+}
+
+.res-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* The chip's name is for screen readers and the popover; the icon names it on screen. */
+.res-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.res-count {
+  min-width: 2ch;
+  text-align: right;
+}
+
+.res-chip.flash-gain {
+  animation: res-flash-gain 0.9s ease-out;
+}
+
+.res-chip.flash-loss {
+  animation: res-flash-loss 0.9s ease-out;
+}
+
+@keyframes res-flash-gain {
+  from {
+    background: #bfe8a8;
+  }
+}
+
+@keyframes res-flash-loss {
+  from {
+    background: #f4b9b0;
+  }
+}
+
+/* +N / −N floats just under the chip, so the counts never shift. */
+.res-delta {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, 2px);
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.res-delta:empty {
+  display: none;
+}
+
+.res-delta.gain {
+  background: var(--green-dark);
+  color: #fff;
+}
+
+.res-delta.loss {
+  background: var(--red);
+  color: #fff;
+}
+
+.res-pool {
+  display: flex;
+  align-items: center;
+  margin-left: 2px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #e2efd6;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.res-pool.storage-warn {
+  background: #fbe7b5;
+  color: #9a6a00;
+}
+
+.res-pool.storage-full {
+  background: var(--red);
+  color: #fff;
+}
+
+.res-pop {
+  position: absolute;
+  z-index: 20;
+  min-width: 170px;
+  padding: 8px 10px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+.res-pop-title {
+  margin-bottom: 4px;
+  font-weight: 800;
+}
+
+.res-pop-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.res-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.res-pop-item .item-icon {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.res-pop-item .item-count {
+  margin-left: auto;
+  padding-left: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.res-pop-item.empty {
+  opacity: 0.5;
+}
+
 .hud-buttons {
   display: flex;
   gap: 6px;

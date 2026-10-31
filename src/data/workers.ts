@@ -27,7 +27,7 @@ export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   feed: { label: 'Feeding animals', icon: '🌰' },
   collect: { label: 'Collecting', icon: '🧺' },
   load: { label: 'Starting a batch', icon: '⚙️' },
-  // Resource buildings: the work is one production cycle (see `src/data/resources.ts`).
+  // Resource buildings: the work is one production cycle (see `src/data/resourceBuildings.ts`).
   chop: { label: 'Cutting wood', icon: '🪓' },
   quarry: { label: 'Quarrying stone', icon: '⛏️' },
   mine: { label: 'Mining iron', icon: '⚒️' },

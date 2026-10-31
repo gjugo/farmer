@@ -2,7 +2,7 @@ import { ANIMALS } from '../data/animals';
 import { FIELD, getCrop } from '../data/crops';
 import { MAX_OFFLINE_MS, SUMMARY_MIN_AWAY_MS } from '../data/offline';
 import { isProcessorType } from '../data/processing';
-import { isResourceType } from '../data/resources';
+import { isResourceType } from '../data/resourceBuildings';
 import { animalsOf, isPenType, type PenState } from './animals';
 import { dayOf, type Timer } from './clock';
 import { Game } from './game';

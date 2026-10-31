@@ -24,6 +24,7 @@ import {
 import { ART_RES, ART_SCALE, SHADOW, storageArt } from '../../scenes/art';
 import { packAsset, textureKey } from '../../scenes/sprites';
 import { formatMoney } from '../../ui/dom';
+import './piles';
 
 /**
  * Granaries and storehouses: their sprite and level badge on the map, and the panel that shows the pool's

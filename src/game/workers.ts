@@ -2,7 +2,7 @@ import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD } from '../data/crops';
 import { getItem } from '../data/items';
 import { isProcessorType, PROCESSORS } from '../data/processing';
-import { isResourceType, RESOURCES } from '../data/resources';
+import { isResourceType, RESOURCES } from '../data/resourceBuildings';
 import { seasonNames } from '../data/seasons';
 import { JOBS, type JobKind } from '../data/workers';
 import { canPloughNow, formatDuration } from '../logic/crops';
