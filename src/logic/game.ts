@@ -1,4 +1,5 @@
 import { getBuildable, type BuildableDef } from '../data/buildables';
+import { materialEntries, type MaterialCost, type MaterialId } from '../data/materials';
 import { buildWorkMs } from '../data/workers';
 import type { ActivityEvents } from './activity';
 import { dayOf, gameDelta } from './clock';
@@ -37,7 +38,10 @@ export interface GameEvents {
 
 export type PlaceResult =
   | { ok: true; object: PlacedObject }
-  | { ok: false; reason: 'unknown-type' | 'money' | 'level' | Exclude<PlacementResult, { ok: true }>['reason'] };
+  | { ok: false; reason: 'unknown-type' | 'money' | 'materials' | 'level' | Exclude<PlacementResult, { ok: true }>['reason'] };
+
+/** Materials still missing to pay `cost`, e.g. `[['wood', 4]]`; empty when there is enough of each. */
+export type MissingMaterials = [MaterialId, number][];
 
 export function footprintOf(obj: PlacedObject): Footprint {
   return getBuildable(obj.type)?.footprint ?? { w: 1, h: 1 };
@@ -47,9 +51,25 @@ export function demolishRefund(def: BuildableDef | undefined): number {
   return def ? Math.floor(def.cost * DEMOLISH_REFUND) : 0;
 }
 
+/** Materials given back on demolishing: the same share as the money, rounded down. */
+export function demolishMaterialsRefund(def: BuildableDef | undefined): MaterialCost {
+  const out: MaterialCost = {};
+  for (const [id, qty] of materialEntries(def?.materials)) {
+    const back = Math.floor(qty * DEMOLISH_REFUND);
+    if (back > 0) out[id] = back;
+  }
+  return out;
+}
+
 /** What demolishing the object gives back: everything paid for an unfinished site, else part of the cost. */
 export function refundOf(obj: PlacedObject): number {
   return obj.site ? obj.site.paid : demolishRefund(getBuildable(obj.type));
+}
+
+/** Materials demolishing the object gives back: all of them for an unfinished site, else part. */
+export function materialsRefundOf(obj: PlacedObject): MaterialCost {
+  const def = getBuildable(obj.type);
+  return obj.site ? { ...def?.materials } : demolishMaterialsRefund(def);
 }
 
 export interface PlaceOptions {
@@ -148,6 +168,20 @@ export class Game {
     return true;
   }
 
+  /** What is missing of `cost` in the inventory (empty when there is enough of everything). */
+  missingMaterials(cost: MaterialCost | undefined): MissingMaterials {
+    return materialEntries(cost).flatMap(([id, qty]) => {
+      const short = qty - this.count(id);
+      return short > 0 ? [[id, short] as [MaterialId, number]] : [];
+    });
+  }
+
+  /** Can the farm pay for building `type` (money and materials)? */
+  canPayFor(type: string): boolean {
+    const def = getBuildable(type);
+    return !!def && this.canAfford(def.cost) && this.missingMaterials(def.materials).length === 0;
+  }
+
   // Land ----------------------------------------------------------------------
 
   setLandOwned(x: number, y: number, owned: boolean): void {
@@ -169,7 +203,7 @@ export class Game {
     return this._state.objects.filter((o) => o.type === type);
   }
 
-  /** Can `type` be placed with its top-left at (x, y)? Ignores money. */
+  /** Can `type` be placed with its top-left at (x, y)? Ignores money and materials. */
   checkPlacement(type: string, x: number, y: number): PlacementResult | { ok: false; reason: 'unknown-type' | 'level' } {
     const def = getBuildable(type);
     if (!def) return { ok: false, reason: 'unknown-type' };
@@ -177,13 +211,19 @@ export class Game {
     return canPlace(this._state, def.footprint, x, y, footprintOf);
   }
 
-  /** Validates, charges the cost and places the object (finished, unless `options.site`). Nothing changes when it fails. */
+  /**
+   * Validates, charges the money and materials and places the object (finished, unless `options.site`).
+   * Nothing changes when it fails.
+   */
   place(type: string, x: number, y: number, options: PlaceOptions = {}): PlaceResult {
     const def = getBuildable(type);
     if (!def) return { ok: false, reason: 'unknown-type' };
     const check = this.checkPlacement(type, x, y);
     if (!check.ok) return check;
-    if (!this.spend(def.cost)) return { ok: false, reason: 'money' };
+    if (!this.canAfford(def.cost)) return { ok: false, reason: 'money' };
+    if (this.missingMaterials(def.materials).length) return { ok: false, reason: 'materials' };
+    this.spend(def.cost);
+    for (const [id, qty] of materialEntries(def.materials)) this.removeItem(id, qty);
     const object: PlacedObject = {
       id: `o${this._state.nextObjectId++}`,
       type,
@@ -200,8 +240,8 @@ export class Game {
   }
 
   /**
-   * Removes an object and refunds part of its cost (all of it for an unfinished site). Returns the refund,
-   * or null if not found or fixed (the farmhouse).
+   * Removes an object and refunds part of its money and materials (all of both for an unfinished site, see
+   * `refundOf`, `materialsRefundOf`). Returns the money refund, or null if not found or fixed (the farmhouse).
    */
   demolish(id: string): number | null {
     const i = this._state.objects.findIndex((o) => o.id === id);
@@ -210,6 +250,7 @@ export class Game {
     const refund = refundOf(object);
     this.events.emit('objectRemoved', object);
     this.earn(refund);
+    for (const [item, qty] of materialEntries(materialsRefundOf(object))) this.addItem(item, qty);
     return refund;
   }
 

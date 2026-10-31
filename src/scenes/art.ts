@@ -210,7 +210,7 @@ export type FarmerAnim = 'idle' | 'sit' | 'walk' | 'plough' | 'plant' | 'harvest
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;
 
 /** Item icons in the pack: every item of the game, plus coins for money. */
-export const ICON_ART = ['egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn', 'coins'] as const;
+export const ICON_ART = ['egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn', 'wood', 'stone', 'iron', 'coins'] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */
 export function iconUrl(name: string): string {

@@ -11,6 +11,8 @@ export interface ActivityEvents {
   collected: { item: ItemId; qty: number };
   /** Output of a processing building was collected. */
   made: { item: ItemId; qty: number };
+  /** Items (building materials) were bought at the Market. */
+  bought: { item: ItemId; qty: number; spent: number };
   /** Items were sold at the Market. */
   sold: { item: ItemId; qty: number; earned: number };
   /** Money came in through the shared income path (`game.earnIncome`); it also gives XP. */

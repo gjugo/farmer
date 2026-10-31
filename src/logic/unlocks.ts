@@ -1,6 +1,8 @@
 import { ANIMALS, isAnimalKind, PENS } from '../data/animals';
 import { getBuildable, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, getCrop } from '../data/crops';
+import { ITEMS } from '../data/items';
+import { MATERIAL_IDS, MATERIAL_UNLOCK } from '../data/materials';
 import { PROCESSORS } from '../data/processing';
 import { LEVEL_XP, MAX_LEVEL } from '../data/progression';
 import { isPlainObject } from './slices';
@@ -28,7 +30,7 @@ export function xpForLevel(level: number): number {
 
 /**
  * The lowest level at which an item can be obtained: grown, produced by an animal,
- * made in a building or (feed only) bought in a pen. Infinity when there is no source.
+ * made in a building, bought at the Market (materials) or (feed only) bought in a pen. Infinity when there is no source.
  */
 export function itemUnlockLevel(itemId: string): number {
   const sources: number[] = [];
@@ -39,6 +41,7 @@ export function itemUnlockLevel(itemId: string): number {
   for (const p of Object.values(PROCESSORS)) {
     if (p.recipes.some((r) => r.output.item === itemId)) sources.push(p.unlockLevel);
   }
+  for (const id of MATERIAL_IDS) if (id === itemId) sources.push(MATERIAL_UNLOCK[id]);
   // Feed packs are sold in every pen's panel.
   if (itemId === 'feed') sources.push(Math.min(...Object.values(PENS).map((p) => p.unlockLevel)));
   return Math.min(Infinity, ...sources);
@@ -55,6 +58,7 @@ export function unlocksAt(level: number): Unlock[] {
   for (const crop of CROP_LIST) if (crop.unlockLevel === level) out.push({ icon: crop.icon, name: crop.name });
   for (const animal of Object.values(ANIMALS)) if (animal.unlockLevel === level) out.push({ icon: animal.icon, name: animal.name });
   for (const b of listBuildMenu()) if ((b.unlockLevel ?? 1) === level) out.push({ icon: b.icon ?? '🔨', name: b.name });
+  for (const id of MATERIAL_IDS) if (MATERIAL_UNLOCK[id] === level && level > 1) out.push({ icon: ITEMS[id].icon, name: `${ITEMS[id].name} at the Market` });
   return out;
 }
 

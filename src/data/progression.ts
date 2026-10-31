@@ -33,6 +33,8 @@ export type GoalTask =
   | { kind: 'make'; item: KnownItemId; count: number }
   /** Sell `count` items (of `item`, or of anything). */
   | { kind: 'sell'; item?: KnownItemId; count: number }
+  /** Buy `count` of `item` at the Market. */
+  | { kind: 'buy'; item: KnownItemId; count: number }
   /** Earn $`count` from sales. */
   | { kind: 'earn'; count: number }
   /** Build `count` buildables of `type`. */
@@ -59,6 +61,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'first-field', title: 'Build a field', icon: '🟫', kind: 'build', type: 'field', count: 1, reward: { money: 30, xp: 10 } },
   { id: 'harvest-wheat', title: 'Harvest 5 wheat', icon: '🌾', kind: 'harvest', item: 'wheat', count: 5, reward: { money: 20, xp: 10 } },
   { id: 'sell-wheat', title: 'Sell 5 wheat at the Market', icon: '🏪', kind: 'sell', item: 'wheat', count: 5, reward: { money: 30, xp: 15 } },
+  { id: 'buy-wood', title: 'Buy 10 wood at the Market', icon: '🪵', kind: 'buy', item: 'wood', count: 10, reward: { money: 40, xp: 15 } },
   { id: 'build-coop', title: 'Build a chicken coop', icon: '🐔', kind: 'build', type: 'coop', count: 1, reward: { money: 50, xp: 15 } },
   { id: 'own-chickens', title: 'Own 3 chickens', icon: '🐔', kind: 'own-animals', animal: 'chicken', count: 3, reward: { money: 60, xp: 20 } },
   { id: 'collect-eggs', title: 'Collect 6 eggs', icon: '🥚', kind: 'collect', item: 'egg', count: 6, reward: { money: 60, xp: 25 } },

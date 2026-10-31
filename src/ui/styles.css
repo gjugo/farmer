@@ -324,6 +324,20 @@ button {
   color: var(--muted);
 }
 
+/* Materials it takes, under the name and price. */
+.build-materials {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wood);
+}
+
+/* What is missing to build it (the button is greyed out). */
+.build-item .needs-note {
+  color: var(--red);
+  font-weight: 700;
+}
+
 .inventory-list {
   display: grid;
   gap: 6px;
@@ -453,6 +467,54 @@ button {
 
 .market-footer .btn {
   flex: 1;
+}
+
+/* Buying materials: quick amounts, then a stepper for any amount. */
+.buy-item {
+  grid-template-areas:
+    'icon name price'
+    'icon actions actions'
+    'icon stepper stepper';
+}
+
+.buy-item.locked {
+  opacity: 0.6;
+}
+
+.buy-item .lock-note {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.market-stepper {
+  grid-area: stepper;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.market-stepper .btn {
+  min-height: 40px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.market-stepper input {
+  width: 3.5em;
+  min-height: 40px;
+  padding: 4px 6px;
+  font: inherit;
+  font-weight: 800;
+  text-align: center;
+  border: 2px solid var(--paper-dark);
+  border-radius: 8px;
+}
+
+.market-note {
+  margin: 0;
+  font-size: 13px;
 }
 
 .empty,

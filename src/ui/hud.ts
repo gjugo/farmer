@@ -1,5 +1,6 @@
 import { getBuildable, listBuildMenu } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
+import { formatMaterials, formatMissing, isMaterial } from '../data/materials';
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
 import { listHudButtons, listSettingsSections } from '../game/hooks';
@@ -326,7 +327,10 @@ export class Hud implements UiApi {
     return {
       id: 'build',
       title: () => '🔨 Build',
-      signature: () => `${game.level}|${listBuildMenu().map((b) => `${b.id}:${game.canAfford(b.cost)}`).join('|')}`,
+      signature: () =>
+        `${game.level}|${listBuildMenu()
+          .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(b.materials))}`)
+          .join('|')}`,
       render: (body) => {
         const groups = new Map<string, ReturnType<typeof listBuildMenu>>();
         for (const b of listBuildMenu()) {
@@ -342,12 +346,17 @@ export class Hud implements UiApi {
               defs.map((b) => {
                 const unlockLevel = buildableUnlockLevel(b.id);
                 const locked = !game.isUnlocked(unlockLevel);
+                const shortMoney = !game.canAfford(b.cost);
+                const missing = game.missingMaterials(b.materials);
+                // What stands between the player and building it, e.g. "Needs $40 more and 4 more 🪵 Wood".
+                const needs = [shortMoney ? `${formatMoney(b.cost - game.money)} more` : '', formatMissing(missing)].filter(Boolean).join(' and ');
+                const materials = formatMaterials(b.materials);
                 return h(
                   'button',
                   {
                     type: 'button',
                     class: `build-item${locked ? ' locked' : ''}`,
-                    disabled: locked || !game.canAfford(b.cost),
+                    disabled: locked || shortMoney || missing.length > 0,
                     'data-testid': `build-${b.id}`,
                     'data-locked': locked ? String(unlockLevel) : undefined,
                     onclick: () => {
@@ -357,12 +366,15 @@ export class Hud implements UiApi {
                   },
                   h('span', { class: 'build-name' }, `${locked ? '🔒 ' : ''}${b.name}`),
                   h('span', { class: 'build-meta' }, `${b.footprint.w}×${b.footprint.h}`),
-                  h('span', { class: 'build-cost' }, formatMoney(b.cost)),
+                  h('span', { class: 'build-cost', 'data-testid': `build-cost-${b.id}` }, formatMoney(b.cost)),
+                  materials ? h('span', { class: 'build-materials', 'data-testid': `build-materials-${b.id}` }, withIcons(materials)) : null,
                   locked
                     ? h('span', { class: 'build-desc lock-note' }, `Unlocks at level ${unlockLevel}`)
-                    : b.description
-                      ? h('span', { class: 'build-desc' }, b.description)
-                      : null,
+                    : needs
+                      ? h('span', { class: 'build-desc needs-note', 'data-testid': `build-needs-${b.id}` }, withIcons(`Needs ${needs}${missing.length ? ' — buy at the 🏪 Market' : ''}`))
+                      : b.description
+                        ? h('span', { class: 'build-desc' }, b.description)
+                        : null,
                 );
               }),
             ),
@@ -386,11 +398,11 @@ export class Hud implements UiApi {
           body.append(h('p', { class: 'empty' }, 'Your barn is empty. Grow crops and raise animals to fill it.'));
           return;
         }
-        body.append(
+        const list = (testId: string, group: string[]) =>
           h(
             'ul',
-            { class: 'inventory-list', 'data-testid': 'inventory-list' },
-            rows.map((id) => {
+            { class: 'inventory-list', 'data-testid': testId },
+            group.map((id) => {
               const item = getItem(id);
               return h(
                 'li',
@@ -400,8 +412,13 @@ export class Hud implements UiApi {
                 h('span', { class: 'item-count' }, `×${game.count(id)}`),
               );
             }),
-          ),
-        );
+          );
+        const goods = rows.filter((id) => !isMaterial(id));
+        const materials = rows.filter(isMaterial);
+        if (goods.length) body.append(list('inventory-list', goods));
+        if (materials.length) {
+          body.append(h('h3', { class: 'group-title' }, 'Building materials'), list('inventory-materials', materials));
+        }
       },
     };
   }
@@ -453,12 +470,13 @@ export class Hud implements UiApi {
     let text: string;
     if (mode.kind === 'build') {
       const def = getBuildable(mode.type);
-      text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}) — tap a tile`;
+      const materials = formatMaterials(def?.materials);
+      text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}${materials ? ` + ${materials}` : ''}) — tap a tile`;
     } else {
-      text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% refund)`;
+      text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% of money and materials back)`;
     }
     this.bannerEl.replaceChildren(
-      h('span', {}, text),
+      h('span', {}, withIcons(text)),
       h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'btn-cancel-tool', onclick: () => this.ctx.tools.cancel() }, 'Cancel'),
     );
     this.bannerEl.hidden = false;
@@ -554,7 +572,7 @@ export class Hud implements UiApi {
           'div',
           { class: 'dialog', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'dialog-title', 'data-testid': 'confirm-dialog' },
           h('h2', { id: 'dialog-title' }, title),
-          h('p', {}, message),
+          h('p', { 'data-testid': 'confirm-message' }, withIcons(message)),
           hint ? h('p', { class: 'dialog-hint', 'data-testid': 'confirm-hint' }, hint) : null,
           h('div', { class: 'actions' }, cancelBtn, confirmBtn),
         ),

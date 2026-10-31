@@ -145,9 +145,56 @@ def coins(c):
     _hl(c, "M58,38 Q64,28 74,26", 5)
 
 
+def _log(c, x, y, r, length):
+    """One log lying along the view, its cut end (rings) facing the viewer at (x, y)."""
+    c.path(f"M{x},{y - r} L{x + length},{y - r - length * 0.35} L{x + length},{y + r - length * 0.35} L{x},{y + r} Z",
+           c.lin([(0, "#b0743e"), (1, "#7a4a24")], 0, 0, 0, 1), OUT, 3.5)
+    c.ell(x, y, r * 0.8, r, c.rad([(0, "#f3d29a"), (0.7, "#e2b36f"), (1, "#b98446")]), 0, OUT, 3.5)
+    c.ell(x, y, r * 0.5, r * 0.62, "none", 0, "#b98446", 2)
+    c.ell(x, y, r * 0.2, r * 0.25, "#b98446", 0, None)
+
+
+def wood(c):
+    _shadow(c, rx=46)
+    _log(c, 30, 92, 17, 70)
+    _log(c, 64, 96, 17, 46)
+    _log(c, 46, 62, 17, 58)
+    c.path("M50,40 Q58,30 70,30", "none", "#5cbf3f", 4)
+    c.ell(72, 30, 7, 4, "#5cbf3f", -20, OUT, 2)
+
+
+def stone(c):
+    _shadow(c, rx=46)
+    c.path("M18,102 L24,70 L48,54 L74,58 L86,80 L80,106 L40,112 Z",
+           c.lin([(0, "#c4c8cc"), (1, "#868c93")], 0, 0, 1, 1), OUT, 4)
+    c.path("M24,70 L48,54 L74,58 L56,74 Z", "#dfe2e5", OUT, 3)
+    c.path("M56,74 L86,80 L80,106 L40,112 Z", "#9aa0a6", OUT, 3)
+    c.path("M70,102 L76,72 L96,58 L112,70 L114,98 L96,110 Z",
+           c.lin([(0, "#b3b8bd"), (1, "#7b8188")], 0, 0, 1, 1), OUT, 4)
+    c.path("M76,72 L96,58 L112,70 L94,80 Z", "#d4d8db", OUT, 3)
+    c.line((36, 86), (46, 96), "#6f757c", 3)
+    _hl(c, "M30,70 L44,60", 5, 0.6)
+
+
+def _ingot(c, x, y):
+    """A trapezoid iron bar: top face, front face and right end, (x, y) = front-left bottom corner."""
+    c.path(f"M{x},{y} L{x + 58},{y} L{x + 58},{y - 16} L{x + 6},{y - 16} Z", "#6d7884", OUT, 3.5)
+    c.path(f"M{x + 6},{y - 16} L{x + 58},{y - 16} L{x + 68},{y - 26} L{x + 22},{y - 26} Z", "#a9b4bf", OUT, 3.5)
+    c.path(f"M{x + 58},{y} L{x + 72},{y - 12} L{x + 68},{y - 26} L{x + 58},{y - 16} Z", "#4f5963", OUT, 3.5)
+
+
+def iron(c):
+    _shadow(c, rx=48)
+    _ingot(c, 14, 110)
+    _ingot(c, 50, 110)
+    _ingot(c, 32, 84)
+    _hl(c, "M44,59 L80,59", 4, 0.7)
+
+
 ICONS = {
     "egg": egg, "milk": milk, "wool": wool, "feed": feed, "cheese": cheese, "butter": butter,
     "bread": bread, "cloth": cloth, "wheat": wheat_icon, "carrot": carrot_icon, "corn": corn_icon, "coins": coins,
+    "wood": wood, "stone": stone, "iron": iron,
 }
 
 

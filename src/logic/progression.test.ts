@@ -15,6 +15,7 @@ import { PROGRESSION, type ProgressionState } from './progression';
 import { deserialize, serialize } from './save';
 import { getSlice } from './slices';
 import { addStartingObject, createNewGame } from './state';
+import { stockMaterials } from './test-utils';
 import type { PlacedObject } from './types';
 import { itemUnlockLevel, levelForXp, requiredLevel, unlocksAt, xpForLevel } from './unlocks';
 
@@ -146,7 +147,7 @@ describe('unlocks', () => {
   });
 
   it('the logic refuses locked buildings, crops and animals', () => {
-    const game = new Game();
+    const game = new Game(stockMaterials(createNewGame()));
     game.earn(10_000);
     const money = game.money;
     expect(game.place('pasture', free.x, free.y)).toEqual({ ok: false, reason: 'level' });
@@ -158,7 +159,7 @@ describe('unlocks', () => {
   });
 
   it('newly unlocked content can be used straight away', () => {
-    const game = new Game();
+    const game = new Game(stockMaterials(createNewGame()));
     game.earn(10_000);
     game.progression.setLevel(3);
     expect(plant(game, fields(game)[0], 'carrot').ok).toBe(true);
@@ -180,7 +181,7 @@ describe('unlocks', () => {
   });
 
   it('lists what each level unlocks', () => {
-    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Pasture']);
+    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Pasture']);
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
   });
 });
@@ -220,7 +221,7 @@ describe('goals', () => {
   });
 
   it('count goals count only from when they became active', () => {
-    const game = new Game();
+    const game = new Game(stockMaterials(createNewGame()));
     // Collect eggs before the egg goal is active: no credit.
     const pen = placePen(game, 'coop');
     game.earn(1000);
@@ -240,7 +241,7 @@ describe('goals', () => {
   });
 
   it('state goals read the farm and stay finished once reached', () => {
-    const game = new Game();
+    const game = new Game(stockMaterials(createNewGame()));
     game.earn(10_000);
     const data = getSlice<ProgressionState>(game.state, PROGRESSION);
     data.goals = [{ id: 'own-chickens', progress: 0 }];
