@@ -154,7 +154,7 @@ function withSoil(ctx: FarmContext, obj: PlacedObject<FieldState>, spec: PanelSp
   const soil = soilPanel(ctx, obj);
   return {
     ...spec,
-    lines: [...(spec.lines ?? []), ...soil.lines],
+    lines: [...soil.lines, ...(spec.lines ?? [])],
     meters: soil.meters,
     hint: soil.hint,
     actions: empty ? [...(spec.actions ?? []), manureAction(ctx, obj)] : spec.actions,
