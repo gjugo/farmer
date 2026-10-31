@@ -3790,6 +3790,120 @@
    }
   },
   {
+   "name": "wood",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/wood.png",
+     "w": 200,
+     "h": 202,
+     "anchor": [
+      102.0,
+      86.0
+     ],
+     "origin": [
+      0.51,
+      0.42574
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/wood.png",
+     "w": 100,
+     "h": 101,
+     "anchor": [
+      51.0,
+      43.0
+     ],
+     "origin": [
+      0.51,
+      0.42574
+     ]
+    }
+   }
+  },
+  {
+   "name": "stone",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/stone.png",
+     "w": 204,
+     "h": 142,
+     "anchor": [
+      98.0,
+      26.0
+     ],
+     "origin": [
+      0.48039,
+      0.1831
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/stone.png",
+     "w": 102,
+     "h": 71,
+     "anchor": [
+      49.0,
+      13.0
+     ],
+     "origin": [
+      0.48039,
+      0.1831
+     ]
+    }
+   }
+  },
+  {
+   "name": "iron",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x",
+   "res": {
+    "2x": {
+     "file": "2x/icons/iron.png",
+     "w": 228,
+     "h": 134,
+     "anchor": [
+      106.0,
+      18.0
+     ],
+     "origin": [
+      0.46491,
+      0.13433
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/iron.png",
+     "w": 114,
+     "h": 67,
+     "anchor": [
+      53.0,
+      9.0
+     ],
+     "origin": [
+      0.46491,
+      0.13433
+     ]
+    }
+   }
+  },
+  {
    "name": "tree_oak",
    "category": "props",
    "type": "image",

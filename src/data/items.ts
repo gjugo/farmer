@@ -1,4 +1,4 @@
-export type ItemCategory = 'crop' | 'animal-product' | 'feed' | 'processed';
+export type ItemCategory = 'crop' | 'animal-product' | 'feed' | 'processed' | 'material';
 
 export interface ItemDef {
   id: string;
@@ -26,6 +26,10 @@ export const ITEMS = {
   butter: { id: 'butter', name: 'Butter', category: 'processed', price: 30, icon: '🧈' },
   bread: { id: 'bread', name: 'Bread', category: 'processed', price: 40, icon: '🍞' },
   cloth: { id: 'cloth', name: 'Cloth', category: 'processed', price: 75, icon: '🧵' },
+  // Building materials: bought at the Market (see `buyPrice` in `src/logic/market.ts`), spent on buildings.
+  wood: { id: 'wood', name: 'Wood', category: 'material', price: 4, icon: '🪵' },
+  stone: { id: 'stone', name: 'Stone', category: 'material', price: 5, icon: '🪨' },
+  iron: { id: 'iron', name: 'Iron', category: 'material', price: 15, icon: '🔩' },
 } as const satisfies Record<string, ItemDef>;
 
 export type KnownItemId = keyof typeof ITEMS;
