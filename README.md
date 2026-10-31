@@ -55,6 +55,20 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   orders and starting processing jobs free room at once. Time away only moves goods into pens and buildings, as
   always. Saves from before storage keep everything, even above capacity, but nothing new comes into an over-full
   pool until it is back under; a one-time toast suggests building a granary.
+- **Resource bar:** under the top bar, one chip per category with its total: 🌾 crops (wheat, carrot, corn), 🥚 animal
+  products (egg, milk, wool), feed, 🧀 goods (cheese, butter, bread, cloth) and 🪵 materials (wood, stone, iron), plus the
+  room used in each pool (goods `used/capacity` after the four goods chips, materials after Materials), green, amber
+  from 90% and red when full, like 🎒 Inventory. Hover a chip (mouse) or tap it for each item's icon and count; Esc or a
+  tap outside closes it. When a count changes the chip shows **+N** in green or **−N** in red for a moment (harvests,
+  sales, building costs, processing). Categories come from `RESOURCE_CATEGORIES` in `src/data/resources.ts`: an item
+  falls into one by its `category`, so new items need no change there.
+- **Stock in the world:** what the farm holds is stacked in the yards: logs, stone blocks and iron bars in front of a
+  storehouse; sacks and baskets of crops, egg baskets, milk churns and wool bales, feed sacks and crates of cheese,
+  bread and cloth in front of a granary; a small pile of goods and one of materials beside the farmhouse. Each pile has
+  4 fill stages (a quarter … full) and none when empty. Stock is one pool per kind, so the display splits it: the
+  farmhouse store fills first, then each finished granary or storehouse in placement order, up to its room (purely
+  visual, `stockDisplay` in `src/logic/stockpiles.ts`). In a building the biggest pile shows how full it is and the
+  others are scaled to it, so a full building looks full. Construction sites show none.
 - **Market:** 🏪 Market sells anything in the inventory at today's price (**Sell everything** keeps building
   materials). Its **Buy building materials** section sells wood, stone and (from level 3) iron: **Buy 1/5/10**, or
   pick any amount with the − / + stepper. It shows the storehouse room left; a purchase is capped at that room
@@ -141,6 +155,14 @@ script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mo
 so to click "just inside" an edge, stay at least 2 px inside it.
 `window.farm.storage` is `{ goods: { used, capacity }, materials: { used, capacity } }`; each storage building's
 level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`).
+`window.farm.stockpiles` is `{ buildings, sprites }`: `buildings` lists every storing building (farmhouse, finished
+granaries and storehouses) in placement order as `{ id, type, pools, piles, drawn }`, where `pools[pool]` is
+`{ held, capacity }` (its share of the pool's stock), `piles` maps each pile (`crops`, `animal`, `feed`, `goods`, `wood`,
+`stone`, `iron`, `house_goods`, `house_materials`) to its stage 0–4, and `drawn` lists the pile sprites shown (e.g.
+`pile_wood_3`); `sprites` counts the pile images in the scene (fixed per building, hidden when empty). The resource bar's
+chips are `data-testid="resource-<category>"` (`crops`, `animal`, `feed`, `goods`, `materials`) with `data-count` (and
+`data-delta` while a change shows); the pools are `resources-pool-goods` / `resources-pool-materials` (`data-used`,
+`data-capacity`, class `storage-ok|warn|full`), the popover `resources-popover` with rows `resources-item-<id>`.
 `window.farm.season` is `{ season, dayOfSeason, msLeft, look, weather }` (e.g. `season: 'winter'`, game ms until the
 next season); `look` is the season the farm is drawn in (it follows `season`, a crossfade at most behind) and
 `weather` the number of weather particles alive now (0 in summer or with weather effects off, never over 150).
@@ -177,10 +199,12 @@ src/
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
     storage.ts         goods/materials pools: capacity, used, spaceFor (Game.addItem takes only what fits), upgrades
+    stockpiles.ts      which stock pile stage each storing building shows (the shared pools split in placement order)
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
+    resources.ts       resource categories (resource bar, stock piles), item → category / pile
     buildables.ts      build menu registry (+ the core Path)
     crops.ts           crop catalogue (with each crop's seasons) + the Field buildable
     seasons.ts         season names, icons, length, ploughing seasons and cost
@@ -199,6 +223,7 @@ src/
     FarmScene.ts       ground (one Blitter), scenery, objects, camera, build/demolish input
   ui/                HTML/CSS overlay above the canvas
     hud.ts             top bar, side sheet (build, inventory, settings, action panel), toasts, dialogs
+    resources.ts       the resource bar under the top bar: category chips, +N/−N flashes, popover, pool room
     debug.ts           ?debug=1 panel
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
@@ -209,7 +234,8 @@ src/
                        particles and their setting, `window.farm.season`
     market/            🏪 Market HUD button: sell panel and Buy section for building materials
     storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade,
-                       `window.farm.storage`, the one-time notice for old saves
+                       `window.farm.storage`, the one-time notice for old saves; stock piles in the yards
+                       (piles.ts, `window.farm.stockpiles`)
     orders/            📋 Orders HUD button (with badge) and orders panel
     workers/           👨‍🌾 Farmers HUD button, hire and workplace sheet, farmers at work on the map, `window.farm.workers`
                        (data: src/data/workers.ts, logic: src/logic/workers.ts and work.ts; hand work goes through

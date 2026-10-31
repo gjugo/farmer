@@ -418,6 +418,14 @@ export class FarmScene extends Phaser.Scene {
     this.clampCamera();
   }
 
+  /**
+   * The display objects of a placed object, for a feature that draws on objects it has no behaviour for (e.g.
+   * stock piles at the farmhouse). A new view replaces it when the object is redrawn (new game, demolish).
+   */
+  viewOf(id: string): ObjectView | undefined {
+    return this.views.get(id);
+  }
+
   /** Screen (page) pixel of a tile's centre at the current camera; for QA scripts that click tiles. */
   tileToScreen(x: number, y: number): Point {
     const c = tileToWorld(x, y);

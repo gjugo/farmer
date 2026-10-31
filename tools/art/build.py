@@ -5,7 +5,7 @@ from concurrent.futures import ProcessPoolExecutor
 from PIL import Image, ImageOps
 
 sys.path.insert(0, os.path.dirname(__file__))
-import tiles, crops, animals, buildings, icons, props, people, seasonal
+import tiles, crops, animals, buildings, icons, props, people, piles, seasonal
 from registry import REG
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else "out/isometric-farm-pack"
@@ -15,7 +15,7 @@ SCALES = {"2x": 1.0, "1x": 0.5}
 
 def collect():
     REG.clear()
-    for m in (tiles, crops, animals, buildings, icons, props, people, seasonal):
+    for m in (tiles, crops, animals, buildings, icons, props, people, piles, seasonal):
         m.build()
     return REG
 

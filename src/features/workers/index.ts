@@ -208,8 +208,9 @@ registerDebugInfo('workers', () => {
 const SEATS: { x: number; y: number; anim: FarmerAnim; facing: Facing }[] = [
   { x: 0.45, y: 1.69, anim: 'sit', facing: 'sw' },
   { x: 0.8, y: 1.69, anim: 'sit', facing: 'sw' },
-  { x: 1.9, y: 0.8, anim: 'idle', facing: 'se' },
-  { x: 1.9, y: 1.2, anim: 'idle', facing: 'se' },
+  // Clear of the stock piles at the farmhouse's right side (src/features/storage/piles.ts).
+  { x: 1.92, y: 1.3, anim: 'idle', facing: 'se' },
+  { x: 0.12, y: 1.12, anim: 'idle', facing: 'sw' },
   { x: 1.75, y: 1.93, anim: 'idle', facing: 'sw' },
   { x: 0.1, y: 1.45, anim: 'idle', facing: 'sw' },
   { x: 1.02, y: 1.95, anim: 'idle', facing: 'sw' },
