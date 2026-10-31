@@ -3,6 +3,7 @@ import { FIELD } from '../data/crops';
 import { PLOUGH_SEASONS } from '../data/seasons';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { createLand, isOwned, setOwned, setOwnedRect, type Rect } from './land';
+import { MAP_SLICE, migrateMapLayer } from './maplayer';
 import { FARM_PARCELS, isParcelOwned } from './parcels';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
@@ -23,7 +24,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 export interface SaveFile {
   version: number;
@@ -108,6 +109,13 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     // "build-woodcutter", "produce-wood", "build-quarry" and "mine-iron" in version 9.
     for (const at of [17, 18, 19, 21]) if (nextGoal > at) nextGoal++;
     return { ...raw, version: 9, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal } } } };
+  },
+  // Map resources: forests and deposits generated around what the farm has built (never on top of it). Every
+  // quarry and mine gets a deposit under it and every lodge a grove in reach, so nothing stops working.
+  9: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    return { ...raw, version: 10, state: { ...state, ext: { ...ext, [MAP_SLICE]: migrateMapLayer(state) } } };
   },
 };
 

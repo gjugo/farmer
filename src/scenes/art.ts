@@ -243,13 +243,13 @@ export function pileArt(kind: string, stage: number): string | null {
   return `pile_${kind}_${Math.min(PILE_ART_STAGES, stage)}`;
 }
 
-/** Scenery standing on locked land (gone once the land is bought). */
-export const SCENERY = ['tree_oak', 'tree_apple', 'tree_pine', 'bush', 'bush_berry', 'rock_small', 'rock_large'] as const;
+/** Decorative scenery standing on locked land (gone once the land is bought). Trees and rocks are real: see below. */
+export const SCENERY = ['bush', 'bush_berry'] as const;
 /** A small decorative pond on locked land (no gameplay); scattered apart from the other scenery. */
 export const POND = 'pond';
-/** Share of locked tiles that get a tree, bush or rock, and (of the rest) per mille that get a pond. */
-export const SCENERY_CHANCE = 0.07;
-export const POND_PER_MILLE = 14;
+/** Share of locked tiles that get a bush, and (of the rest) per mille that get a pond. */
+export const SCENERY_CHANCE = 0.02;
+export const POND_PER_MILLE = 5;
 
 /** The scenery a tile would carry if it is locked land away from the farm, from a fixed seed: null for none. */
 export function sceneryArt(x: number, y: number): string | null {
@@ -257,11 +257,38 @@ export function sceneryArt(x: number, y: number): string | null {
   return hash(x, y, 13) % 1000 < POND_PER_MILLE ? POND : null;
 }
 
+// Map resources (src/logic/maplayer.ts, drawn by src/features/nature) ----------------------
+
+/** Grown trees: mostly oaks and pines, the odd apple tree. */
+export const TREE_ART = ['tree_oak', 'tree_pine', 'tree_oak', 'tree_pine', 'tree_apple'] as const;
+export const STUMP_ART = 'tree_stump';
+/** Deposit tiles, full (a variant per tile) and used up. */
+export const DEPOSIT_ART = {
+  stone: { full: ['outcrop_0', 'outcrop_1', 'outcrop_2'], spent: 'outcrop_spent' },
+  iron: { full: ['vein_0', 'vein_1'], spent: 'vein_spent' },
+} as const;
+
+/** The sprite of a tree tile: which kind of tree stands there is fixed by the tile; a stump once felled. */
+export function treeArt(x: number, y: number, stump: boolean): string {
+  return stump ? STUMP_ART : TREE_ART[hash(x, y, 17) % TREE_ART.length];
+}
+
+/** The sprite of a deposit tile, e.g. `outcrop_1`, or the used-up rubble. */
+export function depositArt(kind: keyof typeof DEPOSIT_ART, x: number, y: number, spent: boolean): string {
+  const art = DEPOSIT_ART[kind];
+  return spent ? art.spent : art.full[hash(x, y, 19) % art.full.length];
+}
+
+/** Every map-resource sprite, each in four seasons. */
+export const MAP_ART: readonly string[] = [
+  ...new Set<string>([...TREE_ART, STUMP_ART, ...Object.values(DEPOSIT_ART).flatMap((d) => [...d.full, d.spent])]),
+];
+
 // Seasons -----------------------------------------------------------------------
 
 /**
  * Sprites drawn in four seasonal versions, `<name>_<season>`: the ground (grass, locked land, every path piece,
- * soil) and the scenery. Fields and the pasture are composed per season from these at boot.
+ * soil), the scenery and the map's trees and deposits. Fields and the pasture are composed per season from these at boot.
  */
 export const SEASONAL_ART: readonly string[] = [
   ...GRASS,
@@ -271,6 +298,7 @@ export const SEASONAL_ART: readonly string[] = [
   SOIL.wet,
   ...SCENERY,
   POND,
+  ...MAP_ART,
 ];
 const seasonal = new Set<string>(SEASONAL_ART);
 
@@ -334,6 +362,7 @@ export function usedArt(): string[] {
     ...ICON_ART,
     ...SCENERY,
     POND,
+    ...MAP_ART,
     ...PILE_ART.flatMap((k) => Array.from({ length: PILE_ART_STAGES }, (_, i) => pileArt(k, i + 1)!)),
   ]);
   // Every season's version of what is used (ground and scenery in four seasons, buildings in winter).

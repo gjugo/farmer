@@ -8,6 +8,7 @@ import * as economy from './economy';
 import { Emitter } from './events';
 import * as inventory from './inventory';
 import { setOwned } from './land';
+import { clearUnder, mapOf, type MapLayer } from './maplayer';
 import { canPlace, objectAt, type Footprint, type PlacementResult } from './placement';
 import { Progression, type GoalView } from './progression';
 import { createNewGame } from './state';
@@ -33,6 +34,8 @@ export interface GameEvents {
   levelUp: { level: number; bonus: number; unlocks: Unlock[] };
   /** Active goals or their progress changed. */
   goals: GoalView[];
+  /** Trees or deposits on the map changed (felled, used, cleared). Regrowth needs no event: it follows the clock. */
+  map: MapLayer;
   /** The whole state was replaced (new game). Re-read everything. */
   reset: GameState;
 }
@@ -229,7 +232,7 @@ export class Game {
     const def = getBuildable(type);
     if (!def) return { ok: false, reason: 'unknown-type' };
     if (!this.isUnlocked(buildableUnlockLevel(type))) return { ok: false, reason: 'level' };
-    return canPlace(this._state, def.footprint, x, y, footprintOf);
+    return canPlace(this._state, def.footprint, x, y, footprintOf, type);
   }
 
   /**
@@ -255,6 +258,8 @@ export class Game {
     const workMs = options.site ? buildWorkMs(type) : 0;
     if (workMs > 0) object.site = { workMs, paid: def.cost };
     this._state.objects.push(object);
+    // Building over stumps (or a used-up deposit) clears them for good.
+    if (clearUnder(mapOf(this._state), { x, y, ...def.footprint }, this.now, type)) this.mapChanged();
     this.events.emit('objectAdded', object);
     this.activity.emit('placed', { type });
     return { ok: true, object };
@@ -298,6 +303,11 @@ export class Game {
     this.earn(check.money);
     for (const [item, qty] of materialEntries(check.materials)) this.addItem(item, qty);
     return check.money;
+  }
+
+  /** Announce that the map layer (`mapOf(state)`) was mutated, so its view and panels refresh. */
+  mapChanged(): void {
+    this.events.emit('map', mapOf(this._state));
   }
 
   /** Announce that `obj.state` was mutated, so views and panels refresh. */

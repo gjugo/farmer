@@ -8,6 +8,7 @@ import { COLLECT_WORK_MS } from '../data/workers';
 import { START_LAYOUT } from './constants';
 import { Game } from './game';
 import { setOwned } from './land';
+import { addDeposit, addTrees, inRange, mapOf } from './maplayer';
 import { buyPrice } from './market';
 import { catchUp } from './offline';
 import { PROGRESSION, type ProgressionState } from './progression';
@@ -39,8 +40,26 @@ function farm(): Game {
   return game;
 }
 
+/**
+ * What the building works, so it never runs out in these tests: a deep deposit under a quarry or mine, and for a lodge
+ * the 30 tiles of its reach from 3 rows below it on (clear of the roads and the other buildings).
+ */
+function supply(game: Game, type: ResourceType, x: number, y: number): void {
+  const def = RESOURCES[type];
+  const layer = mapOf(game.state);
+  const area = { x, y, ...def.footprint };
+  if (def.deposit) addDeposit(layer, def.deposit, area, 100_000);
+  if (!def.range) return;
+  const tiles: { x: number; y: number }[] = [];
+  for (let ty = y + area.h + 2; ty < y + area.h + def.range; ty++) {
+    for (let tx = x - def.range; tx < x + area.w + def.range; tx++) if (inRange(area, def.range, tx, ty)) tiles.push({ x: tx, y: ty });
+  }
+  addTrees(layer, tiles);
+}
+
 /** Places a finished resource building with all the materials it needs and, unless `road` is false, a path to it. */
 function build(game: Game, type: ResourceType, x = X + 1, y = Y + 5, { road = true } = {}): PlacedObject<ResourceState> {
+  supply(game, type, x, y);
   const inv = game.state.inventory;
   const before = { ...inv };
   for (const [id, qty] of Object.entries(RESOURCES[type].materials)) inv[id] = (inv[id] ?? 0) + qty;

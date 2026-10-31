@@ -40,7 +40,7 @@ export function addStartingObject(state: GameState, type: string, x: number, y: 
   const def = getBuildable(type);
   if (!def) return null;
   const footprintOf = (o: PlacedObject) => getBuildable(o.type)?.footprint ?? { w: 1, h: 1 };
-  if (!canPlace(state, def.footprint, x, y, footprintOf).ok) return null;
+  if (!canPlace(state, def.footprint, x, y, footprintOf, type).ok) return null;
   const object: PlacedObject = { id: `o${state.nextObjectId++}`, type, x, y, state: def.initialState?.() ?? {} };
   state.objects.push(object);
   return object;

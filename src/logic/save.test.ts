@@ -5,7 +5,7 @@ import { Game } from './game';
 import { deserialize, loadFromStorage, loadSave, parseSave, SAVE_KEY, SAVE_VERSION, saveToStorage, serialize, type SaveStorage } from './save';
 import { getSlice, registerStateSlice } from './slices';
 import { createNewGame } from './state';
-import { fromV6, v6Land, V6_START } from './test-utils';
+import { bareMap, fromV6, v6Land, V6_START } from './test-utils';
 
 function memoryStorage(): SaveStorage & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -25,7 +25,7 @@ const oldTile = { x: V6_START.x + 2, y: V6_START.y + 5 };
 
 describe('save / load', () => {
   it('round-trips money, inventory, objects, land and day', () => {
-    const g = new Game();
+    const g = new Game(bareMap(createNewGame()));
     g.earn(1000);
     g.addItem('milk', 3);
     g.addItem('egg', 10);

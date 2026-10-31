@@ -4,7 +4,7 @@ import { START_LAYOUT } from './constants';
 // The starting fields' new-game setup must run before ours, which lays the road to them.
 import './crops';
 import { inBounds, isOwned } from './land';
-import { canPlace } from './placement';
+import { canPlace, ruleBlock } from './placement';
 import { addStartingObject, onNewGame } from './state';
 import type { GameState, PlacedObject } from './types';
 
@@ -135,7 +135,9 @@ function layRoad(state: GameState, door: Tile, site: Area): boolean {
   const tiles = search(door, site, (x, y) => {
     if (!inBounds(state.land, x, y) || !isOwned(state.land, x, y)) return null;
     const o = at.get(key(x, y));
-    return o ? (o.type === PATH ? 0 : null) : 1;
+    if (o) return o.type === PATH ? 0 : null;
+    // A grown tree or a deposit is in the way.
+    return ruleBlock(state, { w: 1, h: 1 }, x, y, PATH) ? null : 1;
   });
   if (!tiles) return false;
   for (const t of tiles) if (!at.has(key(t.x, t.y))) addStartingObject(state, PATH, t.x, t.y);
@@ -150,7 +152,7 @@ export function connectToFarmhouse(state: GameState, site: Area): boolean {
 
 /** Can the farmhouse stand at (x, y) with a free (or path) tile of our land in front of its door? */
 function farmhouseFits(state: GameState, x: number, y: number): boolean {
-  if (!canPlace(state, getBuildable(FARMHOUSE)!.footprint, x, y, footprintOf).ok) return false;
+  if (!canPlace(state, getBuildable(FARMHOUSE)!.footprint, x, y, footprintOf, FARMHOUSE).ok) return false;
   const door = doorOf({ x, y });
   if (!isOwned(state.land, door.x, door.y)) return false;
   const there = occupancy(state).get(key(door.x, door.y));
