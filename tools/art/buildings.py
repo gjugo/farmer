@@ -625,7 +625,8 @@ def silo(c, x, y, r, z1, color="#e9dcc0", roof="#c4503a"):
 
 
 def granary(level):
-    """A raised wooden granary on staddle stones; level 2 adds a silo, level 3 a second, taller one and a gilded vane."""
+    """A raised wooden granary on staddle stones; level 2 adds a silo, level 3 a second, taller one and a gilded vane.
+    What it holds shows as stock piles in the yard in front (piles.py), drawn by the game."""
     c = bcanvas(2, 2, top=470)
     pad(c, 2, 2, "#e3c88f", pattern="dirt")
     if level >= 2:
@@ -657,10 +658,7 @@ def granary(level):
         rp = c.P(x0 + 0.5, ym, zr + 0.02)
         c.line(rp, (rp[0], rp[1] - 36), OUT, 3)
         c.path(f"M{f2(rp[0] - 14)},{f2(rp[1] - 32)} l14,-9 l16,5 l-7,6 Z", "#f2c14e", OUT, 1.5)
-    # sacks of grain in front
-    sack(c, 0.35, 1.88, 0.8, "#efe2c8", label="#f2c14e")
-    if level >= 2:
-        sack(c, 0.68, 1.92, 0.75, "#e9d3a6")
+    # the yard in front stays clear: the game stands the stock piles there (piles.py)
     return c
 
 
@@ -691,8 +689,8 @@ def stone_blocks(c, x, y, n=3):
 
 
 def storehouse(level):
-    """A stone-and-timber store for building materials; level 2 adds a lean-to with logs and stone, level 3 a
-    hoist on the gable and a crate of iron."""
+    """A stone-and-timber store for building materials; level 2 adds a lean-to, level 3 a hoist on the gable.
+    What it holds shows as stock piles in the yard in front (piles.py), drawn by the game."""
     c = bcanvas(2, 2, top=420)
     pad(c, 2, 2, "#cfc6b4", pattern="stone")
     x0, y0, x1, y1, zb, zw, zr = 0.25, 0.3, 1.45, 1.35, 0.3, 0.8, 1.3
@@ -729,18 +727,10 @@ def storehouse(level):
         lx0, ly0, lx1, ly1 = x1 + 0.08, y0 + 0.05, 1.92, y1 - 0.05
         for (px, py) in ((lx1, ly0), (lx1, ly1)):
             c.box(px - 0.03, py - 0.03, 0, px + 0.03, py + 0.03, 0.55, "#c48a4f", "#a8703b", "#8f5f35", sw=2)
-        log_pile(c, lx0, ly0 + 0.4, lx1 - 0.06, z_rows=3)
-        stone_blocks(c, lx0 + 0.02, ly0 + 0.55, 5 if level >= 3 else 3)
         q = c.PP([(lx0 - 0.02, ly0 - 0.06, 0.66), (lx0 - 0.02, ly1 + 0.06, 0.66), (lx1 + 0.08, ly1 + 0.06, 0.55), (lx1 + 0.08, ly0 - 0.06, 0.55)])
         c.poly(q, c.lin([(0, "#8795a4"), (1, "#5f6b78")], 0, 0, 1, 0), OUT, 2.5)
         c.shadow_pts([(lx0, ly0, 0.66), (lx0, ly1, 0.66), (lx1, ly1, 0.55), (lx1, ly0, 0.55)])
-    # a small log pile in front of the left wall
-    log_pile(c, 0.3, 1.78, 0.95, z_rows=2)
-    if level >= 3:
-        crate(c, 1.3, 1.72, s=1.1, wood="#a8703b")
-        for k in range(3):
-            p = c.P(1.22 + k * 0.08, 1.72, 0.19)
-            c.path(f"M{f2(p[0] - 10)},{f2(p[1])} l20,0 l4,-6 l-20,0 Z", "#a9b4bf", OUT, 1.8)
+    # the yard in front stays clear: the game stands the stock piles there (piles.py)
     return c
 
 

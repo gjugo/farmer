@@ -6,6 +6,8 @@ import { listBuildables } from '../data/buildables';
 import { CROP_LIST } from '../data/crops';
 import '../data/farmhouse';
 import { ITEM_LIST, splitIcons } from '../data/items';
+import { GRANARY_PILES, PILE_STAGES, STOREHOUSE_PILES } from '../data/resources';
+import { HOUSE_PILES } from '../logic/stockpiles';
 import '../data/processing';
 import {
   ART_RES,
@@ -23,6 +25,8 @@ import {
   NW,
   pathPiece,
   penFence,
+  PILE_ART_STAGES,
+  pileArt,
   SE,
   SHADOW,
   SW,
@@ -153,6 +157,15 @@ describe('art pack', () => {
   it('has an icon for every item, plus coins', () => {
     for (const item of ITEM_LIST) expect(ICON_ART).toContain(item.id);
     expect(ICON_ART).toContain('coins');
+  });
+
+  it('has every fill stage of every stock pile the game shows, and nothing for an empty pile', () => {
+    for (const kind of [...GRANARY_PILES, ...STOREHOUSE_PILES, ...Object.values(HOUSE_PILES)]) {
+      expect(pileArt(kind, 0)).toBeNull();
+      for (let stage = 1; stage <= PILE_STAGES; stage++) expect(usedArt()).toContain(pileArt(kind, stage));
+    }
+    expect(PILE_ART_STAGES).toBe(PILE_STAGES);
+    expect(pileArt('nothing', 2)).toBeNull();
   });
 
   it('uses the shadow suffix of the pack’s files', () => {

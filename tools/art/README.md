@@ -17,6 +17,7 @@ The `.py` files are the pack's `source/` folder, unchanged. Colours live at the 
 | `people.py` | the farmer sprite sheet: idle, sit, walk and one anim per job (plough, plant, harvest, build, feed) |
 | `props.py` | trees, bushes, rocks, hay, crates, sacks, milk can |
 | `icons.py` | item icons (egg, milk, … coins) |
+| `piles.py` | stock piles for the storage yards: `pile_<kind>_<stage>`, 4 fill stages per pile (granary categories, storehouse materials, the farmhouse's small piles) |
 | `build.py` | exports 2x + 1x PNGs, shadow layers, sprite sheets and `manifest.json` |
 | `preview.py`, `scene.py`, `contact.py` | the pack's preview images (not used by the game) |
 | `regen.py`, `art.sh` | the repo's wrapper behind `npm run art` (see below) |
@@ -85,6 +86,7 @@ So a new sprite shows up in the game once its **name** is mapped in `src/scenes/
 | animals | `ANIMAL_ART` (sheet + `<animal>_<anim>_<dir>` animations) |
 | the farmer | `FARMER_ART` (sheet + `farmer_<anim>_<dir>` animations) |
 | scenery on locked land | `SCENERY` |
+| stock piles `pile_<kind>_<stage>` | `PILE_ART` → `pileArt(kind, stage)` |
 
 `src/scenes/art.test.ts` fails if a name the game uses is missing from the manifest.
 
