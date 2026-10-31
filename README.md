@@ -208,6 +208,7 @@ src/
     market.ts          daily sell prices (base × 0.8–1.2 by day + item id), sell / sellAll; material buy prices, buy
     parcels.ts         land parcels, adjacency, parcel prices ($1,000, ×1.25), buyParcel
     save.ts            versioned save/load + migrations + defaults
+    slots.ts           manual save slots, strict import validation
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, starting fields
     workers.ts         farmers: hiring, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
@@ -243,6 +244,7 @@ src/
     hud.ts             top bar, side sheet (build, inventory, settings, action panel), toasts, dialogs
     resources.ts       the resource bar under the top bar: category chips, +N/−N flashes, popover, pool room
     debug.ts           ?debug=1 panel
+    menu.ts            home screen and pause menu: save / load / export / import, settings
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
@@ -388,7 +390,31 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 Autosaved to `localStorage` (`farmer.save`) every 10 s and when the tab is hidden or closed.
 Saves are versioned (`SAVE_VERSION` in `src/logic/save.ts`). Missing fields fall back to
 defaults, so adding state needs no migration; restructuring does (add one to `migrations`).
-Settings → **New game** resets the farm after a confirmation.
+
+- **Home screen:** the page opens on a "Farmer" title over the dimmed, paused farm (its seasonal look, or a fresh
+  farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the
+  welcome-back summary then, not before), **New game** (asks first when a farm exists), **Load game** and
+  **Settings** (sound, weather, …). The clock does not run on the home screen and nothing is autosaved there.
+- **Pause menu:** ☰ **Menu** in the HUD, or **Esc** when no tool, panel or dialog is open (Esc still cancels a tool
+  or closes a panel first; in the menu it goes back, then resumes). Resume, Save game, Load game, New game, Settings
+  and Quit to title. The game is paused while it is open, and the hidden-tab and page-close saves keep working.
+- **Save slots** (`src/logic/slots.ts`): 3 manual slots in `farmer.slot.1`–`farmer.slot.3`, beside the autosave,
+  each showing day, season, farm level, money and when it was saved ("Empty" otherwise). **Save game** writes the
+  current farm into a slot (overwriting asks first). **Load game** lists the Autosave and the slots; loading asks first,
+  replaces the farm through `game.reset` and becomes the autosave from then on. A manual slot is a snapshot: it comes
+  back exactly as saved, with no offline catch-up (only Continue and the Autosave row catch up). Slots can be deleted
+  (with a confirmation).
+- **Export / import:** **Export** downloads the current farm (Save game screen) or any slot as
+  `farmer-save-<date>.json`. **Import** reads such a file into a slot; older versions migrate, while a broken or
+  foreign file is refused with an error toast and nothing is overwritten.
+- If browser storage is full or blocked, a save fails with an error toast and the game keeps running.
+- **QA:** `/?menu=0` skips the home screen and goes straight into the autosaved farm, caught up as before (debug mode
+  still shows the menu unless `?menu=0`). `window.farm.menu` is `'home' | 'paused' | null` and `window.farm.slots`
+  the Load screen's summaries (`{ id: 'auto' | 1 | 2 | 3, empty, day, season, level, money, savedAt }`). Test ids:
+  `menu`, `menu-continue`, `menu-new-game`, `menu-load`, `menu-save`, `menu-settings`, `menu-resume`, `menu-quit`,
+  `menu-back`, `btn-menu`; rows `slot-<id>` with `slot-load-<id>`, `slot-export-<id>`, `slot-import-<n>`,
+  `slot-delete-<n>`, `slot-save-<n>`, `export-current`, the file input `import-file`; confirms use `confirm-ok` /
+  `confirm-cancel`.
 
 ## Art
 
