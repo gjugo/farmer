@@ -289,7 +289,7 @@ UNOWNED_SEASON = {
                    weeds=("#5d7232", "#86843f", "#3a5228"), bush="#3f6229", bush_l="#5f8238", stone="#9a9a8c", stone_l="#c4c4b4"),
     "autumn": dict(base="#7a6c38", blotch=("#8f5c2e", "#6a6833", "#9c7c38"), dark="#5a5026", light="#a88c48",
                    weeds=("#9a7a3a", "#b08a42", "#6a5a2c"), bush="#a8602c", bush_l="#e09a3a", stone="#9a958a", stone_l="#c4c0b4"),
-    "winter": dict(base="#d2dce5", blotch=("#c0ccd8", "#e2e9f0", "#b6c4d0"), dark="#5f6f4c", light="#7f8a62",
+    "winter": dict(base="#c3cdd6", blotch=("#b3bfca", "#d3dbe3", "#a9b6c2"), dark="#5f6f4c", light="#7f8a62",
                    weeds=("#8a7a5a", "#a08e66", "#6e6248"), bush="#6b6550", bush_l=SNOW, stone="#9a9a92", stone_l=SNOW),
 }
 
