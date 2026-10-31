@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
-import { ART_BASE, ART_RES, COMPOSED, GRASS, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
+import { SEASONS } from '../data/seasons';
+import { ART_BASE, ART_RES, COMPOSED, GRASS, seasonalArt, seasonalComposed, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
 import { listTextures } from './textures';
 import { packAsset, setPack } from './sprites';
 
 const MANIFEST = 'farm-manifest';
 /** Texture holding every ground tile, so the whole ground is one Blitter (see FarmScene). */
 export const GROUND_ATLAS = 'ground-atlas';
-/** Ground tiles in the atlas. */
-export const GROUND_TILES = [...GRASS, ...UNOWNED];
+/** Ground tiles in the atlas: each season's version, a column per season. */
+export const GROUND_TILES = SEASONS.map((season) => [...GRASS, ...UNOWNED].map((name) => seasonalArt(name, season)));
 
 /** Loads the art pack with a progress bar, prepares its textures, bakes the few runtime ones, then starts the farm. */
 export class BootScene extends Phaser.Scene {
@@ -39,7 +40,7 @@ export class BootScene extends Phaser.Scene {
     this.applyAnchors();
     this.createAnimations();
     this.bakeRuntimeTextures();
-    for (const [key, composed] of Object.entries(COMPOSED)) this.compose(key, composed.h, composed.tiles);
+    for (const [key, composed] of Object.entries({ ...COMPOSED, ...seasonalComposed() })) this.compose(key, composed.h, composed.tiles);
     this.buildGroundAtlas();
     this.scene.start('Farm');
   }
@@ -146,19 +147,21 @@ export class BootScene extends Phaser.Scene {
     frame.pivotY = (top.y - minY) / canvas.height;
   }
 
-  /** Copies the ground tiles into one texture with a frame each, for the ground Blitter. */
+  /** Copies the ground tiles into one texture with a frame each, for the ground Blitter (a column per season keeps it small). */
   private buildGroundAtlas(): void {
-    const tiles = GROUND_TILES.filter((name) => this.textures.exists(name));
-    const frames = tiles.map((name) => this.textures.getFrame(name));
-    const width = Math.max(...frames.map((f) => f.width));
-    const height = frames.reduce((sum, f) => sum + f.height + 2, 0);
-    const atlas = this.textures.createCanvas(GROUND_ATLAS, width, height)!;
-    let y = 0;
-    tiles.forEach((name, i) => {
-      const f = frames[i];
-      atlas.drawFrame(name, undefined, 0, y, false);
-      atlas.add(name, 0, 0, y, f.width, f.height);
-      y += f.height + 2;
+    const columns = GROUND_TILES.map((tiles) => tiles.filter((name) => this.textures.exists(name)));
+    const frame = (name: string) => this.textures.getFrame(name);
+    const width = Math.max(...columns.flat().map((name) => frame(name).width));
+    const height = Math.max(...columns.map((tiles) => tiles.reduce((sum, name) => sum + frame(name).height + 2, 0)));
+    const atlas = this.textures.createCanvas(GROUND_ATLAS, (width + 2) * columns.length, height)!;
+    columns.forEach((tiles, col) => {
+      let y = 0;
+      for (const name of tiles) {
+        const f = frame(name);
+        atlas.drawFrame(name, undefined, col * (width + 2), y, false);
+        atlas.add(name, 0, col * (width + 2), y, f.width, f.height);
+        y += f.height + 2;
+      }
     });
     atlas.refresh();
   }

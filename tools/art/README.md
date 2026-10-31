@@ -15,8 +15,10 @@ The `.py` files are the pack's `source/` folder, unchanged. Colours live at the 
 | `animals.py` | cow, sheep, chicken sprite sheets |
 | `buildings.py` | barn, coop, feed mill, dairy, bakery, weaving hut, farmhouse, market stall, for-sale sign |
 | `people.py` | the farmer sprite sheet: idle, sit, walk and one anim per job (plough, plant, harvest, build, feed) |
-| `props.py` | trees, bushes, rocks, hay, crates, sacks, milk can |
+| `props.py` | trees, bushes, rocks, the pond, hay, crates, sacks, milk can |
 | `icons.py` | item icons (egg, milk, … coins) |
+| `seasonal.py` | registers the seasonal versions after everything else: ground and scenery in four seasons (`tiles.build_seasons`, `props.build_seasons`) and every building in winter (`snow.py`) |
+| `snow.py` | snow on roofs: a `<name>_winter` twin of every `buildings` sprite, derived from its own pixels |
 | `build.py` | exports 2x + 1x PNGs, shadow layers, sprite sheets and `manifest.json` |
 | `preview.py`, `scene.py`, `contact.py` | the pack's preview images (not used by the game) |
 | `regen.py`, `art.sh` | the repo's wrapper behind `npm run art` (see below) |
@@ -67,6 +69,21 @@ hold on any machine without changing the pack's code:
 
 To run the pack's builder by hand (for the preview images, say), build somewhere outside the repo:
 `tools/art/.venv/bin/python tools/art/build.py /tmp/farm-pack`.
+
+## Seasons
+
+Every ground tile (`grass_*`, `unowned_*`, every `path_*` piece, `soil_*`) and every piece of scenery
+(`tree_*`, `bush*`, `rock_*`, `pond`) also comes in four versions named `<name>_<season>`
+(`grass_1_winter`, `pond_spring`, …), drawn by the same functions with a `season` argument (`None` draws
+the original, unchanged). Ground tiles keep the base tile's canvas, so every season sits where the base
+does. Buildings only change in winter: `snow.py` lays snow along every top edge of each building sprite
+(wavy, at most 50 px deep at 2x and a third of the surface, skipping walls and thin posts) and registers
+it as `<name>_winter` with the original shadow. Nothing there names a building, so a new building (or
+storage level) gets its snowy roof on the next `npm run art`. The seasonal versions are registered last,
+so `manifest.json` only grows at its end.
+
+In the game, `seasonalArt(name, season)` in `src/scenes/art.ts` maps a base sprite to the one to draw, and
+`src/scenes/art.test.ts` checks that every seasonal base has all four versions and every building a winter one.
 
 ## How the game picks the files up
 
