@@ -15,6 +15,7 @@ import { buildableUnlockLevel } from '../logic/unlocks';
 import type { FarmScene } from '../scenes/FarmScene';
 import { h, formatMoney } from './dom';
 import { itemIcon, packIcon, withIcons } from './icons';
+import { ResourceBar } from './resources';
 
 const REFRESH_MS = 250;
 
@@ -62,6 +63,7 @@ export class Hud implements UiApi {
   private levelEl!: HTMLElement;
   private xpEl!: HTMLElement;
   private xpBarEl!: HTMLElement;
+  private resources!: ResourceBar;
   private sheetEl!: HTMLElement;
   private sheetTitleEl!: HTMLElement;
   private sheetBodyEl!: HTMLElement;
@@ -93,6 +95,7 @@ export class Hud implements UiApi {
     events.on('reset', () => {
       this.ctx.tools.cancel();
       this.closePanel();
+      this.resources.reset();
       this.updateStats();
     });
     ctx.tools.events.on('change', (mode) => this.onToolChange(mode));
@@ -172,7 +175,8 @@ export class Hud implements UiApi {
     }
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
 
-    const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day, level), tools);
+    this.resources = new ResourceBar(this.ctx.game);
+    const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day, level), tools, this.resources.el);
 
     this.sheetTitleEl = h('h2', { class: 'sheet-title', id: 'sheet-title', 'data-testid': 'panel-title' });
     this.sheetBodyEl = h('div', { class: 'sheet-body' });
@@ -211,6 +215,7 @@ export class Hud implements UiApi {
     const { level, xpIntoLevel, xpForNext } = game.progression.info;
     this.levelEl.textContent = `Lv ${level}`;
     this.xpEl.textContent = xpForNext === null ? 'MAX' : `${Math.floor(xpIntoLevel)}/${xpForNext}`;
+    this.resources.update();
     this.xpBarEl.style.width = `${xpForNext === null ? 100 : Math.min(100, (xpIntoLevel / xpForNext) * 100).toFixed(1)}%`;
     for (const { el, read } of this.badges) {
       const n = read();
