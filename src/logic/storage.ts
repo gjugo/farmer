@@ -49,10 +49,13 @@ export function capacityOfObject(obj: PlacedObject): number {
   return isStorageType(obj.type) ? STORAGE[obj.type].levels[levelOf(obj) - 1].capacity : 0;
 }
 
-/** A pool's room: the farmhouse store plus every storage building of that pool, optionally leaving one out. */
+/**
+ * A pool's room: the farmhouse store plus every finished storage building of that pool (construction sites hold
+ * nothing yet), optionally leaving one out.
+ */
 export function capacity(state: GameState, pool: StoragePool, without?: string): number {
   let total = FARMHOUSE_STORE[pool];
-  for (const o of state.objects) if (o.id !== without && isStorageType(o.type) && STORAGE[o.type].pool === pool) total += capacityOfObject(o);
+  for (const o of state.objects) if (o.id !== without && !o.site && isStorageType(o.type) && STORAGE[o.type].pool === pool) total += capacityOfObject(o);
   return total;
 }
 
@@ -117,11 +120,12 @@ export function nextLevel(obj: PlacedObject): (StorageLevel & { level: number; u
   return next?.upgrade ? { ...next, level: level + 1, upgrade: next.upgrade } : null;
 }
 
-export type UpgradeResult = { ok: true; level: number } | { ok: false; reason: 'not-storage' | 'max' | 'money' | 'materials' };
+export type UpgradeResult = { ok: true; level: number } | { ok: false; reason: 'not-storage' | 'site' | 'max' | 'money' | 'materials' };
 
 /** Checks without changing anything; `upgrade` gives the same answer. */
 export function checkUpgrade(game: Game, obj: PlacedObject): UpgradeResult {
   if (!isStorageType(obj.type)) return { ok: false, reason: 'not-storage' };
+  if (obj.site) return { ok: false, reason: 'site' };
   const next = nextLevel(obj);
   if (!next) return { ok: false, reason: 'max' };
   if (!game.canAfford(next.upgrade.cost)) return { ok: false, reason: 'money' };

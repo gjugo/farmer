@@ -51,9 +51,10 @@ function browserStorage(): SaveStorage {
 
 const storage = browserStorage();
 const loaded = loadSave(storage);
-// Catch up on the time the game was closed before anyone sees the farm. Older saves have no time: no catch-up.
-let lastCatchUp: CatchUpResult | null = loaded.savedAt === null ? null : catchUp(loaded.state, Date.now() - loaded.savedAt);
 const game = new Game(loaded.state);
+// Catch up on the time the game was closed before anyone sees the farm (farmers work through it too).
+// Older saves have no time: no catch-up.
+let lastCatchUp: CatchUpResult | null = loaded.savedAt === null ? null : catchUp(game, Date.now() - loaded.savedAt);
 let lastSavedAt = loaded.savedAt;
 
 // While the tab is hidden the scene is paused, so the farm is only up to date as of `hiddenAt`.

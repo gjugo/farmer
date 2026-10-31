@@ -95,6 +95,19 @@ describe('capacity', () => {
     expect(capacity(game.state, 'materials')).toBe(30 + 60);
   });
 
+  it('a granary still being built holds nothing and cannot be upgraded; once finished it does', () => {
+    const game = farm({ wood: 50, stone: 50 });
+    const r = game.place('granary', fx, fy, { site: true });
+    if (!r.ok) throw new Error(r.reason);
+    expect(r.object.site).toBeDefined();
+    expect(capacity(game.state, 'goods')).toBe(30);
+    expect(checkUpgrade(game, r.object)).toEqual({ ok: false, reason: 'site' });
+    expect(excessWithout(game.state, r.object)).toBe(0);
+    delete r.object.site;
+    expect(capacity(game.state, 'goods')).toBe(130);
+    expect(checkUpgrade(game, r.object)).toEqual({ ok: true, level: 2 });
+  });
+
   it('goods hold every item but materials, which go in the storehouse', () => {
     expect(['wheat', 'egg', 'feed', 'cheese', 'cloth'].map(poolOf)).toEqual(['goods', 'goods', 'goods', 'goods', 'goods']);
     expect(['wood', 'stone', 'iron'].map(poolOf)).toEqual(['materials', 'materials', 'materials']);
