@@ -150,6 +150,9 @@ export const TEXTURE_ART: Record<string, string> = {
   farmhouse: 'farmhouse',
   granary: 'granary_1',
   storehouse: 'storehouse_1',
+  woodcutter: 'woodcutter_lodge',
+  quarry: 'quarry',
+  mine: 'mine',
 };
 
 /** Storage buildings have a sprite per level, e.g. `granary_2`; the build preview is level 1. */

@@ -13,7 +13,7 @@ The `.py` files are the pack's `source/` folder, unchanged. Colours live at the 
 | `tiles.py` | grass, paths, soil, unowned land, overlays, fences and gates |
 | `crops.py` | wheat, carrot, corn × 4 growth stages |
 | `animals.py` | cow, sheep, chicken sprite sheets |
-| `buildings.py` | barn, coop, feed mill, dairy, bakery, weaving hut, farmhouse, market stall, for-sale sign |
+| `buildings.py` | barn, coop, feed mill, dairy, bakery, weaving hut, granary, storehouse, woodcutter's lodge, quarry, mine, farmhouse, market stall, for-sale sign |
 | `people.py` | the farmer sprite sheet: idle, sit, walk and one anim per job (plough, plant, harvest, build, feed) |
 | `props.py` | trees, bushes, rocks, the pond, hay, crates, sacks, milk can |
 | `icons.py` | item icons (egg, milk, … coins) |

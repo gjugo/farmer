@@ -29,12 +29,14 @@ function farm({ day = 1, money = 500, inventory = {} }: { day?: number; money?: 
 }
 
 describe('material costs', () => {
-  it('every buildable but paths and fields needs wood or stone, and at least two need iron', () => {
+  it('every buildable but paths, fields and the woodcutter needs wood or stone, and at least two need iron', () => {
     for (const b of listBuildMenu()) {
       if (b.id === 'path' || b.id === FIELD) {
         expect(b.materials, b.id).toBeUndefined();
         continue;
       }
+      // Money only, so a new farm can make its own wood.
+      if (b.id === 'woodcutter') continue;
       expect((b.materials?.wood ?? 0) + (b.materials?.stone ?? 0), b.id).toBeGreaterThan(0);
     }
     expect(listBuildMenu().filter((b) => (b.materials?.iron ?? 0) > 0).length).toBeGreaterThanOrEqual(2);

@@ -2,6 +2,7 @@ import { PENS } from '../data/animals';
 import { FIELD } from '../data/crops';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { PROCESSORS } from '../data/processing';
+import { RESOURCES } from '../data/resourceBuildings';
 import { BASE_HIRE_COST, HIRE_COST_GROWTH, MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Game } from './game';
@@ -65,9 +66,9 @@ export function shiftJobs(saved: unknown, dx: number, dy: number): unknown {
   return { ...saved, jobs };
 }
 
-/** Fields, coops, pastures and processing buildings: a farmer can be assigned to them. */
+/** Fields, coops, pastures, processing and resource buildings: a farmer can be assigned to them. */
 export function isWorkplaceType(type: string): boolean {
-  return type === FIELD || Object.hasOwn(PENS, type) || Object.hasOwn(PROCESSORS, type);
+  return type === FIELD || Object.hasOwn(PENS, type) || Object.hasOwn(PROCESSORS, type) || Object.hasOwn(RESOURCES, type);
 }
 
 /**

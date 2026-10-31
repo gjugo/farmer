@@ -2,11 +2,13 @@ import { ANIMALS } from '../data/animals';
 import { FIELD, getCrop } from '../data/crops';
 import { MAX_OFFLINE_MS, SUMMARY_MIN_AWAY_MS } from '../data/offline';
 import { isProcessorType } from '../data/processing';
+import { isResourceType } from '../data/resourceBuildings';
 import { animalsOf, isPenType, type PenState } from './animals';
 import { dayOf, type Timer } from './clock';
 import { Game } from './game';
 import * as inventory from './inventory';
 import { sanitize, settle, type ProcessorState } from './processing';
+import * as resources from './resources';
 import type { GameState, Inventory, PlacedObject } from './types';
 import { runWork } from './work';
 
@@ -22,6 +24,8 @@ export interface FarmerWork {
   made: Inventory;
   /** Buildable type → construction sites finished. */
   built: Record<string, number>;
+  /** Item id → materials made by resource buildings (stored, or waiting in the building for room). */
+  materials: Inventory;
 }
 
 /** What happened while the player was away. Built from the timers that ended, never by diffing the whole state. */
@@ -34,7 +38,10 @@ export interface CatchUpResult {
   capped: boolean;
   /** Crop id → fields that became ripe. */
   cropsReady: Record<string, number>;
-  /** Item id → goods made: animal products waiting in their pens and processing output waiting in buildings. */
+  /**
+   * Item id → goods made and waiting to be collected: animal products in their pens, processing output in its
+   * buildings, and materials left in resource buildings while the storehouse was full.
+   */
   produced: Inventory;
   /** Processing jobs that finished. */
   jobsFinished: number;
@@ -72,7 +79,7 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     cropsReady: {},
     produced: {},
     jobsFinished: 0,
-    work: { harvested: {}, sown: {}, collected: {}, made: {}, built: {} },
+    work: { harvested: {}, sown: {}, collected: {}, made: {}, built: {}, materials: {} },
     dayBefore: dayOf(clock),
     dayAfter: dayOf(clock),
     changed: [],
@@ -86,6 +93,9 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     settle(clock, obj);
   }
   const readyBefore = new Map(processors.map((o) => [o.id, { ...o.state.ready }]));
+  const mines = state.objects.filter((o) => isResourceType(o.type)) as unknown as PlacedObject<resources.ResourceState>[];
+  for (const obj of mines) resources.sanitize(obj);
+  const waitingBefore = new Map(mines.map((o) => [o.id, o.state.waiting]));
 
   const { work } = result;
   const { activity } = game;
@@ -95,6 +105,7 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     activity.on('collected', ({ item, qty }) => inventory.add(work.collected, item, qty)),
     activity.on('made', ({ item, qty }) => inventory.add(work.made, item, qty)),
     activity.on('built', ({ type }) => inventory.add(work.built, type, 1)),
+    activity.on('produced', ({ item, qty }) => inventory.add(work.materials, item, qty)),
   ];
   const changed = new Set<string>();
   const settled = (obj: PlacedObject, finished: number) => {
@@ -128,6 +139,12 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     settled(obj, settle(clock, obj));
     // Goods a farmer collected meanwhile are in `work.made`: count only what waits now and did not before.
     for (const [item, qty] of Object.entries(obj.state.ready)) inventory.add(result.produced, item, Math.max(0, qty - (before[item] ?? 0)));
+  }
+
+  for (const obj of mines) {
+    const more = obj.state.waiting - (waitingBefore.get(obj.id) ?? 0);
+    if (more > 0) inventory.add(result.produced, resources.defOf(obj).output, more);
+    changed.add(obj.id);
   }
 
   result.dayAfter = dayOf(clock);

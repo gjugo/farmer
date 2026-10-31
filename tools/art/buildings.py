@@ -734,6 +734,164 @@ def storehouse(level):
     return c
 
 
+# ================================================================== RESOURCE BUILDINGS 2x2
+def pine(c, x, y, s=1.0, col="#2f8f4e"):
+    """A small pine tree standing at (x, y)."""
+    c.cylinder(x, y, 0, 0.25 * s, 0.045 * s, "#7a4a2a")
+    for k, (z0, z1, r) in enumerate(((0.18, 0.7, 0.26), (0.45, 0.95, 0.2), (0.7, 1.2, 0.14))):
+        c.cone(x, y, z0 * s, z1 * s, r * s, shade(col, 0.06 * k), shadow=k == 0)
+
+
+def stump(c, x, y, r=0.1, h=0.12):
+    """A sawn tree stump with its rings."""
+    cx, ct, rx, ry = c.cylinder(x, y, 0, h, r, "#9a6233", top="#e9c48a")
+    c.ell(cx, ct, rx * 0.6, ry * 0.6, "none", 0, "#c4935a", 1.5)
+    c.ell(cx, ct, rx * 0.25, ry * 0.25, "none", 0, "#c4935a", 1.5)
+    return cx, ct
+
+
+def axe(c, base, top):
+    """An axe whose head is buried at `base` (screen px), handle up to `top`."""
+    c.limb(base, top, "#b07a43", 6)
+    bx, by = base
+    c.path(f"M{f2(bx - 4)},{f2(by + 2)} l-14,-10 l4,-12 l16,10 Z", "#c9d1d8", OUT, 2)
+
+
+def pickaxe(c, base, top):
+    """A pickaxe leaning from `base` (handle end on the ground) to `top` (the head)."""
+    c.limb(base, top, "#b07a43", 6)
+    tx, ty = top
+    c.path(f"M{f2(tx - 22)},{f2(ty + 8)} Q{f2(tx)},{f2(ty - 12)} {f2(tx + 22)},{f2(ty + 8)} Q{f2(tx)},{f2(ty - 4)} {f2(tx - 22)},{f2(ty + 8)} Z",
+           "#a9b4bf", OUT, 2)
+
+
+def woodcutter():
+    """A log cabin with a chopping block, a wood pile and pines behind."""
+    c = bcanvas(2, 2, top=440)
+    pad(c, 2, 2, "#e3c88f", pattern="dirt")
+    pine(c, 0.32, 0.3, 1.15)
+    pine(c, 1.7, 0.25, 0.95, col="#378f45")
+    x0, y0, x1, y1, zw, zr = 0.45, 0.4, 1.45, 1.3, 0.62, 1.08
+    LOG = "#a8693a"
+    c.box(x0, y0, 0, x1, y1, zw, shade(LOG, 0.1), LOG, shade(LOG, -0.12))
+    L, R = Plane(c, "y", y1), Plane(c, "x", x1)
+    # round logs: a dark seam and a light top edge every course, log ends at the corners
+    z = 0.0
+    while z < zw - 0.02:
+        for pl, u0, u1 in ((L, x0, x1), (R, y0, y1)):
+            pl.line(u0, z + 0.09, u1, z + 0.09, shade(LOG, -0.4), 2.2, opacity=0.8)
+            pl.line(u0, z + 0.075, u1, z + 0.075, shade(LOG, 0.3), 1.6, opacity=0.6)
+        for (x, y) in ((x0, y1), (x1, y1), (x1, y0)):
+            p = c.P(x, y, z + 0.045)
+            c.circle(p[0], p[1], 7, "#e2b36f", OUT, 1.8)
+        z += 0.09
+    R.door((y0 + y1) / 2, 0.32, 0.5, "#7a4a24", frame="#5a3a20")
+    L.window((x0 + x1) / 2, 0.3, 0.24, 0.2, frame="#5a3a20")
+    c.gable_roof(x0, y0, x1, y1, zw, zr, "#5d7f3a", along="x", oh=0.12, gable_color=shade(LOG, 0.12), rows=4, cols=8)
+    chimney(c, 0.75, 0.6, 0.75, 1.25, color="#9c8f80")
+    hanging_sign(c, L, 0.62, 0.55, IC.wood, size=0.17)
+    # wood pile against the right wall, chopping block with an axe and a split log in front
+    log_pile(c, 1.55, 1.15, 1.95, z_rows=3)
+    cx, ct = stump(c, 1.25, 1.72, r=0.12, h=0.14)
+    axe(c, (cx + 4, ct - 2), (cx + 30, ct - 46))
+    c.box(0.55, 1.6, 0, 0.85, 1.7, 0.08, "#e9c48a", "#b98446", "#9a6533", sw=2)
+    c.box(0.6, 1.75, 0, 0.9, 1.85, 0.08, "#e9c48a", "#b98446", "#9a6533", sw=2)
+    stump(c, 0.25, 1.65, r=0.08, h=0.06)
+    return c
+
+
+def rock_face(c, x0, y0, x1, y1, z1, rnd, col="#a9a59b"):
+    """A cut rock block: a box with cracks on its faces."""
+    c.box(x0, y0, 0, x1, y1, z1, shade(col, 0.14), col, shade(col, -0.14), sw=2.5)
+    L, R = Plane(c, "y", y1), Plane(c, "x", x1)
+    for pl, u0, u1 in ((L, x0, x1), (R, y0, y1)):
+        for _ in range(2):
+            u = rnd.uniform(u0 + 0.05, u1 - 0.05)
+            z = rnd.uniform(0.05, z1 - 0.05)
+            pl.line(u, z, u + rnd.uniform(-0.06, 0.06), z - rnd.uniform(0.05, 0.12), shade(col, -0.35), 2)
+
+
+def quarry():
+    """A stepped grey rock face cut into blocks, with a wooden crane, cut stone and a pickaxe."""
+    c = bcanvas(2, 2, top=420)
+    pad(c, 2, 2, "#cfc6b4", pattern="dirt")
+    rnd = random.Random(11)
+    # the rock face: tall at the back, stepping down toward the front
+    rock_face(c, 0.15, 0.1, 1.85, 0.55, 0.9, rnd)
+    rock_face(c, 0.15, 0.55, 0.75, 1.15, 0.6, rnd, "#b3afa5")
+    rock_face(c, 1.25, 0.55, 1.85, 0.95, 0.5, rnd, "#b3afa5")
+    rock_face(c, 0.15, 1.15, 0.5, 1.45, 0.28, rnd, "#bdb9af")
+    # moss on top
+    for (x, y, z) in ((0.4, 0.3, 0.9), (1.5, 0.25, 0.9), (0.3, 0.8, 0.6)):
+        p = c.P(x, y, z)
+        c.ell(p[0], p[1], 18, 7, "#7cbf4a", 0, None, extra='opacity="0.85"')
+    # wooden crane (a post and a jib with a rope) lifting a block
+    c.box(1.48, 1.3, 0, 1.56, 1.38, 1.0, "#c48a4f", "#a8703b", "#8f5f35", sw=2)
+    a, b = c.P(1.52, 1.34, 0.95), c.P(1.0, 1.0, 1.05)
+    c.limb(a, b, "#a8703b", 7)
+    c.line(b, (b[0], b[1] + 70), "#d8c7a0", 2.5)
+    c.box(0.92, 0.94, 0.42, 1.08, 1.08, 0.52, "#d4d0c6", "#b3afa5", "#9b978d", sw=2)
+    # cut stone ready to go, rubble, a pickaxe and a barrow
+    stone_blocks(c, 0.9, 1.5, 5)
+    for (x, y, r) in ((1.7, 1.2, 0.06), (1.78, 1.32, 0.045), (0.62, 1.4, 0.05)):
+        c.ellipsoid((x, y, r * 0.5), (r, r * 0.85, r * 0.6), "#a7a49a", hi=0.35, lo=-0.3)
+    pickaxe(c, c.P(0.55, 1.82, 0), c.P(0.5, 1.55, 0.35))
+    return c
+
+
+def mine():
+    """A grassy hill with a timber-framed tunnel, rails and a cart of iron ore."""
+    c = bcanvas(2, 2, top=400)
+    pad(c, 2, 2, "#cfc6b4", pattern="dirt")
+    # the hill: grassy, with grey rock showing through
+    hx, hy, ha, hb = 0.85, 0.7, 0.8, 0.66
+    c.shadow_ell(hx, hy, 0.75, z=0.7)
+    # only the half above the ground: clip below the front of its ground ellipse
+    ring = [c.P(hx + ha * math.cos(t), hy + hb * math.sin(t), 0) for t in np.linspace(0, 2 * math.pi, 48, endpoint=False)]
+    clip = c.clip(f'<polygon points="{pts(hull(ring + [(x, y - 900) for x, y in ring]))}"/>')
+    c.group(lambda: c.ellipsoid((hx, hy, 0.0), (ha, hb, 0.9), "#79b84e", hi=0.28, lo=-0.28), clip=clip)
+    rnd = random.Random(7)
+    for (x, y, z, r) in ((0.55, 0.35, 0.68, 0.16), (1.25, 0.45, 0.55, 0.14), (0.95, 0.3, 0.8, 0.12)):
+        c.ellipsoid((x, y, z), (r, r * 0.8, r * 0.55), "#a7a49a", hi=0.35, lo=-0.3)
+    for _ in range(8):
+        x, y = rnd.uniform(0.3, 1.4), rnd.uniform(0.3, 1.1)
+        p = c.P(x, y, 0.75)
+        c.ell(p[0], p[1], 8, 4, "#5c9a3a", 0, None)
+    # the tunnel mouth: a timber portal set into the hill's front, facing the lower-left
+    u0, u1, h = 0.55, 1.05, 0.5
+    c.box(u0 - 0.08, 1.05, 0, u1 + 0.08, 1.3, h + 0.08, "#c48a4f", "#a8703b", "#8f5f35", sw=2.5)
+    L = Plane(c, "y", 1.3)
+    L.rect(u0, u1, 0, h, "#2b2118", sw=2.5)
+    L.line(u0, h, u1, h, "#5a3a20", 4)
+    L.line(u0 - 0.04, 0, u0 - 0.04, h + 0.04, "#5a3a20", 3)
+    L.line(u1 + 0.04, 0, u1 + 0.04, h + 0.04, "#5a3a20", 3)
+    # lantern by the entrance
+    p = L.P(u1 + 0.12, h - 0.05, 0.02)
+    c.line((p[0], p[1] - 14), (p[0], p[1] - 4), OUT, 2)
+    c.circle(p[0], p[1] + 2, 6, "#f2c14e", OUT, 2)
+    # rails out of the tunnel
+    for d in (0.66, 0.94):
+        c.line(c.P(d, 1.3, 0.01), c.P(d, 1.95, 0.01), "#6b6f75", 3)
+    for k in range(5):
+        y = 1.36 + k * 0.13
+        c.line(c.P(0.6, y, 0.005), c.P(1.0, y, 0.005), "#8f5f35", 5)
+    # the cart, heaped with ore
+    c.box(0.62, 1.6, 0.05, 0.98, 1.88, 0.26, "#8a8f96", "#6f747b", "#5b6066", sw=2.5)
+    for (x, y) in ((0.68, 1.68), (0.8, 1.66), (0.9, 1.72), (0.74, 1.78), (0.86, 1.8)):
+        c.ellipsoid((x, y, 0.28), (0.06, 0.05, 0.04), "#7a5a4a", hi=0.3, lo=-0.3)
+        q = c.P(x, y, 0.3)
+        c.circle(q[0] + 3, q[1] - 2, 2.5, "#c9d1d8", None)
+    for x in (0.68, 0.92):
+        q = c.P(x, 1.88, 0.05)
+        c.circle(q[0], q[1], 7, "#3d3f44", OUT, 2)
+    # ore heap and a crate of iron bars
+    for (x, y, r) in ((1.45, 1.5, 0.12), (1.62, 1.38, 0.09), (1.55, 1.68, 0.08)):
+        c.ellipsoid((x, y, r * 0.5), (r, r * 0.85, r * 0.6), "#7a5a4a", hi=0.3, lo=-0.3)
+    crate(c, 1.6, 0.95, s=1.0, wood="#a8703b")
+    hanging_sign(c, L, 0.4, 0.45, IC.iron, size=0.16)
+    return c
+
+
 def build():
     image("buildings", "barn", barn(), (4, 4), notes="pasture shelter / barn, 4x4")
     for lv in (1, 2, 3):
@@ -752,5 +910,8 @@ def build():
     image("buildings", "bakery", bakery(), (3, 2), notes="bakery, 3x2 (3 tiles along x, 2 along y)")
     image("buildings", "weaving_hut", weaving_hut(), (2, 2), notes="loom / weaving hut, 2x2")
     image("buildings", "market_stall", market_stall(), (2, 1), notes="market stall, 2x1 (2 tiles along x)")
+    image("buildings", "woodcutter_lodge", woodcutter(), (2, 2), notes="woodcutter's lodge: log cabin, chopping block and wood pile, 2x2")
+    image("buildings", "quarry", quarry(), (2, 2), notes="stone quarry: stepped rock face, crane and cut blocks, 2x2")
+    image("buildings", "mine", mine(), (2, 2), notes="iron mine: hill with a timber-framed tunnel, rails and an ore cart, 2x2")
     image("buildings", "farmhouse", farmhouse(), (2, 2), notes="farmhouse, 2x2: door at x 1.3 on the front-left (+y) face, bench for idle farmers in front")
     image("buildings", "for_sale_sign", for_sale(), (1, 1), notes="'for sale' sign for unowned plots, 1x1")

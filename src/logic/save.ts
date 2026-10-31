@@ -23,7 +23,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 export interface SaveFile {
   version: number;
@@ -98,6 +98,17 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
   },
   // Bigger map: the old farm moves into the middle of the new one (see `growMap`).
   7: (raw) => ({ ...raw, version: 8, state: growMap(isPlainObject(raw.state) ? raw.state : {}) }),
+  // Resource buildings: four goals were inserted (woodcutter, wood, quarry, iron). Farms past them skip them.
+  8: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const p = ext[PROGRESSION];
+    if (!isPlainObject(p) || typeof p.nextGoal !== 'number') return { ...raw, version: 9 };
+    let nextGoal = p.nextGoal;
+    // "build-woodcutter", "produce-wood", "build-quarry" and "mine-iron" in version 9.
+    for (const at of [17, 18, 19, 21]) if (nextGoal > at) nextGoal++;
+    return { ...raw, version: 9, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal } } } };
+  },
 };
 
 /** The map and starting land of saves up to version 7, written out because the constants have moved on since. */

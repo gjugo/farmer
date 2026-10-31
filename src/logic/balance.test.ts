@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ANIMALS, PENS, type AnimalKind, type PenType } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
-import { isMaterial, type MaterialCost } from '../data/materials';
+import { isMaterial, MATERIAL_IDS, type MaterialCost } from '../data/materials';
 import { GRANARY, POOL_BUILDING, type StoragePool } from '../data/storage';
 import { buyAnimal, buyFeed, feedNeeded, type PenState } from './animals';
 import type { FieldState } from './crops';
@@ -27,9 +27,12 @@ import { assignFarmer, hireCost, hireFarmer, workerAt } from './workers';
  * to each), keeps chickens (and cows from level 3) and claims finished goals. Before building it buys
  * the materials it lacks at the Market, in fives like the Market's buttons. It follows the storage goals
  * (build, then upgrade a granary) and, when a farmer waits because the granary is full, upgrades or builds
- * one; it makes room in the storehouse the same way before shopping for more materials than fit. It never uses processing
- * buildings and buys land only when it runs out of room, so a real player who does more should level
- * at least as fast.
+ * one; it makes room in the storehouse the same way before shopping for more materials than fit (selling materials
+ * the purchase doesn't need first). From level 3 it builds a woodcutter's lodge, then a quarry with the lodge's wood;
+ * it staffs them in winter with the farmers whose fields are frozen, and sends them back to the fields in spring, so it
+ * hires nobody for them and buys only the materials they haven't made. It sells materials beyond 10 of each. It never uses processing
+ * buildings, never builds where it would wall off land the farmhouse reaches, and buys land only when it runs out
+ * of room, so a real player who does more should level at least as fast.
  */
 /** Tiles reachable from the farmhouse door over tiles that pass `walkable` (given what stands there), as "x,y" keys. */
 function reachable(state: GameState, walkable: (o: PlacedObject | undefined, x: number, y: number) => boolean): Set<string> {
@@ -67,7 +70,13 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     if (type === GRANARY || type === POOL_BUILDING.materials) storage.built++;
   });
   game.activity.on('upgraded', () => storage.upgraded++);
+  const produced: Record<string, number> = {};
+  const bought: Record<string, number> = {};
+  const staffed = new Set<string>();
+  game.activity.on('produced', ({ item, qty }) => (produced[item] = (produced[item] ?? 0) + qty));
+  game.activity.on('bought', ({ item, qty }) => (bought[item] = (bought[item] ?? 0) + qty));
   const STEP = 1000;
+  const KEEP_MATERIALS = 10;
 
   /** Buys what `cost` lacks, in fives, if there is the money (keeping `reserve`) and the room; false when it can't. */
   const shop = (cost: number, materials: MaterialCost | undefined, reserve: number): boolean => {
@@ -75,8 +84,14 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     if (shopping.some(([id]) => !game.isUnlocked(buyUnlockLevel(id)))) return false;
     const shoppingCost = shopping.reduce((sum, [id, qty]) => sum + qty * buyPrice(game.day, id)!, 0);
     if (game.money < cost + shoppingCost + reserve) return false;
-    const room = capacity(game.state, 'materials') - used(game.state, 'materials');
-    if (shopping.reduce((sum, [, qty]) => sum + qty, 0) > room) {
+    let room = capacity(game.state, 'materials') - used(game.state, 'materials');
+    const need = shopping.reduce((sum, [, qty]) => sum + qty, 0);
+    // Short of room: sell materials this cost doesn't take (as a player would), else make more room.
+    for (const id of MATERIAL_IDS) {
+      const spare = Math.min(game.count(id) - (materials?.[id] ?? 0), need - room);
+      if (spare > 0) room += sell(game, id, spare) > 0 ? spare : 0;
+    }
+    if (need > room) {
       makeRoom('materials');
       return false;
     }
@@ -94,8 +109,17 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     const area = (s: { x: number; y: number }) => ({ ...s, ...def.footprint });
     // Same as trying findRoute, then connectToFarmhouse, on each spot, but one flood fill each instead of one per spot.
     const onPaths = reachable(game.state, (o) => o?.type === PATH);
-    const onLand = reachable(game.state, (o, x, y) => isOwned(game.state.land, x, y) && (!o || o.type === PATH));
-    const spot = spots.find((s) => touches(onPaths, area(s))) ?? spots.find((s) => touches(onLand, area(s)));
+    const free = (o: PlacedObject | undefined, x: number, y: number) => isOwned(game.state.land, x, y) && (!o || o.type === PATH);
+    const onLand = reachable(game.state, free);
+    // Nor does it wall off its own land: every tile the farmhouse reaches now stays reachable around the new building.
+    const walls = (a: { x: number; y: number; w: number; h: number }) => {
+      const inside = (x: number, y: number) => x >= a.x && x < a.x + a.w && y >= a.y && y < a.y + a.h;
+      const after = reachable(game.state, (o, x, y) => !inside(x, y) && free(o, x, y));
+      const covered = [...onLand].filter((k) => inside(...(k.split(',').map(Number) as [number, number]))).length;
+      return after.size < onLand.size - covered;
+    };
+    const fits = (s: { x: number; y: number }, near: Set<string>) => touches(near, area(s)) && !walls(area(s));
+    const spot = spots.find((s) => fits(s, onPaths)) ?? spots.find((s) => fits(s, onLand));
     if (!spot) {
       // Out of room: buy the cheapest parcel next to the farm, if that leaves the money for the building.
       const [parcel] = parcelsForSale(game.state.land, FARM_PARCELS);
@@ -129,12 +153,26 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     const goals = new Set(game.progression.goals().map((g) => g.def.id));
     if (goals.has('build-granary') || goals.has('upgrade-granary')) makeRoom('goods');
     for (const id of Object.keys(game.state.inventory)) if (id !== 'feed' && !isMaterial(id)) sell(game, id);
+    // Materials its buildings made beyond a working stock are sold too.
+    for (const id of MATERIAL_IDS) if (game.count(id) > KEEP_MATERIALS) sell(game, id, game.count(id) - KEEP_MATERIALS);
     const fields = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
+    const resources = [...game.objectsOfType('woodcutter'), ...game.objectsOfType('quarry')].filter((o) => !o.site);
     const workplaces = [...pens('coop'), ...pens('pasture'), ...fields].filter((o) => !o.site);
+    // Winter: farmers whose fields can't be sown cut wood and break stone instead; when the ground thaws they go back.
+    const frozen = (f: PlacedObject) => (workplaceNext(game, f) as { wait?: string }).wait === 'season';
+    for (const r of resources) {
+      const farmer = workerAt(game.state, r.id);
+      const field = fields.find((f) => !f.site && (farmer === null ? workerAt(game.state, f.id) !== null && frozen(f) : workerAt(game.state, f.id) === null && !frozen(f)));
+      if (field) assignFarmer(game, farmer === null ? r.id : field.id, farmer ?? workerAt(game.state, field.id)!);
+      if (workerAt(game.state, r.id) !== null) staffed.add(r.type);
+    }
     // A farmer still waiting for room after the sale (feed takes room too): more storage, if it can pay for it.
     if (workplaces.some((wp) => workerAt(game.state, wp.id) !== null && (workplaceNext(game, wp) as { wait?: string }).wait === 'full')) {
       storage.refused++;
       makeRoom('goods');
+    }
+    if (resources.some((wp) => workerAt(game.state, wp.id) !== null && (workplaceNext(game, wp) as { wait?: string }).wait === 'storehouse-full')) {
+      makeRoom('materials');
     }
     for (const type of ['coop', 'pasture'] as const) {
       for (const p of pens(type)) while (game.count('feed') < feedNeeded(game, p) && buyFeed(game).ok);
@@ -158,6 +196,9 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
       }
     };
     if (fields.length >= 4) stock('coop', 'chicken', 60);
+    // Its own materials from level 3: a woodcutter's lodge, then a quarry built with the lodge's wood.
+    if (game.level >= 3 && game.objectsOfType('woodcutter').length === 0) build('woodcutter', 40);
+    if (game.objectsOfType('quarry').length === 0 && game.missingMaterials(getBuildable('quarry')!.materials).length === 0) build('quarry', 40);
     const stocked = pens('coop').some((p) => p.state.animals.length > 0);
     if (fields.length < maxFields && (fields.length < 4 || stocked)) build(FIELD, 40);
     stock('pasture', 'cow', 100);
@@ -172,7 +213,7 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     }
   }
   const storageLevels = (type: string) => game.objectsOfType(type).map((o) => o.state.level as number);
-  return { reachedAt, storage, granaries: storageLevels(GRANARY), storehouses: storageLevels(POOL_BUILDING.materials), game };
+  return { reachedAt, storage, granaries: storageLevels(GRANARY), storehouses: storageLevels(POOL_BUILDING.materials), produced, bought, staffed, game };
 }
 
 interface Sim {
@@ -180,6 +221,11 @@ interface Sim {
   storage: { built: number; upgraded: number; refused: number };
   granaries: number[];
   storehouses: number[];
+  /** Materials made by its resource buildings, and bought at the Market. */
+  produced: Record<string, number>;
+  bought: Record<string, number>;
+  /** Resource building types that had a farmer at some point. */
+  staffed: Set<string>;
   game: Game;
 }
 
@@ -198,6 +244,10 @@ describe('level curve balance', () => {
   // casual L2 11.0, L5 162.0; relaxed L2 8.5, L5 161.5; busy L2 8.2, L5 168.8 (none of them needs to buy land now).
   // Merged with storage (granary goal after 20 wheat): casual L2 10.0, L5 171.0; relaxed L2 9.0, L5 168.0; busy L2 8.3, L5 166.0.
   // Bigger map and storage together: casual L2 10.0, L5 167.0; relaxed L2 8.5, L5 162.0; busy L2 8.2, L5 161.8.
+  // Plus a woodcutter's lodge (level 3) and a quarry, staffed in winter: casual L2 10.0, L5 175.0; relaxed L2 9.0, L5 171.0;
+  // busy L2 8.3, L5 166.0. Hiring farmers for them, or building them before level 3, cost 8+ min of L5 in this 3 h window.
+  // With the bigger map, building only where it walls off none of its land (the busy player's fields had shut the
+  // lodge out): casual L2 10.0, L5 162.0; relaxed L2 8.5, L5 164.5; busy L2 8.2, L5 168.9.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });
@@ -215,6 +265,22 @@ describe('level curve balance', () => {
   it('a busy player (checks every 10 s, up to 12 fields) does not race through the levels', () => {
     expect(minutes(busy.reachedAt.get(2))).toBeGreaterThanOrEqual(8);
     expect(minutes(busy.reachedAt.get(5))).toBeGreaterThanOrEqual(60);
+  });
+
+  it.each([
+    ['casual', casual],
+    ['relaxed', relaxed],
+    ['busy', busy],
+  ])("the %s player builds a woodcutter's lodge and a quarry, staffs them and makes its own wood and stone", (_name, sim) => {
+    for (const type of ['woodcutter', 'quarry']) {
+      expect(sim.game.objectsOfType(type).length, type).toBe(1);
+      expect(sim.staffed.has(type), type).toBe(true);
+    }
+    expect(sim.produced.wood ?? 0).toBeGreaterThan(0);
+    expect(sim.produced.stone ?? 0).toBeGreaterThan(0);
+    // A good share of its materials are its own, not bought.
+    const total = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0);
+    expect(total(sim.produced)).toBeGreaterThanOrEqual(0.3 * (total(sim.produced) + total(sim.bought)));
   });
 
   it.each([

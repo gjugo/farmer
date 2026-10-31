@@ -241,6 +241,10 @@ const WORK_ANIM: Record<JobKind, FarmerAnim> = {
   feed: 'feed',
   collect: 'harvest',
   load: 'feed',
+  // Swinging an axe or a pick: the building swing.
+  chop: 'build',
+  quarry: 'build',
+  mine: 'build',
 };
 
 const BAR_W = 40;

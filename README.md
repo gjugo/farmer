@@ -31,8 +31,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   farmhouse reaches it). Esc, right-click or **Cancel** leaves build mode. Each item shows its money cost and the
   **building materials** it takes (🪵 wood, 🪨 stone, 🔩 iron); what you can't pay for is greyed out with what is missing
   ("Needs 4 more 🪵 Wood"), its ghost turns red, and placing it says to buy the rest at the 🏪 Market.
-  Paths and fields cost money only; coops, pastures and processing buildings need wood and/or stone,
-  and the dairy and loom also need iron. Money and materials are paid on placing. Paths are laid at once; everything
+  Paths, fields and the woodcutter's lodge cost money only; coops, pastures and processing buildings need wood and/or
+  stone, and the dairy and loom also need iron. Money and materials are paid on placing. Paths are laid at once; everything
   else becomes a **construction site** (drawn faded, with 🚧 and a progress bar) that a free farmer walks to and builds:
   1.5 game-s per footprint tile, 3–20 s. A site can't be used until it is finished; its panel shows the build only.
 - **Demolish:** 🧹 → click an object, or **Demolish** in its panel (which asks first and says what comes back).
@@ -76,6 +76,19 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
   purchase is refused with a toast. New farms start without materials; the goal "Buy 10 wood" comes just before
   "Build a chicken coop".
+- **Wood, stone and iron from the farm:** the **🪓 Woodcutter's Lodge** (level 1, $80) makes 4 🪵 wood, the **⛏️ Quarry**
+  (level 2, $120 + 10 🪵) 3 🪨 stone and the **⚒️ Mine** (level 4, $140 + 15 🪵 + 10 🪨, never iron) 1 🔩 iron per cycle
+  of work: 4, 5 and 6 game-minutes, a quarter longer in winter. Nothing is made without an assigned farmer
+  (**👨‍🌾 Assign a farmer to cut wood**, … to quarry stone, … to mine iron) and a path from the farmhouse: the farmer
+  walks there, works one cycle (chips or dust fly by the building) and the yield goes into the storehouses. When the
+  storehouses are full, what doesn't fit waits in the building (a bubble on the map shows it), no new cycle starts and
+  the farmer is free for other work; once there is room they carry it in, or tap the building (**Carry … to the
+  storehouse**) to take what fits. Nothing is lost. The panel shows the farmer, the cycle's progress, output waiting,
+  what was made today and why it is idle (no farmer, no path, storehouse full). It pays for itself in well under two
+  hours of work against Market prices, so the Market is the dearer fallback. Time away produces up to the storehouse
+  room; the welcome-back summary lists what was produced. Goals: "Build a woodcutter's lodge", "Produce 20 wood" and
+  "Build a quarry" come after "Buy a plot of land", "Mine 5 iron" after "Mill 12 feed" (a lodge or quarry built
+  earlier counts).
 - Click an object to open its action panel.
 - **Land:** the map is 64 × 48 tiles and a new farm owns the 16 × 12 in its middle. The game opens on the owned land
   with about 2 tiles around it (on a phone it stays close enough that a tile is at least 40 px wide, centred on the
@@ -94,11 +107,11 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Each takes a real part of its season:
   wheat 8 game-minutes (10 wheat), carrot 10 (10 carrots), corn 16 (12 corn). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
-- **Farmers:** building, ploughing, planting, harvesting, feeding, collecting and starting a batch each keep a farmer
+- **Farmers:** building, ploughing, planting, harvesting, feeding, collecting, starting a batch and a resource cycle each keep a farmer
   busy for a while: ploughing a field 40 game-seconds, sowing 30 s, harvesting 40 s, feeding a pen 20 s, collecting or
   starting a batch 20 s, building 15 s per footprint tile (30 s–3 min; paths need no farmer), plus the walk there and
   back. The farm starts with one farmer; hire more in 👨‍🌾 Farmers: $150 for the 2nd, ×1.2 for each after, up to 20.
-  - **Workplaces:** fields, coops, pastures and processing buildings take one farmer each. Assign one with
+  - **Workplaces:** fields, coops, pastures, processing and resource buildings take one farmer each. Assign one with
     **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in the 👨‍🌾 Farmers
     sheet, which lists every farmer with their workplace and what they are doing now. A farmer works at one place.
   - **Automatic work:** an assigned farmer does the next job there by themselves. A **field** is ploughed (in a
@@ -106,13 +119,14 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
     ripe before its seasons end, or **None**) and harvested when ripe; ploughing and seed are paid as by hand, and the
     work waits while money is short. A **coop or pasture** gets its products collected and its hungry animals fed from
     stock (it waits without feed). A **processing building** keeps queueing its **⚙️ Keep making** recipe while the
-    inputs are in stock and the queue has room, and its finished goods are collected. The panel says why a farmer waits.
+    inputs are in stock and the queue has room, and its finished goods are collected. A **woodcutter's lodge, quarry or
+    mine** works cycle after cycle. The panel says why a farmer waits.
   - **Free farmers** (no workplace, or nothing to do there now) build construction sites, oldest first, and take what
     you tap: an unassigned workplace works by hand, and any free farmer does the job (one without a workplace first).
     When work appears at their own workplace again, they go back after their current job. When every farmer is busy,
     tapped work is refused until one is free.
   - The work runs on game time, so speed ×60 and offline catch-up give the same farm; the welcome-back summary
-    reports what the farmers harvested, sowed, collected, made and built while you were away.
+    reports what the farmers harvested, sowed, collected, made, produced and built while you were away.
 - **Farmhouse and roads:** every farm has a farmhouse (it can't be built or demolished). Idle farmers rest on its bench;
   for a job a farmer walks out of the door **along paths** to the work (0.4 game-s per tile), works there (hoeing,
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. Work on a field, pen or building is refused
@@ -154,7 +168,9 @@ orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
 `window.farm.storage` is `{ goods: { used, capacity }, materials: { used, capacity } }`; each storage building's
-level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`).
+level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`). A `woodcutter`, `quarry`
+or `mine` entry has `state: { cycle, waiting, day, today }`: the cycle being worked (`{ start, duration }` or null),
+the output waiting for room, and what was made on `day`.
 `window.farm.stockpiles` is `{ buildings, sprites }`: `buildings` lists every storing building (farmhouse, finished
 granaries and storehouses) in placement order as `{ id, type, pools, piles, drawn }`, where `pools[pool]` is
 `{ held, capacity }` (its share of the pool's stock), `piles` maps each pile (`crops`, `animal`, `feed`, `goods`, `wood`,
@@ -199,11 +215,13 @@ src/
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
     storage.ts         goods/materials pools: capacity, used, spaceFor (Game.addItem takes only what fits), upgrades
+    resources.ts       woodcutter, quarry, mine: production cycles, output waiting for room, idle reasons
     stockpiles.ts      which stock pile stage each storing building shows (the shared pools split in placement order)
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
+    resourceBuildings.ts woodcutter's lodge, quarry and mine buildables: costs, yields, cycle times
     resources.ts       resource categories (resource bar, stock piles), item → category / pile
     buildables.ts      build menu registry (+ the core Path)
     crops.ts           crop catalogue (with each crop's seasons) + the Field buildable
@@ -236,6 +254,8 @@ src/
     storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade,
                        `window.farm.storage`, the one-time notice for old saves; stock piles in the yards
                        (piles.ts, `window.farm.stockpiles`)
+    resources/         woodcutter's lodge, quarry, mine: work chips/dust, waiting-output bubble, panel
+                       (data: src/data/resourceBuildings.ts, logic: src/logic/resources.ts)
     orders/            📋 Orders HUD button (with badge) and orders panel
     workers/           👨‍🌾 Farmers HUD button, hire and workplace sheet, farmers at work on the map, `window.farm.workers`
                        (data: src/data/workers.ts, logic: src/logic/workers.ts and work.ts; hand work goes through
@@ -318,8 +338,8 @@ a construction site (`obj.site`) until a farmer has built it: no `onClick` and n
 
 A buildable becomes a workplace (a farmer can be assigned; the panel gets the farmer block) by adding its type to
 `isWorkplaceType` in `src/logic/workers.ts`, and its automatic work by a case in `workplaceNext` (`src/logic/work.ts`):
-return `{ task: { kind, workMs, run } }` when there is a job (`run` does it now, as a tap would, and returns whether it
-did) or `{ wait: reason }` when there is none. If its work can appear when a timer ends, add that end time in
+return `{ task: { kind, workMs, run } }` when there is a job (`run(walkMs)` does it now, as a tap would, and returns
+whether it did; `walkMs` is the farmer's walk there, for work that starts on arrival like a resource cycle) or `{ wait: reason }` when there is none. If its work can appear when a timer ends, add that end time in
 `nextWorkEvent`, so the scheduler (and offline catch-up) wakes up then. Game time only: never frames or `Date.now()`.
 
 ### Add a timer
