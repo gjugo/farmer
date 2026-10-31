@@ -156,15 +156,15 @@ describe('harvest', () => {
     expect(stage()).toBe('empty');
     plant(game, field, 'wheat');
     expect(stage()).toBe('seeded');
-    expect(harvest(game, field)).toBeNull(); // not ripe yet
+    expect(harvest(game, field)).toEqual({ ok: false, reason: 'not-ripe' }); // not ripe yet
     expect(game.count('wheat')).toBe(0);
     run(game, CROPS.wheat.growMs);
     expect(stage()).toBe('ripe');
-    expect(harvest(game, field)).toEqual({ crop: CROPS.wheat, qty: 10 });
+    expect(harvest(game, field)).toEqual({ ok: true, crop: CROPS.wheat, qty: 10 });
     expect(game.count('wheat')).toBe(10);
     expect(stage()).toBe('empty');
     expect(field.state).toEqual({ crop: null, timer: null, ploughedAt: 0 }); // still ploughed
-    expect(harvest(game, field)).toBeNull();
+    expect(harvest(game, field)).toEqual({ ok: false, reason: 'not-ripe' });
     expect(game.count('wheat')).toBe(10);
   });
 
@@ -291,7 +291,7 @@ describe('seasons and ploughing', () => {
     plant(game, field, 'wheat');
     game.state.clock.elapsed = WINTER + 1000;
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
-    expect(harvest(game, field)).toEqual({ crop: CROPS.wheat, qty: 10 });
+    expect(harvest(game, field)).toEqual({ ok: true, crop: CROPS.wheat, qty: 10 });
     expect(isPloughed(game.state.clock, field.state)).toBe(false);
   });
 

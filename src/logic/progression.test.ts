@@ -124,7 +124,7 @@ describe('unlocks', () => {
   it('level 1 offers only the field, wheat, chickens and their coop', () => {
     expect(CROP_LIST.filter((c) => c.unlockLevel === 1).map((c) => c.id)).toEqual(['wheat']);
     expect(Object.values(ANIMALS).filter((a) => a.unlockLevel === 1).map((a) => a.id)).toEqual(['chicken']);
-    expect(listBuildMenu().filter((b) => b.unlockLevel === 1).map((b) => b.id).sort()).toEqual(['coop', 'field', 'path']);
+    expect(listBuildMenu().filter((b) => b.unlockLevel === 1).map((b) => b.id).sort()).toEqual(['coop', 'field', 'granary', 'path', 'storehouse']);
   });
 
   it('every animal unlocks no earlier than its pen', () => {
@@ -187,7 +187,7 @@ describe('unlocks', () => {
 });
 
 describe('goals', () => {
-  it('the first goals teach the loop: build a field, harvest 20 wheat, sell 20 wheat', () => {
+  it('the first goals teach the loop: build a field, harvest 20 wheat, build a granary', () => {
     const game = new Game();
     expect(game.progression.claimable()).toBe(0);
     expect(game.place(FIELD, free.x, free.y).ok).toBe(true);
@@ -196,10 +196,10 @@ describe('goals', () => {
     expect(game.progression.goals().map((g) => [g.def.id, g.progress, g.complete])).toEqual([
       ['first-field', 1, true],
       ['harvest-wheat', 20, true],
-      ['sell-wheat', 20, true],
+      ['build-granary', 0, false],
     ]);
-    expect(game.progression.claimable()).toBe(3);
-    expect(game.snapshot().goals.map((g) => `${g.progress}/${g.target}`)).toEqual(['1/1', '20/20', '20/20']);
+    expect(game.progression.claimable()).toBe(2);
+    expect(game.snapshot().goals.map((g) => `${g.progress}/${g.target}`)).toEqual(['1/1', '20/20', '0/1']);
   });
 
   it('claim pays money and XP and fills the slot with the next goal', () => {
@@ -305,7 +305,7 @@ describe('save', () => {
     expect(loaded.progression.goals().map((g) => [g.def.id, g.progress])).toEqual([
       ['first-field', 1],
       ['harvest-wheat', 10],
-      ['sell-wheat', 0],
+      ['build-granary', 0],
     ]);
   });
 

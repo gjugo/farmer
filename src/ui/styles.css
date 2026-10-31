@@ -338,6 +338,56 @@ button {
   font-weight: 700;
 }
 
+/* Storage pools at the top of the inventory: used / capacity bars. */
+.storage-bars {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.storage-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.storage-bar {
+  height: 12px;
+  background: var(--paper-dark);
+  border: 2px solid var(--wood);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.storage-fill {
+  height: 100%;
+  background: linear-gradient(var(--green), var(--green-dark));
+}
+
+.storage-warn .storage-fill {
+  background: linear-gradient(#f2c14e, #d39a1e);
+}
+
+.storage-full .storage-fill {
+  background: linear-gradient(#e0675a, var(--red));
+}
+
+.storage-note {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.storage-warn .storage-note {
+  color: #9a6a00;
+}
+
+.storage-full .storage-note {
+  color: var(--red);
+}
+
 .inventory-list {
   display: grid;
   gap: 6px;

@@ -129,6 +129,7 @@ export class Progression {
     activity.on('bought', ({ item, qty }) => this.count((d) => d.kind === 'buy' && d.item === item, qty));
     activity.on('sold', ({ item, qty }) => this.count((d) => d.kind === 'sell' && (!d.item || d.item === item), qty));
     activity.on('placed', ({ type }) => this.count((d) => d.kind === 'build' && d.type === type, 1));
+    activity.on('upgraded', ({ type }) => this.count((d) => d.kind === 'upgrade' && d.type === type, 1));
     for (const e of ['objectAdded', 'objectRemoved', 'objectChanged', 'land'] as const) events.on(e, () => this.refreshStateGoals());
     events.on('reset', () => this.init());
     this.init();

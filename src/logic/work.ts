@@ -5,7 +5,7 @@ import { findRecipe, isProcessorType } from '../data/processing';
 import { PLOUGH_COST } from '../data/seasons';
 import { COLLECT_WORK_MS, FEED_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
 import * as animals from './animals';
-import { canPloughNow, cropStage, harvest, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
+import { canPloughNow, cropStage, fieldCrop, harvest, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import type { Game } from './game';
 import * as processing from './processing';
 import { findRoute, type Route } from './roads';
@@ -42,7 +42,8 @@ export type WaitReason =
   | 'feed' // hungry animals, but no feed in stock
   | 'no-recipe' // no "Keep making" recipe
   | 'queue-full'
-  | 'inputs'; // the recipe's inputs are not in stock
+  | 'inputs' // the recipe's inputs are not in stock
+  | 'full'; // something is ready, but the granary has no room for it
 
 export type WorkplaceNext = { task: Task } | { wait: WaitReason; cost?: number };
 
@@ -66,7 +67,11 @@ export function plannedCrop(game: Game, fieldId: string): CropDef | null {
 function fieldNext(game: Game, obj: PlacedObject<FieldState>): WorkplaceNext {
   const clock = game.state.clock;
   const stage = cropStage(clock, obj.state);
-  if (stage === 'ripe') return task('harvest', HARVEST_WORK_MS, () => harvest(game, obj) !== null);
+  if (stage === 'ripe') {
+    const crop = fieldCrop(obj.state)!;
+    if (game.spaceFor(crop.harvestItem) < crop.harvestQty) return { wait: 'full' };
+    return task('harvest', HARVEST_WORK_MS, () => harvest(game, obj).ok);
+  }
   if (stage !== 'empty') return { wait: 'growing' };
   if (cropPlanOf(game.state, obj.id) === PLAN_NONE) return { wait: 'no-plan' };
   const crop = plannedCrop(game, obj.id);
@@ -82,21 +87,31 @@ function fieldNext(game: Game, obj: PlacedObject<FieldState>): WorkplaceNext {
 
 function penNext(game: Game, obj: PlacedObject<animals.PenState>): WorkplaceNext {
   const clock = game.state.clock;
-  if (animals.readyCount(clock, obj) > 0) return task('collect', COLLECT_WORK_MS, () => Object.keys(animals.collect(game, obj)).length > 0);
   const list = animals.animalsOf(obj);
+  const ready = list.filter((a) => animals.animalStatus(clock, a) === 'ready');
+  if (ready.some((a) => game.spaceFor(ANIMALS[a.kind].product) > 0)) {
+    return task('collect', COLLECT_WORK_MS, () => Object.keys(animals.collect(game, obj)).length > 0);
+  }
+  // Products left waiting for room: feed the hungry ones meanwhile, else say the granary is full.
+  const wait = (reason: WaitReason): WorkplaceNext => ({ wait: ready.length > 0 ? 'full' : reason });
   if (list.length === 0) return { wait: 'empty' };
   const hungry = list.filter((a) => animals.animalStatus(clock, a) === 'hungry');
-  if (hungry.length === 0) return { wait: 'fed' };
-  if (!hungry.some((a) => ANIMALS[a.kind].feedPerCycle <= game.count('feed'))) return { wait: 'feed' };
+  if (hungry.length === 0) return wait('fed');
+  if (!hungry.some((a) => ANIMALS[a.kind].feedPerCycle <= game.count('feed'))) return wait('feed');
   return task('feed', FEED_WORK_MS, () => animals.feedAll(game, obj) > 0);
 }
 
 function processorNext(game: Game, obj: PlacedObject<processing.ProcessorState>): WorkplaceNext {
-  if (processing.readyCount(obj) > 0) return task('collect', COLLECT_WORK_MS, () => Object.keys(processing.collect(game, obj)).length > 0);
+  const ready = Object.entries(obj.state.ready).filter(([, n]) => n > 0);
+  if (ready.some(([item]) => game.spaceFor(item) > 0)) {
+    return task('collect', COLLECT_WORK_MS, () => Object.keys(processing.collect(game, obj)).length > 0);
+  }
+  // Goods left waiting for room: keep the queue going meanwhile, else say the granary is full.
+  const wait = (reason: WaitReason): WorkplaceNext => ({ wait: ready.length > 0 ? 'full' : reason });
   const recipe = keepMakingOf(game.state, obj.id);
-  if (!recipe || !findRecipe(obj.type, recipe)) return { wait: 'no-recipe' };
+  if (!recipe || !findRecipe(obj.type, recipe)) return wait('no-recipe');
   const check = processing.checkStart(game, obj, recipe);
-  if (!check.ok) return { wait: check.reason === 'queue-full' ? 'queue-full' : 'inputs' };
+  if (!check.ok) return wait(check.reason === 'queue-full' ? 'queue-full' : 'inputs');
   return task('load', LOAD_WORK_MS, () => processing.startJob(game, obj, recipe).ok);
 }
 

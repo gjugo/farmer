@@ -107,23 +107,26 @@ export function feedAll(game: Game, obj: PlacedObject<PenState>): number {
   return fed;
 }
 
-/** Buys a pack of feed. Returns false (nothing changes) when the player is short. */
-export function buyFeed(game: Game): boolean {
-  if (!game.spend(FEED_PACK.price)) return false;
+export type BuyFeedResult = { ok: true } | { ok: false; reason: 'money' | 'full' };
+
+/** Buys a pack of feed. Refused (nothing changes) when the player is short or the granaries can't take the whole pack. */
+export function buyFeed(game: Game): BuyFeedResult {
+  if (game.spaceFor('feed') < FEED_PACK.qty) return { ok: false, reason: 'full' };
+  if (!game.spend(FEED_PACK.price)) return { ok: false, reason: 'money' };
   game.addItem('feed', FEED_PACK.qty);
-  return true;
+  return { ok: true };
 }
 
 /**
- * Moves every finished product into the inventory; those animals become hungry
- * again. Returns itemId → amount collected (empty when nothing was ready).
+ * Moves finished products into the inventory, as many as the granaries have room for; those animals become
+ * hungry again. The rest stay ready in the pen (see `readyCount`). Returns itemId → amount collected.
  */
 export function collect(game: Game, obj: PlacedObject<PenState>): Record<string, number> {
   const got: Record<string, number> = {};
   for (const a of animalsOf(obj)) {
     if (animalStatus(game.state.clock, a) !== 'ready') continue;
     const product = ANIMALS[a.kind].product;
-    game.addItem(product, 1);
+    if (game.addItem(product, 1) === 0) continue;
     got[product] = (got[product] ?? 0) + 1;
     a.timer = null;
   }

@@ -124,19 +124,23 @@ export function plant(game: Game, obj: PlacedObject<FieldState>, cropId: string)
   return { ok: true };
 }
 
+export type HarvestResult = { ok: true; crop: CropDef; qty: number } | { ok: false; reason: 'not-ripe' | 'full' };
+
 /**
  * Moves a ripe crop to the inventory and empties the field (the soil stays ploughed until the frost).
- * Returns what was harvested, or null if not ripe. A ripe crop keeps in the field, even into winter.
+ * A ripe crop keeps in the field, even into winter. Refused (nothing changes) when it isn't ripe, or when
+ * the granaries have no room for the whole harvest: then the crop stays ripe in the field.
  */
-export function harvest(game: Game, obj: PlacedObject<FieldState>): { crop: CropDef; qty: number } | null {
+export function harvest(game: Game, obj: PlacedObject<FieldState>): HarvestResult {
   const crop = fieldCrop(obj.state);
-  if (!crop || cropStage(game.state.clock, obj.state) !== 'ripe') return null;
+  if (!crop || cropStage(game.state.clock, obj.state) !== 'ripe') return { ok: false, reason: 'not-ripe' };
+  if (game.spaceFor(crop.harvestItem) < crop.harvestQty) return { ok: false, reason: 'full' };
   game.addItem(crop.harvestItem, crop.harvestQty);
   obj.state.crop = null;
   obj.state.timer = null;
   game.touch(obj);
   game.activity.emit('harvested', { item: crop.harvestItem, qty: crop.harvestQty });
-  return { crop, qty: crop.harvestQty };
+  return { ok: true, crop, qty: crop.harvestQty };
 }
 
 /** "1:05" / "0:30" for a game-time duration, rounded up to whole seconds. */

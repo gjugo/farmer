@@ -131,13 +131,20 @@ export function readyCount(obj: PlacedObject<ProcessorState>): number {
   return Object.values(obj.state.ready).reduce((a, b) => a + b, 0);
 }
 
-/** Moves all finished output into the inventory. Returns what was collected. */
+/**
+ * Moves finished output into the inventory, as much as the granaries have room for; the rest stays ready in
+ * the building (see `readyCount`). Returns what was collected.
+ */
 export function collect(game: Game, obj: PlacedObject<ProcessorState>): Inventory {
   settle(game.state.clock, obj);
-  const got = obj.state.ready;
+  const got: Inventory = {};
+  for (const [item, qty] of Object.entries(obj.state.ready)) {
+    const n = game.addItem(item, qty);
+    if (n === 0) continue;
+    got[item] = n;
+    inventory.remove(obj.state.ready, item, n);
+  }
   if (Object.keys(got).length === 0) return {};
-  obj.state.ready = {};
-  for (const [item, qty] of Object.entries(got)) game.addItem(item, qty);
   game.touch(obj);
   for (const [item, qty] of Object.entries(got)) game.activity.emit('made', { item, qty });
   return got;
