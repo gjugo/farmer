@@ -128,6 +128,29 @@ export function mapBox(width: number, height: number): Box {
   return footprintBox({ x: 0, y: 0, w: width, h: height });
 }
 
+/** Tiles of land shown around the farm in the opening view. */
+export const OPENING_MARGIN = 2;
+/** The opening view never draws a tile narrower than this many screen pixels, so tiles stay easy to tap. */
+export const MIN_TILE_PX = 40;
+
+/**
+ * The opening camera view: zoom and world centre that fit `area` (the farm's tiles) plus `OPENING_MARGIN` tiles of
+ * land around it into a `viewW` × `viewH` viewport. When that would draw tiles narrower than `MIN_TILE_PX` (a phone),
+ * it zooms in only that far instead and centres on `focus` (a grid point, e.g. the farmhouse).
+ */
+export function openingView(area: Footprint, viewW: number, viewH: number, focus: Point): { zoom: number; centre: Point } {
+  const box = footprintBox({
+    x: area.x - OPENING_MARGIN,
+    y: area.y - OPENING_MARGIN,
+    w: area.w + 2 * OPENING_MARGIN,
+    h: area.h + 2 * OPENING_MARGIN,
+  });
+  const fit = Math.min(viewW / box.width, viewH / box.height);
+  const tappable = MIN_TILE_PX / ISO_W;
+  if (fit < tappable) return { zoom: tappable, centre: gridToWorld(focus.x, focus.y) };
+  return { zoom: fit, centre: { x: box.left + box.width / 2, y: box.top + box.height / 2 } };
+}
+
 /**
  * Depth key of a footprint: its front-most (bottom) corner, i.e. how far down the screen it reaches.
  * Good for flat things; tall things need `sortFootprints`, because a long footprint can reach further

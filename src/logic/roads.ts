@@ -1,6 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { FARMHOUSE, FARMHOUSE_DOOR, PATH } from '../data/farmhouse';
-import { START_LAND } from './constants';
+import { START_LAYOUT } from './constants';
 // The starting fields' new-game setup must run before ours, which lays the road to them.
 import './crops';
 import { inBounds, isOwned } from './land';
@@ -35,7 +35,7 @@ export interface Route {
 }
 
 /** Right of the starting fields, door onto the lane in front of them. */
-export const STARTING_FARMHOUSE: Tile = { x: START_LAND.x + 7, y: START_LAND.y + 1 };
+export const STARTING_FARMHOUSE: Tile = { x: START_LAYOUT.x + 6, y: START_LAYOUT.y };
 
 const key = (x: number, y: number) => `${x},${y}`;
 const STEPS = [

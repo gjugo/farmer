@@ -30,9 +30,9 @@ import {
 import { maxLevelState } from './test-utils';
 import type { GameState, PlacedObject } from './types';
 
-// Free land below the starting fields, the farmhouse and the road between them.
+// Free land in the starting land's top-left corner, above the starting fields and the farmhouse.
 const fx = START_LAND.x;
-const fy = START_LAND.y + 4;
+const fy = START_LAND.y;
 
 /** A top-level farm holding exactly `inventory`, with `money`. */
 function farm(inventory: Record<string, number> = {}, money = 10_000): Game {

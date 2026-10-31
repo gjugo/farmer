@@ -6,9 +6,25 @@ import type { GameState } from './types';
  */
 const slices = new Map<string, () => unknown>();
 
-export function registerStateSlice<T>(key: string, defaults: () => T): void {
+/**
+ * Moves every tile coordinate a saved slice holds by (dx, dy) and returns the moved slice. Save migrations
+ * that move the farm on the map (e.g. when the map grew) call it on raw, untrusted saved data.
+ */
+export type SliceShift = (saved: unknown, dx: number, dy: number) => unknown;
+const shifts = new Map<string, SliceShift>();
+
+/** Registers a slice's defaults and, when the slice holds tile coordinates, how to move them. */
+export function registerStateSlice<T>(key: string, defaults: () => T, shift?: SliceShift): void {
   if (slices.has(key)) throw new Error(`State slice "${key}" is already registered`);
   slices.set(key, defaults);
+  if (shift) shifts.set(key, shift);
+}
+
+/** `ext` with every slice's tile coordinates moved by (dx, dy). Slices without coordinates stay as they are. */
+export function shiftSlices(ext: Record<string, unknown>, dx: number, dy: number): Record<string, unknown> {
+  const out = { ...ext };
+  for (const [key, shift] of shifts) if (out[key] !== undefined) out[key] = shift(out[key], dx, dy);
+  return out;
 }
 
 export function getSlice<T>(state: GameState, key: string): T {
