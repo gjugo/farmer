@@ -3,7 +3,7 @@ import { getBuildable } from './buildables';
 /**
  * Farmers: the hands that do the farm work. A job keeps one farmer busy for a while
  * (game time); when every farmer is busy hand-ordered work is refused until one is free.
- * A farmer can be assigned to a workplace (a field, pen or processing building) and then
+ * A farmer can be assigned to a workplace (a field, pen, processing or resource building) and then
  * does its work by themselves; with nothing to do there they build construction sites.
  */
 
@@ -17,7 +17,7 @@ export const MAX_FARMERS = 20;
 export const BASE_HIRE_COST = 150;
 export const HIRE_COST_GROWTH = 1.2;
 
-export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'feed' | 'collect' | 'load';
+export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'feed' | 'collect' | 'load' | 'chop' | 'quarry' | 'mine';
 
 export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   build: { label: 'Building', icon: '🔨' },
@@ -27,6 +27,10 @@ export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   feed: { label: 'Feeding animals', icon: '🌰' },
   collect: { label: 'Collecting', icon: '🧺' },
   load: { label: 'Starting a batch', icon: '⚙️' },
+  // Resource buildings: the work is one production cycle (see `src/data/resources.ts`).
+  chop: { label: 'Cutting wood', icon: '🪓' },
+  quarry: { label: 'Quarrying stone', icon: '⛏️' },
+  mine: { label: 'Mining iron', icon: '⚒️' },
 };
 
 /** Game milliseconds a farmer is busy for each job (building: see `buildWorkMs`). */
@@ -34,7 +38,10 @@ export const PLOUGH_WORK_MS = 40_000;
 export const PLANT_WORK_MS = 30_000;
 export const HARVEST_WORK_MS = 40_000;
 export const FEED_WORK_MS = 20_000;
-/** Collecting eggs, milk or wool from a pen, or finished goods from a processing building (assigned farmers only). */
+/**
+ * Collecting eggs, milk or wool from a pen, finished goods from a processing building, or materials left waiting in a
+ * resource building (assigned farmers only).
+ */
 export const COLLECT_WORK_MS = 20_000;
 /** Carrying a recipe's inputs into a processing building to queue a batch (assigned farmers only). */
 export const LOAD_WORK_MS = 20_000;

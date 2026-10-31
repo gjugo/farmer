@@ -17,7 +17,7 @@ function goods(inv: Record<string, number>): string {
     .join(', ');
 }
 
-/** What the farmers did while away: harvested, sown (times a crop was sown), collected, made, built. */
+/** What the farmers did while away: harvested, sown (times a crop was sown), collected, made, produced, built. */
 function workLines(result: CatchUpResult): string[] {
   const { work } = result;
   if (!work) return [];
@@ -30,6 +30,7 @@ function workLines(result: CatchUpResult): string[] {
   if (sown.length) lines.push(`👨‍🌾 Sowed ${sown.join(', ')}`);
   if (Object.keys(work.collected).length) lines.push(`👨‍🌾 Collected ${goods(work.collected)}`);
   if (Object.keys(work.made).length) lines.push(`👨‍🌾 Made ${goods(work.made)}`);
+  if (work.materials && Object.keys(work.materials).length) lines.push(`👨‍🌾 Produced ${goods(work.materials)}`);
   const built = Object.entries(work.built).map(([type, n]) => `${getBuildable(type)?.name ?? type}${n > 1 ? ` ×${n}` : ''}`);
   if (built.length) lines.push(`🔨 Built ${built.join(', ')}`);
   return lines;

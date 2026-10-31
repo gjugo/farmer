@@ -2,6 +2,7 @@ import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD } from '../data/crops';
 import { getItem } from '../data/items';
 import { isProcessorType, PROCESSORS } from '../data/processing';
+import { isResourceType, RESOURCES } from '../data/resources';
 import { seasonNames } from '../data/seasons';
 import { JOBS, type JobKind } from '../data/workers';
 import { canPloughNow, formatDuration } from '../logic/crops';
@@ -118,6 +119,10 @@ export function waitText(game: Game, next: Exclude<WorkplaceNext, { task: unknow
       return 'Waiting for ingredients';
     case 'full':
       return fullMessage('goods');
+    case 'cycle':
+      return 'Finishing the cycle under way';
+    case 'storehouse-full':
+      return fullMessage('materials');
   }
 }
 
@@ -187,9 +192,13 @@ export function workplacePanel(ctx: FarmContext, obj: PlacedObject): Pick<PanelS
   const lines: string[] = [];
   const actions: PanelAction[] = [];
   if (farmer === null) {
-    lines.push('👨‍🌾 No farmer works here: tap to have any free farmer do the work.');
+    lines.push(
+      isResourceType(obj.type)
+        ? `👨‍🌾 Assign a farmer to ${RESOURCES[obj.type].verb}: nothing is made without one.`
+        : '👨‍🌾 No farmer works here: tap to have any free farmer do the work.',
+    );
     actions.push({
-      label: '👨‍🌾 Assign a farmer',
+      label: isResourceType(obj.type) ? `👨‍🌾 Assign a farmer to ${RESOURCES[obj.type].verb}` : '👨‍🌾 Assign a farmer',
       variant: 'secondary',
       onClick: () => {
         const r = assignFarmer(game, obj.id);

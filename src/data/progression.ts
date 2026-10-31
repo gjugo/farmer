@@ -31,6 +31,8 @@ export type GoalTask =
   | { kind: 'harvest'; item: KnownItemId; count: number }
   | { kind: 'collect'; item: KnownItemId; count: number }
   | { kind: 'make'; item: KnownItemId; count: number }
+  /** Make `count` of a material in resource buildings (a woodcutter's lodge, quarry or mine). */
+  | { kind: 'produce'; item: KnownItemId; count: number }
   /** Sell `count` items (of `item`, or of anything). */
   | { kind: 'sell'; item?: KnownItemId; count: number }
   /** Buy `count` of `item` at the Market. */
@@ -57,7 +59,7 @@ export type GoalDef = GoalTask & {
 
 /**
  * Goals in the order they are offered. The first three teach the core loop;
- * later ones walk through animals, processing and land in unlock order.
+ * later ones walk through animals, materials, processing and land in unlock order.
  */
 export const GOALS: readonly GoalDef[] = [
   { id: 'first-field', title: 'Build a field', icon: '🟫', kind: 'build', type: 'field', count: 1, reward: { money: 30, xp: 10 } },
@@ -77,7 +79,11 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'make-cheese', title: 'Make 3 cheese', icon: '🧀', kind: 'make', item: 'cheese', count: 3, reward: { money: 150, xp: 60 } },
   { id: 'earn-1000', title: 'Earn $1,000 from sales', icon: '💰', kind: 'earn', count: 1000, reward: { money: 150, xp: 75 } },
   { id: 'buy-land', title: 'Buy a plot of land', icon: '🪧', kind: 'own-parcels', count: 1, reward: { money: 200, xp: 75 } },
+  { id: 'build-woodcutter', title: "Build a woodcutter's lodge", icon: '🪓', kind: 'own-buildings', type: 'woodcutter', count: 1, reward: { money: 50, xp: 20 } },
+  { id: 'produce-wood', title: 'Produce 20 wood', icon: '🪵', kind: 'produce', item: 'wood', count: 20, reward: { money: 60, xp: 25 } },
+  { id: 'build-quarry', title: 'Build a quarry', icon: '⛏️', kind: 'own-buildings', type: 'quarry', count: 1, reward: { money: 80, xp: 30 } },
   { id: 'make-feed', title: 'Mill 12 feed', icon: '🌰', kind: 'make', item: 'feed', count: 12, reward: { money: 150, xp: 75 } },
+  { id: 'mine-iron', title: 'Mine 5 iron', icon: '🔩', kind: 'produce', item: 'iron', count: 5, reward: { money: 200, xp: 100 } },
   { id: 'own-sheep', title: 'Own 2 sheep', icon: '🐑', kind: 'own-animals', animal: 'sheep', count: 2, reward: { money: 200, xp: 100 } },
   { id: 'weave-cloth', title: 'Weave 2 cloth', icon: '🧵', kind: 'make', item: 'cloth', count: 2, reward: { money: 250, xp: 120 } },
 ];
