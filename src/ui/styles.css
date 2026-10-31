@@ -1093,6 +1093,21 @@ button {
   border-bottom: 2px dashed var(--paper-dark);
 }
 
+.weather-settings {
+  margin-bottom: 16px;
+  padding-bottom: 4px;
+  border-bottom: 2px dashed var(--paper-dark);
+}
+
+/* A snapshot of the farm in the old season, fading out over the new one (src/features/seasons). */
+.season-fade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .slider-row {
   display: grid;
   grid-template-columns: 72px 1fr 36px;
