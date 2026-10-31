@@ -3,11 +3,11 @@ import { advance, createClock, dayOf, MAX_FRAME_MS, startTimer, timerDone, timer
 import { DAY_MS } from './constants';
 
 describe('clock', () => {
-  it('a day lasts 4 real minutes at x1', () => {
-    expect(DAY_MS).toBe(240_000);
+  it('a day lasts 8 real minutes at x1', () => {
+    expect(DAY_MS).toBe(480_000);
     const c = createClock();
     expect(dayOf(c)).toBe(1);
-    for (let i = 0; i < 240_000 / 16; i++) advance(c, 16);
+    for (let i = 0; i < 480_000 / 16; i++) advance(c, 16);
     expect(dayOf(c)).toBe(2);
     expect(timeOfDay(c)).toBeCloseTo(0);
   });

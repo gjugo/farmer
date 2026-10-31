@@ -3,8 +3,8 @@ export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
 
 export type Season = (typeof SEASONS)[number];
 
-/** Game days per season: a year is 8 days (32 real minutes at ×1). */
-export const SEASON_DAYS = 2;
+/** Game days per season: a season is 32 real minutes at ×1, a year 16 days (about 2 hours). */
+export const SEASON_DAYS = 4;
 
 export interface SeasonDef {
   name: string;
@@ -14,9 +14,9 @@ export interface SeasonDef {
 }
 
 export const SEASON_INFO: Record<Season, SeasonDef> = {
-  spring: { name: 'Spring', icon: '🌸', greeting: 'The ground has thawed: plough your fields and sow!' },
-  summer: { name: 'Summer', icon: '🌻', greeting: 'Long, warm days: carrots wait for the cool of autumn.' },
-  autumn: { name: 'Autumn', icon: '🍂', greeting: 'Last chance to grow crops before the frost.' },
+  spring: { name: 'Spring', icon: '🌸', greeting: 'The ground has thawed: plough your fields and sow! Corn needs half a season, so sow it early.' },
+  summer: { name: 'Summer', icon: '🌻', greeting: 'Long, warm days for wheat and corn: carrots wait for the cool of autumn.' },
+  autumn: { name: 'Autumn', icon: '🍂', greeting: 'Last chance to grow crops before the frost: sow early, a late crop will not ripen in time.' },
   winter: { name: 'Winter', icon: '❄️', greeting: 'The ground is frozen: no ploughing or sowing until spring.' },
 };
 

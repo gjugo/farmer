@@ -98,44 +98,44 @@ describe('growth', () => {
   it('goes seeded → sprout → growing → ripe over the grow time', () => {
     const game = new Game(maxLevelState());
     const field = firstField(game);
-    plant(game, field, 'wheat'); // 30 s
+    plant(game, field, 'wheat'); // 8 min
     const stage = () => cropStage(game.state.clock, field.state);
     expect(stage()).toBe('seeded');
-    run(game, 7_000);
+    run(game, 119_000);
     expect(stage()).toBe('seeded');
-    run(game, 1_000); // 8 s
+    run(game, 1_000); // 2 min
     expect(stage()).toBe('sprout');
-    run(game, 10_000); // 18 s
+    run(game, 168_000); // 4:48
     expect(stage()).toBe('growing');
     expect(growthProgress(game.state.clock, field.state)).toBeCloseTo(0.6);
-    expect(formatDuration(timeToRipe(game.state.clock, field.state))).toBe('0:12');
-    run(game, 11_900);
+    expect(formatDuration(timeToRipe(game.state.clock, field.state))).toBe('3:12');
+    run(game, 191_900);
     expect(stage()).toBe('growing');
-    run(game, 100); // 30 s
+    run(game, 100); // 8 min
     expect(stage()).toBe('ripe');
     expect(timeToRipe(game.state.clock, field.state)).toBe(0);
   });
 
-  it('grows 10× faster at debug speed ×10', () => {
+  it('grows 300× faster at debug speed ×300', () => {
     const game = new Game(maxLevelState());
     const field = firstField(game);
-    plant(game, field, 'corn'); // 60 s of game time
-    game.setSpeed(10);
-    for (let i = 0; i < 59; i++) game.tick(100); // 5.9 s real
+    plant(game, field, 'corn'); // 16 min of game time
+    game.setSpeed(300);
+    for (let i = 0; i < 31; i++) game.tick(100); // 3.1 s real
     expect(cropStage(game.state.clock, field.state)).toBe('growing');
-    game.tick(100); // 6 s real
+    game.tick(100); // 3.2 s real
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
   });
 
   it('keeps the crop and its progress across save and load', () => {
     const game = new Game(maxLevelState());
     plant(game, firstField(game), 'carrot');
-    run(game, 20_000);
+    run(game, 200_000);
     const loaded = new Game(deserialize(serialize(game.state)));
     const field = firstField(loaded);
     expect(field.state.crop).toBe('carrot');
-    expect(growthProgress(loaded.state.clock, field.state)).toBeCloseTo(20 / 45);
-    run(loaded, 25_000);
+    expect(growthProgress(loaded.state.clock, field.state)).toBeCloseTo(200 / 600);
+    run(loaded, 400_000);
     expect(cropStage(loaded.state.clock, field.state)).toBe('ripe');
   });
 
@@ -159,22 +159,23 @@ describe('harvest', () => {
     expect(game.count('wheat')).toBe(0);
     run(game, CROPS.wheat.growMs);
     expect(stage()).toBe('ripe');
-    expect(harvest(game, field)).toEqual({ crop: CROPS.wheat, qty: 4 });
-    expect(game.count('wheat')).toBe(4);
+    expect(harvest(game, field)).toEqual({ crop: CROPS.wheat, qty: 10 });
+    expect(game.count('wheat')).toBe(10);
     expect(stage()).toBe('empty');
     expect(field.state).toEqual({ crop: null, timer: null, ploughedAt: 0 }); // still ploughed
     expect(harvest(game, field)).toBeNull();
-    expect(game.count('wheat')).toBe(4);
+    expect(game.count('wheat')).toBe(10);
   });
 
-  it('yields 4 of each crop', () => {
+  it('yields 10 wheat, 10 carrots or 12 corn', () => {
+    const yields: Record<string, number> = { wheat: 10, carrot: 10, corn: 12 };
     for (const crop of Object.values(CROPS)) {
       const game = new Game(maxLevelState());
       const field = firstField(game);
       plant(game, field, crop.id);
       run(game, crop.growMs);
       harvest(game, field);
-      expect(game.count(crop.harvestItem)).toBe(4);
+      expect(game.count(crop.harvestItem)).toBe(yields[crop.id]);
     }
   });
 });
@@ -240,6 +241,14 @@ describe('seasons and ploughing', () => {
     expect(plant(game, field, 'wheat')).toEqual({ ok: true });
   });
 
+  it('each crop takes a real part of a season and still fits in one: wheat a quarter, carrot a third, corn half', () => {
+    expect(CROPS.wheat.growMs / SEASON_MS).toBeCloseTo(1 / 4);
+    expect(CROPS.carrot.growMs / SEASON_MS).toBeCloseTo(1 / 3, 1);
+    expect(CROPS.corn.growMs / SEASON_MS).toBeCloseTo(1 / 2);
+    // Sown at the start of any of its seasons, every crop is ripe before that season ends.
+    for (const crop of Object.values(CROPS)) expect(crop.growMs).toBeLessThan(SEASON_MS);
+  });
+
   it('each crop is sown only in its seasons', () => {
     const clock = { elapsed: 0, speed: 1 };
     const sowable = (at: number) => {
@@ -281,7 +290,7 @@ describe('seasons and ploughing', () => {
     plant(game, field, 'wheat');
     game.state.clock.elapsed = WINTER + 1000;
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
-    expect(harvest(game, field)).toEqual({ crop: CROPS.wheat, qty: 4 });
+    expect(harvest(game, field)).toEqual({ crop: CROPS.wheat, qty: 10 });
     expect(isPloughed(game.state.clock, field.state)).toBe(false);
   });
 

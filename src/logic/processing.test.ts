@@ -59,14 +59,14 @@ describe('recipe validation', () => {
 });
 
 describe('starting jobs', () => {
-  it('cheese: consumes 2 milk at once, ready after 90 s, collect adds 1 cheese', () => {
+  it('cheese: consumes 2 milk at once, ready after 8 min, collect adds 1 cheese', () => {
     const { game, obj } = setup('dairy');
     game.addItem('milk', 2);
     expect(startJob(game, obj, 'cheese')).toEqual({ ok: true });
     expect(game.count('milk')).toBe(0);
     expect(obj.state.queue).toHaveLength(1);
 
-    expect(wait(game, obj, 89_999)).toBe(0);
+    expect(wait(game, obj, 479_999)).toBe(0);
     expect(readyCount(obj)).toBe(0);
     expect(wait(game, obj, 1)).toBe(1);
     expect(obj.state.ready).toEqual({ cheese: 1 });
@@ -95,7 +95,7 @@ describe('starting jobs', () => {
     expect(startJob(game, obj, 'bread').ok).toBe(true);
     expect(game.count('wheat')).toBe(0);
     expect(game.count('egg')).toBe(0);
-    wait(game, obj, 60_000);
+    wait(game, obj, 300_000);
     expect(collect(game, obj)).toEqual({ bread: 1 });
   });
 
@@ -107,7 +107,7 @@ describe('starting jobs', () => {
     expect(startJob(game, obj, 'feed-from-corn').ok).toBe(true);
     expect(game.count('wheat')).toBe(0);
     expect(game.count('corn')).toBe(0);
-    wait(game, obj, 40_000);
+    wait(game, obj, 240_000);
     expect(collect(game, obj)).toEqual({ feed: 5 });
     expect(game.count('feed')).toBe(5);
   });
@@ -133,21 +133,21 @@ describe('queue', () => {
   it('works jobs one at a time, in order', () => {
     const { game, obj } = setup('dairy');
     game.addItem('milk', 3);
-    startJob(game, obj, 'cheese'); // 90 s
-    startJob(game, obj, 'butter'); // 45 s
+    startJob(game, obj, 'cheese'); // 8 min
+    startJob(game, obj, 'butter'); // 4 min
     expect(obj.state.queue.map((j) => j.recipe)).toEqual(['cheese', 'butter']);
     expect(obj.state.queue[1].timer).toBeNull();
 
-    wait(game, obj, 45_000); // butter must not have run in parallel
+    wait(game, obj, 240_000); // butter must not have run in parallel
     expect(readyCount(obj)).toBe(0);
     expect(currentProgress(game.state.clock, obj)).toBeCloseTo(0.5);
 
-    wait(game, obj, 45_000);
+    wait(game, obj, 240_000);
     expect(obj.state.ready).toEqual({ cheese: 1 });
     expect(obj.state.queue.map((j) => j.recipe)).toEqual(['butter']);
     expect(currentProgress(game.state.clock, obj)).toBe(0);
 
-    wait(game, obj, 45_000);
+    wait(game, obj, 240_000);
     expect(obj.state.ready).toEqual({ cheese: 1, butter: 1 });
     expect(currentProgress(game.state.clock, obj)).toBeNull();
   });
@@ -158,16 +158,16 @@ describe('queue', () => {
     startJob(game, obj, 'butter');
     startJob(game, obj, 'butter');
     startJob(game, obj, 'butter');
-    expect(wait(game, obj, 100_000)).toBe(2); // 2 × 45 s done, third 10 s in
+    expect(wait(game, obj, 540_000)).toBe(2); // 2 × 4 min done, third 1 min in
     expect(obj.state.ready).toEqual({ butter: 2 });
-    expect(currentProgress(game.state.clock, obj)).toBeCloseTo(10 / 45);
+    expect(currentProgress(game.state.clock, obj)).toBeCloseTo(60 / 240);
   });
 
   it('a job queued while idle starts from now, not from when the last one ended', () => {
     const { game, obj } = setup('dairy');
     game.addItem('milk', 2);
     startJob(game, obj, 'butter');
-    wait(game, obj, 200_000);
+    wait(game, obj, 1_000_000);
     startJob(game, obj, 'butter');
     expect(currentProgress(game.state.clock, obj)).toBe(0);
   });
@@ -179,7 +179,7 @@ describe('save and load', () => {
     game.addItem('milk', 3);
     startJob(game, obj, 'cheese');
     startJob(game, obj, 'butter');
-    wait(game, obj, 30_000);
+    wait(game, obj, 160_000);
 
     const loaded = deserialize(serialize(game.state));
     const game2 = new Game(loaded);
@@ -187,7 +187,7 @@ describe('save and load', () => {
     sanitize(obj2, game2.state.clock);
     expect(obj2.state.queue.map((j) => j.recipe)).toEqual(['cheese', 'butter']);
     expect(currentProgress(game2.state.clock, obj2)).toBeCloseTo(1 / 3);
-    wait(game2, obj2, 60_000);
+    wait(game2, obj2, 320_000);
     expect(obj2.state.ready).toEqual({ cheese: 1 });
   });
 
@@ -199,7 +199,7 @@ describe('save and load', () => {
     };
     sanitize(obj, game.state.clock);
     expect(obj.state.queue.map((j) => j.recipe)).toEqual(['butter', 'cheese']);
-    expect(obj.state.queue[0].timer).toEqual({ start: game.now, duration: 45_000 });
+    expect(obj.state.queue[0].timer).toEqual({ start: game.now, duration: 240_000 });
     expect(obj.state.queue[1].timer).toBeNull();
     expect(obj.state.ready).toEqual({ cheese: 2 });
   });

@@ -93,18 +93,18 @@ describe('offline catch-up', () => {
     const game = farm();
     const dairy = place<ProcessorState>(game, 'dairy', 0, 0);
     game.addItem('milk', 5);
-    startJob(game, dairy, 'cheese'); // 90 s
-    startJob(game, dairy, 'butter'); // 45 s
-    startJob(game, dairy, 'cheese'); // 90 s
+    startJob(game, dairy, 'cheese'); // 8 min
+    startJob(game, dairy, 'butter'); // 4 min
+    startJob(game, dairy, 'cheese'); // 8 min
     expect(dairy.state.queue).toHaveLength(QUEUE_LIMIT);
 
-    const r = catchUp(game.state, 90_000 + 45_000 + 10_000);
+    const r = catchUp(game.state, 480_000 + 240_000 + 10_000);
 
     expect(r.jobsFinished).toBe(2);
     expect(r.produced).toEqual({ cheese: 1, butter: 1 });
     expect(dairy.state.ready).toEqual({ cheese: 1, butter: 1 });
     // The last cheese started exactly when the butter finished, so 10 s of it are done.
-    expect(dairy.state.queue).toEqual([{ recipe: 'cheese', timer: { start: 135_000, duration: 90_000 } }]);
+    expect(dairy.state.queue).toEqual([{ recipe: 'cheese', timer: { start: 720_000, duration: 480_000 } }]);
     expect(game.count('milk')).toBe(0); // inputs were taken when queued, as in play
   });
 

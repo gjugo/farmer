@@ -183,7 +183,7 @@ function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Panel
         return { label: `📅 ${c.icon} ${c.name} · ${why}`, variant: 'secondary', disabled: true, onClick: () => {} };
       }
       return {
-        label: `${c.icon} ${c.name} · $${c.plantCost} · ${c.growMs / 1000}s → ${c.harvestQty} ${item?.name ?? c.name}`,
+        label: `${c.icon} ${c.name} · $${c.plantCost} · ${formatDuration(c.growMs)} → ${c.harvestQty} ${item?.name ?? c.name}`,
         disabled: !game.canAfford(c.plantCost),
         onClick: () => {
           withFarmer(ctx, 'plant', obj, PLANT_WORK_MS, () => {

@@ -85,7 +85,7 @@ describe('Game.place / demolish', () => {
     const g = new Game();
     const days: number[] = [];
     g.events.on('day', (d) => days.push(d));
-    g.setSpeed(1000);
+    g.setSpeed(2000);
     g.tick(240);
     expect(days).toEqual([2]);
     expect(g.day).toBe(2);
