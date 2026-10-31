@@ -62,14 +62,25 @@ export function grassArt(x: number, y: number): string {
 }
 
 /**
- * Rich soil grows lusher grass: its tiles are drawn with this tint (a multiply: a touch greener and deeper), in every
- * season. Normal and poor ground are drawn as they are.
+ * Rich soil grows lusher grass: its tiles are drawn with this tint (a multiply). Greener and deeper while the grass
+ * grows, a softer olive on autumn's gold, and only a faint cool shade on winter's snow (green there reads as mint).
+ * Normal and poor ground are drawn as they are.
  */
-export const RICH_GROUND_TINT = 0xd4ecc4;
+export const RICH_GROUND_TINT: Record<Season, number> = {
+  spring: 0xd4ecc4,
+  summer: 0xd4ecc4,
+  autumn: 0xe0e8c8,
+  winter: 0xe6ecf2,
+};
 
-/** The tint of a ground tile of soil quality `quality` (percentage points, see `src/logic/soil.ts`). */
-export function groundTint(quality: number): number {
-  return soilBand(quality) === 'rich' ? RICH_GROUND_TINT : 0xffffff;
+/** The tint of a ground tile of soil quality `quality` (percentage points, see `src/logic/soil.ts`) in `season`. */
+export function groundTint(quality: number, season: Season): number {
+  return soilBand(quality) === 'rich' ? RICH_GROUND_TINT[season] : 0xffffff;
+}
+
+/** A ground tile's tint `tint` (from `groundTint`) as drawn in `season` instead. */
+export function seasonalGroundTint(tint: number, season: Season): number {
+  return Object.values(RICH_GROUND_TINT).includes(tint) ? RICH_GROUND_TINT[season] : tint;
 }
 
 /** Locked land: mostly the dark tile, about one in four overgrown. */
