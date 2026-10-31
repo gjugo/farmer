@@ -210,6 +210,8 @@ const WORK_ANIM: Record<JobKind, FarmerAnim> = {
   plough: 'plough',
   plant: 'plant',
   harvest: 'harvest',
+  // Forking manure out over the soil: the feeding toss.
+  fertilise: 'feed',
   feed: 'feed',
   collect: 'harvest',
   load: 'feed',

@@ -10,6 +10,7 @@ import { GRANARY_PILES, PILE_STAGES, STOREHOUSE_PILES } from '../data/resources'
 import { HOUSE_PILES } from '../logic/stockpiles';
 import '../data/processing';
 import { SEASONS } from '../data/seasons';
+import { SOIL_QUALITY } from '../data/soil';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from '../logic/constants';
 import {
   baseArt,
@@ -30,6 +31,8 @@ import {
   FARMER_ART,
   type FarmerAnim,
   fencePiece,
+  groundTint,
+  RICH_GROUND_TINT,
   GATE,
   ICON_ART,
   NE,
@@ -278,5 +281,21 @@ describe('splitIcons', () => {
     expect(splitIcons('+3 🥚 Egg')).toEqual(['+3 ', { icon: 'egg', emoji: '🥚' }, ' Egg']);
     expect(splitIcons('🧀🧈 and 💰')).toEqual([{ icon: 'cheese', emoji: '🧀' }, { icon: 'butter', emoji: '🧈' }, ' and ', { icon: 'coins', emoji: '💰' }]);
     expect(splitIcons('🐔 Chicken')).toEqual(['🐔 Chicken']);
+  });
+});
+
+describe('soil on the ground', () => {
+  it('draws rich soil as lusher grass and leaves normal and poor ground as it is', () => {
+    expect(groundTint(SOIL_QUALITY.rich)).toBe(RICH_GROUND_TINT);
+    expect(groundTint(SOIL_QUALITY.normal)).toBe(0xffffff);
+    expect(groundTint(SOIL_QUALITY.poor)).toBe(0xffffff);
+    // A multiply that keeps green strongest: greener, a touch deeper.
+    const [r, g, b] = [RICH_GROUND_TINT >> 16, (RICH_GROUND_TINT >> 8) & 0xff, RICH_GROUND_TINT & 0xff];
+    expect(g).toBeGreaterThan(r);
+    expect(g).toBeGreaterThan(b);
+  });
+
+  it('has an icon for manure', () => {
+    expect(splitIcons('4 💩 Manure')).toEqual(['4 ', { icon: 'manure', emoji: '💩' }, ' Manure']);
   });
 });

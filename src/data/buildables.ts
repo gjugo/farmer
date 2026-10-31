@@ -22,10 +22,10 @@ export interface BuildableDef {
   /** Part of every farm (the farmhouse): not in the build menu and never demolished. */
   fixed?: boolean;
   /**
-   * Initial per-type state for a newly placed object. Also used as defaults when
-   * loading a save, so fields added later get filled in. Must be JSON-serialisable.
+   * Initial per-type state for a newly placed object, told where it stands and the game time. Also used as defaults
+   * when loading a save, so fields added later get filled in. Must be JSON-serialisable.
    */
-  initialState?: () => Record<string, unknown>;
+  initialState?: (at?: { x: number; y: number; now: number }) => Record<string, unknown>;
 }
 
 const registry = new Map<string, BuildableDef>();

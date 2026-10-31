@@ -12,8 +12,9 @@ import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
 import { farmhouseOf } from '../logic/roads';
+import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, grassArt, sceneryArt, seasonalArt, unownedArt } from './art';
+import { ART_RES, ART_SCALE, CURSOR, grassArt, groundTint, sceneryArt, seasonalArt, unownedArt } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
 import {
@@ -233,6 +234,8 @@ export class FarmScene extends Phaser.Scene {
     // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
     const top = gridToWorld(x, y);
     bob.reset(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, art);
+    // Rich soil shows as lusher grass, owned or not.
+    bob.setTint(groundTint(soilAt(x, y)));
   }
 
   /**
@@ -476,6 +479,7 @@ export class FarmScene extends Phaser.Scene {
     this.input.on(Phaser.Input.Events.POINTER_UP_OUTSIDE, this.onPointerUp, this);
     this.input.on(Phaser.Input.Events.GAME_OUT, () => {
       this.ghost.setVisible(false);
+      this.ctx.tools.events.emit('preview', null);
       this.showCursors(null, CURSOR.normal);
     });
     this.input.on(
@@ -694,6 +698,7 @@ export class FarmScene extends Phaser.Scene {
   private onToolChange(mode: ToolMode): void {
     this.showCursors(null, CURSOR.normal);
     this.ghost.setVisible(false);
+    this.ctx.tools.events.emit('preview', null);
     if (mode.kind === 'build') {
       const def = getBuildable(mode.type);
       if (!def) return;
@@ -720,6 +725,7 @@ export class FarmScene extends Phaser.Scene {
       this.ghost.setPosition(top.x, top.y).setVisible(true);
       this.ghost.setData('valid', ok);
       this.ghost.setData('tile', { x, y });
+      this.ctx.tools.events.emit('preview', { type: mode.type, x, y });
     } else if (mode.kind === 'demolish') {
       const obj = this.ctx.game.objectAt(tx, ty);
       this.showCursors(obj ? { x: obj.x, y: obj.y, ...footprintOf(obj) } : null, CURSOR.bad);

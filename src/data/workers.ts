@@ -13,13 +13,14 @@ export const STARTING_FARMERS = 1;
 /** The most farmers a farm can employ. */
 export const MAX_FARMERS = 20;
 
-export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'feed' | 'collect' | 'load' | 'chop' | 'quarry' | 'mine';
+export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'fertilise' | 'feed' | 'collect' | 'load' | 'chop' | 'quarry' | 'mine';
 
 export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   build: { label: 'Building', icon: '🔨' },
   plough: { label: 'Ploughing', icon: '🚜' },
   plant: { label: 'Planting', icon: '🌱' },
   harvest: { label: 'Harvesting', icon: '🧺' },
+  fertilise: { label: 'Spreading manure', icon: '💩' },
   feed: { label: 'Feeding animals', icon: '🌰' },
   collect: { label: 'Collecting', icon: '🧺' },
   load: { label: 'Starting a batch', icon: '⚙️' },
@@ -33,6 +34,8 @@ export const JOBS: Record<JobKind, { label: string; icon: string }> = {
 export const PLOUGH_WORK_MS = 40_000;
 export const PLANT_WORK_MS = 30_000;
 export const HARVEST_WORK_MS = 40_000;
+/** Spreading manure on a field (see `MANURE_PER_SPREAD`). */
+export const FERTILISE_WORK_MS = 20_000;
 export const FEED_WORK_MS = 20_000;
 /**
  * Collecting eggs, milk or wool from a pen, finished goods from a processing building, or materials left waiting in a

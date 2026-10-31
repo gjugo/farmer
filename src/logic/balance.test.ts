@@ -24,13 +24,13 @@ import { DAY_MS } from './constants';
 import { homesOf } from './families';
 import { dayOfSeason, nextSeasonAt, seasonAt } from './seasons';
 import { workplaceNext } from './work';
-import { assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_NONE, setCropPlan, workerAt, workersOf } from './workers';
+import { assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, workerAt, workersOf } from './workers';
 
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
  * against the real prices. It looks at the farm every `reactMs` (no instant clicks) and,
  * like a Manor Lords lord, assigns farmers instead of doing the work: every field (crop plan
- * "Best in season") and pen gets a farmer. With none to spare it builds a cottage, one at a time, for a family to
+ * "Best in season", which rotates crops; it never spreads manure) and pen gets a farmer. With none to spare it builds a cottage, one at a time, for a family to
  * move into, and meanwhile has a free farmer work an unstaffed field by hand (a tap). It feeds the families its own
  * crops: a day's meals in store, and from autumn into early spring enough to last the winter (no new cottage until
  * that is in store); with firewood for every home bought from autumn. It sells the rest,
@@ -224,7 +224,7 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     // While a family is on its way, a field nobody works gets a tap: a free farmer ploughs, sows or harvests it by hand.
     for (const f of fields) {
       if (f.site || workerAt(game.state, f.id) !== null || freeFarmers(game.state) === 0) continue;
-      if (cropPlanOf(game.state, f.id) === PLAN_NONE) setCropPlan(game, f.id, PLAN_BEST);
+      if (cropPlanOf(game.state, f.id) === PLAN_FALLOW) setCropPlan(game, f.id, PLAN_BEST);
       const next = workplaceNext(game, f);
       if ('task' in next) withFarmer(tapCtx, next.task.kind, f, next.task.workMs, () => next.task.run(0));
     }
@@ -301,7 +301,10 @@ describe('level curve balance', () => {
   // busy L2 8.3, L5 166.0. Hiring farmers for them, or building them before level 3, cost 8+ min of L5 in this 3 h window.
   // With the bigger map, building only where it walls off none of its land (the busy player's fields had shut the
   // lodge out): casual L2 10.0, L5 162.0; relaxed L2 8.5, L5 164.5; busy L2 8.2, L5 168.9.
-  // Families instead of hiring: a family moves into a cottage ($80 + 8 wood) half a day after it is built, and eats
+  // Soil fertility (rich start patch, yield by fertility, drain per harvest, double for the same crop, "Best in season"
+  // rotating, no manure): casual L2 9.0, L5 173.0; relaxed L2 8.5, L5 158.0; busy L2 8.2, L5 162.0. Its fields end the
+  // 3 h worn down (often under 20%): fallow and manure are for a real player to use.
+  // Then families instead of hiring: a family moves into a cottage ($80 + 8 wood) half a day after it is built, and eats
   // 2 food a day (about a fifth of what the farm makes; up to ~1,600 of the $ it would have sold in 3 h), plus firewood
   // in winter. Tapping unstaffed fields while families are on their way makes up the early game; the "build a coop"
   // goal now counts a coop built before it shows (it blocked a goal slot for good). With level 5 at 6000 XP the casual

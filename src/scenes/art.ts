@@ -5,6 +5,7 @@
  */
 
 import { SEASONS, type Season } from '../data/seasons';
+import { soilBand } from '../logic/soil';
 
 /** Where the pack lives, relative to the page (vite `base: './'`). */
 export const ART_BASE = 'assets/farm/';
@@ -58,6 +59,17 @@ export const SOIL = { dry: 'soil_tilled_x', wet: 'soil_watered_x' } as const;
 /** Grass variant of a tile: a fixed scatter so the ground looks the same every load. */
 export function grassArt(x: number, y: number): string {
   return GRASS[(x * 7 + y * 13 + ((x * y) % 5)) % GRASS.length];
+}
+
+/**
+ * Rich soil grows lusher grass: its tiles are drawn with this tint (a multiply: a touch greener and deeper), in every
+ * season. Normal and poor ground are drawn as they are.
+ */
+export const RICH_GROUND_TINT = 0xd4ecc4;
+
+/** The tint of a ground tile of soil quality `quality` (percentage points, see `src/logic/soil.ts`). */
+export function groundTint(quality: number): number {
+  return soilBand(quality) === 'rich' ? RICH_GROUND_TINT : 0xffffff;
 }
 
 /** Locked land: mostly the dark tile, about one in four overgrown. */
@@ -226,7 +238,7 @@ export type FarmerAnim = 'idle' | 'sit' | 'walk' | 'plough' | 'plant' | 'harvest
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;
 
 /** Item icons in the pack: every item of the game, plus coins for money. */
-export const ICON_ART = ['egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn', 'wood', 'stone', 'iron', 'coins'] as const;
+export const ICON_ART = ['egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn', 'wood', 'stone', 'iron', 'manure', 'coins'] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */
 export function iconUrl(name: string): string {

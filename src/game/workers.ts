@@ -22,7 +22,7 @@ import {
   keepMakingOf,
   nextFreeIn,
   PLAN_BEST,
-  PLAN_NONE,
+  PLAN_FALLOW,
   setCropPlan,
   setKeepMaking,
   unassignFarmer,
@@ -100,7 +100,7 @@ export function waitText(game: Game, next: Exclude<WorkplaceNext, { task: unknow
     case 'growing':
       return 'The crop is growing';
     case 'no-plan':
-      return 'Crop plan is "None": nothing to sow';
+      return 'Crop plan is "Fallow": the soil rests';
     case 'season':
       return canPloughNow(game.state.clock) ? 'Nothing on the crop plan can be sown now' : 'The ground is frozen until spring';
     case 'money':
@@ -145,7 +145,7 @@ export function farmerActivity(game: Game, farmer: number): string {
   return `Free · ${'task' in next ? 'work is waiting' : waitText(game, next).toLowerCase()}`;
 }
 
-/** Crop plan choices: "Best in season", "None" and every crop (locked ones disabled). */
+/** Crop plan choices: "Best in season", "Fallow" and every crop (locked ones disabled). */
 function planChoice(ctx: FarmContext, obj: PlacedObject): PanelChoice {
   const { game } = ctx;
   return {
@@ -154,7 +154,7 @@ function planChoice(ctx: FarmContext, obj: PlacedObject): PanelChoice {
     value: cropPlanOf(game.state, obj.id),
     options: [
       { value: PLAN_BEST, label: 'Best in season' },
-      { value: PLAN_NONE, label: 'None' },
+      { value: PLAN_FALLOW, label: 'Fallow (rest the soil)' },
       ...CROP_LIST.map((c) => ({
         value: c.id,
         label: game.isUnlocked(c.unlockLevel) ? `${c.icon} ${c.name} (${seasonNames(c.seasons)})` : `🔒 ${c.name} · level ${c.unlockLevel}`,

@@ -27,12 +27,29 @@ export interface PanelChoice {
  * called again whenever the game changes (and a few times per second while open),
  * so just describe the current state.
  */
+/** A labelled bar in an action panel, e.g. a field's fertility. */
+export interface PanelMeter {
+  /** Used in the `data-testid` (`panel-meter-<id>`). */
+  id: string;
+  label: string;
+  /** 0..1 */
+  value: number;
+  /** Shown on the bar, e.g. "62%". */
+  text: string;
+  /** Fill colour (CSS), default green. */
+  color?: string;
+}
+
 export interface PanelSpec {
   title: string;
   /** Optional emoji / short text shown before the title. */
   icon?: string;
   lines?: string[];
   progress?: { value: number; label?: string };
+  /** Labelled bars shown under the lines, e.g. a field's fertility. */
+  meters?: PanelMeter[];
+  /** Small print under the meters, e.g. a hint. */
+  hint?: string;
   /** Drop-downs shown above the actions. */
   choices?: PanelChoice[];
   actions?: PanelAction[];
@@ -78,9 +95,13 @@ export interface UiApi {
 
 export type ToolMode = { kind: 'normal' } | { kind: 'build'; type: string } | { kind: 'demolish' };
 
+/** Where the build ghost stands: the buildable and its top-left tile; null when it is hidden. */
+export type BuildPreview = { type: string; x: number; y: number } | null;
+
 /** Which tool the player is using. Shared by the HUD (banner, buttons) and the Farm scene (input). */
 export class ToolState {
-  readonly events = new Emitter<{ change: ToolMode }>();
+  /** `preview` follows the build ghost as the Farm scene moves it, e.g. for the soil tint under a field. */
+  readonly events = new Emitter<{ change: ToolMode; preview: BuildPreview }>();
   private _mode: ToolMode = { kind: 'normal' };
 
   get mode(): ToolMode {
