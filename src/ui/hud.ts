@@ -4,7 +4,7 @@ import { formatMaterials, formatMissing, isStoredMaterial } from '../data/materi
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
 import { STORAGE_POOLS, type StoragePool } from '../data/storage';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
-import { listHudButtons, listSettingsSections } from '../game/hooks';
+import { listBuildMenuToggles, listHudButtons, listSettingsSections } from '../game/hooks';
 import { uiSignals } from '../game/signals';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
@@ -297,6 +297,35 @@ export class Hud implements UiApi {
         if (current.lines?.length) {
           body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => h('li', {}, withIcons(l)))));
         }
+        if (current.meters?.length) {
+          body.append(
+            h(
+              'div',
+              { class: 'meters' },
+              current.meters.map((m) =>
+                h(
+                  'div',
+                  { class: 'meter', 'data-testid': `panel-meter-${m.id}` },
+                  h('span', { class: 'meter-label' }, withIcons(m.label)),
+                  h(
+                    'div',
+                    {
+                      class: 'meter-bar',
+                      role: 'meter',
+                      'aria-label': m.label,
+                      'aria-valuemin': 0,
+                      'aria-valuemax': 100,
+                      'aria-valuenow': Math.round(m.value * 100),
+                    },
+                    h('div', { class: 'meter-fill', style: `transform: scaleX(${Math.max(0, Math.min(1, m.value))});${m.color ? ` background: ${m.color};` : ''}` }),
+                    h('span', { class: 'meter-text' }, m.text),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        if (current.hint) body.append(h('p', { class: 'panel-hint', 'data-testid': 'panel-hint' }, withIcons(current.hint)));
         if (current.progress) {
           body.append(
             h(
@@ -366,10 +395,37 @@ export class Hud implements UiApi {
       id: 'build',
       title: () => '🔨 Build',
       signature: () =>
-        `${game.level}|${listBuildMenu()
+        `${game.level}|${listBuildMenuToggles()
+          .map((t) => t.isOn(this.ctx))
+          .join(',')}|${listBuildMenu()
           .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(b.materials))}`)
           .join('|')}`,
       render: (body) => {
+        const toggles = listBuildMenuToggles();
+        if (toggles.length) {
+          body.append(
+            h(
+              'div',
+              { class: 'build-toggles' },
+              toggles.map((t) =>
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    class: `btn btn-secondary build-toggle${t.isOn(this.ctx) ? ' on' : ''}`,
+                    'aria-pressed': String(t.isOn(this.ctx)),
+                    'data-testid': `build-toggle-${t.id}`,
+                    onclick: () => {
+                      t.toggle(this.ctx);
+                      this.refresh();
+                    },
+                  },
+                  `${t.icon ? `${t.icon} ` : ''}${t.label}: ${t.isOn(this.ctx) ? 'on' : 'off'}`,
+                ),
+              ),
+            ),
+          );
+        }
         const groups = new Map<string, ReturnType<typeof listBuildMenu>>();
         for (const b of listBuildMenu()) {
           const key = b.category ?? 'other';

@@ -58,6 +58,26 @@ export function listHudButtons(): readonly HudButton[] {
   return hudButtons;
 }
 
+/** An on/off switch at the top of the Build menu (e.g. the soil overlay). */
+export interface BuildMenuToggle {
+  id: string;
+  label: string;
+  icon?: string;
+  isOn(ctx: FarmContext): boolean;
+  toggle(ctx: FarmContext): void;
+}
+
+const buildMenuToggles: BuildMenuToggle[] = [];
+
+export function registerBuildMenuToggle(toggle: BuildMenuToggle): void {
+  if (buildMenuToggles.some((t) => t.id === toggle.id)) throw new Error(`Build menu toggle "${toggle.id}" is already registered`);
+  buildMenuToggles.push(toggle);
+}
+
+export function listBuildMenuToggles(): readonly BuildMenuToggle[] {
+  return buildMenuToggles;
+}
+
 /** Runs once after the game has started; for features that need global listeners. */
 export type StartHook = (ctx: FarmContext) => void;
 

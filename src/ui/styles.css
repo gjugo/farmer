@@ -774,6 +774,69 @@ button {
   margin: 2px 0;
 }
 
+.meters {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.meter {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.meter-label {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.meter-bar {
+  position: relative;
+  height: 20px;
+  background: var(--paper-dark);
+  border: 2px solid var(--wood);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(var(--green), var(--green-dark));
+  transform-origin: left;
+}
+
+.meter-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.panel-hint {
+  margin: -4px 0 12px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.build-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.build-toggle.on {
+  background: var(--green);
+  color: #fff;
+}
+
 .progress {
   position: relative;
   height: 22px;

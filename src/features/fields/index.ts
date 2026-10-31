@@ -9,10 +9,12 @@ import { withFarmer } from '../../game/workers';
 import {
   canPloughNow,
   cropStage,
+  fertilityOf,
   fieldCrop,
   formatDuration,
   growthProgress,
   harvest,
+  harvestYield,
   isPloughed,
   plant,
   plough,
@@ -23,10 +25,12 @@ import {
   type FieldState,
 } from '../../logic/crops';
 import { nextSeasonAt, nextSeasonIn, seasonOf } from '../../logic/seasons';
+import { yieldAt } from '../../logic/soil';
 import { fullMessage, poolOf } from '../../logic/storage';
 import { ART_SCALE, cropArt, SHADOW } from '../../scenes/art';
 import { footprintLocal } from '../../scenes/iso';
 import { addArt, textureKey } from '../../scenes/sprites';
+import { manureAction, soilPanel } from '../soil/panel';
 import './textures';
 
 /**
@@ -119,7 +123,7 @@ function syncView(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
 /** Says the granaries are full, so no farmer walks out for a harvest that can't be stored. */
 function refuseIfFull(ctx: FarmContext, obj: PlacedObject<FieldState>): boolean {
   const crop = fieldCrop(obj.state);
-  if (!crop || ctx.game.spaceFor(crop.harvestItem) >= crop.harvestQty) return false;
+  if (!crop || ctx.game.spaceFor(crop.harvestItem) >= harvestYield(ctx.game.state.clock, obj)) return false;
   ctx.ui.toast(fullMessage(poolOf(crop.harvestItem)), 'error');
   return true;
 }
@@ -143,6 +147,18 @@ function seasonLine(ctx: FarmContext): string {
   const clock = ctx.game.state.clock;
   const season = SEASON_INFO[seasonOf(clock)];
   return `${season.icon} ${season.name} · ${formatDuration(nextSeasonAt(clock.elapsed) - clock.elapsed)} left`;
+}
+
+/** Adds the soil block (fertility bar, soil, last crop, hint) to a field panel, and the manure action to an empty one. */
+function withSoil(ctx: FarmContext, obj: PlacedObject<FieldState>, spec: PanelSpec, empty: boolean): PanelSpec {
+  const soil = soilPanel(ctx, obj);
+  return {
+    ...spec,
+    lines: [...(spec.lines ?? []), ...soil.lines],
+    meters: soil.meters,
+    hint: soil.hint,
+    actions: empty ? [...(spec.actions ?? []), manureAction(ctx, obj)] : spec.actions,
+  };
 }
 
 /** An empty field: plough it (in season), then pick a crop that grows now. */
@@ -196,7 +212,7 @@ function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Panel
         return { label: `📅 ${c.icon} ${c.name} · ${why}`, variant: 'secondary', disabled: true, onClick: () => {} };
       }
       return {
-        label: `${c.icon} ${c.name} · $${c.plantCost} · ${formatDuration(c.growMs)} → ${c.harvestQty} ${item?.name ?? c.name}`,
+        label: `${c.icon} ${c.name} · $${c.plantCost} · ${formatDuration(c.growMs)} → ${yieldAt(c.harvestQty, fertilityOf(clock, obj))} ${item?.name ?? c.name}`,
         disabled: !game.canAfford(c.plantCost),
         onClick: () => {
           withFarmer(ctx, 'plant', obj, PLANT_WORK_MS, () => {
@@ -258,24 +274,35 @@ registerBehavior<FieldState>(FIELD, {
     const stage = cropStage(clock, obj.state);
     const crop = fieldCrop(obj.state);
 
-    if (stage === 'empty' || !crop) return emptyFieldPanel(ctx, obj);
+    if (stage === 'empty' || !crop) return withSoil(ctx, obj, emptyFieldPanel(ctx, obj), true);
 
+    const qty = harvestYield(clock, obj);
     if (stage === 'ripe') {
-      return {
-        title: `${crop.name} field`,
-        icon: crop.icon,
-        lines: [`Ripe! Harvest ${crop.harvestQty} ${crop.name}.`],
-        progress: { value: 1, label: 'Ready' },
-        actions: [{ label: `Harvest ${crop.harvestQty} ${crop.icon}`, onClick: () => doHarvest(ctx, obj) }],
-      };
+      return withSoil(
+        ctx,
+        obj,
+        {
+          title: `${crop.name} field`,
+          icon: crop.icon,
+          lines: [`Ripe! Harvest ${qty} ${crop.name}.`],
+          progress: { value: 1, label: 'Ready' },
+          actions: [{ label: `Harvest ${qty} ${crop.icon}`, onClick: () => doHarvest(ctx, obj) }],
+        },
+        false,
+      );
     }
 
     const left = formatDuration(timeToRipe(clock, obj.state));
-    return {
-      title: `${crop.name} field`,
-      icon: crop.icon,
-      lines: [`Stage: ${STAGE_NAMES[stage]}`, `Ripe in ${left}`],
-      progress: { value: growthProgress(clock, obj.state), label: `${left} left` },
-    };
+    return withSoil(
+      ctx,
+      obj,
+      {
+        title: `${crop.name} field`,
+        icon: crop.icon,
+        lines: [`Stage: ${STAGE_NAMES[stage]} · ${qty} ${crop.name} at harvest`, `Ripe in ${left}`],
+        progress: { value: growthProgress(clock, obj.state), label: `${left} left` },
+      },
+      false,
+    );
   },
 });
