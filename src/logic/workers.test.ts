@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { FIELD } from '../data/crops';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import {
-  BASE_HIRE_COST,
   buildWorkMs,
   BUILD_WORK_MAX_MS,
   BUILD_WORK_MIN_MS,
@@ -19,7 +18,7 @@ import { STARTING_FIELDS } from './crops';
 import { Game } from './game';
 import { deserialize, serialize } from './save';
 import { findRoute } from './roads';
-import { activeJobs, assignJob, busyFarmers, freeFarmers, hireCost, hireFarmer, jobPhase, nextFreeIn, walkMs, workersOf } from './workers';
+import { activeJobs, assignJob, busyFarmers, freeFarmers, addFarmer, jobPhase, nextFreeIn, removeFarmer, walkMs, workersOf } from './workers';
 
 /** Advances game time by `ms` in frame-sized steps. */
 function run(game: Game, ms: number): void {
@@ -62,35 +61,35 @@ describe('farmers', () => {
     expect(workersOf(game.state).jobs).toHaveLength(1);
   });
 
-  it('hiring costs money, rises with each farmer and stops at the maximum', () => {
+  it('farmers are added up to the maximum, free and without a workplace, and nothing is paid', () => {
     const game = new Game();
-    game.earn(1_000_000);
-    expect(hireCost(game.state)).toBe(BASE_HIRE_COST);
-    const costs: number[] = [];
-    while (hireCost(game.state) !== null) {
-      const cost = hireCost(game.state)!;
-      const before = game.money;
-      costs.push(cost);
-      expect(hireFarmer(game).ok).toBe(true);
-      expect(game.money).toBe(before - cost);
-    }
-    expect(workersOf(game.state).farmers).toBe(MAX_FARMERS);
-    expect(costs).toHaveLength(MAX_FARMERS - 1);
-    for (let i = 1; i < costs.length; i++) expect(costs[i]).toBeGreaterThan(costs[i - 1]);
-    expect(hireFarmer(game)).toEqual({ ok: false, reason: 'max' });
+    const money = game.money;
+    while (addFarmer(game));
+    const w = workersOf(game.state);
+    expect(w.farmers).toBe(MAX_FARMERS);
+    expect(w.workplaces).toEqual(new Array(MAX_FARMERS).fill(null));
+    expect(game.money).toBe(money);
+    expect(addFarmer(game)).toBe(false);
   });
 
-  it('cannot hire without the money, and nothing changes', () => {
+  it('the last farmer leaves with their job and workplace; the starting farmer never leaves', () => {
     const game = new Game();
-    game.spend(game.money - (BASE_HIRE_COST - 1));
-    expect(hireFarmer(game)).toEqual({ ok: false, reason: 'money' });
+    addFarmer(game);
+    const w = workersOf(game.state);
+    w.workplaces[1] = game.state.objects[0].id;
+    assignJob(game, 'plant', 1, 1, 4000, undefined, { farmer: 1 });
+    assignJob(game, 'feed', 1, 1, 4000, undefined, { farmer: 0 });
+    expect(removeFarmer(game)).toEqual({ workplace: game.state.objects[0].id });
+    expect(w.farmers).toBe(1);
+    expect(w.workplaces).toEqual([null]);
+    expect(w.jobs.map((j) => [j.kind, j.farmer])).toEqual([['feed', 0]]);
+    expect(removeFarmer(game)).toBeNull();
     expect(workersOf(game.state).farmers).toBe(1);
-    expect(game.money).toBe(BASE_HIRE_COST - 1);
   });
 
   it('two farmers can work at once', () => {
     const game = new Game();
-    hireFarmer(game);
+    addFarmer(game);
     expect(assignJob(game, 'plant', 1, 1, 4000)).toBe(true);
     expect(assignJob(game, 'feed', 5, 5, 4000)).toBe(true);
     expect(assignJob(game, 'harvest', 3, 3, 4000)).toBe(false);
@@ -99,7 +98,7 @@ describe('farmers', () => {
 
   it('farmers and running jobs survive save/load; broken saves fall back to one farmer', () => {
     const game = new Game();
-    hireFarmer(game);
+    addFarmer(game);
     assignJob(game, 'plant', 1, 1, 4000);
     const loaded = new Game(deserialize(serialize(game.state)));
     expect(workersOf(loaded.state).farmers).toBe(2);
@@ -179,7 +178,7 @@ describe('withFarmer', () => {
 
   it('each farmer at work keeps their own number; a freed number is reused', () => {
     const game = new Game();
-    hireFarmer(game);
+    addFarmer(game);
     const ctx = fakeCtx(game);
     withFarmer(ctx, 'plant', { type: FIELD, ...near }, 1000, () => true);
     withFarmer(ctx, 'plant', { type: FIELD, ...far }, 60_000, () => true);

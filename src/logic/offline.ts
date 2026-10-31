@@ -47,6 +47,8 @@ export interface CatchUpResult {
   jobsFinished: number;
   /** What the farmers did: assigned ones work their workplaces, free ones build sites. */
   work: FarmerWork;
+  /** Families that moved in and moved away. */
+  families: { arrived: number; left: number };
   dayBefore: number;
   dayAfter: number;
   /** Ids of objects whose state changed, so their views can refresh. */
@@ -80,6 +82,7 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     produced: {},
     jobsFinished: 0,
     work: { harvested: {}, sown: {}, collected: {}, made: {}, built: {}, materials: {} },
+    families: { arrived: 0, left: 0 },
     dayBefore: dayOf(clock),
     dayAfter: dayOf(clock),
     changed: [],
@@ -106,6 +109,8 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     activity.on('made', ({ item, qty }) => inventory.add(work.made, item, qty)),
     activity.on('built', ({ type }) => inventory.add(work.built, type, 1)),
     activity.on('produced', ({ item, qty }) => inventory.add(work.materials, item, qty)),
+    activity.on('familyArrived', () => result.families.arrived++),
+    activity.on('familyLeft', () => result.families.left++),
   ];
   const changed = new Set<string>();
   const settled = (obj: PlacedObject, finished: number) => {

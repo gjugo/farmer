@@ -33,9 +33,9 @@ import {
 import { formatMoney } from '../ui/dom';
 import type { FarmContext, PanelAction, PanelChoice, PanelSpec } from './context';
 
-/** Why farm work was refused, e.g. "All farmers are busy (next free in 0:03). Hire more with 👨‍🌾 Farmers." */
+/** Why farm work was refused, e.g. "All farmers are busy (next free in 0:03). Build a cottage for another family." */
 export function busyMessage(ctx: FarmContext): string {
-  return `All farmers are busy (next free in ${formatDuration(nextFreeIn(ctx.game.state))}). Hire more with 👨‍🌾 Farmers.`;
+  return `All farmers are busy (next free in ${formatDuration(nextFreeIn(ctx.game.state))}). Build a cottage for another family.`;
 }
 
 /** Where the work happens: a buildable type with its footprint's top-left tile. */
@@ -203,7 +203,7 @@ export function workplacePanel(ctx: FarmContext, obj: PlacedObject): Pick<PanelS
       onClick: () => {
         const r = assignFarmer(game, obj.id);
         if (r.ok) ctx.ui.toast(`${farmerName(r.farmer)} now works at ${placeName(game, obj)}`, 'success');
-        else ctx.ui.toast('Every farmer has a workplace. Hire one, or move one in 👨‍🌾 Farmers.', 'error');
+        else ctx.ui.toast('Every farmer has a workplace. Build a cottage for another family, or move one in 👨‍🌾 Farmers.', 'error');
       },
     });
   } else {

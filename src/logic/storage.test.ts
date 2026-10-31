@@ -310,10 +310,14 @@ describe('offline catch-up', () => {
     const dairy = build<ProcessorState>(game, 'dairy', fx, fy);
     startJob(game, dairy, 'cheese');
     game.state.inventory.wheat = 30;
-    const inventory = { ...game.state.inventory };
-    const r = catchUp(game.state, 60 * 60_000);
+    const g = new Game(game.state);
+    const added: string[] = [];
+    g.events.on('inventory', ({ itemId, delta }) => delta > 0 && added.push(itemId));
+    const r = catchUp(g, 60 * 60_000);
     expect(r.produced).toEqual({ cheese: 1 });
-    expect(game.state.inventory).toEqual(inventory);
+    // Only the family's meals left the store; nothing came in.
+    expect(added).toEqual([]);
+    expect(game.state.inventory.wheat).toBe(30 - 2 * 7);
     expect(outputReady(dairy)).toBe(1);
   });
 });

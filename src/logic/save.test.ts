@@ -40,7 +40,9 @@ describe('save / load', () => {
     const loaded = loadFromStorage(storage);
 
     expect(loaded.money).toBe(1490);
-    expect(loaded.inventory).toEqual({ milk: 3, egg: 10 });
+    // The family ate a little of it on the way (2 food a day).
+    expect(loaded.inventory).toEqual(g.state.inventory);
+    expect(loaded.inventory.egg).toBeGreaterThan(0);
     expect(loaded.objects).toEqual(g.state.objects);
     expect(loaded.objects.slice(-2).map((o) => [o.type, o.x, o.y])).toEqual([
       ['path', ix, iy],

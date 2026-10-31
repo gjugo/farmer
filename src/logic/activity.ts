@@ -45,6 +45,10 @@ export interface ActivityEvents {
   goalClaimed: { id: string };
   /** A farmer was put to work (building, ploughing, planting, harvesting, feeding, collecting, starting a batch, cutting wood, ...). */
   workStarted: { kind: string };
-  /** A farmer was hired; `farmers` is the new total. */
-  hired: { farmers: number };
+  /** A family moved into a free home, bringing a farmer; `families` is the new total. */
+  familyArrived: { families: number };
+  /** A family left the farm (approval stayed too low); their farmer's workplace (if any) is free. */
+  familyLeft: { families: number; workplace: string | null };
+  /** A game day was settled: the families ate, burned firewood and took cloth; `approval` is the new approval. */
+  familiesSettled: { approval: number };
 }
