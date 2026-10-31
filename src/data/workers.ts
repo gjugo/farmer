@@ -7,15 +7,11 @@ import { getBuildable } from './buildables';
  * does its work by themselves; with nothing to do there they build construction sites.
  */
 
-/** A new farm starts with this many farmers. */
+/** A new farm starts with this many farmers: the family in the farmhouse. More move into cottages (`src/data/families.ts`). */
 export const STARTING_FARMERS = 1;
 
 /** The most farmers a farm can employ. */
 export const MAX_FARMERS = 20;
-
-/** Hiring the 2nd farmer costs this; every further hire costs `HIRE_COST_GROWTH` times the last. */
-export const BASE_HIRE_COST = 150;
-export const HIRE_COST_GROWTH = 1.2;
 
 export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'fertilise' | 'feed' | 'collect' | 'load' | 'chop' | 'quarry' | 'mine';
 

@@ -75,7 +75,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   ("Bought only 5 …") and refused when there is none. Buy prices change daily like sell prices and are always above anything the
   Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
   purchase is refused with a toast. New farms start without materials; the goal "Buy 10 wood" comes just before
-  "Build a chicken coop".
+  "Build a cottage" and "Build a chicken coop". "House 4 families" follows "Reach level 3".
 - **Wood, stone and iron from the farm:** the **🪓 Woodcutter's Lodge** (level 1, $80) makes 4 🪵 wood, the **⛏️ Quarry**
   (level 2, $120 + 10 🪵) 3 🪨 stone and the **⚒️ Mine** (level 4, $140 + 15 🪵 + 10 🪨, never iron) 1 🔩 iron per cycle
   of work: 4, 5 and 6 game-minutes, a quarter longer in winter. Nothing is made without an assigned farmer
@@ -143,7 +143,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Farmers:** building, ploughing, planting, harvesting, spreading manure, feeding, collecting, starting a batch and a resource cycle each keep a farmer
   busy for a while: ploughing a field 40 game-seconds, sowing 30 s, harvesting 40 s, spreading manure 20 s, feeding a pen 20 s, collecting or
   starting a batch 20 s, building 15 s per footprint tile (30 s–3 min; paths need no farmer), plus the walk there and
-  back. The farm starts with one farmer; hire more in 👨‍🌾 Farmers: $150 for the 2nd, ×1.2 for each after, up to 20.
+  back. The farm starts with one farmer; more come as families moving into cottages (below), up to 20.
   - **Workplaces:** fields, coops, pastures, processing and resource buildings take one farmer each. Assign one with
     **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in the 👨‍🌾 Farmers
     sheet, which lists every farmer with their workplace and what they are doing now. A farmer works at one place.
@@ -161,6 +161,25 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
     tapped work is refused until one is free.
   - The work runs on game time, so speed ×60 and offline catch-up give the same farm; the welcome-back summary
     reports what the farmers harvested, sowed, collected, made, produced and built while you were away.
+- **Families:** every farmer is a family living in a home: the farmhouse houses the first, each **🛖 Cottage** (2×2,
+  $80 + 8 wood, level 1, built by a farmer like any site) one more. There is no hiring for cash. When a home is free
+  and approval is at least 50%, a family moves in half a day after the home became free (at most one a day); its
+  farmer starts free, without a workplace, and sets out from the farmhouse door like everyone. When approval stays
+  below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; never the last
+  family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
+  storage: each eats **2 food** from the granary (wheat, carrot, corn, egg, milk, bread, cheese, butter; never feed,
+  wool or cloth), spread across the kinds in stock; on **winter** days each occupied home burns **1 wood**; once the
+  loom is unlocked (level 5) each family takes **1 cloth** at the start of winter and stays clothed until the next.
+  **Approval** (0–100%) comes from that day: base 50, +5 per food kind eaten beyond the first (up to +20), −20 short of
+  food, −50 with nothing to eat, up to +10 when every family is clothed, and in winter +10 when every home is warm or up
+  to −60 when homes are cold (by the share of cold homes). A new farm's families live on their provisions for the
+  first 2 days (no hunger penalty), so nobody leaves before the first harvest. The HUD chip (😊 62%) opens
+  **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood and clothes, and when the
+  next family comes ("Build a cottage to house another family"); the 👨‍🌾 Farmers sheet shows the same block. A
+  cottage puffs chimney smoke on winter days while it has firewood. Arrivals and departures are toasted and listed in
+  the welcome-back summary. All of it runs inside the work scheduler on game time, so ×60, ×1 and offline catch-up
+  agree. Saves from before families keep every farmer they have; while there are more farmers than homes no family
+  arrives (and nobody leaves just for lack of a home).
 - **Farmhouse and roads:** every farm has a farmhouse (it can't be built or demolished). Idle farmers rest on its bench;
   for a job a farmer walks out of the door **along paths** to the work (0.4 game-s per tile), works there (hoeing,
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. Work on a field, pen or building is refused
@@ -168,7 +187,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   New farms start with a road from the door to both fields; older saves get a farmhouse and roads to what they built.
 - **Seasons:** a game day lasts 8 real minutes at ×1 and each season 4 days, about 30 minutes (days 1–4 spring,
   5–8 summer, 9–12 autumn, 13–16 winter, then round again), so a year takes about 2 hours. The pace is slow on
-  purpose: a new player reaches level 2 in 10–15 minutes and level 5 in 2–3 hours. The HUD shows the season next to
+  purpose: a new player reaches level 2 in 10–15 minutes and level 5 in 2–3 hours (level 5 asks for 5,000 XP: families eat
+  part of what the farm makes). The HUD shows the season next to
   the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
   which turns every empty field back to unploughed (faded soil); in winter nothing can be ploughed or sown.
@@ -192,8 +212,10 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 
 Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60 / ×300**
 (at ×60 a season passes in 32 real seconds, at ×300 in under 7 and a whole year in under half a minute),
-**Next season** (jumps the clock to the start of the next season, like time away but without the summary) and
-**Refresh orders** (fills every order slot now) and **Regrow all trees** (every stump grows back at once). **+10** adds only what the granaries or storehouses have room for.
+**Next season** (jumps the clock to the start of the next season, like time away but without the summary),
+**+1 family** (fills an empty home at once), **Next day** (jumps to the next day boundary, where the families settle
+their needs), **Refresh orders** (fills every order slot now) and **Regrow all trees** (every stump grows back at
+once). **+10** adds only what the granaries or storehouses have room for.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
@@ -220,7 +242,12 @@ chips are `data-testid="resource-<category>"` (`crops`, `animal`, `feed`, `goods
 `window.farm.season` is `{ season, dayOfSeason, msLeft, look, weather }` (e.g. `season: 'winter'`, game ms until the
 next season); `look` is the season the farm is drawn in (it follows `season`, a crossfade at most behind) and
 `weather` the number of weather particles alive now (0 in summer or with weather effects off, never over 150).
-`window.farm.workers` is `{ farmers, free, hireCost, list, assignments, plans, recipes, sites }`: `list[i]` is
+`window.farm.families` is `{ homes, families, approval, breakdown, lastDay, nextArrivalAt }`: `breakdown` lists
+`{ id, label, points }` parts (`base`, `variety`, `food`, `clothes`, `firewood`), `lastDay` is
+`{ ate, variety, firewood, clothed }` for the last settled day (`ate`: food id → eaten; `firewood`: wood burned, null
+outside winter; `clothed`: families clothed, null before the loom is unlocked) or null before the first day, and
+`nextArrivalAt` is the game time (`window.farm.clock.elapsed`) the next family is due, null while no home is free.
+`window.farm.workers` is `{ farmers, free, list, assignments, plans, recipes, sites }`: `list[i]` is
 `{ farmer, workplace, job, activity }` (workplace: object id or null; job: the running job's kind or null; activity:
 the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
 (`best`, `none` for Fallow, or a crop id), `recipes` building id → "Keep making" recipe, and `sites` lists the construction sites
@@ -255,7 +282,8 @@ src/
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure, starting fields
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
-    workers.ts         farmers: hiring, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
+    families.ts        families: homes, daily meals / firewood / clothes, approval, arrivals and departures (slice `families`)
+    workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
     work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
@@ -268,6 +296,7 @@ src/
     items.ts           item catalogue (ids shared by every feature)
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
+    families.ts        the Cottage buildable, foods, needs per family, approval points, arrival and leaving thresholds
     resourceBuildings.ts woodcutter's lodge, quarry and mine buildables: costs, yields, cycle times
     resources.ts       resource categories (resource bar, stock piles), item → category / pile
     buildables.ts      build menu registry (+ the core Path)
@@ -309,7 +338,9 @@ src/
                        `window.farm.map`
                        (data: src/data/resourceBuildings.ts, logic: src/logic/resources.ts)
     orders/            📋 Orders HUD button (with badge) and orders panel
-    workers/           👨‍🌾 Farmers HUD button, hire and workplace sheet, farmers at work on the map, `window.farm.workers`
+    families/          😊 approval chip and 👪 Families sheet, cottage smoke and panel, arrival/departure toasts,
+                       `window.farm.families` (data: src/data/families.ts, logic: src/logic/families.ts)
+    workers/           👨‍🌾 Farmers HUD button, workplace sheet (with the families block), farmers at work on the map, `window.farm.workers`
                        (data: src/data/workers.ts, logic: src/logic/workers.ts and work.ts; hand work goes through
                        `withFarmer`, workplace panels get their farmer block from `workplacePanel`, src/game/workers.ts)
     land/              "For sale" signs on parcels next to owned land, buy dialog

@@ -22,7 +22,7 @@ import { capacity, used } from './storage';
 import { maxLevelState } from './test-utils';
 import type { PlacedObject } from './types';
 import { workplaceNext } from './work';
-import { assignFarmer, hireFarmer, jobsByFarmer, unassignFarmer, workerAt, workersOf } from './workers';
+import { assignFarmer, addFarmer, jobsByFarmer, unassignFarmer, workerAt, workersOf } from './workers';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -231,13 +231,14 @@ describe('resource buildings', () => {
   it('several staffed buildings work at once', () => {
     const game = farm();
     game.state.inventory = {};
-    hireFarmer(game);
-    hireFarmer(game);
+    addFarmer(game);
+    addFarmer(game);
     game.state.inventory = { wood: 8, stone: 8 };
     const store = game.place('storehouse', X + 4, Y + 8);
     if (!store.ok) throw new Error(store.reason);
     store.object.state.level = 3;
-    game.state.inventory = {};
+    // Food for the three families, so none of them leaves.
+    game.state.inventory = { wheat: 50, carrot: 50 };
     const ids = [build(game, 'woodcutter', X + 1, Y + 5), build(game, 'quarry', X + 4, Y + 5), build(game, 'mine', X + 7, Y + 5)].map((o) => o.id);
     for (const id of ids) expect(assignFarmer(game, id).ok).toBe(true);
     game.advance(HOUR);
@@ -248,26 +249,38 @@ describe('resource buildings', () => {
   });
 });
 
+/** Counts the wood the families burn as firewood from now on. */
+function firewoodOf(game: Game): { wood: number } {
+  const burned = { wood: 0 };
+  game.events.on('inventory', ({ itemId, delta }) => {
+    if (itemId === 'wood' && delta < 0) burned.wood -= delta;
+  });
+  return burned;
+}
+
 describe('offline catch-up', () => {
   it('produces over hours as running live does, within one cycle, up to the storehouse capacity', () => {
     const live = staffed('woodcutter');
     const away = new Game(deserialize(serialize(live.game.state)));
     for (let t = 0; t < 3 * HOUR; t += 250) live.game.tick(250);
+    const burned = firewoodOf(away);
     const result = catchUp(away, 3 * HOUR);
     const diff = Math.abs(live.game.count('wood') - away.count('wood'));
     expect(diff).toBeLessThanOrEqual(RESOURCES.woodcutter.yield);
     expect(away.count('wood')).toBeGreaterThan(0);
-    expect(result.work.materials.wood).toBe(away.count('wood') + (away.getObject(live.obj.id)!.state.waiting as number));
+    expect(result.work.materials.wood).toBe(away.count('wood') + (away.getObject(live.obj.id)!.state.waiting as number) + burned.wood);
   });
 
   it('stops at the storehouse capacity, holds one cycle in the building, and the summary says so', () => {
     const { game, obj } = staffed('woodcutter');
+    const burned = firewoodOf(game);
     const result = catchUp(game, 24 * HOUR);
+    expect(burned.wood).toBeGreaterThan(0); // the family's winter firewood
     expect(game.count('wood')).toBe(FARMHOUSE_STORE.materials);
     const waiting = (game.getObject(obj.id)!.state as ResourceState).waiting;
     expect(waiting).toBeGreaterThan(0);
     expect(waiting).toBeLessThanOrEqual(RESOURCES.woodcutter.yield);
-    expect(result.work.materials.wood).toBe(FARMHOUSE_STORE.materials + waiting);
+    expect(result.work.materials.wood).toBeGreaterThanOrEqual(FARMHOUSE_STORE.materials + waiting + burned.wood);
     expect(result.produced.wood).toBe(waiting);
     expect(result.changed).toContain(obj.id);
   });

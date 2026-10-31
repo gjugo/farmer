@@ -13,6 +13,7 @@ import {
   type PenState,
 } from './animals';
 import { START_LAND } from './constants';
+import { familiesOf } from './families';
 import { Game } from './game';
 import { maxLevelState } from './test-utils';
 import { deserialize, serialize } from './save';
@@ -208,7 +209,9 @@ describe('production and collection', () => {
     expect(collect(g, pasture)).toEqual({ milk: 1 });
     wait(g, 120_000);
     expect(collect(g, pasture)).toEqual({ wool: 1 });
-    expect(g.count('milk')).toBe(1);
+    // The milk went into the family's meal when the new day began.
+    expect(familiesOf(g.state).lastDay?.ate).toEqual({ milk: 1 });
+    expect(g.count('milk')).toBe(0);
     expect(g.count('wool')).toBe(1);
   });
 

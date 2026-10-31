@@ -45,7 +45,9 @@ describe('save / load', () => {
     const loaded = loadFromStorage(storage);
 
     expect(loaded.money).toBe(1490);
-    expect(loaded.inventory).toEqual({ milk: 3, egg: 10 });
+    // The family ate a little of it on the way (2 food a day).
+    expect(loaded.inventory).toEqual(g.state.inventory);
+    expect(loaded.inventory.egg).toBeGreaterThan(0);
     expect(loaded.objects).toEqual(g.state.objects);
     expect(loaded.objects.slice(-2).map((o) => [o.type, o.x, o.y])).toEqual([
       ['path', ix, iy],
@@ -144,7 +146,7 @@ describe('save / load', () => {
     b.state = { crop: 'wheat', timer: { start: 0, duration: 480_000 }, ploughedAt: 0 };
     const loaded = parseSave(JSON.stringify({ version: 9, savedAt: 1, state })).state;
     const fields = loaded.objects.filter((o) => o.type === FIELD);
-    expect(SAVE_VERSION).toBe(11);
+    expect(SAVE_VERSION).toBe(12);
     expect(fields[0].state).toEqual({ crop: null, timer: null, ploughedAt: 0, fertility: SOIL_QUALITY.rich, restingSince: 5000, lastCrop: null });
     expect(fields[1].state).toMatchObject({ crop: 'wheat', fertility: SOIL_QUALITY.rich, restingSince: null, lastCrop: null });
     expect(fields.map((f) => f.state.fertility)).toEqual(fields.map((f) => areaSoil({ x: f.x, y: f.y, w: 2, h: 2 })));
@@ -156,8 +158,9 @@ describe('save / load', () => {
       getSlice<ProgressionState>(state, PROGRESSION).nextGoal = nextGoal;
       return getSlice<ProgressionState>(parseSave(JSON.stringify({ version: 9, savedAt: 1, state })).state, PROGRESSION).nextGoal;
     };
-    // In version 9, index 13 was "own-cows" and 14 "make-cheese".
-    expect(GOALS[next(13)].id).toBe('own-cows');
+    // In version 9, index 13 was "own-cows" and 14 "make-cheese". (Version 11 inserted "house-families" just before
+    // "own-cows", so a farm about to be offered the cows gets that first.)
+    expect(GOALS[next(13)].id).toBe('house-families');
     expect(GOALS[next(14)].id).toBe('spread-manure');
     expect(GOALS[next(15)].id).toBe('earn-1000');
   });

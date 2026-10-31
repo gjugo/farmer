@@ -3,7 +3,7 @@ import { FIELD } from '../data/crops';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { PROCESSORS } from '../data/processing';
 import { RESOURCES } from '../data/resourceBuildings';
-import { BASE_HIRE_COST, HIRE_COST_GROWTH, MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
+import { MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Game } from './game';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
@@ -270,22 +270,34 @@ export function setKeepMaking(game: Game, buildingId: string, recipe: string | n
   if (obj) game.touch(obj);
 }
 
-/** Price of the next farmer, or null at `MAX_FARMERS`. */
-export function hireCost(state: GameState): number | null {
-  const { farmers } = workersOf(state);
-  if (farmers >= MAX_FARMERS) return null;
-  return Math.round((BASE_HIRE_COST * HIRE_COST_GROWTH ** (farmers - STARTING_FARMERS)) / 10) * 10;
+/**
+ * Adds one farmer, free and without a workplace (a family moved in, see `src/logic/families.ts`). Returns false at
+ * `MAX_FARMERS`.
+ */
+export function addFarmer(game: Game): boolean {
+  const w = workersOf(game.state);
+  if (w.farmers >= MAX_FARMERS) return false;
+  w.farmers++;
+  w.workplaces.push(null);
+  return true;
 }
 
-export type HireResult = { ok: true; farmers: number } | { ok: false; reason: 'max' | 'money' };
-
-/** Pays for and adds one farmer. Nothing changes when it fails. */
-export function hireFarmer(game: Game): HireResult {
-  const cost = hireCost(game.state);
-  if (cost === null) return { ok: false, reason: 'max' };
-  if (!game.spend(cost)) return { ok: false, reason: 'money' };
-  const w = workersOf(game.state);
-  w.farmers++;
-  game.activity.emit('hired', { farmers: w.farmers });
-  return { ok: true, farmers: w.farmers };
+/**
+ * The last farmer leaves (their family moved away): any job they were on is dropped (a site they were building waits
+ * for another farmer) and their workplace is freed. Returns that workplace, or null when the farm is down to its
+ * starting farmers and nobody leaves.
+ */
+export function removeFarmer(game: Game): { workplace: string | null } | null {
+  const { state } = game;
+  const w = workersOf(state);
+  if (w.farmers <= STARTING_FARMERS) return null;
+  const i = w.farmers - 1;
+  const workplace = w.workplaces[i] ?? null;
+  w.farmers--;
+  w.workplaces.length = w.farmers;
+  w.jobs = jobsByFarmer(state.clock, { ...w, farmers: i + 1 })
+    .flatMap((j, k) => (j && k !== i ? [{ ...j, farmer: k }] : []));
+  const obj = workplace ? game.getObject(workplace) : undefined;
+  if (obj) game.touch(obj);
+  return { workplace };
 }

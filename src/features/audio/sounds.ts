@@ -73,7 +73,7 @@ export const ACTIVITY_SOUNDS: SoundMap<ActivityEvents> = {
   orderFulfilled: () => 'order',
   goalClaimed: () => 'goal',
   landBought: () => 'land',
-  hired: () => 'coins',
+  familyArrived: () => 'welcome',
 };
 
 /** Game state events → sound. Only events that are always the player's doing (or a milestone) are here. */

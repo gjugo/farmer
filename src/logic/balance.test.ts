@@ -15,25 +15,36 @@ import { inBounds, isOwned } from './land';
 import { capacity, checkUpgrade, nextLevel, upgrade, used } from './storage';
 import type { GameState, PlacedObject } from './types';
 import { PATH } from '../data/farmhouse';
+import { COTTAGE, FIREWOOD_PER_HOME, FOODS, MEAL_PER_FAMILY, PROVISION_DAYS } from '../data/families';
+import { getItem } from '../data/items';
+import { SEASON_DAYS } from '../data/seasons';
+import type { FarmContext } from '../game/context';
+import { withFarmer } from '../game/workers';
+import { DAY_MS } from './constants';
+import { homesOf } from './families';
+import { dayOfSeason, nextSeasonAt, seasonAt } from './seasons';
 import { workplaceNext } from './work';
 import { depositsUnder, MAP_SLICE, mapOf, newMapLayer, treesInRange } from './maplayer';
 import { ruleBlock } from './placement';
 import { createNewGame } from './state';
 import { RESOURCES } from '../data/resourceBuildings';
-import { assignFarmer, hireCost, hireFarmer, workerAt } from './workers';
+import { assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, workerAt, workersOf } from './workers';
 
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
  * against the real prices. It looks at the farm every `reactMs` (no instant clicks) and,
  * like a Manor Lords lord, assigns farmers instead of doing the work: every field (crop plan
- * "Best in season", which rotates crops; it never spreads manure) and pen gets a farmer, hiring more when it can afford one. It sells everything,
+ * "Best in season", which rotates crops; it never spreads manure) and pen gets a farmer. With none to spare it builds a cottage, one at a time, for a family to
+ * move into, and meanwhile has a free farmer work an unstaffed field by hand (a tap). It feeds the families its own
+ * crops: a day's meals in store, and from autumn into early spring enough to last the winter (no new cottage until
+ * that is in store); with firewood for every home bought from autumn. It sells the rest,
  * buys feed, builds up to `maxFields` fields (construction sites the free farmers build, with a path
  * to each), keeps chickens (and cows from level 3) and claims finished goals. Before building it buys
  * the materials it lacks at the Market, in fives like the Market's buttons. The map is the one a new game gets from
  * `MAP_SEED`: a grove and a stone outcrop on the starting land, an iron vein next door. It follows the storage goals
  * (build, then upgrade a granary) and, when a farmer waits because the granary is full, upgrades or builds
  * one; it makes room in the storehouse the same way before shopping for more materials than fit (selling materials
- * the purchase doesn't need first). From level 3 it builds a woodcutter's lodge, then a quarry with the lodge's wood;
+ * the purchase doesn't need first). From level 2 it builds a woodcutter's lodge, then a quarry with the lodge's wood;
  * it staffs them in winter with the farmers whose fields are frozen, and sends them back to the fields in spring, so it
  * hires nobody for them and buys only the materials they haven't made. It sells materials beyond 10 of each. It never uses processing
  * buildings, never builds where it would wall off land the farmhouse reaches, and buys land only when it runs out
@@ -84,7 +95,11 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
   const bought: Record<string, number> = {};
   const staffed = new Set<string>();
   game.activity.on('produced', ({ item, qty }) => (produced[item] = (produced[item] ?? 0) + qty));
-  game.activity.on('bought', ({ item, qty }) => (bought[item] = (bought[item] ?? 0) + qty));
+  let buyingFirewood = false;
+  // Building materials bought (firewood for the families is counted apart).
+  game.activity.on('bought', ({ item, qty }) => {
+    if (!buyingFirewood) bought[item] = (bought[item] ?? 0) + qty;
+  });
   const STEP = 1000;
   const KEEP_MATERIALS = 10;
 
@@ -168,6 +183,7 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     else if (all.length === 0) build(type, reserve);
     makingRoom = false;
   };
+  const tapCtx = { game, ui: { toast: () => {} } } as unknown as FarmContext;
   const pens = (type: PenType) => game.objectsOfType(type) as PlacedObject<PenState>[];
 
   const act = () => {
@@ -175,9 +191,28 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     // Like a player, it follows the storage goals.
     const goals = new Set(game.progression.goals().map((g) => g.def.id));
     if (goals.has('build-granary') || goals.has('upgrade-granary')) makeRoom('goods');
-    for (const id of Object.keys(game.state.inventory)) if (id !== 'feed' && !isMaterial(id)) sell(game, id);
+    // Food for the families (none while they live on their provisions): its cheap crops (wheat, carrots, corn); the
+    // dearer eggs and milk are sold. A day's meals, and from autumn until the first spring harvest (a crop sown in
+    // spring can take two days) enough for winter and those days, split across the kinds (meals are spread across them).
+    const families = workersOf(game.state).farmers;
+    const winterSoon = seasonAt(game.now) === 'winter' || seasonAt(nextSeasonAt(game.now)) === 'winter';
+    const fed = game.now >= PROVISION_DAYS * DAY_MS;
+    const PANTRY: readonly string[] = FOODS.filter((id) => getItem(id)?.category === 'crop');
+    const foodKinds = PANTRY.filter((id) => game.count(id) > 0).length || 1;
+    const lean = winterSoon || (seasonAt(game.now) === 'spring' && dayOfSeason(game.state.clock) <= 2);
+    const days = lean ? SEASON_DAYS + 4 : 1;
+    const keepFood = fed ? Math.ceil((days * MEAL_PER_FAMILY * families) / foodKinds) + 1 : 0;
+    for (const id of Object.keys(game.state.inventory)) {
+      if (id === 'feed' || isMaterial(id)) continue;
+      const keep = PANTRY.includes(id) ? keepFood : 0;
+      if (game.count(id) > keep) sell(game, id, game.count(id) - keep);
+    }
+    const firewood = SEASON_DAYS * FIREWOOD_PER_HOME * Math.min(families, homesOf(game.state));
     // Materials its buildings made beyond a working stock are sold too.
-    for (const id of MATERIAL_IDS) if (game.count(id) > KEEP_MATERIALS) sell(game, id, game.count(id) - KEEP_MATERIALS);
+    for (const id of MATERIAL_IDS) {
+      const keep = id === 'wood' ? Math.max(KEEP_MATERIALS, firewood) : KEEP_MATERIALS;
+      if (game.count(id) > keep) sell(game, id, game.count(id) - keep);
+    }
     const fields = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
     const resources = [...game.objectsOfType('woodcutter'), ...game.objectsOfType('quarry')].filter((o) => !o.site);
     const workplaces = [...pens('coop'), ...pens('pasture'), ...fields].filter((o) => !o.site);
@@ -187,6 +222,8 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
       const farmer = workerAt(game.state, r.id);
       const field = fields.find((f) => !f.site && (farmer === null ? workerAt(game.state, f.id) !== null && frozen(f) : workerAt(game.state, f.id) === null && !frozen(f)));
       if (field) assignFarmer(game, farmer === null ? r.id : field.id, farmer ?? workerAt(game.state, field.id)!);
+      // A family with no other workplace works it all year.
+      if (workerAt(game.state, r.id) === null && workersOf(game.state).workplaces.includes(null)) assignFarmer(game, r.id);
       if (workerAt(game.state, r.id) !== null) staffed.add(r.type);
     }
     // A farmer still waiting for room after the sale (feed takes room too): more storage, if it can pay for it.
@@ -200,13 +237,19 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     for (const type of ['coop', 'pasture'] as const) {
       for (const p of pens(type)) while (game.count('feed') < feedNeeded(game, p) && buyFeed(game).ok);
     }
-    // Staff every finished field and pen, hiring when there is no farmer to spare.
-    for (const wp of workplaces) {
-      if (workerAt(game.state, wp.id) !== null) continue;
-      if (assignFarmer(game, wp.id).ok) continue;
-      const cost = hireCost(game.state);
-      if (cost === null || game.money < cost + 40 || !hireFarmer(game).ok) break;
-      assignFarmer(game, wp.id);
+    // Staff every finished field and pen; for those left without a farmer, build cottages so families come for them.
+    // (Fields frozen in winter don't count: their farmers are at the lodge and the quarry.)
+    const unstaffed = workplaces.filter((wp) => workerAt(game.state, wp.id) === null && !frozen(wp) && !assignFarmer(game, wp.id).ok).length;
+    const comingHomes = homesOf(game.state) - workersOf(game.state).farmers + game.objectsOfType(COTTAGE).filter((o) => o.site).length;
+    // Only when the pantry holds its reserve: a family it can't feed would leave again.
+    const pantry = PANTRY.reduce((n, id) => n + game.count(id), 0);
+    if (unstaffed > 0 && comingHomes <= 0 && pantry >= (keepFood - 1) * foodKinds) build(COTTAGE, 40);
+    // While a family is on its way, a field nobody works gets a tap: a free farmer ploughs, sows or harvests it by hand.
+    for (const f of fields) {
+      if (f.site || workerAt(game.state, f.id) !== null || freeFarmers(game.state) === 0) continue;
+      if (cropPlanOf(game.state, f.id) === PLAN_FALLOW) setCropPlan(game, f.id, PLAN_BEST);
+      const next = workplaceNext(game, f);
+      if ('task' in next) withFarmer(tapCtx, next.task.kind, f, next.task.workMs, () => next.task.run(0));
     }
     // Grow: four fields, then a coop with chickens, then more fields and the rest.
     const stock = (type: PenType, kind: AnimalKind, reserve: number) => {
@@ -219,12 +262,23 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
       }
     };
     if (fields.length >= 4) stock('coop', 'chicken', 60);
-    // Its own materials from level 3: a woodcutter's lodge, then a quarry built with the lodge's wood.
-    if (game.level >= 3 && game.objectsOfType('woodcutter').length === 0) build('woodcutter', 40);
+    // Its own materials from level 2 (cottages and firewood take wood): a woodcutter's lodge, then a quarry built with
+    // the lodge's wood.
+    if (game.level >= 2 && game.objectsOfType('woodcutter').length === 0) build('woodcutter', 40);
     if (game.objectsOfType('quarry').length === 0 && game.missingMaterials(getBuildable('quarry')!.materials).length === 0) build('quarry', 40);
     const stocked = pens('coop').some((p) => p.state.animals.length > 0);
-    if (fields.length < maxFields && (fields.length < 4 || stocked)) build(FIELD, 40);
+    // Past the first four, no more fields while some have nobody to work them: the money goes to cottages first.
+    if (fields.length < maxFields && (fields.length < 4 || stocked) && (fields.length < 4 || unstaffed === 0)) build(FIELD, 40);
     stock('pasture', 'cow', 100);
+    // Firewood for a whole winter (after building, which may have used wood), bought from autumn on if its own lodge
+    // hasn't made it: in fives, as far as the money goes.
+    for (let i = 0; winterSoon && i < 10 && game.count('wood') < firewood && game.money >= 5 * buyPrice(game.day, 'wood')!; i++) {
+      if (used(game.state, 'materials') + 5 > capacity(game.state, 'materials')) makeRoom('materials');
+      buyingFirewood = true;
+      const ok = buy(game, 'wood', 5).ok;
+      buyingFirewood = false;
+      if (!ok) break;
+    }
   };
 
   let nextAct = 0;
@@ -277,6 +331,14 @@ describe('level curve balance', () => {
   // Map resources (the lodge fells the start grove, the quarry stands on the start outcrop, map seed MAP_SEED):
   // casual L2 10.0, L5 167.0; relaxed L2 8.5, L5 166.0; busy L2 8.2, L5 167.8.
   // Map resources and soil fertility together: casual L2 9.0, L5 173.0; relaxed L2 8.5, L5 157.0; busy L2 8.2, L5 161.9.
+  // All three with families (lodge from level 2, since cottages and firewood take wood; at level 3 the relaxed player
+  // bought over 70% of its materials): casual L2 9.0, L5 174.0; relaxed L2 9.5, L5 172.5; busy L2 9.2, L5 145.2.
+  // Then families instead of hiring: a family moves into a cottage ($80 + 8 wood) half a day after it is built, and eats
+  // 2 food a day (about a fifth of what the farm makes; up to ~1,600 of the $ it would have sold in 3 h), plus firewood
+  // in winter. Tapping unstaffed fields while families are on their way makes up the early game; the "build a coop"
+  // goal now counts a coop built before it shows (it blocked a goal slot for good). With level 5 at 6000 XP the casual
+  // player missed it (≈5900 XP in 3 h), at 5500 reached it at 183 min; at 5000: casual L2 9.0, L5 171.0; relaxed
+  // L2 9.0, L5 159.0; busy L2 9.0, L5 153.7.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });

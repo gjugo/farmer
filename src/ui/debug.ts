@@ -1,6 +1,8 @@
 import { ITEM_LIST } from '../data/items';
 import { MAX_LEVEL } from '../data/progression';
 import type { FarmContext } from '../game/context';
+import { DAY_MS } from '../logic/constants';
+import { addFamily } from '../logic/families';
 import { mapOf, regrowAll } from '../logic/maplayer';
 import { catchUpGame } from '../logic/offline';
 import { refreshOrders } from '../logic/orders';
@@ -120,6 +122,34 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
         onclick: () => catchUpGame(game, nextSeasonAt(game.now) - game.now),
       },
       'Next season',
+    ),
+    h(
+      'div',
+      { class: 'debug-row' },
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'btn',
+          'data-testid': 'debug-add-family',
+          // Fills an empty home at once, skipping the wait and the approval check.
+          onclick: () => {
+            if (!addFamily(game)) ctx.ui.toast('No empty home: build a cottage first', 'error');
+          },
+        },
+        '+1 family',
+      ),
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'btn',
+          'data-testid': 'debug-next-day',
+          // Like "Next season": the families settle the new day (meal, firewood, clothes, approval) on the way.
+          onclick: () => catchUpGame(game, (Math.floor(game.now / DAY_MS) + 1) * DAY_MS - game.now),
+        },
+        'Next day',
+      ),
     ),
     h(
       'div',

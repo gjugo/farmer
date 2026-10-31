@@ -612,6 +612,49 @@ def farmhouse():
     return c
 
 
+# ================================================================== COTTAGE 2x2
+# The chimney top of the cottage (grid point and height): the game puffs smoke from here on winter days.
+COTTAGE_CHIMNEY = (0.62, 0.72, 1.32)
+
+
+def cottage():
+    """A small family home: whitewashed walls under a thatched roof, a chimney (smoke is drawn by the game), a
+    vegetable patch and a washing line."""
+    c = bcanvas(2, 2, top=380)
+    pad(c, 2, 2, "#d9c9a0", pattern="dirt")
+    x0, y0, x1, y1, zw, zr = 0.32, 0.3, 1.58, 1.42, 0.6, 1.12
+    WALL = "#f6eedb"
+    THATCH = "#d6a34a"
+    TIMBER = "#7a5232"
+    c.box(x0, y0, 0, x1, y1, zw, WALL, WALL, shade(WALL, -0.1))
+    L, R = Plane(c, "y", y1), Plane(c, "x", x1)
+    for pl, u0, u1 in ((L, x0, x1), (R, y0, y1)):
+        pl.rect(u0, u1, 0, 0.1, "#b5ab98" if pl is L else shade("#b5ab98", -0.12), sw=2)
+        # half-timbering: a beam under the eaves and a brace or two
+        pl.line(u0, zw - 0.04, u1, zw - 0.04, TIMBER, 5)
+    L.line(x0 + 0.08, 0.12, x0 + 0.3, zw - 0.06, TIMBER, 4)
+    R.line(y1 - 0.08, 0.12, y1 - 0.3, zw - 0.06, TIMBER, 4)
+    L.door(1.15, 0.26, 0.46, "#4f7fb0", frame=TIMBER)
+    L.window(0.62, 0.28, 0.24, 0.2, frame=TIMBER, shutters="#4f7fb0", flower="#f2c14e")
+    R.window((y0 + y1) / 2, 0.28, 0.24, 0.2, frame=TIMBER, shutters="#4f7fb0")
+    edge_trim(c, x0, y0, x1, y1, 0, zw, TIMBER, 5)
+    cx, cy, ct = COTTAGE_CHIMNEY
+    c.box(cx - 0.08, cy - 0.08, 0.7, cx + 0.08, cy + 0.08, ct - 0.04, shade("#a7988a", 0.15), "#a7988a", shade("#a7988a", -0.15))
+    c.gable_roof(x0, y0, x1, y1, zw, zr, THATCH, along="x", oh=0.14, gable_color=WALL, rows=5, cols=9)
+    c.box(cx - 0.1, cy - 0.1, ct - 0.04, cx + 0.1, cy + 0.1, ct, "#6b6b6b", "#8a8a8a", "#707070", shadow=False)
+    # stone step at the door
+    c.box(0.97, y1, 0, 1.33, y1 + 0.14, 0.04, "#cfc8bb", "#b3ab9c", "#a39a8c", sw=2, shadow=False)
+    # a little vegetable patch by the right wall, and a water butt
+    for k in range(3):
+        y = 0.45 + k * 0.32
+        c.poly(c.PP([(1.68, y, 0.02), (1.92, y, 0.02), (1.92, y + 0.22, 0.02), (1.68, y + 0.22, 0.02)]), "#8a5a32", OUT, 1.5)
+        for j in range(2):
+            p = c.P(1.74 + j * 0.12, y + 0.11, 0.05)
+            c.circle(p[0], p[1], 5, "#5cb83c", OUT, 1.2)
+    c.cylinder(0.18, 1.62, 0, 0.2, 0.08, TIMBER, top="#4d3420", sw=2)
+    return c
+
+
 # ================================================================== GRANARY 2x2 (levels 1-3)
 def silo(c, x, y, r, z1, color="#e9dcc0", roof="#c4503a"):
     """A round grain silo with hoops and a conical cap."""
@@ -915,3 +958,4 @@ def build():
     image("buildings", "mine", mine(), (2, 2), notes="iron mine: hill with a timber-framed tunnel, rails and an ore cart, 2x2")
     image("buildings", "farmhouse", farmhouse(), (2, 2), notes="farmhouse, 2x2: door at x 1.3 on the front-left (+y) face, bench for idle farmers in front")
     image("buildings", "for_sale_sign", for_sale(), (1, 1), notes="'for sale' sign for unowned plots, 1x1")
+    image("buildings", "cottage", cottage(), (2, 2), notes="cottage, 2x2: a home for one family, chimney at the back left (smoke drawn by the game)")

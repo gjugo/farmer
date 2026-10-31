@@ -6,6 +6,7 @@ import { FARM_PARCELS, parcelsBought } from './parcels';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState } from './types';
 import { levelForXp, unlocksAt, xpForLevel } from './unlocks';
+import { workersOf } from './workers';
 
 /** One active goal. `progress` counts towards the goal's `count`. */
 export interface GoalSlot {
@@ -34,7 +35,7 @@ export function initialProgression(xp = 0): ProgressionState {
 
 registerStateSlice<ProgressionState>(PROGRESSION, () => initialProgression());
 
-const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'own-parcels', 'reach-level']);
+const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'own-parcels', 'reach-level', 'families']);
 
 export function isStateGoal(def: GoalDef): boolean {
   return STATE_KINDS.has(def.kind);
@@ -54,6 +55,8 @@ export function stateGoalValue(state: GameState, def: GoalDef): number {
       return parcelsBought(state.land, FARM_PARCELS, START_LAND);
     case 'reach-level':
       return levelForXp(getSlice<ProgressionState>(state, PROGRESSION).xp);
+    case 'families':
+      return workersOf(state).farmers;
     default:
       return 0;
   }
@@ -133,6 +136,7 @@ export class Progression {
     activity.on('upgraded', ({ type }) => this.count((d) => d.kind === 'upgrade' && d.type === type, 1));
     activity.on('fertilised', () => this.count((d) => d.kind === 'fertilise', 1));
     for (const e of ['objectAdded', 'objectRemoved', 'objectChanged', 'land'] as const) events.on(e, () => this.refreshStateGoals());
+    for (const e of ['familyArrived', 'familyLeft'] as const) activity.on(e, () => this.refreshStateGoals());
     events.on('reset', () => this.init());
     this.init();
   }

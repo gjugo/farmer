@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getBuildable } from '../data/buildables';
 import { RESOURCES, type ResourceType } from '../data/resourceBuildings';
-import { START_LAND, START_LAYOUT } from './constants';
+import { DAY_MS, START_LAND, START_LAYOUT } from './constants';
 import { Game } from './game';
 import { isOwned, setOwned } from './land';
 import {
@@ -32,7 +32,7 @@ import { createNewGame } from './state';
 import { bareMap, maxLevelState } from './test-utils';
 import type { GameState, PlacedObject } from './types';
 import { nextWorkEvent, workplaceNext } from './work';
-import { assignFarmer, hireFarmer } from './workers';
+import { assignFarmer, addFarmer } from './workers';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -69,7 +69,7 @@ function staff(game: Game, type: ResourceType, x = X + 1, y = Y + 5): PlacedObje
   game.state.inventory = {};
   if (!connectToFarmhouse(game.state, footprint(r.object))) throw new Error('no road');
   if (!assignFarmer(game, r.object.id).ok) {
-    hireFarmer(game);
+    addFarmer(game);
     assignFarmer(game, r.object.id);
   }
   return r.object as unknown as PlacedObject<ResourceState>;
@@ -295,7 +295,15 @@ describe("the woodcutter's lodge fells trees in range", () => {
     expect(idleReason(game, obj)).toBe('no-trees');
     const first = treeAt(layer, lodgeAt.x, lodgeAt.y + 4)!;
     const regrow = first.felledAt! + REGROW_MS;
-    expect(nextWorkEvent(game)).toBe(regrow);
+    // The regrow is a scheduler event (so is every day boundary, when the families settle their needs).
+    const probe = new Game(structuredClone(game.state));
+    const events: number[] = [];
+    while (probe.now < regrow) {
+      events.push(nextWorkEvent(probe));
+      probe.advance(events[events.length - 1] - probe.now);
+    }
+    expect(events).toContain(regrow);
+    expect(events.every((t) => t === regrow || t % DAY_MS === 0)).toBe(true);
     // About a season of game time.
     expect(REGROW_MS).toBe(32 * MIN);
     run(game, regrow - game.now - 1);

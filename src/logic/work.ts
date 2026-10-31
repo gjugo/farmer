@@ -7,6 +7,7 @@ import { PLOUGH_COST } from '../data/seasons';
 import { COLLECT_WORK_MS, FEED_WORK_MS, FERTILISE_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
 import * as animals from './animals';
 import { MANURE_BELOW } from '../data/soil';
+import { nextFamiliesEvent, stepFamilies } from './families';
 import { canPloughNow, checkFertilise, cropStage, fertilise, fertilityOf, fieldCrop, harvest, harvestYield, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import type { Game } from './game';
 import * as processing from './processing';
@@ -21,7 +22,7 @@ import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf
  * farmers (no workplace, or nothing to do there) build construction sites, oldest first.
  *
  * It runs on game time, not frames: `runWork` steps the clock from one event (a job, crop, animal,
- * batch or resource cycle ending, a new season) to the next and hands out work at each, so a frame at ×60, a
+ * batch or resource cycle ending, a new season or day, a family moving in) to the next and hands out work at each, so a frame at ×60, a
  * hundred frames at ×1 and a week of offline catch-up all give the same farm. Between events
  * nothing a farmer could do changes, except what the player does, which the next call picks up.
  */
@@ -219,6 +220,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
   w.jobs = activeJobs(state.clock, w).filter((j) => j.doneAt === undefined || !!game.getObject(j.target ?? '')?.site);
   settleAssigned(game, onSettled);
   settleResources(game);
+  // New days (meals, firewood, clothes, approval, departures) and arrivals, before work is handed out.
+  stepFamilies(game);
 
   const routeTo = (obj: PlacedObject): Route | null => {
     if (!routes.has(obj.id)) routes.set(obj.id, findRoute(state, areaOf(obj)));
@@ -254,7 +257,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
 
 /**
  * The next game time after now at which a farmer may find new work: a job, crop, animal cycle, batch or resource cycle
- * ends, a tree a waiting lodge could fell grows back, or a season begins.
+ * ends, a tree a waiting lodge could fell grows back, a season or a day begins (the families settle their needs), or a
+ * family is due to move in.
  */
 export function nextWorkEvent(game: Game): number {
   const { state } = game;
@@ -293,6 +297,7 @@ export function nextWorkEvent(game: Game): number {
     if (cycle) at(cycle.start + cycle.duration);
   }
   if (fields) at(nextSeasonAt(now));
+  at(nextFamiliesEvent(state));
   return next;
 }
 

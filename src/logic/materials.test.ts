@@ -222,9 +222,9 @@ describe('buying at the Market', () => {
 });
 
 describe('goals, orders and saves', () => {
-  it('a "buy 10 wood" goal comes just before building the coop, and counts wood bought', () => {
+  it('a "buy 10 wood" goal comes just before building a cottage (with that wood) and the coop, and counts wood bought', () => {
     const at = GOALS.findIndex((g) => g.id === 'buy-wood');
-    expect(GOALS[at + 1].id).toBe('build-coop');
+    expect(GOALS.slice(at + 1, at + 3).map((g) => g.id)).toEqual(['build-cottage', 'build-coop']);
     const game = farm();
     getSlice<ProgressionState>(game.state, PROGRESSION).goals = [{ id: 'buy-wood', progress: 0 }];
     game.addItem('wood', 5); // not bought: no credit

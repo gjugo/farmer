@@ -121,10 +121,10 @@ describe('unlocks', () => {
     }
   });
 
-  it("level 1 offers only the field, wheat, chickens and their coop, storage and the woodcutter's lodge", () => {
+  it("level 1 offers only the field, wheat, chickens and their coop, storage, the cottage and the woodcutter's lodge", () => {
     expect(CROP_LIST.filter((c) => c.unlockLevel === 1).map((c) => c.id)).toEqual(['wheat']);
     expect(Object.values(ANIMALS).filter((a) => a.unlockLevel === 1).map((a) => a.id)).toEqual(['chicken']);
-    expect(listBuildMenu().filter((b) => b.unlockLevel === 1).map((b) => b.id).sort()).toEqual(['coop', 'field', 'granary', 'path', 'storehouse', 'woodcutter']);
+    expect(listBuildMenu().filter((b) => b.unlockLevel === 1).map((b) => b.id).sort()).toEqual(['coop', 'cottage', 'field', 'granary', 'path', 'storehouse', 'woodcutter']);
   });
 
   it('every animal unlocks no earlier than its pen', () => {

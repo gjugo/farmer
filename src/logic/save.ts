@@ -25,7 +25,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 export interface SaveFile {
   version: number;
@@ -136,6 +136,19 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     const state = isPlainObject(raw.state) ? raw.state : {};
     const ext = isPlainObject(state.ext) ? state.ext : {};
     return { ...raw, version: 11, state: { ...state, ext: { ...ext, [MAP_SLICE]: migrateMapLayer(state) } } };
+  },
+  // Families: farmers live in homes and cash hiring is gone. The farm keeps every farmer it has, housed or not (no
+  // family arrives while there are more farmers than homes; nobody leaves for lack of one), and its families start
+  // counting days from the first load. Two goals were inserted ("build-cottage", "house-families"); farms past them skip them.
+  11: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const p = ext[PROGRESSION];
+    if (!isPlainObject(p) || typeof p.nextGoal !== 'number') return { ...raw, version: 12 };
+    let nextGoal = p.nextGoal;
+    // "build-cottage" and "house-families" in version 12.
+    for (const at of [5, 14]) if (nextGoal > at) nextGoal++;
+    return { ...raw, version: 12, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal } } } };
   },
 };
 
