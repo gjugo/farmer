@@ -76,6 +76,12 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   "Build a quarry" come after "Buy a plot of land", "Mine 5 iron" after "Mill 12 feed" (a lodge or quarry built
   earlier counts).
 - Click an object to open its action panel.
+- **Land:** the map is 64 × 48 tiles and a new farm owns the 16 × 12 in its middle. The game opens on the owned land
+  with about 2 tiles around it (on a phone it stays close enough that a tile is at least 40 px wide, centred on the
+  farmhouse); zooming out goes as far as the whole map. The rest of the map is cut into parcels of up to 12 × 12 tiles,
+  and the ones next to your land carry a "For sale" sign: the first costs $1,000, each one after ×1.25. Saves from
+  before the map grew load in the middle of the bigger map with their farm unchanged, the whole new starting land,
+  and every parcel they owned part of.
 - **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
   after their cycle (chicken 3 game-minutes, cow 6, sheep 8); click the pen (or **Collect**) to pick up eggs, milk and wool.
 - **Processing:** build a Feed Mill, Dairy, Bakery or Loom, open it and pick a recipe. Inputs are taken at once;
@@ -167,7 +173,7 @@ src/
     clock.ts           game clock, Day N, game-time timers
     seasons.ts         seasons from the game clock (2 days each), season runs for ploughing and sowing windows
     market.ts          daily sell prices (base × 0.8–1.2 by day + item id), sell / sellAll; material buy prices, buy
-    parcels.ts         land parcels, adjacency, parcel prices ($500, ×1.5), buyParcel
+    parcels.ts         land parcels, adjacency, parcel prices ($1,000, ×1.25), buyParcel
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, starting fields
@@ -315,7 +321,8 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 - **HUD button** (e.g. Market): `registerHudButton({ id, label, icon, onClick: (ctx) => ctx.ui.openPanel(...) })`.
   Add `badge: (ctx) => n` to show a count on the button (hidden at 0).
 - **Global feature state** (e.g. market prices): `registerStateSlice('market', () => ({ ... }))`
-  and `getSlice(game.state, 'market')`. Defaults are merged into old saves.
+  and `getSlice(game.state, 'market')`. Defaults are merged into old saves. A slice that saves tile coordinates passes
+  a third argument, `(saved, dx, dy) => moved`, so save migrations that move the farm on the map move them too.
 - **Custom sheet** (markup of your own, like the Market): `ctx.ui.toggleSheet({ id, title, signature, render, tick })`.
 - **Confirm dialog:** `await ctx.ui.confirm(title, message, { confirmLabel, variant, disabled, hint })`.
 - **Taps on empty tiles** (e.g. locked land): `registerTileTapHandler((ctx, x, y) => true /* handled */)`.

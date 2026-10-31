@@ -5,7 +5,7 @@ import { GOALS } from '../data/progression';
 import { RESOURCES, SLOW_SEASONS, type ResourceType } from '../data/resources';
 import { FARMHOUSE_STORE } from '../data/storage';
 import { COLLECT_WORK_MS } from '../data/workers';
-import { START_LAND } from './constants';
+import { START_LAYOUT } from './constants';
 import { Game } from './game';
 import { setOwned } from './land';
 import { buyPrice } from './market';
@@ -25,8 +25,9 @@ import { assignFarmer, hireFarmer, jobsByFarmer, unassignFarmer, workerAt, worke
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
-const X = START_LAND.x;
-const Y = START_LAND.y;
+// Tiles relative to the starting fields and farmhouse; the rows from Y + 5 down are free land.
+const X = START_LAYOUT.x;
+const Y = START_LAYOUT.y;
 const TYPES = Object.keys(RESOURCES) as ResourceType[];
 
 /** A top-level farm owning the whole map, with plenty of money and an empty inventory. */
@@ -329,15 +330,15 @@ describe('goals and saves', () => {
     expect(workerAt(loaded.state, obj.id)).toBe(0);
   });
 
-  it('an old save (version 7) skips the new goals it is past', () => {
+  it('an old save (version 8) skips the new goals it is past', () => {
     const file = (nextGoal: number) => {
       const state = createNewGame();
       getSlice<ProgressionState>(state, PROGRESSION).nextGoal = nextGoal;
       const raw = JSON.parse(serialize(state));
-      raw.version = 7;
+      raw.version = 8;
       return getSlice<ProgressionState>(deserialize(JSON.stringify(raw)), PROGRESSION).nextGoal;
     };
-    // In version 7, index 7 was "collect-eggs", 14 "make-cheese", 16 "buy-land", 17 "make-feed" and 18 "own-sheep".
+    // In version 8, index 7 was "collect-eggs", 14 "make-cheese", 16 "buy-land", 17 "make-feed" and 18 "own-sheep".
     expect(GOALS[file(7)].id).toBe('collect-eggs');
     expect(GOALS[file(14)].id).toBe('make-cheese');
     expect(GOALS[file(16)].id).toBe('buy-land');

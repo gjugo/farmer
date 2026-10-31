@@ -41,6 +41,16 @@ describe('parcel grid', () => {
     expect(new Set(FARM_PARCELS.map((p) => p.id)).size).toBe(FARM_PARCELS.length);
   });
 
+  it('cuts the 64×48 map into 5 × 5 parcels of at most 12 tiles a side around the 16×12 start', () => {
+    expect([MAP_WIDTH, MAP_HEIGHT, START_LAND.w, START_LAND.h, PARCEL_MAX_SIZE]).toEqual([64, 48, 16, 12, 12]);
+    expect(FARM_PARCELS).toHaveLength(25);
+    expect(parcelAt(FARM_PARCELS, START_LAND.x, START_LAND.y)).toMatchObject(START_LAND);
+    for (const p of FARM_PARCELS) {
+      if (p.x !== START_LAND.x) expect(p.w).toBeLessThanOrEqual(12);
+      if (p.y !== START_LAND.y) expect(p.h).toBeLessThanOrEqual(12);
+    }
+  });
+
   it('chunks long strips into near-equal blocks', () => {
     const parcels = createParcels(20, 4, { x: 0, y: 0, w: 2, h: 4 }, 6);
     expect(parcels.map((p) => [p.x, p.w])).toEqual([
@@ -70,19 +80,20 @@ describe('parcel adjacency', () => {
 });
 
 describe('parcel prices', () => {
-  it('starts at $500 and grows 1.5× rounded to $10', () => {
-    expect([0, 1, 2, 3, 4, 5].map(parcelPrice)).toEqual([500, 750, 1130, 1700, 2550, 3830]);
+  it('starts at $1,000 and grows 1.25× rounded to $10', () => {
+    expect([0, 1, 2, 3, 4, 5].map(parcelPrice)).toEqual([1000, 1250, 1560, 1950, 2440, 3050]);
     for (let n = 0; n < 12; n++) expect(parcelPrice(n) % 10).toBe(0);
   });
 });
 
 describe('buying parcels', () => {
-  it('buys a parcel for $500, makes it owned and the next one costs $750', () => {
+  it('buys a parcel for $1,000, makes it owned and the next one costs $1,250', () => {
     const game = new Game();
+    game.earn(500);
     const parcel = rightOfStart();
     const before = ownedCount(game.state.land);
     const result = buyParcel(game, FARM_PARCELS, START_LAND, parcel);
-    expect(result).toEqual({ ok: true, price: 500 });
+    expect(result).toEqual({ ok: true, price: 1000 });
     expect(game.money).toBe(0);
     expect(ownedCount(game.state.land)).toBe(before + parcel.w * parcel.h);
     expect(isOwned(game.state.land, parcel.x, parcel.y)).toBe(true);
@@ -92,13 +103,14 @@ describe('buying parcels', () => {
     game.earn(100);
     expect(game.place('path', parcel.x + 1, parcel.y + 1).ok).toBe(true);
 
-    game.earn(1000);
+    game.earn(1200);
     const next = parcelsForSale(game.state.land, FARM_PARCELS)[0];
-    expect(checkBuy(game.state.land, FARM_PARCELS, START_LAND, next, game.money)).toEqual({ ok: true, price: 750 });
+    expect(checkBuy(game.state.land, FARM_PARCELS, START_LAND, next, game.money)).toEqual({ ok: true, price: 1250 });
   });
 
   it('puts new neighbours up for sale', () => {
     const game = new Game();
+    game.earn(500);
     const parcel = rightOfStart();
     const beforeIds = parcelsForSale(game.state.land, FARM_PARCELS).map((p) => p.id);
     buyParcel(game, FARM_PARCELS, START_LAND, parcel);
@@ -110,10 +122,10 @@ describe('buying parcels', () => {
 
   it('refuses a parcel the player cannot afford', () => {
     const game = new Game();
-    game.spend(1);
+    game.earn(499);
     const before = JSON.stringify(game.state.land);
-    expect(buyParcel(game, FARM_PARCELS, START_LAND, rightOfStart())).toEqual({ ok: false, reason: 'money', price: 500 });
-    expect(game.money).toBe(499);
+    expect(buyParcel(game, FARM_PARCELS, START_LAND, rightOfStart())).toEqual({ ok: false, reason: 'money', price: 1000 });
+    expect(game.money).toBe(999);
     expect(JSON.stringify(game.state.land)).toBe(before);
   });
 
@@ -136,6 +148,7 @@ describe('buying parcels', () => {
 
   it('keeps bought land after a save and load', () => {
     const game = new Game();
+    game.earn(500);
     const parcel = rightOfStart();
     buyParcel(game, FARM_PARCELS, START_LAND, parcel);
     const loaded = deserialize(serialize(game.state));

@@ -9,10 +9,10 @@ import { demolishMaterialsRefund, demolishRefund, Game } from './game';
 import { buy, buyPrice, dailyPrice, PRICE_MAX_FACTOR, sell, sellAll } from './market';
 import { isOrderable } from './orders';
 import { PROGRESSION, type ProgressionState } from './progression';
-import { deserialize, serialize } from './save';
+import { deserialize } from './save';
 import { getSlice } from './slices';
 import { createNewGame } from './state';
-import { maxLevelState } from './test-utils';
+import { fromV6, maxLevelState, v6Land, V6_START } from './test-utils';
 import { itemUnlockLevel } from './unlocks';
 
 // Free land below the starting fields, the farmhouse and the road between them.
@@ -243,25 +243,23 @@ describe('goals, orders and saves', () => {
   });
 
   it('an old save loads with no materials and its buildings untouched', () => {
-    const old = new Game(maxLevelState());
-    const r = old.place('coop', fx, fy);
-    if (!r.ok) throw new Error(r.reason);
-    old.state.inventory = { egg: 2 };
-    const file = JSON.parse(serialize(old.state));
-    file.version = 5;
-    getSlice<ProgressionState>(file.state, PROGRESSION).nextGoal = 3;
+    // Version-5 coordinates: the 32×24 map with its starting land at (11, 8).
+    const coop = { id: 'o1', type: 'coop', x: V6_START.x, y: V6_START.y + 4, state: { animals: [{ kind: 'chicken', fedAt: null }] } };
+    const file = {
+      version: 5,
+      savedAt: null,
+      state: { land: v6Land(), objects: [coop], nextObjectId: 2, inventory: { egg: 2 }, ext: { [PROGRESSION]: { xp: 0, goals: [], nextGoal: 3 } } },
+    };
     const loaded = deserialize(JSON.stringify(file));
     expect(loaded.inventory).toEqual({ egg: 2 });
-    expect(loaded.objects).toEqual(old.state.objects);
+    expect(loaded.objects[0]).toEqual({ ...coop, ...fromV6(coop.x, coop.y) });
     // Not yet at the coop goal: the new "buy wood" goal comes next.
     expect(GOALS[getSlice<ProgressionState>(loaded, PROGRESSION).nextGoal].id).toBe('buy-wood');
   });
 
   it('an old save past the coop goal keeps its next goal and skips "buy wood"', () => {
-    const file = JSON.parse(serialize(createNewGame()));
-    file.version = 5;
     // In version 5 the goal at index 5 was "collect-eggs"; it moved one place down.
-    getSlice<ProgressionState>(file.state, PROGRESSION).nextGoal = 5;
+    const file = { version: 5, savedAt: null, state: { land: v6Land(), ext: { [PROGRESSION]: { xp: 0, goals: [], nextGoal: 5 } } } };
     const loaded = deserialize(JSON.stringify(file));
     expect(GOALS[getSlice<ProgressionState>(loaded, PROGRESSION).nextGoal].id).toBe('collect-eggs');
   });

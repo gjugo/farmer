@@ -19,7 +19,7 @@ import { stockMaterials } from './test-utils';
 import type { PlacedObject } from './types';
 import { itemUnlockLevel, levelForXp, requiredLevel, unlocksAt, xpForLevel } from './unlocks';
 
-const free = { x: START_LAND.x + 1, y: START_LAND.y + 4 };
+const free = { x: START_LAND.x + 1, y: START_LAND.y + 8 };
 
 function fields(game: Game): PlacedObject<FieldState>[] {
   return game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
