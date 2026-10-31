@@ -202,6 +202,138 @@ def rock(seed=4, big=False, season=None):
     return c
 
 
+# ------------------------------------------------------------------ map resources: stumps, outcrops, iron veins
+STONE = "#a7a49a"
+STONE_D = "#6f6c63"
+DARK_ROCK = "#7d7470"
+ORE = ("#c4622d", "#a8462a", "#d9853f")
+RUBBLE = "#b9b3a6"
+
+
+def stump(seed=6, season=None):
+    """A felled tree's stump with a few chips; it grows back into a tree."""
+    c = pcanvas(110)
+    rnd = random.Random(seed)
+    c.shadow_ell(0.5, 0.5, 0.15, z=0.14)
+    if season == "winter":
+        snow_mound(c, 0.5, 0.5, 0.2)
+    # roots, then the trunk with its cut face
+    for a in (0.6, 2.2, 3.9, 5.2):
+        p0 = c.P(0.5 + math.cos(a) * 0.07, 0.5 + math.sin(a) * 0.07, 0.04)
+        p1 = c.P(0.5 + math.cos(a) * 0.17, 0.5 + math.sin(a) * 0.17, 0.0)
+        c.limb(p0, p1, "#7a4a2a", 7)
+    cx, ct, rx, ry = c.cylinder(0.5, 0.5, 0, 0.14, 0.1, "#8a5a32", top="#e2bd85", shadow=False)
+    c.ell(cx, ct, rx * 0.55, ry * 0.55, "none", 0, "#b88a52", 2)
+    c.ell(cx, ct, rx * 0.22, ry * 0.22, "#c99a5e", 0, None)
+    if season == "winter":
+        c.ell(cx - rx * 0.1, ct - 2, rx * 0.8, ry * 0.7, SNOW, 0, SNOW_D, 2)
+        return c
+    # chips on the ground
+    for _ in range(4):
+        p = c.P(0.5 + rnd.uniform(-0.3, 0.3), 0.5 + rnd.uniform(0.12, 0.32))
+        c.ell(p[0], p[1], 6, 2.6, "#e2bd85", rnd.uniform(-30, 30), "#8a5a32", 1.2)
+    if season in ("spring", "summer"):
+        # new shoots: it grows back
+        for k in range(3):
+            base = c.P(0.5 + rnd.uniform(-0.12, 0.12), 0.5 + rnd.uniform(0.08, 0.14), 0.02)
+            c.limb(base, (base[0] + rnd.uniform(-6, 6), base[1] - 16), "#4f8f32", 3, outline=False)
+            c.ell(base[0] + rnd.uniform(-5, 5), base[1] - 17, 6, 3.4, "#7cc24a" if season == "spring" else "#5ba13a", rnd.uniform(-40, 40), None)
+    elif season == "autumn":
+        for _ in range(3):
+            p = c.P(0.5 + rnd.uniform(-0.25, 0.25), 0.5 + rnd.uniform(-0.2, 0.3))
+            col = rnd.choice(LEAVES)
+            c.ell(p[0], p[1], 5, 2.4, col, rnd.uniform(-40, 40), shade(col, -0.35), 1)
+    return c
+
+
+def boulders(c, seed, stones, color, season, streaks=None):
+    """Boulders on one tile; `streaks` paints ore seams across their faces."""
+    rnd = random.Random(seed)
+    stones = sorted(stones, key=lambda s: s[0] + s[1])
+    for (x, y, r, h) in stones:
+        c.shadow_ell(x, y, r, z=h)
+        cx, cy, rx, ry, ang = c.ellipsoid((x, y, h * 0.5), (r, r * 0.85, h), color, hi=0.3, lo=-0.32)
+        # cracks
+        c.path(f"M{f2(cx - rx * 0.35)},{f2(cy - ry * 0.25)} l{f2(rx * 0.25)},{f2(ry * 0.32)} l{f2(rx * 0.22)},{f2(-ry * 0.12)}", "none", shade(color, -0.4), 2)
+        if streaks:
+            for k in range(2):
+                y0 = cy - ry * rnd.uniform(-0.2, 0.45)
+                c.path(f"M{f2(cx - rx * 0.6)},{f2(y0)} q{f2(rx * 0.3)},{f2(-ry * 0.25)} {f2(rx * 0.6)},{f2(-ry * 0.05)} "
+                       f"t{f2(rx * 0.5)},{f2(-ry * 0.12)}", "none", rnd.choice(streaks), 4.5)
+            for _ in range(3):
+                c.circle(cx + rnd.uniform(-0.5, 0.5) * rx, cy + rnd.uniform(-0.5, 0.3) * ry, 3.2, rnd.choice(streaks), shade(streaks[1], -0.3), 1.2)
+        if season == "winter":
+            c.ell(cx - rx * 0.08, cy - ry * 0.55, rx * 0.75, ry * 0.4, SNOW, ang * 0.3, SNOW_D, 2)
+            c.ell(cx - rx * 0.28, cy - ry * 0.66, rx * 0.28, ry * 0.12, "#ffffff", 0, None)
+        elif season != "autumn" or rnd.random() < 0.5:
+            c.ell(cx - rx * 0.2, cy - ry * 0.62, rx * 0.3, ry * 0.15, MOSS.get(season, MOSS[None]), -10, None, extra='opacity="0.8"')
+    if season == "autumn":
+        for _ in range(2):
+            p = c.P(rnd.uniform(0.2, 0.8), rnd.uniform(0.55, 0.9))
+            c.ell(p[0], p[1], 5, 2.4, LEAVES[0], 25, shade(LEAVES[0], -0.35), 1)
+
+
+OUTCROP_LAYOUTS = (
+    ((0.4, 0.42, 0.27, 0.22), (0.72, 0.62, 0.19, 0.15), (0.36, 0.76, 0.14, 0.1)),
+    ((0.55, 0.42, 0.28, 0.24), (0.3, 0.7, 0.18, 0.13), (0.76, 0.76, 0.13, 0.09)),
+    ((0.45, 0.5, 0.31, 0.2), (0.8, 0.36, 0.15, 0.12), (0.72, 0.8, 0.12, 0.08)),
+)
+
+
+def outcrop(variant=0, season=None):
+    """One tile of a stone outcrop: big grey boulders a quarry breaks up."""
+    c = pcanvas(170)
+    boulders(c, 40 + variant, OUTCROP_LAYOUTS[variant], STONE, season)
+    return c
+
+
+def vein(variant=0, season=None):
+    """One tile of an iron vein: dark rock with rusty ore seams, for a mine."""
+    c = pcanvas(160)
+    layout = OUTCROP_LAYOUTS[(variant + 1) % len(OUTCROP_LAYOUTS)]
+    boulders(c, 50 + variant, [(x, y, r * 0.95, h * 0.85) for (x, y, r, h) in layout], DARK_ROCK, season, streaks=ORE)
+    return c
+
+
+def spent(seed, color, season=None, ore=None):
+    """A worked-out deposit tile: low rubble and gravel."""
+    c = pcanvas(80)
+    rnd = random.Random(seed)
+    cx, cy = c.P(0.5, 0.5)
+    c.ell(cx, cy, K * 0.62, K * 0.3, shade(color, -0.15), 0, None, extra='opacity="0.55"')
+    chips = [(rnd.uniform(0.2, 0.8), rnd.uniform(0.2, 0.8), rnd.uniform(0.05, 0.09)) for _ in range(9)]
+    chips.sort(key=lambda s: s[0] + s[1])
+    for (x, y, r) in chips:
+        c.shadow_ell(x, y, r, z=r * 0.6)
+        px, py, rx, ry, _ = c.ellipsoid((x, y, r * 0.35), (r, r * 0.8, r * 0.5), color, hi=0.3, lo=-0.3, sw=2)
+        if ore and rnd.random() < 0.35:
+            c.circle(px, py - ry * 0.2, 2.6, ore, None)
+        if season == "winter":
+            c.ell(px, py - ry * 0.45, rx * 0.7, ry * 0.4, SNOW, 0, None)
+    if season == "winter":
+        c.ell(cx - 20, cy + 6, 26, 8, SNOW, 0, SNOW_D, 1.5, extra='opacity="0.9"')
+    elif season == "autumn":
+        p = c.P(0.3, 0.7)
+        c.ell(p[0], p[1], 5, 2.4, LEAVES[1], 25, shade(LEAVES[1], -0.35), 1)
+    elif season in ("spring", "summer"):
+        for _ in range(3):
+            p = c.P(rnd.uniform(0.15, 0.85), rnd.uniform(0.6, 0.9))
+            c.limb(p, (p[0] + rnd.uniform(-3, 3), p[1] - 9), MOSS[season], 2.4, outline=False)
+    return c
+
+
+MAP_PROPS = (
+    ("tree_stump", lambda season: stump(6, season), "a felled tree's stump (grows back)"),
+    ("outcrop_0", lambda season: outcrop(0, season), "stone outcrop tile"),
+    ("outcrop_1", lambda season: outcrop(1, season), "stone outcrop tile"),
+    ("outcrop_2", lambda season: outcrop(2, season), "stone outcrop tile"),
+    ("outcrop_spent", lambda season: spent(61, RUBBLE, season), "worked-out stone outcrop tile"),
+    ("vein_0", lambda season: vein(0, season), "iron vein tile"),
+    ("vein_1", lambda season: vein(1, season), "iron vein tile"),
+    ("vein_spent", lambda season: spent(62, DARK_ROCK, season, ore="#a8462a"), "worked-out iron vein tile"),
+)
+
+
 # ------------------------------------------------------------------ pond (decorative scenery)
 WATER = {"spring": ("#6cc0e8", "#3f8fc4"), "summer": ("#5ab4e0", "#357fb8"), "autumn": ("#5b97b4", "#2f6a8a"),
          "winter": ("#e4f3fb", "#a9cfe6")}
@@ -310,6 +442,8 @@ def build():
     image("props", "sack_feed", single(lambda c: sack(c, 0.5, 0.5, 1.3, label="#f2c14e")), notes="feed sack")
     image("props", "milk_can", single(lambda c: milk_can(c, 0.5, 0.5, 1.4)), notes="milk can")
     image("props", "pond", pond("summer"), notes="small decorative pond", shadow=False)
+    for name, fn, notes in MAP_PROPS:
+        image("props", name, fn(None), notes=notes)
 
 
 def build_seasons():
@@ -323,3 +457,5 @@ def build_seasons():
         image("props", f"rock_small_{season}", rock(4, season=season), notes=f"small rock in {season}")
         image("props", f"rock_large_{season}", rock(5, big=True, season=season), notes=f"rock cluster in {season}")
         image("props", f"pond_{season}", pond(season), notes=f"small decorative pond in {season}", shadow=False)
+        for name, fn, notes in MAP_PROPS:
+            image("props", f"{name}_{season}", fn(season), notes=f"{notes} in {season}")

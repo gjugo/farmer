@@ -4980,6 +4980,326 @@
    }
   },
   {
+   "name": "tree_stump",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled tree's stump (grows back)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_stump.png",
+     "w": 88,
+     "h": 72,
+     "shadow": "2x/props/tree_stump_shadow.png",
+     "anchor": [
+      46.0,
+      -28.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_stump.png",
+     "w": 44,
+     "h": 36,
+     "shadow": "1x/props/tree_stump_shadow.png",
+     "anchor": [
+      23.0,
+      -14.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_0",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_0.png",
+     "w": 150,
+     "h": 130,
+     "shadow": "2x/props/outcrop_0_shadow.png",
+     "anchor": [
+      86.0,
+      10.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_0.png",
+     "w": 75,
+     "h": 65,
+     "shadow": "1x/props/outcrop_0_shadow.png",
+     "anchor": [
+      43.0,
+      5.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_1",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_1.png",
+     "w": 178,
+     "h": 130,
+     "shadow": "2x/props/outcrop_1_shadow.png",
+     "anchor": [
+      92.0,
+      6.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_1.png",
+     "w": 89,
+     "h": 65,
+     "shadow": "1x/props/outcrop_1_shadow.png",
+     "anchor": [
+      46.0,
+      3.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_2",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_2.png",
+     "w": 168,
+     "h": 122,
+     "shadow": "2x/props/outcrop_2_shadow.png",
+     "anchor": [
+      70.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_2.png",
+     "w": 84,
+     "h": 61,
+     "shadow": "1x/props/outcrop_2_shadow.png",
+     "anchor": [
+      35.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_spent",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out stone outcrop tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_spent.png",
+     "w": 164,
+     "h": 84,
+     "shadow": "2x/props/outcrop_spent_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_spent.png",
+     "w": 82,
+     "h": 42,
+     "shadow": "1x/props/outcrop_spent_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_0",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_0.png",
+     "w": 174,
+     "h": 122,
+     "shadow": "2x/props/vein_0_shadow.png",
+     "anchor": [
+      92.0,
+      -2.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_0.png",
+     "w": 87,
+     "h": 61,
+     "shadow": "1x/props/vein_0_shadow.png",
+     "anchor": [
+      46.0,
+      -1.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_1",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_1.png",
+     "w": 164,
+     "h": 116,
+     "shadow": "2x/props/vein_1_shadow.png",
+     "anchor": [
+      68.0,
+      -6.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_1.png",
+     "w": 82,
+     "h": 58,
+     "shadow": "1x/props/vein_1_shadow.png",
+     "anchor": [
+      34.0,
+      -3.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_spent",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out iron vein tile",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_spent.png",
+     "w": 170,
+     "h": 96,
+     "shadow": "2x/props/vein_spent_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_spent.png",
+     "w": 85,
+     "h": 48,
+     "shadow": "1x/props/vein_spent_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    }
+   }
+  },
+  {
    "name": "farmer",
    "category": "people",
    "type": "spritesheet",
@@ -10900,6 +11220,326 @@
    }
   },
   {
+   "name": "tree_stump_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled tree's stump (grows back) in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_stump_spring.png",
+     "w": 88,
+     "h": 72,
+     "shadow": "2x/props/tree_stump_spring_shadow.png",
+     "anchor": [
+      46.0,
+      -28.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_stump_spring.png",
+     "w": 44,
+     "h": 36,
+     "shadow": "1x/props/tree_stump_spring_shadow.png",
+     "anchor": [
+      23.0,
+      -14.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_0_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_0_spring.png",
+     "w": 150,
+     "h": 130,
+     "shadow": "2x/props/outcrop_0_spring_shadow.png",
+     "anchor": [
+      86.0,
+      10.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_0_spring.png",
+     "w": 75,
+     "h": 65,
+     "shadow": "1x/props/outcrop_0_spring_shadow.png",
+     "anchor": [
+      43.0,
+      5.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_1_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_1_spring.png",
+     "w": 178,
+     "h": 130,
+     "shadow": "2x/props/outcrop_1_spring_shadow.png",
+     "anchor": [
+      92.0,
+      6.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_1_spring.png",
+     "w": 89,
+     "h": 65,
+     "shadow": "1x/props/outcrop_1_spring_shadow.png",
+     "anchor": [
+      46.0,
+      3.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_2_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_2_spring.png",
+     "w": 168,
+     "h": 122,
+     "shadow": "2x/props/outcrop_2_spring_shadow.png",
+     "anchor": [
+      70.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_2_spring.png",
+     "w": 84,
+     "h": 61,
+     "shadow": "1x/props/outcrop_2_spring_shadow.png",
+     "anchor": [
+      35.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_spent_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out stone outcrop tile in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_spent_spring.png",
+     "w": 164,
+     "h": 84,
+     "shadow": "2x/props/outcrop_spent_spring_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_spent_spring.png",
+     "w": 82,
+     "h": 42,
+     "shadow": "1x/props/outcrop_spent_spring_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_0_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_0_spring.png",
+     "w": 174,
+     "h": 122,
+     "shadow": "2x/props/vein_0_spring_shadow.png",
+     "anchor": [
+      92.0,
+      -2.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_0_spring.png",
+     "w": 87,
+     "h": 61,
+     "shadow": "1x/props/vein_0_spring_shadow.png",
+     "anchor": [
+      46.0,
+      -1.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_1_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_1_spring.png",
+     "w": 164,
+     "h": 116,
+     "shadow": "2x/props/vein_1_spring_shadow.png",
+     "anchor": [
+      68.0,
+      -6.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_1_spring.png",
+     "w": 82,
+     "h": 58,
+     "shadow": "1x/props/vein_1_spring_shadow.png",
+     "anchor": [
+      34.0,
+      -3.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_spent_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out iron vein tile in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_spent_spring.png",
+     "w": 170,
+     "h": 96,
+     "shadow": "2x/props/vein_spent_spring_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_spent_spring.png",
+     "w": 85,
+     "h": 48,
+     "shadow": "1x/props/vein_spent_spring_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    }
+   }
+  },
+  {
    "name": "tree_oak_summer",
    "category": "props",
    "type": "image",
@@ -11213,6 +11853,326 @@
      "origin": [
       0.51389,
       0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_stump_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled tree's stump (grows back) in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_stump_summer.png",
+     "w": 88,
+     "h": 72,
+     "shadow": "2x/props/tree_stump_summer_shadow.png",
+     "anchor": [
+      46.0,
+      -28.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_stump_summer.png",
+     "w": 44,
+     "h": 36,
+     "shadow": "1x/props/tree_stump_summer_shadow.png",
+     "anchor": [
+      23.0,
+      -14.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_0_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_0_summer.png",
+     "w": 150,
+     "h": 130,
+     "shadow": "2x/props/outcrop_0_summer_shadow.png",
+     "anchor": [
+      86.0,
+      10.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_0_summer.png",
+     "w": 75,
+     "h": 65,
+     "shadow": "1x/props/outcrop_0_summer_shadow.png",
+     "anchor": [
+      43.0,
+      5.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_1_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_1_summer.png",
+     "w": 178,
+     "h": 130,
+     "shadow": "2x/props/outcrop_1_summer_shadow.png",
+     "anchor": [
+      92.0,
+      6.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_1_summer.png",
+     "w": 89,
+     "h": 65,
+     "shadow": "1x/props/outcrop_1_summer_shadow.png",
+     "anchor": [
+      46.0,
+      3.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_2_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_2_summer.png",
+     "w": 168,
+     "h": 122,
+     "shadow": "2x/props/outcrop_2_summer_shadow.png",
+     "anchor": [
+      70.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_2_summer.png",
+     "w": 84,
+     "h": 61,
+     "shadow": "1x/props/outcrop_2_summer_shadow.png",
+     "anchor": [
+      35.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_spent_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out stone outcrop tile in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_spent_summer.png",
+     "w": 164,
+     "h": 84,
+     "shadow": "2x/props/outcrop_spent_summer_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_spent_summer.png",
+     "w": 82,
+     "h": 42,
+     "shadow": "1x/props/outcrop_spent_summer_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_0_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_0_summer.png",
+     "w": 174,
+     "h": 122,
+     "shadow": "2x/props/vein_0_summer_shadow.png",
+     "anchor": [
+      92.0,
+      -2.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_0_summer.png",
+     "w": 87,
+     "h": 61,
+     "shadow": "1x/props/vein_0_summer_shadow.png",
+     "anchor": [
+      46.0,
+      -1.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_1_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_1_summer.png",
+     "w": 164,
+     "h": 116,
+     "shadow": "2x/props/vein_1_summer_shadow.png",
+     "anchor": [
+      68.0,
+      -6.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_1_summer.png",
+     "w": 82,
+     "h": 58,
+     "shadow": "1x/props/vein_1_summer_shadow.png",
+     "anchor": [
+      34.0,
+      -3.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_spent_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out iron vein tile in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_spent_summer.png",
+     "w": 170,
+     "h": 96,
+     "shadow": "2x/props/vein_spent_summer_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_spent_summer.png",
+     "w": 85,
+     "h": 48,
+     "shadow": "1x/props/vein_spent_summer_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
      ]
     }
    }
@@ -11536,6 +12496,326 @@
    }
   },
   {
+   "name": "tree_stump_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled tree's stump (grows back) in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_stump_autumn.png",
+     "w": 88,
+     "h": 72,
+     "shadow": "2x/props/tree_stump_autumn_shadow.png",
+     "anchor": [
+      46.0,
+      -28.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_stump_autumn.png",
+     "w": 44,
+     "h": 36,
+     "shadow": "1x/props/tree_stump_autumn_shadow.png",
+     "anchor": [
+      23.0,
+      -14.0
+     ],
+     "origin": [
+      0.52273,
+      -0.38889
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_0_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_0_autumn.png",
+     "w": 150,
+     "h": 130,
+     "shadow": "2x/props/outcrop_0_autumn_shadow.png",
+     "anchor": [
+      86.0,
+      10.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_0_autumn.png",
+     "w": 75,
+     "h": 65,
+     "shadow": "1x/props/outcrop_0_autumn_shadow.png",
+     "anchor": [
+      43.0,
+      5.0
+     ],
+     "origin": [
+      0.57333,
+      0.07692
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_1_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_1_autumn.png",
+     "w": 178,
+     "h": 130,
+     "shadow": "2x/props/outcrop_1_autumn_shadow.png",
+     "anchor": [
+      92.0,
+      6.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_1_autumn.png",
+     "w": 89,
+     "h": 65,
+     "shadow": "1x/props/outcrop_1_autumn_shadow.png",
+     "anchor": [
+      46.0,
+      3.0
+     ],
+     "origin": [
+      0.51685,
+      0.04615
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_2_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_2_autumn.png",
+     "w": 168,
+     "h": 122,
+     "shadow": "2x/props/outcrop_2_autumn_shadow.png",
+     "anchor": [
+      70.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_2_autumn.png",
+     "w": 84,
+     "h": 61,
+     "shadow": "1x/props/outcrop_2_autumn_shadow.png",
+     "anchor": [
+      35.0,
+      0.0
+     ],
+     "origin": [
+      0.41667,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_spent_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out stone outcrop tile in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_spent_autumn.png",
+     "w": 164,
+     "h": 84,
+     "shadow": "2x/props/outcrop_spent_autumn_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_spent_autumn.png",
+     "w": 82,
+     "h": 42,
+     "shadow": "1x/props/outcrop_spent_autumn_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_0_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_0_autumn.png",
+     "w": 174,
+     "h": 122,
+     "shadow": "2x/props/vein_0_autumn_shadow.png",
+     "anchor": [
+      92.0,
+      -2.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_0_autumn.png",
+     "w": 87,
+     "h": 61,
+     "shadow": "1x/props/vein_0_autumn_shadow.png",
+     "anchor": [
+      46.0,
+      -1.0
+     ],
+     "origin": [
+      0.52874,
+      -0.01639
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_1_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_1_autumn.png",
+     "w": 164,
+     "h": 116,
+     "shadow": "2x/props/vein_1_autumn_shadow.png",
+     "anchor": [
+      68.0,
+      -6.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_1_autumn.png",
+     "w": 82,
+     "h": 58,
+     "shadow": "1x/props/vein_1_autumn_shadow.png",
+     "anchor": [
+      34.0,
+      -3.0
+     ],
+     "origin": [
+      0.41463,
+      -0.05172
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_spent_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out iron vein tile in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_spent_autumn.png",
+     "w": 170,
+     "h": 96,
+     "shadow": "2x/props/vein_spent_autumn_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_spent_autumn.png",
+     "w": 85,
+     "h": 48,
+     "shadow": "1x/props/vein_spent_autumn_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    }
+   }
+  },
+  {
    "name": "tree_oak_winter",
    "category": "props",
    "type": "image",
@@ -11849,6 +13129,326 @@
      "origin": [
       0.51389,
       0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_stump_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled tree's stump (grows back) in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_stump_winter.png",
+     "w": 82,
+     "h": 66,
+     "shadow": "2x/props/tree_stump_winter_shadow.png",
+     "anchor": [
+      40.0,
+      -28.0
+     ],
+     "origin": [
+      0.4878,
+      -0.42424
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_stump_winter.png",
+     "w": 41,
+     "h": 33,
+     "shadow": "1x/props/tree_stump_winter_shadow.png",
+     "anchor": [
+      20.0,
+      -14.0
+     ],
+     "origin": [
+      0.4878,
+      -0.42424
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_0_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_0_winter.png",
+     "w": 150,
+     "h": 138,
+     "shadow": "2x/props/outcrop_0_winter_shadow.png",
+     "anchor": [
+      86.0,
+      18.0
+     ],
+     "origin": [
+      0.57333,
+      0.13043
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_0_winter.png",
+     "w": 75,
+     "h": 69,
+     "shadow": "1x/props/outcrop_0_winter_shadow.png",
+     "anchor": [
+      43.0,
+      9.0
+     ],
+     "origin": [
+      0.57333,
+      0.13043
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_1_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_1_winter.png",
+     "w": 178,
+     "h": 136,
+     "shadow": "2x/props/outcrop_1_winter_shadow.png",
+     "anchor": [
+      92.0,
+      12.0
+     ],
+     "origin": [
+      0.51685,
+      0.08824
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_1_winter.png",
+     "w": 89,
+     "h": 68,
+     "shadow": "1x/props/outcrop_1_winter_shadow.png",
+     "anchor": [
+      46.0,
+      6.0
+     ],
+     "origin": [
+      0.51685,
+      0.08824
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_2_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "stone outcrop tile in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_2_winter.png",
+     "w": 168,
+     "h": 136,
+     "shadow": "2x/props/outcrop_2_winter_shadow.png",
+     "anchor": [
+      70.0,
+      14.0
+     ],
+     "origin": [
+      0.41667,
+      0.10294
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_2_winter.png",
+     "w": 84,
+     "h": 68,
+     "shadow": "1x/props/outcrop_2_winter_shadow.png",
+     "anchor": [
+      35.0,
+      7.0
+     ],
+     "origin": [
+      0.41667,
+      0.10294
+     ]
+    }
+   }
+  },
+  {
+   "name": "outcrop_spent_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out stone outcrop tile in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/outcrop_spent_winter.png",
+     "w": 164,
+     "h": 84,
+     "shadow": "2x/props/outcrop_spent_winter_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    },
+    "1x": {
+     "file": "1x/props/outcrop_spent_winter.png",
+     "w": 82,
+     "h": 42,
+     "shadow": "1x/props/outcrop_spent_winter_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.5,
+      -0.2619
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_0_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_0_winter.png",
+     "w": 174,
+     "h": 130,
+     "shadow": "2x/props/vein_0_winter_shadow.png",
+     "anchor": [
+      92.0,
+      6.0
+     ],
+     "origin": [
+      0.52874,
+      0.04615
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_0_winter.png",
+     "w": 87,
+     "h": 65,
+     "shadow": "1x/props/vein_0_winter_shadow.png",
+     "anchor": [
+      46.0,
+      3.0
+     ],
+     "origin": [
+      0.52874,
+      0.04615
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_1_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "iron vein tile in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_1_winter.png",
+     "w": 164,
+     "h": 128,
+     "shadow": "2x/props/vein_1_winter_shadow.png",
+     "anchor": [
+      68.0,
+      6.0
+     ],
+     "origin": [
+      0.41463,
+      0.04688
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_1_winter.png",
+     "w": 82,
+     "h": 64,
+     "shadow": "1x/props/vein_1_winter_shadow.png",
+     "anchor": [
+      34.0,
+      3.0
+     ],
+     "origin": [
+      0.41463,
+      0.04688
+     ]
+    }
+   }
+  },
+  {
+   "name": "vein_spent_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "worked-out iron vein tile in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/vein_spent_winter.png",
+     "w": 170,
+     "h": 96,
+     "shadow": "2x/props/vein_spent_winter_shadow.png",
+     "anchor": [
+      82.0,
+      -22.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
+     ]
+    },
+    "1x": {
+     "file": "1x/props/vein_spent_winter.png",
+     "w": 85,
+     "h": 48,
+     "shadow": "1x/props/vein_spent_winter_shadow.png",
+     "anchor": [
+      41.0,
+      -11.0
+     ],
+     "origin": [
+      0.48235,
+      -0.22917
      ]
     }
    }

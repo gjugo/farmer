@@ -257,7 +257,7 @@ describe('seasonal art', () => {
     for (const { tiles } of Object.values(composed)) for (const t of tiles) expect(assets.has(t.art), t.art).toBe(true);
   });
 
-  it('scatters a few ponds on the locked land of a new map, apart from the trees, bushes and rocks', () => {
+  it('scatters a few ponds on the locked land of a new map, apart from the bushes', () => {
     let ponds = 0;
     let other = 0;
     for (let y = 0; y < MAP_HEIGHT; y++) {

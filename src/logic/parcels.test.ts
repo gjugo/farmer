@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { Game } from './game';
+import { createNewGame } from './state';
+import { bareMap } from './test-utils';
 import { createLand, isOwned, ownedCount } from './land';
 import {
   buyParcel,
@@ -88,7 +90,8 @@ describe('parcel prices', () => {
 
 describe('buying parcels', () => {
   it('buys a parcel for $1,000, makes it owned and the next one costs $1,250', () => {
-    const game = new Game();
+    // A bare map: a new game's trees and rocks (random seed) could stand where the path goes below.
+    const game = new Game(bareMap(createNewGame()));
     game.earn(500);
     const parcel = rightOfStart();
     const before = ownedCount(game.state.land);

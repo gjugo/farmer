@@ -4,13 +4,14 @@ import { splitIcons } from '../data/items';
 import { formatMaterials, needsMaterialsMessage } from '../data/materials';
 import { buildWorkMs } from '../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
-import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
+import { getBehavior, runBuildPreview, runStartHooks, runTileTapHandlers, type BuildPreview } from '../game/hooks';
 import { farmerName, NO_ROAD_MESSAGE, reachable, workplacePanel } from '../game/workers';
 import { formatDuration } from '../logic/crops';
 import { footprintOf, refundOf, type DemolishCheck, type PlaceResult } from '../logic/game';
 import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
+import { depositAt, mapOf, treeAt } from '../logic/maplayer';
 import { farmhouseOf } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
@@ -61,6 +62,10 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
   occupied: 'Something is already there',
   'out-of-bounds': "Can't build outside the farm",
   'unknown-type': 'Unknown building',
+  tree: 'A tree stands there: a woodcutter can fell it',
+  deposit: 'Rock is in the way: only a quarry or mine stands on it',
+  'needs-outcrop': 'A quarry must stand on a stone outcrop',
+  'needs-vein': 'A mine must stand on an iron vein',
 };
 
 /**
@@ -86,7 +91,7 @@ export class FarmScene extends Phaser.Scene {
   /** The whole ground is one Blitter (in a container that scales it): a bob per tile, created back to front. */
   private groundLayer: Phaser.GameObjects.Container | null = null;
   private groundBobs: Phaser.GameObjects.Bob[] = [];
-  /** Trees, bushes and rocks on locked land, each depth-sorted like a building. */
+  /** Bushes and ponds on locked land, each depth-sorted like a building. */
   private scenery: { fp: Footprint; img: Phaser.GameObjects.Image }[] = [];
   private sceneryShadows!: Phaser.GameObjects.Container;
   private depthsDirty = true;
@@ -96,6 +101,10 @@ export class FarmScene extends Phaser.Scene {
   /** Progress bars over construction sites, by object id. */
   private siteBars = new Map<string, { bar: Phaser.GameObjects.Container; fill: Phaser.GameObjects.Rectangle }>();
   private ghost!: Phaser.GameObjects.Image;
+  /** Why the build ghost is red, under it. */
+  private ghostReason!: Phaser.GameObjects.Text;
+  /** Standing things drawn by features (e.g. trees and deposits, `src/features/nature`), sorted with the rest. */
+  private extraStanding = new Map<string, { fp: Footprint; target: Phaser.GameObjects.Components.Depth }[]>();
   /** Tile cursors (pack overlays) for the hover, build preview and demolish target. */
   private cursors: Phaser.GameObjects.Image[] = [];
   private touches = new Map<number, TouchState>();
@@ -126,6 +135,22 @@ export class FarmScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#2f4a2a');
 
     this.ghost = addArt(this, 0, 0, 'path').setAlpha(0.75).setDepth(DEPTH.ghost).setVisible(false);
+    this.ghostReason = this.add
+      .text(0, 0, '', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: `${FLOAT_FONT}px`,
+        fontStyle: 'bold',
+        color: '#ffd0c8',
+        stroke: '#2b2118',
+        strokeThickness: Math.round(FLOAT_FONT / 5),
+        resolution: 2,
+        align: 'center',
+        wordWrap: { width: ISO_H * 7 },
+      })
+      .setOrigin(0.5, 0)
+      .setDepth(DEPTH.ghost + 1)
+      .setVisible(false)
+      .setName('ghost-reason');
     this.sceneryShadows = this.add.container(0, 0).setDepth(DEPTH.shadow);
 
     this.buildWorld();
@@ -239,8 +264,9 @@ export class FarmScene extends Phaser.Scene {
   }
 
   /**
-   * A few trees, bushes, rocks and ponds on locked land, scattered from a fixed seed (not saved), away from the
-   * farm's edge. They go when their land is bought.
+   * A few bushes and ponds on locked land, scattered from a fixed seed (not saved), away from the farm's edge and
+   * the map's trees and deposits. They go when their land is bought. (Trees and rocks are real and saved: see
+   * `src/features/nature`.)
    */
   private placeScenery(): void {
     const { land } = this.farm.state;
@@ -253,10 +279,11 @@ export class FarmScene extends Phaser.Scene {
       }
       return false;
     };
+    const layer = mapOf(this.farm.state);
     for (let y = 0; y < land.height; y++) {
       for (let x = 0; x < land.width; x++) {
         const art = sceneryArt(x, y);
-        if (!art || isOwned(land, x, y) || nearOwned(x, y)) continue;
+        if (!art || isOwned(land, x, y) || nearOwned(x, y) || treeAt(layer, x, y) || depositAt(layer, x, y)) continue;
         const at = gridToWorld(x, y);
         this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img: addArt(this, at.x, at.y, art) });
         const shadow = addShadow(this, at.x, at.y, art);
@@ -277,6 +304,7 @@ export class FarmScene extends Phaser.Scene {
       fp: s.fp,
       target: s.img,
     }));
+    for (const list of this.extraStanding.values()) tall.push(...list);
     for (const view of this.views.values()) {
       // A path has nothing standing; leaving it out keeps the sort small on big farms.
       if (view.container.length > 0) tall.push({ fp: { x: view.obj.x, y: view.obj.y, ...footprintOf(view.obj) }, target: view.container });
@@ -429,6 +457,16 @@ export class FarmScene extends Phaser.Scene {
     return this.views.get(id);
   }
 
+  /**
+   * Standing things a feature draws outside any object view (e.g. trees), depth-sorted with buildings and scenery
+   * by their footprints. Replaces what `owner` set before; an empty list removes them.
+   */
+  setStanding(owner: string, items: { fp: Footprint; target: Phaser.GameObjects.Components.Depth }[]): void {
+    if (items.length) this.extraStanding.set(owner, items);
+    else this.extraStanding.delete(owner);
+    this.depthsDirty = true;
+  }
+
   /** Screen (page) pixel of a tile's centre at the current camera; for QA scripts that click tiles. */
   tileToScreen(x: number, y: number): Point {
     const c = tileToWorld(x, y);
@@ -478,8 +516,7 @@ export class FarmScene extends Phaser.Scene {
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onPointerUp, this);
     this.input.on(Phaser.Input.Events.POINTER_UP_OUTSIDE, this.onPointerUp, this);
     this.input.on(Phaser.Input.Events.GAME_OUT, () => {
-      this.ghost.setVisible(false);
-      this.ctx.tools.events.emit('preview', null);
+      this.hideGhost();
       this.showCursors(null, CURSOR.normal);
     });
     this.input.on(
@@ -695,10 +732,25 @@ export class FarmScene extends Phaser.Scene {
 
   // Tool feedback -------------------------------------------------------------------
 
+  private hideGhost(): void {
+    this.ghost.setVisible(false);
+    this.ghostReason.setVisible(false);
+    this.preview(null);
+  }
+
+  /** Tells features where the ghost is (only when that changed). */
+  private lastPreview = '';
+  private preview(p: BuildPreview): void {
+    const key = p ? `${p.type},${p.x},${p.y},${p.ok}` : '';
+    if (key === this.lastPreview) return;
+    this.lastPreview = key;
+    runBuildPreview(this.ctx, p);
+    this.ctx.tools.events.emit('preview', p);
+  }
+
   private onToolChange(mode: ToolMode): void {
     this.showCursors(null, CURSOR.normal);
-    this.ghost.setVisible(false);
-    this.ctx.tools.events.emit('preview', null);
+    this.hideGhost();
     if (mode.kind === 'build') {
       const def = getBuildable(mode.type);
       if (!def) return;
@@ -716,8 +768,9 @@ export class FarmScene extends Phaser.Scene {
       const def = getBuildable(mode.type);
       if (!def) return;
       const { x, y } = this.anchorFor(mode.type, tx, ty);
+      const check = this.ctx.game.checkPlacement(mode.type, x, y);
       const ok =
-        this.ctx.game.checkPlacement(mode.type, x, y).ok &&
+        check.ok &&
         this.ctx.game.canPayFor(mode.type) &&
         (buildWorkMs(mode.type) === 0 || reachable(this.ctx, { type: mode.type, x, y }));
       const top = gridToWorld(x, y);
@@ -725,8 +778,13 @@ export class FarmScene extends Phaser.Scene {
       this.ghost.setPosition(top.x, top.y).setVisible(true);
       this.ghost.setData('valid', ok);
       this.ghost.setData('tile', { x, y });
-      this.ctx.tools.events.emit('preview', { type: mode.type, x, y });
+      // Say why the spot itself is wrong (trees, rock, someone else's land), under the footprint.
+      const bottom = gridToWorld(x + def.footprint.w, y + def.footprint.h);
+      this.ghostReason.setText(check.ok ? '' : PLACE_ERRORS[check.reason]).setPosition(bottom.x, bottom.y + 4).setVisible(!check.ok);
+      this.ghost.setData('reason', check.ok ? null : check.reason);
+      this.preview({ type: mode.type, x, y, ok });
     } else if (mode.kind === 'demolish') {
+      this.preview(null);
       const obj = this.ctx.game.objectAt(tx, ty);
       this.showCursors(obj ? { x: obj.x, y: obj.y, ...footprintOf(obj) } : null, CURSOR.bad);
     } else {

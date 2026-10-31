@@ -15,7 +15,7 @@ import { PROGRESSION, type ProgressionState } from './progression';
 import { deserialize, serialize } from './save';
 import { getSlice } from './slices';
 import { addStartingObject, createNewGame } from './state';
-import { stockMaterials } from './test-utils';
+import { bareMap, stockMaterials } from './test-utils';
 import type { PlacedObject } from './types';
 import { itemUnlockLevel, levelForXp, requiredLevel, unlocksAt, xpForLevel } from './unlocks';
 
@@ -48,7 +48,7 @@ function goalIds(game: Game): string[] {
 
 describe('levels', () => {
   it('a new game starts at level 1 with 0 XP and the first three goals', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     expect(game.level).toBe(1);
     expect(game.progression.xp).toBe(0);
     expect(goalIds(game)).toEqual(GOALS.slice(0, ACTIVE_GOALS).map((g) => g.id));
@@ -65,7 +65,7 @@ describe('levels', () => {
   });
 
   it('selling goods worth $X gives X XP; spending never lowers it', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     game.addItem('egg', 3);
     const earned = sell(game, 'egg');
     expect(earned).toBeGreaterThan(0);
@@ -75,14 +75,14 @@ describe('levels', () => {
   });
 
   it('money that is not income (refunds, debug cash) gives no XP', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     game.earn(1000);
     game.demolish(fields(game)[0].id);
     expect(game.progression.xp).toBe(0);
   });
 
   it('reaching a level pays $50 × level and reports what unlocked', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     const ups: { level: number; bonus: number; names: string[] }[] = [];
     game.events.on('levelUp', ({ level, bonus, unlocks }) => ups.push({ level, bonus, names: unlocks.map((u) => u.name) }));
     const money = game.money;
@@ -93,7 +93,7 @@ describe('levels', () => {
   });
 
   it('a big jump pays every level on the way', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     const money = game.money;
     game.progression.addXp(LEVEL_XP[3]);
     expect(game.level).toBe(4);
@@ -101,7 +101,7 @@ describe('levels', () => {
   });
 
   it('the debug level control moves both ways', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     game.progression.setLevel(3);
     expect(game.level).toBe(3);
     expect(game.progression.xp).toBe(LEVEL_XP[2]);
@@ -147,7 +147,7 @@ describe('unlocks', () => {
   });
 
   it('the logic refuses locked buildings, crops and animals', () => {
-    const game = new Game(stockMaterials(createNewGame()));
+    const game = new Game(stockMaterials(bareMap(createNewGame())));
     game.earn(10_000);
     const money = game.money;
     expect(game.place('pasture', free.x, free.y)).toEqual({ ok: false, reason: 'level' });
@@ -159,7 +159,7 @@ describe('unlocks', () => {
   });
 
   it('newly unlocked content can be used straight away', () => {
-    const game = new Game(stockMaterials(createNewGame()));
+    const game = new Game(stockMaterials(bareMap(createNewGame())));
     game.earn(10_000);
     game.progression.setLevel(3);
     expect(plant(game, fields(game)[0], 'carrot').ok).toBe(true);
@@ -169,7 +169,7 @@ describe('unlocks', () => {
   });
 
   it('things already on the farm keep working at a lower level', () => {
-    const state = createNewGame();
+    const state = bareMap(createNewGame());
     const pen = addStartingObject(state, 'pasture', free.x, free.y) as PlacedObject<PenState>;
     pen.state.animals.push({ kind: 'cow', timer: null });
     const game = new Game(state);
@@ -188,7 +188,7 @@ describe('unlocks', () => {
 
 describe('goals', () => {
   it('the first goals teach the loop: build a field, harvest 20 wheat, build a granary', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     expect(game.progression.claimable()).toBe(0);
     expect(game.place(FIELD, free.x, free.y).ok).toBe(true);
     for (const f of fields(game).slice(0, 2)) growAndHarvest(game, f);
@@ -203,7 +203,7 @@ describe('goals', () => {
   });
 
   it('claim pays money and XP and fills the slot with the next goal', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     game.place(FIELD, free.x, free.y);
     const money = game.money;
     const xpBefore = game.progression.xp;
@@ -215,13 +215,13 @@ describe('goals', () => {
   });
 
   it('cannot claim an unfinished goal', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     expect(game.progression.claim('harvest-wheat')).toBeNull();
     expect(game.progression.claim('nope')).toBeNull();
   });
 
   it('count goals count only from when they became active', () => {
-    const game = new Game(stockMaterials(createNewGame()));
+    const game = new Game(stockMaterials(bareMap(createNewGame())));
     // Collect eggs before the egg goal is active: no credit.
     const pen = placePen(game, 'coop');
     game.earn(1000);
@@ -241,7 +241,7 @@ describe('goals', () => {
   });
 
   it('state goals read the farm and stay finished once reached', () => {
-    const game = new Game(stockMaterials(createNewGame()));
+    const game = new Game(stockMaterials(bareMap(createNewGame())));
     game.earn(10_000);
     const data = getSlice<ProgressionState>(game.state, PROGRESSION);
     data.goals = [{ id: 'own-chickens', progress: 0 }];
@@ -256,7 +256,7 @@ describe('goals', () => {
   });
 
   it('own-parcels and reach-level goals follow land and level', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     game.earn(10_000);
     const data = getSlice<ProgressionState>(game.state, PROGRESSION);
     data.goals = [
@@ -269,7 +269,7 @@ describe('goals', () => {
   });
 
   it('sales and earnings count for sell and earn goals', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     const data = getSlice<ProgressionState>(game.state, PROGRESSION);
     data.goals = [{ id: 'earn-1000', progress: 0 }];
     game.addItem('cloth', 20);
@@ -278,7 +278,7 @@ describe('goals', () => {
   });
 
   it('the panel runs out when every goal is claimed', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     for (let i = 0; i < GOALS.length; i++) {
       game.progression.completeAll();
       for (const g of game.progression.goals()) game.progression.claim(g.def.id);
@@ -295,7 +295,7 @@ describe('goals', () => {
 
 describe('save', () => {
   it('keeps level, XP and goal progress across a reload', () => {
-    const game = new Game();
+    const game = new Game(bareMap(createNewGame()));
     game.place(FIELD, free.x, free.y);
     game.earnIncome(150);
     growAndHarvest(game, fields(game)[0]);
@@ -310,7 +310,7 @@ describe('save', () => {
   });
 
   it('repairs junk progression data', () => {
-    const state = createNewGame();
+    const state = bareMap(createNewGame());
     state.ext[PROGRESSION] = { xp: -5, goals: [{ id: 'nope' }, { id: 'sell-wheat', progress: 'x' }, 7], nextGoal: 99 };
     const game = new Game(deserialize(serialize(state)));
     expect(game.progression.xp).toBe(0);

@@ -15,7 +15,7 @@ The `.py` files are the pack's `source/` folder, unchanged. Colours live at the 
 | `animals.py` | cow, sheep, chicken sprite sheets |
 | `buildings.py` | barn, coop, feed mill, dairy, bakery, weaving hut, granary, storehouse, woodcutter's lodge, quarry, mine, farmhouse, market stall, for-sale sign, cottage |
 | `people.py` | the farmer sprite sheet: idle, sit, walk and one anim per job (plough, plant, harvest, build, feed) |
-| `props.py` | trees, bushes, rocks, the pond, hay, crates, sacks, milk can |
+| `props.py` | trees, bushes, rocks, the pond, hay, crates, sacks, milk can; the map's tree stumps, stone outcrop and iron vein tiles (full and used up) |
 | `icons.py` | item icons (egg, milk, … coins) |
 | `piles.py` | stock piles for the storage yards: `pile_<kind>_<stage>`, 4 fill stages per pile (granary categories, storehouse materials, the farmhouse's small piles) |
 | `seasonal.py` | registers the seasonal versions after everything else: ground and scenery in four seasons (`tiles.build_seasons`, `props.build_seasons`) and every building in winter (`snow.py`) |
@@ -74,7 +74,7 @@ To run the pack's builder by hand (for the preview images, say), build somewhere
 ## Seasons
 
 Every ground tile (`grass_*`, `unowned_*`, every `path_*` piece, `soil_*`) and every piece of scenery
-(`tree_*`, `bush*`, `rock_*`, `pond`) also comes in four versions named `<name>_<season>`
+(`tree_*`, `bush*`, `rock_*`, `pond`, and the map's `tree_stump`, `outcrop_*` and `vein_*`) also comes in four versions named `<name>_<season>`
 (`grass_1_winter`, `pond_spring`, …), drawn by the same functions with a `season` argument (`None` draws
 the original, unchanged). Ground tiles keep the base tile's canvas, so every season sits where the base
 does. Buildings only change in winter: `snow.py` lays snow along every top edge of each building sprite
@@ -103,6 +103,7 @@ So a new sprite shows up in the game once its **name** is mapped in `src/scenes/
 | animals | `ANIMAL_ART` (sheet + `<animal>_<anim>_<dir>` animations) |
 | the farmer | `FARMER_ART` (sheet + `farmer_<anim>_<dir>` animations) |
 | scenery on locked land | `SCENERY` |
+| map trees, stumps, outcrops, veins | `TREE_ART`, `STUMP_ART`, `DEPOSIT_ART` (`MAP_ART`) |
 | stock piles `pile_<kind>_<stage>` | `PILE_ART` → `pileArt(kind, stage)` |
 
 `src/scenes/art.test.ts` fails if a name the game uses is missing from the manifest.

@@ -3,6 +3,7 @@ import { MAX_LEVEL } from '../data/progression';
 import type { FarmContext } from '../game/context';
 import { DAY_MS } from '../logic/constants';
 import { addFamily } from '../logic/families';
+import { mapOf, regrowAll } from '../logic/maplayer';
 import { catchUpGame } from '../logic/offline';
 import { refreshOrders } from '../logic/orders';
 import { nextSeasonAt } from '../logic/seasons';
@@ -178,6 +179,20 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
         },
       },
       'Refresh orders',
+    ),
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn',
+        'data-testid': 'debug-regrow-trees',
+        onclick: () => {
+          const n = regrowAll(mapOf(game.state), game.now);
+          game.mapChanged();
+          ctx.ui.toast(n > 0 ? `${n} trees grew back` : 'No stumps to grow back', 'success');
+        },
+      },
+      'Regrow all trees',
     ),
   );
   const panel = h(

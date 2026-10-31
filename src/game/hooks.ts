@@ -107,6 +107,21 @@ export function runTileTapHandlers(ctx: FarmContext, x: number, y: number): bool
   return tileTapHandlers.some((handler) => handler(ctx, x, y) === true);
 }
 
+/** Where the build ghost stands (top-left tile) and whether it can go there; null when it is hidden. */
+export type BuildPreview = { type: string; x: number; y: number; ok: boolean } | null;
+export type BuildPreviewHook = (ctx: FarmContext, preview: BuildPreview) => void;
+
+const buildPreviewHooks: BuildPreviewHook[] = [];
+
+/** Called whenever the build ghost moves or hides, e.g. to show a woodcutter's lodge's reach. */
+export function onBuildPreview(hook: BuildPreviewHook): void {
+  buildPreviewHooks.push(hook);
+}
+
+export function runBuildPreview(ctx: FarmContext, preview: BuildPreview): void {
+  for (const hook of buildPreviewHooks) hook(ctx, preview);
+}
+
 /** A block in the Settings sheet (e.g. sound). Rendered each time the sheet opens. */
 export interface SettingsSection {
   id: string;

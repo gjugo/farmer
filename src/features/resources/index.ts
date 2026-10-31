@@ -1,11 +1,12 @@
 import type Phaser from 'phaser';
 import { getItem } from '../../data/items';
-import { RESOURCES, SLOW_SEASONS, type ResourceType } from '../../data/resourceBuildings';
+import { DEPOSITS, RESOURCES, SLOW_SEASONS, type ResourceType } from '../../data/resourceBuildings';
 import type { FarmContext, ObjectView, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
 import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
-import { collect, cycleProgress, defOf, idleReason, sanitize, todayYield, type IdleReason, type ResourceState } from '../../logic/resources';
+import { mapOf, treeStatus, treesInRange } from '../../logic/maplayer';
+import { areaOf, collect, cycleProgress, defOf, depositOf, idleReason, nextTreeAt, sanitize, todayYield, type IdleReason, type ResourceState } from '../../logic/resources';
 import { fullMessage } from '../../logic/storage';
 import { footprintLocal } from '../../scenes/iso';
 import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
@@ -145,8 +146,13 @@ function animate(ctx: FarmContext, obj: PlacedObject<ResourceState>, view: Objec
   view.container.bringToTop(d.bubble);
 }
 
-const IDLE_TEXT: Record<IdleReason, (obj: PlacedObject<ResourceState>) => string> = {
+const IDLE_TEXT: Record<IdleReason, (obj: PlacedObject<ResourceState>, ctx: FarmContext) => string> = {
   site: () => 'Still being built',
+  'no-trees': (obj, ctx) => {
+    const next = nextTreeAt(ctx.game, obj);
+    return `Idle: no grown tree within ${defOf(obj).range} tiles.${next === null ? ' Build it nearer a forest.' : ` The next one grows back in ${formatDuration(next - ctx.game.now)}.`}`;
+  },
+  exhausted: (obj) => `Deposit used up: no more ${defOf(obj).output} here. Demolish it, or buy ${defOf(obj).output} at the Market.`,
   'no-farmer': (obj) => `Idle: no farmer works here. Assign one to ${defOf(obj).verb}.`,
   'no-path': () => 'Idle: no path leads here from the farmhouse door.',
   'storehouse-full': () => `Idle: ${fullMessage('materials')}`,
@@ -159,6 +165,23 @@ function collectAndFloat(ctx: FarmContext, obj: PlacedObject<ResourceState>): vo
   if (obj.state.waiting > 0) ctx.ui.toast(`${obj.state.waiting} ${itemLabel(def.output)} wait in the ${def.name.toLowerCase()}. ${fullMessage('materials')}`, 'error');
 }
 
+/** What the building works: the trees in its reach, or what is left in its deposit. */
+function sourceLines(ctx: FarmContext, obj: PlacedObject<ResourceState>): string[] {
+  const def = defOf(obj);
+  const layer = mapOf(ctx.game.state);
+  if (def.range) {
+    const trees = treesInRange(layer, areaOf(obj), def.range);
+    const stumps = trees.filter((t) => treeStatus(t, ctx.game.now) === 'stump').length;
+    return [`🌲 Trees within ${def.range} tiles: ${trees.length - stumps} grown${stumps ? `, ${stumps} stumps growing back` : ''}.`];
+  }
+  if (def.deposit) {
+    const deposit = depositOf(ctx.game, obj);
+    const name = DEPOSITS[def.deposit].name;
+    return [deposit ? `Left in the ${name}: ${deposit.left} of ${deposit.amount} ${itemLabel(def.output)}` : `The ${name} is used up.`];
+  }
+  return [];
+}
+
 function panel(ctx: FarmContext, obj: PlacedObject<ResourceState>): PanelSpec {
   const { game } = ctx;
   const def = defOf(obj);
@@ -166,8 +189,9 @@ function panel(ctx: FarmContext, obj: PlacedObject<ResourceState>): PanelSpec {
   const out = itemLabel(def.output);
   const winter = Math.round(def.cycleMs * (SLOW_SEASONS.winter ?? 1));
   const lines = [`Makes ${def.yield} ${out} every ${minutes(def.cycleMs)} of work${winter !== def.cycleMs ? ` (${minutes(winter)} in winter)` : ''}.`];
+  lines.push(...sourceLines(ctx, obj));
   const idle = idleReason(game, obj);
-  if (idle) lines.push(IDLE_TEXT[idle](obj));
+  if (idle) lines.push(IDLE_TEXT[idle](obj, ctx));
   if (obj.state.waiting > 0) lines.push(`Waiting for room in the storehouse: ${obj.state.waiting} ${out}`);
   lines.push(`Made today: ${todayYield(clock, obj)} ${out}`);
   const { cycle } = obj.state;

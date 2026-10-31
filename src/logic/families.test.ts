@@ -11,7 +11,7 @@ import { catchUp } from './offline';
 import { connectToFarmhouse } from './roads';
 import { parseSave, serialize } from './save';
 import { SEASON_MS } from './seasons';
-import { maxLevelState, stockMaterials } from './test-utils';
+import { bareMap, maxLevelState, stockMaterials } from './test-utils';
 import type { GameState } from './types';
 import { addFarmer, assignFarmer, workersOf } from './workers';
 
@@ -23,7 +23,7 @@ const Y = START_LAYOUT.y + 6;
 
 /** A farm owning the whole map with plenty of money (and, at `max`, every building and the loom unlocked). */
 function farm({ max = true } = {}): Game {
-  const game = new Game(max ? maxLevelState() : stockMaterials(new Game().state));
+  const game = new Game(max ? maxLevelState() : bareMap(stockMaterials(new Game().state)));
   game.earn(1_000_000);
   const land = game.state.land;
   for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);

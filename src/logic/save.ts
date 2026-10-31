@@ -3,6 +3,7 @@ import { FIELD } from '../data/crops';
 import { PLOUGH_SEASONS } from '../data/seasons';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { createLand, isOwned, setOwned, setOwnedRect, type Rect } from './land';
+import { MAP_SLICE, migrateMapLayer } from './maplayer';
 import { FARM_PARCELS, isParcelOwned } from './parcels';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
@@ -24,7 +25,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 export interface SaveFile {
   version: number;
@@ -129,18 +130,25 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
       : state.objects;
     return { ...raw, version: 10, state: { ...state, objects, ext: p === undefined ? state.ext : { ...ext, [PROGRESSION]: progression } } };
   },
-  // Families: farmers live in homes and cash hiring is gone. The farm keeps every farmer it has, housed or not (no
-  // family arrives while there are more farmers than homes; nobody leaves for lack of one), and its families start
-  // counting days from the first load. Two goals were inserted ("build-cottage", "house-families"); farms past them skip them.
+  // Map resources: forests and deposits generated around what the farm has built (never on top of it). Every
+  // quarry and mine gets a deposit under it and every lodge a grove in reach, so nothing stops working.
   10: (raw) => {
     const state = isPlainObject(raw.state) ? raw.state : {};
     const ext = isPlainObject(state.ext) ? state.ext : {};
+    return { ...raw, version: 11, state: { ...state, ext: { ...ext, [MAP_SLICE]: migrateMapLayer(state) } } };
+  },
+  // Families: farmers live in homes and cash hiring is gone. The farm keeps every farmer it has, housed or not (no
+  // family arrives while there are more farmers than homes; nobody leaves for lack of one), and its families start
+  // counting days from the first load. Two goals were inserted ("build-cottage", "house-families"); farms past them skip them.
+  11: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
     const p = ext[PROGRESSION];
-    if (!isPlainObject(p) || typeof p.nextGoal !== 'number') return { ...raw, version: 11 };
+    if (!isPlainObject(p) || typeof p.nextGoal !== 'number') return { ...raw, version: 12 };
     let nextGoal = p.nextGoal;
-    // "build-cottage" and "house-families" in version 11.
+    // "build-cottage" and "house-families" in version 12.
     for (const at of [5, 14]) if (nextGoal > at) nextGoal++;
-    return { ...raw, version: 11, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal } } } };
+    return { ...raw, version: 12, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal } } } };
   },
 };
 
