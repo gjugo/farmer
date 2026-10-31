@@ -5,9 +5,9 @@ import type { Emitter } from './events';
 import type { LandState } from './types';
 
 /** Locked land is cut into parcels at most this many tiles wide/tall. */
-export const PARCEL_MAX_SIZE = 8;
-export const FIRST_PARCEL_PRICE = 500;
-export const PARCEL_PRICE_GROWTH = 1.5;
+export const PARCEL_MAX_SIZE = 12;
+export const FIRST_PARCEL_PRICE = 1000;
+export const PARCEL_PRICE_GROWTH = 1.25;
 
 export interface Parcel extends Rect {
   /** Stable id from the parcel's grid position, e.g. `p0-2`. */
@@ -81,7 +81,7 @@ function roundTo10(amount: number): number {
   return Math.round(amount / 10) * 10;
 }
 
-/** Price of the next parcel after `bought` have been bought: $500, $750, $1,130, ... */
+/** Price of the next parcel after `bought` have been bought: $1,000, $1,250, $1,560, ... */
 export function parcelPrice(bought: number): number {
   let price = FIRST_PARCEL_PRICE;
   for (let i = 0; i < bought; i++) price = roundTo10(price * PARCEL_PRICE_GROWTH);

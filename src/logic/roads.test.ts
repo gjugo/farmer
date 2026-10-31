@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { FIELD } from '../data/crops';
 import { FARMHOUSE, PATH } from '../data/farmhouse';
-import { START_LAND } from './constants';
+import { START_LAYOUT } from './constants';
 import { STARTING_FIELDS } from './crops';
 import { Game } from './game';
 import { doorOf, ensureFarmhouse, farmhouseOf, findRoute, STARTING_FARMHOUSE, type Tile } from './roads';
-import { deserialize } from './save';
+import { deserialize, serialize } from './save';
 import { createNewGame } from './state';
+import { fromV6, v6Land, V6_START } from './test-utils';
 import type { GameState } from './types';
 
 const field = (t: Tile) => ({ ...t, w: 2, h: 2 });
@@ -35,7 +36,7 @@ describe('farmhouse and roads', () => {
 
   it('there is no route to a site no path touches, until one is built', () => {
     const game = new Game();
-    const site = field({ x: START_LAND.x + 6, y: START_LAND.y + 5 });
+    const site = field({ x: START_LAYOUT.x + 5, y: START_LAYOUT.y + 4 });
     expect(game.place(FIELD, site.x, site.y).ok).toBe(true);
     expect(findRoute(game.state, site)).toBeNull();
     // Down from the road in front of the fields to the new field's top edge.
@@ -71,16 +72,17 @@ describe('farmhouse and roads', () => {
   });
 
   it('a farm from before farmhouses gets one, with roads to what is built', () => {
+    // Version-5 coordinates: the 32×24 map with its starting land at (11, 8).
     const objects = [
-      { id: 'o1', type: FIELD, x: START_LAND.x + 1, y: START_LAND.y + 5, state: {} },
-      { id: 'o2', type: 'coop', x: START_LAND.x + 6, y: START_LAND.y + 4, state: { animals: [] } },
+      { id: 'o1', type: FIELD, x: V6_START.x + 1, y: V6_START.y + 5, state: {} },
+      { id: 'o2', type: 'coop', x: V6_START.x + 6, y: V6_START.y + 4, state: { animals: [] } },
     ];
-    const state = deserialize(JSON.stringify({ version: 5, savedAt: null, state: { ...createNewGame(), objects, nextObjectId: 3 } }));
+    const state = deserialize(JSON.stringify({ version: 5, savedAt: null, state: { land: v6Land(), objects, nextObjectId: 3 } }));
     expect(farmhouseOf(state)).toMatchObject(STARTING_FARMHOUSE);
-    expect(findRoute(state, { x: objects[0].x, y: objects[0].y, w: 2, h: 2 })).not.toBeNull();
-    expect(findRoute(state, { x: objects[1].x, y: objects[1].y, w: 3, h: 3 })).not.toBeNull();
+    expect(findRoute(state, { ...fromV6(objects[0].x, objects[0].y), w: 2, h: 2 })).not.toBeNull();
+    expect(findRoute(state, { ...fromV6(objects[1].x, objects[1].y), w: 3, h: 3 })).not.toBeNull();
     // Loading again changes nothing.
-    const again = deserialize(JSON.stringify({ version: 5, savedAt: null, state }));
+    const again = deserialize(serialize(state));
     expect(again.objects).toEqual(state.objects);
   });
 

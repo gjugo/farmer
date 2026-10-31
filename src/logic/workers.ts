@@ -51,7 +51,19 @@ export interface WorkersState {
   recipes: Record<string, string>;
 }
 
-registerStateSlice<WorkersState>('workers', () => ({ farmers: STARTING_FARMERS, jobs: [], workplaces: [], plans: {}, recipes: {} }));
+registerStateSlice<WorkersState>('workers', () => ({ farmers: STARTING_FARMERS, jobs: [], workplaces: [], plans: {}, recipes: {} }), shiftJobs);
+
+/** Moves the saved jobs' work spots and routes by (dx, dy), for save migrations that move the farm. */
+export function shiftJobs(saved: unknown, dx: number, dy: number): unknown {
+  if (!isPlainObject(saved) || !Array.isArray(saved.jobs)) return saved;
+  const move = <T>(t: T): T =>
+    isPlainObject(t) && typeof t.x === 'number' && typeof t.y === 'number' ? { ...t, x: t.x + dx, y: t.y + dy } : t;
+  const jobs = saved.jobs.map((j: unknown) => {
+    const moved = move(j);
+    return isPlainObject(moved) && Array.isArray(moved.route) ? { ...moved, route: moved.route.map(move) } : moved;
+  });
+  return { ...saved, jobs };
+}
 
 /** Fields, coops, pastures and processing buildings: a farmer can be assigned to them. */
 export function isWorkplaceType(type: string): boolean {
