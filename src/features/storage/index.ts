@@ -106,8 +106,13 @@ function upgradeRefusal(ctx: FarmContext, obj: PlacedObject<StorageState>): stri
       return `Top level (${MAX_STORAGE_LEVEL})`;
     case 'money':
       return `Needs ${formatMoney(next!.upgrade.cost)}`;
-    case 'materials':
+    case 'materials': {
+      // More than the storehouses can hold at once: buying won't do, they need more room first.
+      const total = Object.values(next!.upgrade.materials).reduce((sum, n) => sum + (n ?? 0), 0);
+      const room = capacity(ctx.game.state, 'materials');
+      if (total > room) return `Needs ${total} materials at once, more than the ${room} your storehouses hold: build or upgrade a storehouse`;
       return needsMaterialsMessage(ctx.game.missingMaterials(next!.upgrade.materials));
+    }
     default:
       return 'Cannot upgrade';
   }
