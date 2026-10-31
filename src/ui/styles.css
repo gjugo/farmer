@@ -1407,3 +1407,79 @@ button {
   font: inherit;
   font-weight: 400;
 }
+
+/* Families: the approval chip and the Families block (also in the Farmers sheet) */
+@media (max-width: 640px) {
+  .hud-btn[data-testid='btn-families'] .hud-btn-label {
+    display: inline; /* the approval percentage stays visible on phones */
+  }
+}
+
+.hud-btn[data-testid='btn-families'] .hud-btn-label {
+  font-variant-numeric: tabular-nums;
+}
+
+.families-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.families-approval.approval-good {
+  color: var(--green-dark);
+}
+
+.families-approval.approval-bad {
+  color: #b3261e;
+}
+
+.families-hint {
+  margin: 0 0 8px;
+}
+
+.families-warn {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #fde2df;
+  color: #8a1c14;
+  font-weight: 600;
+}
+
+.families-breakdown,
+.families-day {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.families-breakdown li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.families-breakdown li:nth-child(odd) {
+  background: var(--paper-dark);
+}
+
+.families-breakdown li.plus strong {
+  color: var(--green-dark);
+}
+
+.families-breakdown li.minus strong {
+  color: #b3261e;
+}
+
+.families-day li {
+  padding: 2px 0;
+  font-size: 14px;
+}
+
+.families-needs {
+  font-size: 13px;
+}

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { FARMHOUSE } from '../../data/farmhouse';
-import { MAX_FARMERS, type JobKind } from '../../data/workers';
+import type { JobKind } from '../../data/workers';
 import type { FarmContext, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { farmerActivity, farmerName, placeName } from '../../game/workers';
@@ -12,8 +12,6 @@ import { siteProgress, sitesOf } from '../../logic/work';
 import {
   assignFarmer,
   freeFarmers,
-  hireCost,
-  hireFarmer,
   isWorkplaceType,
   jobPhase,
   jobsByFarmer,
@@ -26,14 +24,16 @@ import { facing, FARMER_ART, type Facing, type FarmerAnim } from '../../scenes/a
 import { DEPTH, walkerDepth } from '../../scenes/depth';
 import { gridToWorld } from '../../scenes/iso';
 import { addArtSprite, addShadow } from '../../scenes/sprites';
-import { formatMoney, h } from '../../ui/dom';
+import { h } from '../../ui/dom';
 import { withIcons } from '../../ui/icons';
+import { familiesBlock, familiesSignature } from '../families';
 
 /**
  * Farmers: every job sends a farmer from the farmhouse along the paths to the work, a few
  * seconds of it, and back. A farmer assigned to a field, pen or processing building does its
  * work by themselves; free farmers take hand-ordered jobs and build construction sites. Idle
- * farmers rest at the farmhouse. The farm starts with one; hire more from 👨‍🌾 Farmers in the HUD.
+ * farmers rest at the farmhouse. The farm starts with one; more come as families moving into cottages
+ * (`src/features/families`).
  * Rules live in `src/logic/workers.ts` (state, hiring, assignments), `src/logic/work.ts` (the
  * scheduler) and `src/logic/roads.ts`, numbers in `src/data/workers.ts`; hand-ordered work goes
  * through `withFarmer` and object panels get their farmer block from `workplacePanel` (`src/game/workers.ts`).
@@ -83,9 +83,8 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
     title: () => '👨‍🌾 Farmers',
     // Activities change all the time and are updated in place by tick(); a rebuild would close an open drop-down.
     signature: () => {
-      const cost = hireCost(game.state);
       const w = workersOf(game.state);
-      return `${w.farmers}|${cost}|${cost !== null && game.canAfford(cost)}|${w.workplaces.join(',')}|${workplaces(game).map((o) => o.id).join(',')}`;
+      return `${w.farmers}|${familiesSignature(game)}|${w.workplaces.join(',')}|${workplaces(game).map((o) => o.id).join(',')}`;
     },
     render: (body) => {
       const { farmers } = workersOf(game.state);
@@ -119,34 +118,8 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
         ),
       );
       updateActivities(game, body);
-      const cost = hireCost(game.state);
-      if (cost === null) {
-        body.append(h('p', { class: 'muted', 'data-testid': 'farmers-max' }, `Your farm employs the most farmers it can (${MAX_FARMERS}).`));
-        return;
-      }
-      const short = cost - game.money;
-      body.append(
-        h(
-          'div',
-          { class: 'actions' },
-          h(
-            'button',
-            {
-              type: 'button',
-              class: 'btn',
-              disabled: short > 0,
-              'data-testid': 'hire-farmer',
-              onclick: () => {
-                const r = hireFarmer(game);
-                if (r.ok) ctx.ui.toast(`Farmer ${r.farmers} joined the farm!`, 'success');
-                else ctx.ui.toast(r.reason === 'max' ? 'No room for more farmers' : 'Not enough money', 'error');
-              },
-            },
-            `Hire a farmer · ${formatMoney(cost)}`,
-          ),
-        ),
-      );
-      if (short > 0) body.append(h('p', { class: 'muted' }, `You need ${formatMoney(short)} more — sell goods at the Market.`));
+      // Farmers are families: a new one moves into a free cottage when approval is high enough.
+      body.append(h('h3', { class: 'group-title' }, '👪 Families'), familiesBlock(game));
     },
     tick: (body) => updateActivities(game, body),
   };
@@ -190,7 +163,6 @@ registerDebugInfo('workers', () => {
   return structuredClone({
     farmers: w.farmers,
     free: freeFarmers(game.state),
-    hireCost: hireCost(game.state),
     list: Array.from({ length: w.farmers }, (_, i) => ({
       farmer: i,
       workplace: w.workplaces[i],

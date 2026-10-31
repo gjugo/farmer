@@ -50,6 +50,9 @@ export function summaryLines(result: CatchUpResult): string[] {
   if (result.jobsFinished > 0) {
     lines.push(`⚙️ ${result.jobsFinished} processing job${result.jobsFinished > 1 ? 's' : ''} finished`);
   }
+  const { arrived = 0, left = 0 } = result.families ?? {};
+  if (arrived > 0) lines.push(`🏡 ${arrived === 1 ? 'A new family' : `${arrived} new families`} moved in`);
+  if (left > 0) lines.push(`🧳 ${left === 1 ? 'A family' : `${left} families`} left the farm`);
   if (result.dayAfter !== result.dayBefore) lines.push(`📅 New market day: day ${result.dayAfter} prices`);
   return lines;
 }

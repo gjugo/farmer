@@ -3694,6 +3694,46 @@
    }
   },
   {
+   "name": "cottage",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "cottage, 2x2: a home for one family, chimney at the back left (smoke drawn by the game)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/cottage.png",
+     "w": 496,
+     "h": 390,
+     "shadow": "2x/buildings/cottage_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/cottage.png",
+     "w": 248,
+     "h": 195,
+     "shadow": "1x/buildings/cottage_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
+     ]
+    }
+   }
+  },
+  {
    "name": "egg",
    "category": "icons",
    "type": "image",
@@ -12531,6 +12571,46 @@
      "origin": [
       0.41975,
       0.4
+     ]
+    }
+   }
+  },
+  {
+   "name": "cottage_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "cottage in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/cottage_winter.png",
+     "w": 496,
+     "h": 390,
+     "shadow": "2x/buildings/cottage_winter_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/cottage_winter.png",
+     "w": 248,
+     "h": 195,
+     "shadow": "1x/buildings/cottage_winter_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
      ]
     }
    }
