@@ -1,7 +1,7 @@
 import { FIELD, getCrop, type CropDef } from '../data/crops';
 import { PLOUGH_COST, PLOUGH_SEASONS } from '../data/seasons';
 import { startTimer, timerDone, timerProgress, timerRemaining, type Timer } from './clock';
-import { START_LAND } from './constants';
+import { START_LAYOUT } from './constants';
 import type { Game } from './game';
 import { nextSeasonIn, seasonRunEnd } from './seasons';
 import { addStartingObject, onNewGame } from './state';
@@ -22,10 +22,10 @@ export type CropStage = 'empty' | 'seeded' | 'sprout' | 'growing' | 'ripe';
 /** Growth progress at which each stage begins. Ripe is progress 1. */
 export const STAGE_STARTS = { seeded: 0, sprout: 0.25, growing: 0.6 } as const;
 
-/** Where the starting fields go: two 2×2 fields in the top-left of the starting land. */
+/** Where the starting fields go: two 2×2 fields at the start of the new farm's layout. */
 export const STARTING_FIELDS = [
-  { x: START_LAND.x + 1, y: START_LAND.y + 1 },
-  { x: START_LAND.x + 4, y: START_LAND.y + 1 },
+  { x: START_LAYOUT.x, y: START_LAYOUT.y },
+  { x: START_LAYOUT.x + 3, y: START_LAYOUT.y },
 ] as const;
 
 onNewGame((state) => {
