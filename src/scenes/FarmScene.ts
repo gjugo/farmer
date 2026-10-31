@@ -10,6 +10,7 @@ import { formatDuration } from '../logic/crops';
 import { footprintOf, materialsRefundOf, refundOf, type PlaceResult } from '../logic/game';
 import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
+import { farmhouseOf } from '../logic/roads';
 import type { PlacedObject } from '../logic/types';
 import { ART_RES, ART_SCALE, CURSOR, grassArt, hash, SCENERY, unownedArt } from './art';
 import { GROUND_ATLAS } from './BootScene';
@@ -17,12 +18,11 @@ import { DEPTH, setStandingDepths } from './depth';
 import {
   depthKey,
   footprintBox,
-  footprintCorners,
   footprintLocal,
   gridToWorld,
   ISO_H,
-  ISO_W,
   mapBox,
+  openingView,
   screenToWorld,
   sortFootprints,
   tileToWorld,
@@ -387,36 +387,32 @@ export class FarmScene extends Phaser.Scene {
     cam.setScroll(clampAxis(cam.scrollX, cam.width, map.left, map.width), clampAxis(cam.scrollY, cam.height, map.top, map.height));
   }
 
-  /** Centres and zooms the camera on the owned land's diamonds. */
+  /**
+   * The opening view: the owned land with a little land around it, zoomed out as far as tiles stay easy to tap
+   * (on a phone that is closer, centred on the farmhouse).
+   */
   private focusOwnedLand(): void {
     const { land } = this.farm.state;
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
     let maxY = -Infinity;
-    const add = (p: Point) => {
-      minX = Math.min(minX, p.x);
-      maxX = Math.max(maxX, p.x);
-      minY = Math.min(minY, p.y);
-      maxY = Math.max(maxY, p.y);
-    };
     for (let y = 0; y < land.height; y++) {
       for (let x = 0; x < land.width; x++) {
         if (!isOwned(land, x, y)) continue;
-        const c = footprintCorners({ x, y, w: 1, h: 1 });
-        [c.top, c.right, c.bottom, c.left].forEach(add);
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
       }
     }
-    if (minX > maxX) {
-      const map = mapBox(land.width, land.height);
-      add({ x: map.left, y: map.top });
-      add({ x: map.left + map.width, y: map.top + map.height });
-    }
+    const area = minX > maxX ? { x: 0, y: 0, w: land.width, h: land.height } : { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+    const house = farmhouseOf(this.farm.state);
+    const focus = house ? { x: house.x + 1, y: house.y + 1 } : { x: area.x + area.w / 2, y: area.y + area.h / 2 };
     const cam = this.cameras.main;
-    const margin = ISO_W;
-    const zoom = Math.min(cam.width / (maxX - minX + margin * 2), cam.height / (maxY - minY + margin * 2));
-    cam.setZoom(Phaser.Math.Clamp(zoom, this.minZoom, MAX_ZOOM));
-    cam.centerOn((minX + maxX) / 2, (minY + maxY) / 2);
+    const view = openingView(area, cam.width, cam.height, focus);
+    cam.setZoom(Phaser.Math.Clamp(view.zoom, this.minZoom, MAX_ZOOM));
+    cam.centerOn(view.centre.x, view.centre.y);
     this.clampCamera();
   }
 
