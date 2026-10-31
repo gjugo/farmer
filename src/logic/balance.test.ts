@@ -16,6 +16,10 @@ import { capacity, checkUpgrade, nextLevel, upgrade, used } from './storage';
 import type { GameState, PlacedObject } from './types';
 import { PATH } from '../data/farmhouse';
 import { workplaceNext } from './work';
+import { depositsUnder, MAP_SLICE, mapOf, newMapLayer, treesInRange } from './maplayer';
+import { ruleBlock } from './placement';
+import { createNewGame } from './state';
+import { RESOURCES } from '../data/resourceBuildings';
 import { assignFarmer, hireCost, hireFarmer, workerAt } from './workers';
 
 /**
@@ -25,7 +29,8 @@ import { assignFarmer, hireCost, hireFarmer, workerAt } from './workers';
  * "Best in season", which rotates crops; it never spreads manure) and pen gets a farmer, hiring more when it can afford one. It sells everything,
  * buys feed, builds up to `maxFields` fields (construction sites the free farmers build, with a path
  * to each), keeps chickens (and cows from level 3) and claims finished goals. Before building it buys
- * the materials it lacks at the Market, in fives like the Market's buttons. It follows the storage goals
+ * the materials it lacks at the Market, in fives like the Market's buttons. The map is the one a new game gets from
+ * `MAP_SEED`: a grove and a stone outcrop on the starting land, an iron vein next door. It follows the storage goals
  * (build, then upgrade a granary) and, when a farmer waits because the granary is full, upgrades or builds
  * one; it makes room in the storehouse the same way before shopping for more materials than fit (selling materials
  * the purchase doesn't need first). From level 3 it builds a woodcutter's lodge, then a quarry with the lodge's wood;
@@ -61,8 +66,13 @@ function touches(tiles: Set<string>, a: { x: number; y: number; w: number; h: nu
   return false;
 }
 
+/** The new game's map: any seed gives a start grove and outcrop, this one keeps the runs repeatable. */
+const MAP_SEED = 20261031;
+
 function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields: number; minutes: number }): Sim {
-  const game = new Game();
+  const state = createNewGame();
+  state.ext[MAP_SLICE] = newMapLayer(state, MAP_SEED);
+  const game = new Game(state);
   const reachedAt = new Map<number, number>([[1, 0]]);
   game.events.on('levelUp', ({ level }) => reachedAt.set(level, game.now));
   const storage = { built: 0, upgraded: 0, refused: 0 };
@@ -109,7 +119,9 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     const area = (s: { x: number; y: number }) => ({ ...s, ...def.footprint });
     // Same as trying findRoute, then connectToFarmhouse, on each spot, but one flood fill each instead of one per spot.
     const onPaths = reachable(game.state, (o) => o?.type === PATH);
-    const free = (o: PlacedObject | undefined, x: number, y: number) => isOwned(game.state.land, x, y) && (!o || o.type === PATH);
+    // Trees and rocks are in the way of paths too.
+    const free = (o: PlacedObject | undefined, x: number, y: number) =>
+      isOwned(game.state.land, x, y) && (o ? o.type === PATH : !ruleBlock(game.state, { w: 1, h: 1 }, x, y, PATH));
     const onLand = reachable(game.state, free);
     // Nor does it wall off its own land: every tile the farmhouse reaches now stays reachable around the new building.
     const walls = (a: { x: number; y: number; w: number; h: number }) => {
@@ -119,6 +131,17 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
       return after.size < onLand.size - covered;
     };
     const fits = (s: { x: number; y: number }, near: Set<string>) => touches(near, area(s)) && !walls(area(s));
+    // A lodge goes where it reaches the most trees, a quarry or mine squarely on its deposit.
+    const res = RESOURCES[type as keyof typeof RESOURCES];
+    const layer = mapOf(game.state);
+    const worth = (s: { x: number; y: number }) =>
+      res?.range ? treesInRange(layer, area(s), res.range).length : res?.deposit ? depositsUnder(layer, area(s), res.deposit).length * 100 - overhang(s) : 0;
+    const overhang = (s: { x: number; y: number }) => {
+      let n = 0;
+      for (let y = s.y; y < s.y + def.footprint.h; y++) for (let x = s.x; x < s.x + def.footprint.w; x++) n += layer.deposits.some((d) => x >= d.x && y >= d.y && x < d.x + d.w && y < d.y + d.h) ? 0 : 1;
+      return n;
+    };
+    if (res) spots.sort((a, b) => worth(b) - worth(a));
     const spot = spots.find((s) => fits(s, onPaths)) ?? spots.find((s) => fits(s, onLand));
     if (!spot) {
       // Out of room: buy the cheapest parcel next to the farm, if that leaves the money for the building.
@@ -251,6 +274,9 @@ describe('level curve balance', () => {
   // Soil fertility (rich start patch, yield by fertility, drain per harvest, double for the same crop, "Best in season"
   // rotating, no manure): casual L2 9.0, L5 173.0; relaxed L2 8.5, L5 158.0; busy L2 8.2, L5 162.0. Its fields end the
   // 3 h worn down (often under 20%): fallow and manure are for a real player to use.
+  // Map resources (the lodge fells the start grove, the quarry stands on the start outcrop, map seed MAP_SEED):
+  // casual L2 10.0, L5 167.0; relaxed L2 8.5, L5 166.0; busy L2 8.2, L5 167.8.
+  // Map resources and soil fertility together: casual L2 9.0, L5 173.0; relaxed L2 8.5, L5 157.0; busy L2 8.2, L5 161.9.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });
@@ -281,6 +307,14 @@ describe('level curve balance', () => {
     }
     expect(sim.produced.wood ?? 0).toBeGreaterThan(0);
     expect(sim.produced.stone ?? 0).toBeGreaterThan(0);
+    // The wood came from trees it felled, the stone out of the outcrop under its quarry.
+    const layer = mapOf(sim.game.state);
+    const lodge = sim.game.objectsOfType('woodcutter')[0];
+    const quarry = sim.game.objectsOfType('quarry')[0];
+    expect(treesInRange(layer, { x: lodge.x, y: lodge.y, w: 2, h: 2 }, RESOURCES.woodcutter.range!).length).toBeGreaterThanOrEqual(5);
+    expect(layer.trees.some((t) => t.felledAt !== null)).toBe(true);
+    const [outcrop] = depositsUnder(layer, { x: quarry.x, y: quarry.y, w: 2, h: 2 }, 'stone');
+    expect(outcrop.amount - outcrop.left).toBe(sim.produced.stone);
     // A good share of its materials are its own, not bought.
     const total = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0);
     expect(total(sim.produced)).toBeGreaterThanOrEqual(0.3 * (total(sim.produced) + total(sim.bought)));

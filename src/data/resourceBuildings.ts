@@ -11,6 +11,21 @@ import type { Season } from './seasons';
 
 export type ResourceType = 'woodcutter' | 'quarry' | 'mine';
 
+/** What a deposit on the map holds: a stone outcrop or an iron vein (see `src/logic/maplayer.ts`). */
+export type DepositKind = 'stone' | 'iron';
+
+export interface DepositDef {
+  /** "stone outcrop", for "Stand on a stone outcrop". */
+  name: string;
+  /** Units a new deposit of `tiles` tiles holds. */
+  amount(tiles: number): number;
+}
+
+export const DEPOSITS: Record<DepositKind, DepositDef> = {
+  stone: { name: 'stone outcrop', amount: (tiles) => (tiles >= 9 ? 600 : 400) },
+  iron: { name: 'iron vein', amount: () => 150 },
+};
+
 /** The farmer jobs of the resource buildings (see `JOBS` in `src/data/workers.ts`). */
 export type ResourceJob = 'chop' | 'quarry' | 'mine';
 
@@ -32,6 +47,10 @@ export interface ResourceDef {
   job: ResourceJob;
   /** "cut wood": what the farmer does, for "Assign a farmer to cut wood". */
   verb: string;
+  /** Fells the trees within this many tiles of its footprint, one per cycle (the woodcutter's lodge). */
+  range?: number;
+  /** Stands on a deposit of this kind and takes each cycle's yield from it (quarry, mine). */
+  deposit?: DepositKind;
 }
 
 export const RESOURCES: Record<ResourceType, ResourceDef> = {
@@ -42,13 +61,14 @@ export const RESOURCES: Record<ResourceType, ResourceDef> = {
     cost: 80,
     materials: {},
     footprint: { w: 2, h: 2 },
-    description: 'A farmer working here cuts wood for your buildings.',
+    description: 'A farmer working here fells the trees within 6 tiles for wood. Stumps grow back in a season.',
     unlockLevel: 1,
     output: 'wood',
     yield: 4,
     cycleMs: 240_000,
     job: 'chop',
     verb: 'cut wood',
+    range: 6,
   },
   quarry: {
     id: 'quarry',
@@ -57,13 +77,14 @@ export const RESOURCES: Record<ResourceType, ResourceDef> = {
     cost: 120,
     materials: { wood: 10 },
     footprint: { w: 2, h: 2 },
-    description: 'A farmer working here breaks stone for your buildings.',
+    description: 'Stands on a stone outcrop. A farmer working here breaks stone until the outcrop is used up.',
     unlockLevel: 2,
     output: 'stone',
     yield: 3,
     cycleMs: 300_000,
     job: 'quarry',
     verb: 'quarry stone',
+    deposit: 'stone',
   },
   mine: {
     id: 'mine',
@@ -72,13 +93,14 @@ export const RESOURCES: Record<ResourceType, ResourceDef> = {
     cost: 140,
     materials: { wood: 15, stone: 10 },
     footprint: { w: 2, h: 2 },
-    description: 'A farmer working here digs iron ore. Slow, but cheaper than the Market.',
+    description: 'Stands on an iron vein. A farmer working here digs iron ore. Slow, but cheaper than the Market.',
     unlockLevel: 4,
     output: 'iron',
     yield: 1,
     cycleMs: 360_000,
     job: 'mine',
     verb: 'mine iron',
+    deposit: 'iron',
   },
 };
 

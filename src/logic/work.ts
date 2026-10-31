@@ -51,7 +51,9 @@ export type WaitReason =
   | 'inputs' // the recipe's inputs are not in stock
   | 'full' // something is ready, but the granary has no room for it
   | 'cycle' // a resource cycle is still under way (its farmer was moved mid-cycle)
-  | 'storehouse-full'; // materials wait in the building, but the storehouse has no room for them
+  | 'storehouse-full' // materials wait in the building, but the storehouse has no room for them
+  | 'no-trees' // a woodcutter's lodge without a grown tree in range
+  | 'exhausted'; // a quarry or mine whose deposit is used up
 
 export type WorkplaceNext = { task: Task } | { wait: WaitReason; cost?: number };
 
@@ -140,6 +142,8 @@ function resourceNext(game: Game, obj: PlacedObject<resources.ResourceState>): W
     if (game.spaceFor(def.output) === 0) return { wait: 'storehouse-full' };
     return task('collect', COLLECT_WORK_MS, () => resources.collect(game, obj) > 0);
   }
+  if (def.deposit && !resources.depositOf(game, obj)) return { wait: 'exhausted' };
+  if (!resources.hasTree(game, obj)) return { wait: 'no-trees' };
   return task(def.job, resources.cycleMsAt(def, game.now), (walk) => resources.startCycle(game, obj, walk));
 }
 
@@ -250,7 +254,7 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
 
 /**
  * The next game time after now at which a farmer may find new work: a job, crop, animal cycle, batch or resource cycle
- * ends, or a season begins.
+ * ends, a tree a waiting lodge could fell grows back, or a season begins.
  */
 export function nextWorkEvent(game: Game): number {
   const { state } = game;
@@ -277,6 +281,10 @@ export function nextWorkEvent(game: Game): number {
     } else if (isProcessorType(obj.type)) {
       const head = (obj.state as processing.ProcessorState).queue[0];
       if (head?.timer) at(head.timer.start + head.timer.duration);
+    } else if (isResourceType(obj.type) && !resources.hasTree(game, obj)) {
+      // A lodge waiting for a tree wakes when the next one in range grows back.
+      const t = resources.nextTreeAt(game, obj);
+      if (t !== null) at(t);
     }
   }
   // Any resource cycle, assigned or not: one keeps going when its farmer is moved mid-cycle.

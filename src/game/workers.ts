@@ -123,6 +123,10 @@ export function waitText(game: Game, next: Exclude<WorkplaceNext, { task: unknow
       return 'Finishing the cycle under way';
     case 'storehouse-full':
       return fullMessage('materials');
+    case 'no-trees':
+      return 'No grown trees in range: waiting for stumps to grow back';
+    case 'exhausted':
+      return 'Deposit used up';
   }
 }
 
