@@ -869,6 +869,7 @@ button {
   align-items: center;
   gap: 6px;
   pointer-events: none !important;
+  z-index: 25; /* above the menu and dialogs: save errors show there */
 }
 
 .toast {
@@ -1157,6 +1158,158 @@ button {
     white-space: normal;
     text-align: center;
   }
+}
+
+/* Home screen and pause menu ------------------------------------------------- */
+
+.menu-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 15; /* above the HUD, below dialogs (confirm, welcome back) and toasts */
+  display: flex;
+  padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+  overflow-y: auto;
+  background: rgb(20 30 15 / 55%);
+}
+
+body[data-menu='home'] .menu-backdrop {
+  background: radial-gradient(ellipse at center, rgb(20 30 15 / 45%), rgb(12 18 9 / 80%));
+}
+
+/* The farm shows dimmed behind the home screen, without the HUD. */
+body[data-menu='home'] .topbar,
+body[data-menu] .tool-banner {
+  visibility: hidden;
+}
+
+.menu {
+  width: min(440px, 100%);
+  margin: auto;
+  padding: 20px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.menu[data-screen='main'] {
+  width: min(340px, 100%);
+  text-align: center;
+}
+
+.menu-title {
+  margin: 0 0 4px;
+  font-size: 44px;
+  line-height: 1.1;
+  color: var(--wood-dark);
+  letter-spacing: 0.02em;
+}
+
+.menu-title-small {
+  margin-bottom: 14px;
+  font-size: 28px;
+}
+
+.menu-tagline {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+
+.menu-buttons {
+  display: grid;
+  gap: 10px;
+}
+
+.menu-btn {
+  min-height: 48px;
+  font-size: 17px;
+}
+
+.menu-continue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.menu-btn-note {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.menu .btn:focus-visible,
+.menu input:focus-visible,
+.menu select:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.menu-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.menu-head .menu-btn {
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.menu-subtitle {
+  margin: 0;
+  font-size: 22px;
+}
+
+.slot-list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.slot-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  background: var(--paper-dark);
+  border-radius: 10px;
+}
+
+.slot-info {
+  display: grid;
+  flex: 1 1 180px;
+  gap: 2px;
+  min-width: 0;
+}
+
+.slot-summary,
+.slot-time {
+  overflow-wrap: anywhere;
+}
+
+.slot-time {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.slot-empty .slot-summary {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.slot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slot-actions .btn {
+  padding: 8px 12px;
 }
 
 /* Orders board --------------------------------------------------------------- */
