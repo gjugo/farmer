@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { START_LAND } from '../logic/constants';
+import { STARTING_FARMHOUSE } from '../logic/roads';
 import {
   depthKey,
   footprintBox,
@@ -9,6 +11,9 @@ import {
   ISO_H,
   ISO_W,
   mapBox,
+  MIN_TILE_PX,
+  OPENING_MARGIN,
+  openingView,
   screenToWorld,
   sortFootprints,
   tileToWorld,
@@ -188,5 +193,38 @@ describe('depth', () => {
         if (a !== b && isBehind(fps[a], fps[b])) expect(rank.get(a)!).toBeLessThan(rank.get(b)!);
       }
     }
+  });
+});
+
+describe('opening view', () => {
+  const house = { x: STARTING_FARMHOUSE.x + 1, y: STARTING_FARMHOUSE.y + 1 };
+  const visible = (view: { zoom: number; centre: { x: number; y: number } }, w: number, h: number, gx: number, gy: number) => {
+    const cam: CameraView = { scrollX: view.centre.x - w / 2, scrollY: view.centre.y - h / 2, zoom: view.zoom, width: w, height: h };
+    const s = worldToScreen(cam, gridToWorld(gx, gy).x, gridToWorld(gx, gy).y);
+    return s.x >= -1e-6 && s.y >= -1e-6 && s.x <= w + 1e-6 && s.y <= h + 1e-6;
+  };
+
+  it('shows the whole starting farm and two tiles around it on a 1280×800 window', () => {
+    const view = openingView(START_LAND, 1280, 800, house);
+    const { x, y, w, h } = START_LAND;
+    const m = OPENING_MARGIN;
+    for (const [gx, gy] of [
+      [x - m, y - m],
+      [x + w + m, y - m],
+      [x + w + m, y + h + m],
+      [x - m, y + h + m],
+    ]) {
+      expect(visible(view, 1280, 800, gx, gy)).toBe(true);
+    }
+    // Before the map grew the 10×8 farm opened at about 0.91; now it is 0.6–0.7 of that.
+    expect(view.zoom / 0.91).toBeGreaterThan(0.58);
+    expect(view.zoom / 0.91).toBeLessThan(0.7);
+    expect(view.zoom * ISO_W).toBeGreaterThanOrEqual(MIN_TILE_PX);
+  });
+
+  it('keeps tiles tappable on a phone and centres on the farmhouse', () => {
+    const view = openingView(START_LAND, 390, 844, house);
+    expect(view.zoom * ISO_W).toBe(MIN_TILE_PX);
+    expect(view.centre).toEqual(gridToWorld(house.x, house.y));
   });
 });

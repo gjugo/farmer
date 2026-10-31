@@ -10,9 +10,11 @@ import { Game } from './game';
 import { buy, buyPrice, buyUnlockLevel, sell } from './market';
 import { START_LAND } from './constants';
 import { buyParcel, FARM_PARCELS, parcelPrice, parcelsBought, parcelsForSale } from './parcels';
-import { connectToFarmhouse, findRoute } from './roads';
+import { connectToFarmhouse, doorOf, farmhouseOf } from './roads';
+import { inBounds, isOwned } from './land';
 import { capacity, checkUpgrade, nextLevel, upgrade, used } from './storage';
-import type { PlacedObject } from './types';
+import type { GameState, PlacedObject } from './types';
+import { PATH } from '../data/farmhouse';
 import { workplaceNext } from './work';
 import { assignFarmer, hireCost, hireFarmer, workerAt } from './workers';
 
@@ -29,6 +31,33 @@ import { assignFarmer, hireCost, hireFarmer, workerAt } from './workers';
  * buildings and buys land only when it runs out of room, so a real player who does more should level
  * at least as fast.
  */
+/** Tiles reachable from the farmhouse door over tiles that pass `walkable` (given what stands there), as "x,y" keys. */
+function reachable(state: GameState, walkable: (o: PlacedObject | undefined, x: number, y: number) => boolean): Set<string> {
+  const at = new Map<string, PlacedObject>();
+  for (const o of state.objects) {
+    const { w, h } = getBuildable(o.type)?.footprint ?? { w: 1, h: 1 };
+    for (let y = o.y; y < o.y + h; y++) for (let x = o.x; x < o.x + w; x++) at.set(`${x},${y}`, o);
+  }
+  const ok = (x: number, y: number) => inBounds(state.land, x, y) && walkable(at.get(`${x},${y}`), x, y);
+  const door = doorOf(farmhouseOf(state)!);
+  const seen = new Set<string>();
+  const queue = ok(door.x, door.y) ? [door] : [];
+  for (const t of queue) {
+    const k = `${t.x},${t.y}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) if (ok(t.x + dx, t.y + dy)) queue.push({ x: t.x + dx, y: t.y + dy });
+  }
+  return seen;
+}
+
+/** True when a tile of `tiles` lies along an edge of `a`, just outside it. */
+function touches(tiles: Set<string>, a: { x: number; y: number; w: number; h: number }): boolean {
+  for (let x = a.x; x < a.x + a.w; x++) if (tiles.has(`${x},${a.y - 1}`) || tiles.has(`${x},${a.y + a.h}`)) return true;
+  for (let y = a.y; y < a.y + a.h; y++) if (tiles.has(`${a.x - 1},${y}`) || tiles.has(`${a.x + a.w},${y}`)) return true;
+  return false;
+}
+
 function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields: number; minutes: number }): Sim {
   const game = new Game();
   const reachedAt = new Map<number, number>([[1, 0]]);
@@ -63,7 +92,10 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     const spots: { x: number; y: number }[] = [];
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (game.checkPlacement(type, x, y).ok) spots.push({ x, y });
     const area = (s: { x: number; y: number }) => ({ ...s, ...def.footprint });
-    const spot = spots.find((s) => findRoute(game.state, area(s))) ?? spots.find((s) => connectToFarmhouse(structuredClone(game.state), area(s)));
+    // Same as trying findRoute, then connectToFarmhouse, on each spot, but one flood fill each instead of one per spot.
+    const onPaths = reachable(game.state, (o) => o?.type === PATH);
+    const onLand = reachable(game.state, (o, x, y) => isOwned(game.state.land, x, y) && (!o || o.type === PATH));
+    const spot = spots.find((s) => touches(onPaths, area(s))) ?? spots.find((s) => touches(onLand, area(s)));
     if (!spot) {
       // Out of room: buy the cheapest parcel next to the farm, if that leaves the money for the building.
       const [parcel] = parcelsForSale(game.state.land, FARM_PARCELS);
@@ -115,7 +147,7 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
       if (cost === null || game.money < cost + 40 || !hireFarmer(game).ok) break;
       assignFarmer(game, wp.id);
     }
-    // Grow: four fields, then a coop, then more fields and the rest.
+    // Grow: four fields, then a coop with chickens, then more fields and the rest.
     const stock = (type: PenType, kind: AnimalKind, reserve: number) => {
       if (!game.isUnlocked(ANIMALS[kind].unlockLevel)) return;
       if (pens(type).length === 0) build(type, reserve);
@@ -126,7 +158,8 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
       }
     };
     if (fields.length >= 4) stock('coop', 'chicken', 60);
-    if (fields.length < maxFields && (fields.length < 4 || pens('coop').length > 0)) build(FIELD, 40);
+    const stocked = pens('coop').some((p) => p.state.animals.length > 0);
+    if (fields.length < maxFields && (fields.length < 4 || stocked)) build(FIELD, 40);
     stock('pasture', 'cow', 100);
   };
 
@@ -161,7 +194,10 @@ describe('level curve balance', () => {
   // Plus storage (granary $30 + 5 wood, built for its goal): casual L2 4.0, L5 43.5; relaxed L2 4.0, L5 42.5; busy L2 5.8, L5 42.0.
   // Slower pace (8 min wheat, 32 min seasons, 10× longer farm work, LEVEL_XP 150/900/2600/6000), checking every
   // 60 / 30 / 10 s: casual L2 11.0, L5 168.0; relaxed L2 9.0, L5 178.5; busy L2 8.3, L5 161.7. Winter runs from minute 96 to 128.
+  // Bigger map (64×48, 16×12 start, parcels up to 12 tiles from $1,000 ×1.25), more fields only once the coop has chickens:
+  // casual L2 11.0, L5 162.0; relaxed L2 8.5, L5 161.5; busy L2 8.2, L5 168.8 (none of them needs to buy land now).
   // Merged with storage (granary goal after 20 wheat): casual L2 10.0, L5 171.0; relaxed L2 9.0, L5 168.0; busy L2 8.3, L5 166.0.
+  // Bigger map and storage together: casual L2 10.0, L5 167.0; relaxed L2 8.5, L5 162.0; busy L2 8.2, L5 161.8.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });

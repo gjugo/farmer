@@ -18,7 +18,7 @@ import {
   type FieldState,
 } from './crops';
 import { Game } from './game';
-import { maxLevelState } from './test-utils';
+import { fromV6, maxLevelState, V6_START } from './test-utils';
 import { deserialize, serialize } from './save';
 import { SEASON_MS } from './seasons';
 import type { PlacedObject } from './types';
@@ -141,9 +141,10 @@ describe('growth', () => {
 
   it('fills defaults for fields saved without crop state', () => {
     const state = deserialize(
-      JSON.stringify({ version: 1, state: { objects: [{ id: 'o1', type: FIELD, x: START_LAND.x, y: START_LAND.y }] } }),
+      JSON.stringify({ version: 1, state: { objects: [{ id: 'o1', type: FIELD, x: V6_START.x, y: V6_START.y }] } }),
     );
-    expect(state.objects[0]).toEqual({ id: 'o1', type: FIELD, x: START_LAND.x, y: START_LAND.y, state: { crop: null, timer: null, ploughedAt: 0 } }); // older farms' fields count as ploughed
+    // Older farms' fields count as ploughed (and move with the farm into the bigger map).
+    expect(state.objects[0]).toEqual({ id: 'o1', type: FIELD, ...fromV6(V6_START.x, V6_START.y), state: { crop: null, timer: null, ploughedAt: 0 } });
   });
 });
 
@@ -310,7 +311,7 @@ describe('seasons and ploughing', () => {
       JSON.stringify({
         version: 4,
         savedAt: null,
-        state: { clock: { elapsed }, objects: [{ id: 'o1', type: FIELD, x: START_LAND.x, y: START_LAND.y, state: { crop: 'wheat', timer: null } }] },
+        state: { clock: { elapsed }, objects: [{ id: 'o1', type: FIELD, x: V6_START.x, y: V6_START.y, state: { crop: 'wheat', timer: null } }] },
       });
     const summer = deserialize(v4(SUMMER + 7)).objects[0].state;
     expect(summer).toEqual({ crop: 'wheat', timer: null, ploughedAt: SUMMER + 7 });

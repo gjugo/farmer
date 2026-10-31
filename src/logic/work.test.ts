@@ -7,7 +7,7 @@ import { buildWorkMs, PLANT_WORK_MS } from '../data/workers';
 import type { FarmContext } from '../game/context';
 import { withFarmer } from '../game/workers';
 import { buyAnimal, type PenState } from './animals';
-import { START_LAND } from './constants';
+import { START_LAYOUT } from './constants';
 import { cropStage, isPloughed, type FieldState } from './crops';
 import { Game } from './game';
 import { setOwned } from './land';
@@ -35,8 +35,9 @@ import {
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
-const X = START_LAND.x;
-const Y = START_LAND.y;
+/** One tile above and left of the new farm's layout: the spots below are free and the road reaches them. */
+const X = START_LAYOUT.x - 1;
+const Y = START_LAYOUT.y - 1;
 
 /** A top-level farm owning the whole map, with plenty of money. */
 function farm(): Game {
