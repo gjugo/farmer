@@ -3494,6 +3494,126 @@
    }
   },
   {
+   "name": "woodcutter_lodge",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "woodcutter's lodge: log cabin, chopping block and wood pile, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/woodcutter_lodge.png",
+     "w": 498,
+     "h": 448,
+     "shadow": "2x/buildings/woodcutter_lodge_shadow.png",
+     "anchor": [
+      248.0,
+      196.0
+     ],
+     "origin": [
+      0.49799,
+      0.4375
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/woodcutter_lodge.png",
+     "w": 249,
+     "h": 224,
+     "shadow": "1x/buildings/woodcutter_lodge_shadow.png",
+     "anchor": [
+      124.0,
+      98.0
+     ],
+     "origin": [
+      0.49799,
+      0.4375
+     ]
+    }
+   }
+  },
+  {
+   "name": "quarry",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "stone quarry: stepped rock face, crane and cut blocks, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/quarry.png",
+     "w": 528,
+     "h": 382,
+     "shadow": "2x/buildings/quarry_shadow.png",
+     "anchor": [
+      248.0,
+      130.0
+     ],
+     "origin": [
+      0.4697,
+      0.34031
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/quarry.png",
+     "w": 264,
+     "h": 191,
+     "shadow": "1x/buildings/quarry_shadow.png",
+     "anchor": [
+      124.0,
+      65.0
+     ],
+     "origin": [
+      0.4697,
+      0.34031
+     ]
+    }
+   }
+  },
+  {
+   "name": "mine",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "iron mine: hill with a timber-framed tunnel, rails and an ore cart, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/mine.png",
+     "w": 496,
+     "h": 328,
+     "shadow": "2x/buildings/mine_shadow.png",
+     "anchor": [
+      248.0,
+      76.0
+     ],
+     "origin": [
+      0.5,
+      0.23171
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/mine.png",
+     "w": 248,
+     "h": 164,
+     "shadow": "1x/buildings/mine_shadow.png",
+     "anchor": [
+      124.0,
+      38.0
+     ],
+     "origin": [
+      0.5,
+      0.23171
+     ]
+    }
+   }
+  },
+  {
    "name": "farmhouse",
    "category": "buildings",
    "type": "image",
