@@ -15,8 +15,10 @@ export interface ActivityEvents {
   sold: { item: ItemId; qty: number; earned: number };
   /** Money came in through the shared income path (`game.earnIncome`); it also gives XP. */
   income: { amount: number };
-  /** The player built something (starting objects of a new game do not count). */
+  /** The player built something (starting objects of a new game do not count). For a construction site: when it is placed. */
   placed: { type: string };
+  /** A farmer finished building a construction site. */
+  built: { type: string };
   /** The player bought a parcel of land. */
   landBought: { parcel: string; price: number };
   /** A field was ploughed. */
@@ -35,7 +37,7 @@ export interface ActivityEvents {
   orderFulfilled: { reward: number };
   /** A finished goal was claimed. */
   goalClaimed: { id: string };
-  /** A farmer was put to work (building, planting, harvesting, feeding). */
+  /** A farmer was put to work (building, ploughing, planting, harvesting, feeding, collecting, starting a batch). */
   workStarted: { kind: string };
   /** A farmer was hired; `farmers` is the new total. */
   hired: { farmers: number };

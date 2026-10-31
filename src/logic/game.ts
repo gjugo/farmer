@@ -1,6 +1,7 @@
 import { getBuildable, type BuildableDef } from '../data/buildables';
+import { buildWorkMs } from '../data/workers';
 import type { ActivityEvents } from './activity';
-import { advance, dayOf } from './clock';
+import { dayOf, gameDelta } from './clock';
 import { DEMOLISH_REFUND } from './constants';
 import * as economy from './economy';
 import { Emitter } from './events';
@@ -11,6 +12,7 @@ import { Progression, type GoalView } from './progression';
 import { createNewGame } from './state';
 import type { GameState, ItemId, PlacedObject } from './types';
 import { buildableUnlockLevel, isUnlocked, type Unlock } from './unlocks';
+import { runWork } from './work';
 
 export interface GameEvents {
   /** Money changed by `delta` (negative when spent). */
@@ -43,6 +45,19 @@ export function footprintOf(obj: PlacedObject): Footprint {
 
 export function demolishRefund(def: BuildableDef | undefined): number {
   return def ? Math.floor(def.cost * DEMOLISH_REFUND) : 0;
+}
+
+/** What demolishing the object gives back: everything paid for an unfinished site, else part of the cost. */
+export function refundOf(obj: PlacedObject): number {
+  return obj.site ? obj.site.paid : demolishRefund(getBuildable(obj.type));
+}
+
+export interface PlaceOptions {
+  /**
+   * Place it as a construction site (as the player does): unusable until a free farmer has built it.
+   * Buildables that take no building work (paths) are finished at once anyway.
+   */
+  site?: boolean;
 }
 
 /**
@@ -162,8 +177,8 @@ export class Game {
     return canPlace(this._state, def.footprint, x, y, footprintOf);
   }
 
-  /** Validates, charges the cost and places the object. Nothing changes when it fails. */
-  place(type: string, x: number, y: number): PlaceResult {
+  /** Validates, charges the cost and places the object (finished, unless `options.site`). Nothing changes when it fails. */
+  place(type: string, x: number, y: number, options: PlaceOptions = {}): PlaceResult {
     const def = getBuildable(type);
     if (!def) return { ok: false, reason: 'unknown-type' };
     const check = this.checkPlacement(type, x, y);
@@ -176,18 +191,23 @@ export class Game {
       y,
       state: def.initialState?.() ?? {},
     };
+    const workMs = options.site ? buildWorkMs(type) : 0;
+    if (workMs > 0) object.site = { workMs, paid: def.cost };
     this._state.objects.push(object);
     this.events.emit('objectAdded', object);
     this.activity.emit('placed', { type });
     return { ok: true, object };
   }
 
-  /** Removes an object and refunds part of its cost. Returns the refund, or null if not found or fixed (the farmhouse). */
+  /**
+   * Removes an object and refunds part of its cost (all of it for an unfinished site). Returns the refund,
+   * or null if not found or fixed (the farmhouse).
+   */
   demolish(id: string): number | null {
     const i = this._state.objects.findIndex((o) => o.id === id);
     if (i < 0 || getBuildable(this._state.objects[i].type)?.fixed) return null;
     const [object] = this._state.objects.splice(i, 1);
-    const refund = demolishRefund(getBuildable(object.type));
+    const refund = refundOf(object);
     this.events.emit('objectRemoved', object);
     this.earn(refund);
     return refund;
@@ -200,15 +220,21 @@ export class Game {
 
   // Clock ---------------------------------------------------------------------
 
-  /** Advances the clock by a real-time delta; returns the game-time delta. */
+  /** Advances the clock by a real-time delta (farmers work on the way, see `advance`); returns the game-time delta. */
   tick(realDeltaMs: number): number {
-    const dt = advance(this._state.clock, realDeltaMs);
+    const dt = gameDelta(this._state.clock, realDeltaMs);
+    this.advance(dt);
     const day = this.day;
     if (day !== this.lastDay) {
       this.lastDay = day;
       this.events.emit('day', day);
     }
     return dt;
+  }
+
+  /** Moves game time forward by `gameMs`, with farmers doing their work at the right moments on the way (`runWork`). */
+  advance(gameMs: number): void {
+    if (gameMs > 0) runWork(this, this._state.clock.elapsed + gameMs);
   }
 
   get speed(): number {
