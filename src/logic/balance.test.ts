@@ -143,7 +143,7 @@ describe('level curve balance', () => {
   // Slower pace (8 min wheat, 32 min seasons, 10× longer farm work, LEVEL_XP 150/900/2600/6000), checking every
   // 60 / 30 / 10 s: casual L2 11.0, L5 168.0; relaxed L2 9.0, L5 178.5; busy L2 8.3, L5 161.7. Winter runs from minute 96 to 128.
   // Bigger map (64×48, 16×12 start, parcels up to 12 tiles from $1,000 ×1.25), more fields only once the coop has chickens:
-  // casual L2 11.0, L5 162.0; relaxed L2 8.5, L5 161.5; busy L2 8.2, L5 161.7 (only the busy player buys a parcel).
+  // casual L2 11.0, L5 162.0; relaxed L2 8.5, L5 161.5; busy L2 8.2, L5 168.8 (none of them needs to buy land now).
   it('a casual player (checks every 60 s, up to 6 fields) reaches level 2 within 15 min and level 5 within 3 h', () => {
     const reached = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
     expect(minutes(reached.get(2))).toBeLessThanOrEqual(15);

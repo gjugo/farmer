@@ -17,7 +17,7 @@ export const START_LAND = {
  * Top-left tile of the new farm's layout (starting fields, then the farmhouse to their right), inset into the
  * starting land so it sits near its middle with room to build all around.
  */
-export const START_LAYOUT = { x: START_LAND.x + 4, y: START_LAND.y + 1 } as const;
+export const START_LAYOUT = { x: START_LAND.x + 4, y: START_LAND.y + 4 } as const;
 
 export const STARTING_MONEY = 500;
 

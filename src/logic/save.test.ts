@@ -19,7 +19,7 @@ function memoryStorage(): SaveStorage & { data: Map<string, string> } {
 
 // Free land below the starting fields, the farmhouse and the road between them.
 const ix = START_LAND.x + 2;
-const iy = START_LAND.y + 5;
+const iy = START_LAND.y + 9;
 // A free tile of the version-6 map (32×24, starting land at (11, 8)), for old saves.
 const oldTile = { x: V6_START.x + 2, y: V6_START.y + 5 };
 
