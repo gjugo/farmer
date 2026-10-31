@@ -105,18 +105,36 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   for a reward above today's market value; the HUD badge counts orders you can fulfil now. A fulfilled slot
   gets a new order after 8 game-minutes, a discarded one after 20.
 - **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Each takes a real part of its season:
-  wheat 8 game-minutes (10 wheat), carrot 10 (10 carrots), corn 16 (12 corn). Tap a growing field for
+  wheat 8 game-minutes (10 wheat), carrot 10 (10 carrots), corn 16 (12 corn) on normal soil. Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
-- **Farmers:** building, ploughing, planting, harvesting, feeding, collecting, starting a batch and a resource cycle each keep a farmer
-  busy for a while: ploughing a field 40 game-seconds, sowing 30 s, harvesting 40 s, feeding a pen 20 s, collecting or
+- **Soil:** the ground's quality differs across the map, in blobs: **rich** (95%), **normal** (70%) and **poor** (45%).
+  It is the same on every load (worked out from a fixed seed, never saved). Rich ground grows lusher grass in every
+  season; the starting land has one rich patch, under and in front of the starting fields, and is mostly normal
+  elsewhere. Turn on **🌱 Soil** at the top of 🔨 Build to see the quality over your land (green, yellow, red); while
+  placing a field its ghost is tinted the same way, tile by tile.
+  - **Fertility** (0–100%): a new field starts at the average soil quality of its tiles. A harvest yields
+    `round(qty × (0.5 + 0.75 × fertility))`: about ×1.0 on normal soil, ×1.2 rich, ×0.85 poor, ×0.5 when spent.
+    Each harvest drains the crop's own amount (wheat 8, carrot 5, corn 12 points), **twice that when it is the same crop
+    as the field's last harvest**: rotate. An empty field rests and regains 6 points per game day (winter counts), up to
+    its soil quality. The field panel shows the fertility bar, the soil, the last crop and a hint.
+  - **Fallow:** the crop plan **Fallow (rest the soil)** (formerly "None") leaves an assigned field empty to recover.
+    **Best in season** sows a crop other than the field's last one whenever one can be sown.
+  - **Manure:** coops and pastures leave 1 💩 manure per animal each time their products are collected. It sells for $1
+    and is kept in the storehouse (it never crowds out food; "Sell everything" keeps it). **💩 Spread manure (4)** in an
+    empty field's panel sends a farmer (20 s) to spread 4 manure: +20 points, up to 100% (above its soil quality too).
+    An assigned farmer spreads it by themselves on an empty field below 80% when 4 or more are in stock, before
+    ploughing. Goal: "Spread manure on a field" (after "Own 2 cows").
+- **Farmers:** building, ploughing, planting, harvesting, spreading manure, feeding, collecting, starting a batch and a resource cycle each keep a farmer
+  busy for a while: ploughing a field 40 game-seconds, sowing 30 s, harvesting 40 s, spreading manure 20 s, feeding a pen 20 s, collecting or
   starting a batch 20 s, building 15 s per footprint tile (30 s–3 min; paths need no farmer), plus the walk there and
   back. The farm starts with one farmer; hire more in 👨‍🌾 Farmers: $150 for the 2nd, ×1.2 for each after, up to 20.
   - **Workplaces:** fields, coops, pastures, processing and resource buildings take one farmer each. Assign one with
     **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in the 👨‍🌾 Farmers
     sheet, which lists every farmer with their workplace and what they are doing now. A farmer works at one place.
-  - **Automatic work:** an assigned farmer does the next job there by themselves. A **field** is ploughed (in a
-    ploughing season), sown with its **🌱 Crop plan** (a crop, **Best in season**, the default: the longest grower that is
-    ripe before its seasons end, or **None**) and harvested when ripe; ploughing and seed are paid as by hand, and the
+  - **Automatic work:** an assigned farmer does the next job there by themselves. A **field** gets manure when it is
+    worn (below 80%, with 4 in stock), is ploughed (in a ploughing season), sown with its **🌱 Crop plan** (a crop,
+    **Best in season**, the default: the longest grower that is ripe before its seasons end, rotating away from the
+    last crop, or **Fallow**) and harvested when ripe; ploughing and seed are paid as by hand, and the
     work waits while money is short. A **coop or pasture** gets its products collected and its hungry animals fed from
     stock (it waits without feed). A **processing building** keeps queueing its **⚙️ Keep making** recipe while the
     inputs are in stock and the queue has room, and its finished goods are collected. A **woodcutter's lodge, quarry or
@@ -185,9 +203,14 @@ next season); `look` is the season the farm is drawn in (it follows `season`, a 
 `window.farm.workers` is `{ farmers, free, hireCost, list, assignments, plans, recipes, sites }`: `list[i]` is
 `{ farmer, workplace, job, activity }` (workplace: object id or null; job: the running job's kind or null; activity:
 the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
-(`best`, `none` or a crop id), `recipes` building id → "Keep making" recipe, and `sites` lists the construction sites
+(`best`, `none` for Fallow, or a crop id), `recipes` building id → "Keep making" recipe, and `sites` lists the construction sites
 oldest first (`{ id, type, x, y, workMs, paid, builder: { farmer, progress } | null }`). A placed object that is still a
 site carries `site: { workMs, paid }` in `window.farm.objects`.
+`window.farm.soil` is `{ at(x, y), band(x, y), quality, overlay }`: `at` gives a tile's soil quality (95 rich, 70
+normal, 45 poor), `overlay` whether the Soil overlay is on. Each field in `window.farm.objects` carries
+`state.fertility` (points when it began resting, or while a crop grows), `state.restingSince` (game ms, null while a
+crop grows) and `state.lastCrop`; the field panel shows the current fertility (`panel-meter-fertility`), and the
+Build menu's toggle is `build-toggle-soil` (`aria-pressed`).
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
@@ -210,7 +233,8 @@ src/
     save.ts            versioned save/load + migrations + defaults
     slots.ts           manual save slots, strict import validation
     slices.ts          feature-owned global state (GameState.ext)
-    crops.ts           ploughing, planting (in season), growth stages, harvest, starting fields
+    crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure, starting fields
+    soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
     workers.ts         farmers: hiring, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
     work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
@@ -250,6 +274,8 @@ src/
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
     processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
+    soil/              the Soil overlay and its Build-menu toggle, the field ghost's soil tint, the field panel's
+                       soil block and Spread manure action, `window.farm.soil` (data: src/data/soil.ts)
     seasons/           season-change toasts, the seasonal look (art swap, colour grade, crossfade), weather
                        particles and their setting, `window.farm.season`
     market/            🏪 Market HUD button: sell panel and Buy section for building materials

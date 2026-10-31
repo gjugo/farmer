@@ -29,6 +29,8 @@ export interface ActivityEvents {
   landBought: { parcel: string; price: number };
   /** A field was ploughed. */
   ploughed: Record<string, never>;
+  /** Manure was spread on a field, bringing it to `fertility` points. */
+  fertilised: { fertility: number };
   /** A crop was planted in a field. */
   planted: { crop: string };
   /** An animal was bought into a pen. */

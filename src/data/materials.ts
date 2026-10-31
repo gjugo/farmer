@@ -1,4 +1,4 @@
-import { ITEMS } from './items';
+import { getItem, ITEMS } from './items';
 
 /** Building materials, in the order costs are listed. Each is an item (category `material`) in `ITEMS`. */
 export const MATERIAL_IDS = ['wood', 'stone', 'iron'] as const;
@@ -13,6 +13,14 @@ export const MATERIAL_UNLOCK: Readonly<Record<MaterialId, number>> = { wood: 1, 
 
 export function isMaterial(id: string): id is MaterialId {
   return (MATERIAL_IDS as readonly string[]).includes(id);
+}
+
+/**
+ * Kept in the storehouses with the building materials, and out of "sell everything": the building materials plus
+ * the other items of category `material` (manure, which the Market does not sell).
+ */
+export function isStoredMaterial(id: string): boolean {
+  return isMaterial(id) || getItem(id)?.category === 'material';
 }
 
 /** "8 🪵 Wood + 4 🪨 Stone", or '' for no materials. */

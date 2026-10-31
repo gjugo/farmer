@@ -1,5 +1,5 @@
 import { getItem, ITEM_LIST } from '../../data/items';
-import { isMaterial, MATERIAL_IDS, type MaterialId } from '../../data/materials';
+import { isStoredMaterial, MATERIAL_IDS, type MaterialId } from '../../data/materials';
 import type { FarmContext, SheetSpec } from '../../game/context';
 import { registerHudButton } from '../../game/hooks';
 import { buy, buyPrice, buyUnlockLevel, dailyPrice, msUntilNextDay, priceTrend, sell, sellAll } from '../../logic/market';
@@ -160,7 +160,7 @@ function marketSheet(ctx: FarmContext): SheetSpec {
         return;
       }
       // "Sell everything" keeps building materials (see `sellAll`).
-      const total = ids.filter((id) => !isMaterial(id)).reduce((sum, id) => sum + game.count(id) * (dailyPrice(day, id) ?? 0), 0);
+      const total = ids.filter((id) => !isStoredMaterial(id)).reduce((sum, id) => sum + game.count(id) * (dailyPrice(day, id) ?? 0), 0);
       body.append(
         h(
           'ul',

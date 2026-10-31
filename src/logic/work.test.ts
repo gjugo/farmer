@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ANIMALS } from '../data/animals';
 import { getBuildable } from '../data/buildables';
-import { CROPS, FIELD } from '../data/crops';
+import { CROP_LIST, CROPS, FIELD } from '../data/crops';
 import { PROCESSORS } from '../data/processing';
 import { buildWorkMs, PLANT_WORK_MS } from '../data/workers';
 import type { FarmContext } from '../game/context';
 import { withFarmer } from '../game/workers';
 import { buyAnimal, type PenState } from './animals';
 import { START_LAYOUT } from './constants';
-import { cropStage, isPloughed, type FieldState } from './crops';
+import { cropStage, isPloughed, seasonCheck, type FieldState } from './crops';
 import { Game } from './game';
 import { setOwned } from './land';
 import { catchUp } from './offline';
@@ -107,8 +107,27 @@ describe('work scheduler', () => {
 
     expect(log.slice(0, 3)).toEqual(['ploughed', 'planted', 'harvested']);
     expect(log.filter((e) => e === 'harvested').length).toBeGreaterThanOrEqual(3);
-    // At the top level the best crop of spring is corn, the longest grower.
-    expect(game.count('corn')).toBeGreaterThanOrEqual(3 * CROPS.corn.harvestQty);
+    // At the top level the best crop of spring is corn, the longest grower; then it rotates.
+    expect(game.count('corn')).toBeGreaterThanOrEqual(CROPS.corn.harvestQty);
+    expect(game.count('carrot') + game.count('wheat')).toBeGreaterThan(0);
+  });
+
+  it('"Best in season" rotates: it never sows the last harvested crop again while another can be sown', () => {
+    const game = farm();
+    const field = build<FieldState>(game, FIELD, X + 1, Y + 5);
+    // Each sowing, and whether another crop could have been sown then.
+    const sown: { crop: string; other: boolean }[] = [];
+    game.activity.on('planted', ({ crop }) =>
+      sown.push({ crop, other: CROP_LIST.some((c) => c.id !== crop && seasonCheck(game.state.clock, c) === 'ok') }),
+    );
+    assignFarmer(game, field.id);
+    granaries(game, 1);
+    play(game, 2 * SEASON_MS);
+    const crops = sown.map((s) => s.crop).join(',');
+    expect(sown[0].crop).toBe('corn');
+    expect(new Set(sown.map((s) => s.crop)).size, crops).toBeGreaterThanOrEqual(2);
+    // The same crop twice in a row only when nothing else could be sown (late summer: wheat only).
+    for (let i = 1; i < sown.length; i++) if (sown[i].crop === sown[i - 1].crop) expect(sown[i].other, crops).toBe(false);
   });
 
   it('a field sows its crop plan, and nothing with "None"', () => {

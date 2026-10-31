@@ -1,5 +1,5 @@
 import { getItem, ITEM_LIST, type ItemCategory } from './items';
-import { isMaterial } from './materials';
+import { isStoredMaterial } from './materials';
 import type { StoragePool } from './storage';
 
 /**
@@ -41,7 +41,7 @@ export function categoryOf(itemId: string): ResourceCategory {
   const item = getItem(itemId);
   const found = item && RESOURCE_CATEGORIES.find((c) => c.itemCategories.includes(item.category));
   if (found) return found.id;
-  return isMaterial(itemId) ? 'materials' : 'goods';
+  return isStoredMaterial(itemId) ? 'materials' : 'goods';
 }
 
 /** The catalogue's items of a category, in catalogue order. */

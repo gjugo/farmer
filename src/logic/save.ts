@@ -6,6 +6,7 @@ import { createLand, isOwned, setOwned, setOwnedRect, type Rect } from './land';
 import { FARM_PARCELS, isParcelOwned } from './parcels';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
+import { areaSoil } from './soil';
 import { STORAGE_SLICE } from './storage';
 import { migrateOrdersSlice } from './orders';
 import { ensureFarmhouse } from './roads';
@@ -23,7 +24,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 export interface SaveFile {
   version: number;
@@ -108,6 +109,25 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     // "build-woodcutter", "produce-wood", "build-quarry" and "mine-iron" in version 9.
     for (const at of [17, 18, 19, 21]) if (nextGoal > at) nextGoal++;
     return { ...raw, version: 9, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal } } } };
+  },
+  // Soil fertility: every field starts at the soil quality of its land, resting from now, with no last crop. The
+  // "spread-manure" goal was inserted (index 14 in version 10, after "own-cows"); farms past it skip it.
+  9: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const p = ext[PROGRESSION];
+    const progression = isPlainObject(p) && typeof p.nextGoal === 'number' && p.nextGoal > 14 ? { ...p, nextGoal: p.nextGoal + 1 } : p;
+    const clock = isPlainObject(state.clock) ? state.clock : {};
+    const now = isNonNegNumber(clock.elapsed) ? clock.elapsed : 0;
+    const objects = Array.isArray(state.objects)
+      ? state.objects.map((o: unknown) => {
+          if (!isPlainObject(o) || o.type !== FIELD || !Number.isInteger(o.x) || !Number.isInteger(o.y)) return o;
+          const fertility = areaSoil({ x: o.x as number, y: o.y as number, ...(getBuildable(FIELD)?.footprint ?? { w: 2, h: 2 }) });
+          const fieldState = isPlainObject(o.state) ? o.state : {};
+          return { ...o, state: { ...fieldState, fertility, restingSince: fieldState.crop ? null : now, lastCrop: null } };
+        })
+      : state.objects;
+    return { ...raw, version: 10, state: { ...state, objects, ext: p === undefined ? state.ext : { ...ext, [PROGRESSION]: progression } } };
   },
 };
 
@@ -196,11 +216,11 @@ export function normalize(input: unknown): GameState {
   const money = isNonNegNumber(input.money) ? input.money : base.money;
   const inventory = normalizeInventory(input.inventory);
   const land = normalizeLand(input.land, base.land);
-  const objects = normalizeObjects(input.objects);
-  const maxId = objects.reduce((m, o) => Math.max(m, Number(o.id.replace(/^o/, '')) || 0), 0);
-  const nextObjectId = Math.max(isNonNegNumber(input.nextObjectId) ? Math.floor(input.nextObjectId) : 1, maxId + 1);
   const clockIn = isPlainObject(input.clock) ? input.clock : {};
   const clock = { elapsed: isNonNegNumber(clockIn.elapsed) ? clockIn.elapsed : 0, speed: 1 };
+  const objects = normalizeObjects(input.objects, clock.elapsed);
+  const maxId = objects.reduce((m, o) => Math.max(m, Number(o.id.replace(/^o/, '')) || 0), 0);
+  const nextObjectId = Math.max(isNonNegNumber(input.nextObjectId) ? Math.floor(input.nextObjectId) : 1, maxId + 1);
   const ext = isPlainObject(input.ext) ? { ...input.ext } : {};
   applySliceDefaults(ext);
 
@@ -231,7 +251,7 @@ function normalizeLand(v: unknown, fallback: LandState): LandState {
   return { width, height, owned: owned.map((t) => (t === 1 ? 1 : 0)) };
 }
 
-function normalizeObjects(v: unknown): PlacedObject[] {
+function normalizeObjects(v: unknown, now: number): PlacedObject[] {
   if (!Array.isArray(v)) return [];
   const seen = new Set<string>();
   const out: PlacedObject[] = [];
@@ -241,7 +261,7 @@ function normalizeObjects(v: unknown): PlacedObject[] {
     if (typeof id !== 'string' || typeof type !== 'string' || seen.has(id)) continue;
     if (!Number.isInteger(x) || !Number.isInteger(y)) continue;
     seen.add(id);
-    const defaults = getBuildable(type)?.initialState?.() ?? {};
+    const defaults = getBuildable(type)?.initialState?.({ x: x as number, y: y as number, now }) ?? {};
     const state = isPlainObject(o.state) ? { ...defaults, ...o.state } : defaults;
     const obj: PlacedObject = { id, type, x: x as number, y: y as number, state };
     const site = o.site;

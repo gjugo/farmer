@@ -1,5 +1,5 @@
 import { getItem } from '../data/items';
-import { isMaterial, MATERIAL_UNLOCK } from '../data/materials';
+import { isMaterial, isStoredMaterial, MATERIAL_UNLOCK } from '../data/materials';
 import type { ActivityEvents } from './activity';
 import { DAY_MS } from './constants';
 import type { Emitter } from './events';
@@ -102,10 +102,10 @@ export function sell(game: Seller, itemId: ItemId, qty = game.count(itemId)): nu
   return total;
 }
 
-/** Sells every sellable item in the inventory but building materials, which are kept for building. Returns the total earned. */
+/** Sells every sellable item in the inventory but building materials and manure, which are kept for building and the fields. Returns the total earned. */
 export function sellAll(game: Seller): number {
   let total = 0;
-  for (const itemId of Object.keys(game.state.inventory)) if (!isMaterial(itemId)) total += sell(game, itemId);
+  for (const itemId of Object.keys(game.state.inventory)) if (!isStoredMaterial(itemId)) total += sell(game, itemId);
   return total;
 }
 

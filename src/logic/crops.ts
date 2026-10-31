@@ -1,9 +1,12 @@
+import { getBuildable } from '../data/buildables';
 import { FIELD, getCrop, type CropDef } from '../data/crops';
 import { PLOUGH_COST, PLOUGH_SEASONS } from '../data/seasons';
+import { MANURE_GAIN, MANURE_PER_SPREAD, MAX_FERTILITY } from '../data/soil';
 import { startTimer, timerDone, timerProgress, timerRemaining, type Timer } from './clock';
 import { START_LAYOUT } from './constants';
 import type { Game } from './game';
 import { nextSeasonIn, seasonRunEnd } from './seasons';
+import { afterHarvest, areaSoil, drainOf, restedFertility, yieldAt } from './soil';
 import { addStartingObject, onNewGame } from './state';
 import type { ClockState, PlacedObject } from './types';
 
@@ -15,6 +18,16 @@ export type FieldState = {
   timer: Timer | null;
   /** Game time the soil was last ploughed; null when never. Ploughing wears off with the winter frost (see `isPloughed`). */
   ploughedAt: number | null;
+  /**
+   * Fertility in percentage points (0–100) when the field began resting, or while a crop grows. Read the current
+   * value with `fertilityOf`: an empty field recovers toward its soil quality from `restingSince`. Missing in fields
+   * placed before soil (`fertilityOf` then uses the soil quality).
+   */
+  fertility?: number | null;
+  /** Game time since which the field has lain empty and recovers; null while a crop grows. */
+  restingSince?: number | null;
+  /** Crop id of the field's last harvest, or null: the same crop again drains twice as fast. */
+  lastCrop?: string | null;
 };
 
 export type CropStage = 'empty' | 'seeded' | 'sprout' | 'growing' | 'ripe';
@@ -39,6 +52,38 @@ onNewGame((state) => {
 /** The planted crop, if its id is still known. */
 export function fieldCrop(field: FieldState): CropDef | undefined {
   return field.crop ? getCrop(field.crop) : undefined;
+}
+
+/** The field's soil quality: the average over its tiles. Resting brings fertility back to it. */
+export function fieldSoil(obj: PlacedObject<FieldState>): number {
+  return areaSoil({ x: obj.x, y: obj.y, ...(getBuildable(obj.type)?.footprint ?? { w: 2, h: 2 }) });
+}
+
+/** The field's fertility now (percentage points), with the rest it has had since it was last harvested. */
+export function fertilityOf(clock: ClockState, obj: PlacedObject<FieldState>): number {
+  const soil = fieldSoil(obj);
+  const { fertility, restingSince } = obj.state;
+  if (typeof fertility !== 'number' || !Number.isFinite(fertility)) return soil;
+  // A field still growing a crop does not rest, whatever an edited save says.
+  const since = obj.state.crop || typeof restingSince !== 'number' ? null : restingSince;
+  return restedFertility(fertility, since, soil, clock.elapsed);
+}
+
+/** Writes down the fertility reached now, resting on from now (`rest`) or not while a crop grows. */
+function settleFertility(clock: ClockState, obj: PlacedObject<FieldState>, fertility: number, rest: boolean): void {
+  obj.state.fertility = fertility;
+  obj.state.restingSince = rest ? clock.elapsed : null;
+}
+
+/** What harvesting the field's crop would bring now: its quantity scaled by the field's fertility. 0 when empty. */
+export function harvestYield(clock: ClockState, obj: PlacedObject<FieldState>): number {
+  const crop = fieldCrop(obj.state);
+  return crop ? yieldAt(crop.harvestQty, fertilityOf(clock, obj)) : 0;
+}
+
+/** The field's last harvested crop, if its id is still known. */
+export function lastCropOf(field: FieldState): CropDef | undefined {
+  return typeof field.lastCrop === 'string' ? getCrop(field.lastCrop) : undefined;
 }
 
 export function growthProgress(clock: ClockState, field: FieldState): number {
@@ -117,6 +162,7 @@ export function plant(game: Game, obj: PlacedObject<FieldState>, cropId: string)
   const season = seasonCheck(clock, crop);
   if (season !== 'ok') return { ok: false, reason: season };
   if (!game.spend(crop.plantCost)) return { ok: false, reason: 'money' };
+  settleFertility(clock, obj, fertilityOf(clock, obj), false);
   obj.state.crop = crop.id;
   obj.state.timer = startTimer(game.state.clock, crop.growMs);
   game.touch(obj);
@@ -128,19 +174,52 @@ export type HarvestResult = { ok: true; crop: CropDef; qty: number } | { ok: fal
 
 /**
  * Moves a ripe crop to the inventory and empties the field (the soil stays ploughed until the frost).
+ * The yield follows the field's fertility (`harvestYield`), and the harvest drains it by the crop's
+ * `soilDrain`, twice that when the field's last harvest was the same crop; then the field rests.
  * A ripe crop keeps in the field, even into winter. Refused (nothing changes) when it isn't ripe, or when
  * the granaries have no room for the whole harvest: then the crop stays ripe in the field.
  */
 export function harvest(game: Game, obj: PlacedObject<FieldState>): HarvestResult {
+  const clock = game.state.clock;
   const crop = fieldCrop(obj.state);
-  if (!crop || cropStage(game.state.clock, obj.state) !== 'ripe') return { ok: false, reason: 'not-ripe' };
-  if (game.spaceFor(crop.harvestItem) < crop.harvestQty) return { ok: false, reason: 'full' };
-  game.addItem(crop.harvestItem, crop.harvestQty);
+  if (!crop || cropStage(clock, obj.state) !== 'ripe') return { ok: false, reason: 'not-ripe' };
+  const fertility = fertilityOf(clock, obj);
+  const qty = yieldAt(crop.harvestQty, fertility);
+  if (game.spaceFor(crop.harvestItem) < qty) return { ok: false, reason: 'full' };
+  game.addItem(crop.harvestItem, qty);
   obj.state.crop = null;
   obj.state.timer = null;
+  settleFertility(clock, obj, afterHarvest(fertility, drainOf(crop.id, crop.soilDrain, obj.state.lastCrop ?? null)), true);
+  obj.state.lastCrop = crop.id;
   game.touch(obj);
-  game.activity.emit('harvested', { item: crop.harvestItem, qty: crop.harvestQty });
-  return { ok: true, crop, qty: crop.harvestQty };
+  game.activity.emit('harvested', { item: crop.harvestItem, qty });
+  return { ok: true, crop, qty };
+}
+
+export type FertiliseResult = { ok: true; fertility: number } | { ok: false; reason: 'occupied' | 'fertile' | 'manure' };
+
+/** Can the field be manured now? `fertilise` gives the same answer. */
+export function checkFertilise(game: Game, obj: PlacedObject<FieldState>): FertiliseResult {
+  const clock = game.state.clock;
+  if (cropStage(clock, obj.state) !== 'empty') return { ok: false, reason: 'occupied' };
+  const fertility = fertilityOf(clock, obj);
+  if (fertility >= MAX_FERTILITY) return { ok: false, reason: 'fertile' };
+  if (game.count('manure') < MANURE_PER_SPREAD) return { ok: false, reason: 'manure' };
+  return { ok: true, fertility: Math.min(MAX_FERTILITY, fertility + MANURE_GAIN) };
+}
+
+/**
+ * Spreads `MANURE_PER_SPREAD` manure on an empty field: +`MANURE_GAIN` points, up to `MAX_FERTILITY` (above its soil
+ * quality too). Refused (nothing changes) while a crop stands, at full fertility, or without enough manure.
+ */
+export function fertilise(game: Game, obj: PlacedObject<FieldState>): FertiliseResult {
+  const check = checkFertilise(game, obj);
+  if (!check.ok) return check;
+  if (!game.removeItem('manure', MANURE_PER_SPREAD)) return { ok: false, reason: 'manure' };
+  settleFertility(game.state.clock, obj, check.fertility, true);
+  game.touch(obj);
+  game.activity.emit('fertilised', { fertility: check.fertility });
+  return check;
 }
 
 /** "1:05" / "0:30" for a game-time duration, rounded up to whole seconds. */
