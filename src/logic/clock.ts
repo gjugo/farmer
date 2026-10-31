@@ -8,12 +8,17 @@ export function createClock(): ClockState {
   return { elapsed: 0, speed: 1 };
 }
 
+/** The game-time delta for a real-time delta (clamped to `MAX_FRAME_MS`, times the speed), without applying it. */
+export function gameDelta(clock: ClockState, realDeltaMs: number): number {
+  if (!(realDeltaMs > 0)) return 0;
+  return Math.min(realDeltaMs, MAX_FRAME_MS) * clock.speed;
+}
+
 /** Advances game time by a real-time delta. Returns the game-time delta that was applied. */
 export function advance(clock: ClockState, realDeltaMs: number): number {
-  if (!(realDeltaMs > 0)) return 0;
-  const gameDelta = Math.min(realDeltaMs, MAX_FRAME_MS) * clock.speed;
-  clock.elapsed += gameDelta;
-  return gameDelta;
+  const dt = gameDelta(clock, realDeltaMs);
+  clock.elapsed += dt;
+  return dt;
 }
 
 /** 1-based day number. */

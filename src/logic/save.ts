@@ -168,7 +168,12 @@ function normalizeObjects(v: unknown): PlacedObject[] {
     seen.add(id);
     const defaults = getBuildable(type)?.initialState?.() ?? {};
     const state = isPlainObject(o.state) ? { ...defaults, ...o.state } : defaults;
-    out.push({ id, type, x: x as number, y: y as number, state });
+    const obj: PlacedObject = { id, type, x: x as number, y: y as number, state };
+    const site = o.site;
+    if (isPlainObject(site) && isNonNegNumber(site.workMs) && site.workMs > 0 && isNonNegNumber(site.paid)) {
+      obj.site = { workMs: site.workMs, paid: site.paid };
+    }
+    out.push(obj);
   }
   return out;
 }

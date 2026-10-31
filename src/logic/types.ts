@@ -14,6 +14,16 @@ export interface PlacedObject<S extends object = Record<string, unknown>> {
   y: number;
   /** Per-type state owned by the feature that registered the buildable. Must be JSON-serialisable. */
   state: S;
+  /** Set while it is a construction site: unusable until a farmer has built it. Missing when built. */
+  site?: ConstructionSite;
+}
+
+/** A building placed but not built yet. A free farmer walks there and builds it for `workMs`. */
+export interface ConstructionSite {
+  /** Game ms of building work it needs. */
+  workMs: number;
+  /** Money paid for it, all refunded when it is demolished unfinished. */
+  paid: number;
 }
 
 export interface LandState {

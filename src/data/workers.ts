@@ -2,20 +2,22 @@ import { getBuildable } from './buildables';
 
 /**
  * Farmers: the hands that do the farm work. A job keeps one farmer busy for a while
- * (game time); when every farmer is busy the work is refused until one is free.
+ * (game time); when every farmer is busy hand-ordered work is refused until one is free.
+ * A farmer can be assigned to a workplace (a field, pen or processing building) and then
+ * does its work by themselves; with nothing to do there they build construction sites.
  */
 
 /** A new farm starts with this many farmers. */
 export const STARTING_FARMERS = 1;
 
 /** The most farmers a farm can employ. */
-export const MAX_FARMERS = 8;
+export const MAX_FARMERS = 20;
 
 /** Hiring the 2nd farmer costs this; every further hire costs `HIRE_COST_GROWTH` times the last. */
-export const BASE_HIRE_COST = 250;
-export const HIRE_COST_GROWTH = 1.6;
+export const BASE_HIRE_COST = 150;
+export const HIRE_COST_GROWTH = 1.2;
 
-export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'feed';
+export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'feed' | 'collect' | 'load';
 
 export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   build: { label: 'Building', icon: '🔨' },
@@ -23,6 +25,8 @@ export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   plant: { label: 'Planting', icon: '🌱' },
   harvest: { label: 'Harvesting', icon: '🧺' },
   feed: { label: 'Feeding animals', icon: '🌰' },
+  collect: { label: 'Collecting', icon: '🧺' },
+  load: { label: 'Starting a batch', icon: '⚙️' },
 };
 
 /** Game milliseconds a farmer is busy for each job (building: see `buildWorkMs`). */
@@ -30,6 +34,10 @@ export const PLOUGH_WORK_MS = 40_000;
 export const PLANT_WORK_MS = 30_000;
 export const HARVEST_WORK_MS = 40_000;
 export const FEED_WORK_MS = 20_000;
+/** Collecting eggs, milk or wool from a pen, or finished goods from a processing building (assigned farmers only). */
+export const COLLECT_WORK_MS = 20_000;
+/** Carrying a recipe's inputs into a processing building to queue a batch (assigned farmers only). */
+export const LOAD_WORK_MS = 20_000;
 
 /** Building takes this long per footprint tile, within `BUILD_WORK_MIN_MS`..`BUILD_WORK_MAX_MS`. */
 export const BUILD_WORK_PER_TILE_MS = 15_000;

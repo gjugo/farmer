@@ -142,6 +142,12 @@ function layRoad(state: GameState, door: Tile, site: Area): boolean {
   return true;
 }
 
+/** Lays free paths (no money, no events) from the farmhouse door to `site`; false when there is no way over free land. For new-game setups and tests. */
+export function connectToFarmhouse(state: GameState, site: Area): boolean {
+  const house = farmhouseOf(state);
+  return !!house && layRoad(state, doorOf(house), site);
+}
+
 /** Can the farmhouse stand at (x, y) with a free (or path) tile of our land in front of its door? */
 function farmhouseFits(state: GameState, x: number, y: number): boolean {
   if (!canPlace(state, getBuildable(FARMHOUSE)!.footprint, x, y, footprintOf).ok) return false;
