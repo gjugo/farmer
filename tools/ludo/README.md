@@ -12,7 +12,7 @@ git (or rerun the commands below) after running it.
 | Asset | Source | Seasons |
 | --- | --- | --- |
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
-| `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png` | base, spring, summer (autumn and winter are still the old art) |
+| `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 
 ## Generating in Ludo
 
@@ -49,12 +49,17 @@ lower it if bits of the soil outline show.
 
 ```bash
 mkdir -p /tmp/tiles/2x /tmp/tiles/1x
-$P $L/ground_tiles.py /tmp/tiles $L/source/grass_a_raw.png $L/source/grass_b_raw.png $L/source/dirt_raw.png $L/source/soil_raw.png
+$P $L/ground_tiles.py /tmp/tiles $L/source/grass_a_raw.png $L/source/grass_b_raw.png $L/source/dirt_raw.png \
+  $L/source/soil_raw.png $L/source/snow_raw.png $L/source/snow_path_raw.png
 ```
 
 Takes the inside of each Ludo tile (no outline, no edge tufts), un-shears it to a square, flattens its lighting
 and makes it wrap, then renders every tile in tile space so all of them meet without seams. The grass variants
 share one border. Paths and soil beds keep the shapes from `tools/art/tiles.py`; `soil_*_y` is `soil_*_x` with
 the furrows turned; watered soil is tilled soil darkened; unowned land is the grass darkened and muted. Sizes
-and anchors match the pack, so `manifest.json` needs no change. Copy each output over the base, `_spring` and
-`_summer` files.
+and anchors match the pack, so `manifest.json` needs no change. It writes every season's file (base, `_spring`,
+`_summer`, `_autumn`, `_winter`); copy them all into `public/assets/farm/{2x,1x}/tiles/`.
+
+Seasons: spring and summer are the Ludo grass as is. Autumn is it recoloured gold with fallen leaves drawn on
+(wrapped, so it still tiles). Winter uses the snow tile for grass (three variants: as is, turned, transposed),
+the trampled-snow tile for paths, and frozen soil: the tilled soil greyed with snow in the furrows.
