@@ -3621,34 +3621,32 @@
     2,
     2
    ],
-   "notes": "farmhouse, 2x2: door at x 1.3 on the front-left (+y) face, bench for idle farmers in front",
+   "notes": "farmhouse, 2x2 (Ludo.ai, cel-shaded): door on the front-left (+y) face, shadow baked onto its pad",
    "res": {
     "2x": {
      "file": "2x/buildings/farmhouse.png",
-     "w": 516,
-     "h": 508,
-     "shadow": "2x/buildings/farmhouse_shadow.png",
+     "w": 508,
+     "h": 415,
      "anchor": [
-      248.0,
-      242.0
+      253.0,
+      159.0
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.49803,
+      0.38313
      ]
     },
     "1x": {
      "file": "1x/buildings/farmhouse.png",
-     "w": 258,
-     "h": 254,
-     "shadow": "1x/buildings/farmhouse_shadow.png",
+     "w": 254,
+     "h": 208,
      "anchor": [
-      124.0,
-      121.0
+      126.5,
+      79.5
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.49803,
+      0.38221
      ]
     }
    }
@@ -14141,34 +14139,32 @@
     2,
     2
    ],
-   "notes": "farmhouse in winter: snow on the roof",
+   "notes": "farmhouse in winter (Ludo.ai, cel-shaded): snow on the roof and pad, icicles",
    "res": {
     "2x": {
      "file": "2x/buildings/farmhouse_winter.png",
-     "w": 516,
-     "h": 508,
-     "shadow": "2x/buildings/farmhouse_winter_shadow.png",
+     "w": 503,
+     "h": 403,
      "anchor": [
-      248.0,
-      242.0
+      252.0,
+      150.0
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.50099,
+      0.37221
      ]
     },
     "1x": {
      "file": "1x/buildings/farmhouse_winter.png",
-     "w": 258,
-     "h": 254,
-     "shadow": "1x/buildings/farmhouse_winter_shadow.png",
+     "w": 252,
+     "h": 202,
      "anchor": [
-      124.0,
-      121.0
+      126.0,
+      75.0
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.5,
+      0.37129
      ]
     }
    }

@@ -3,10 +3,14 @@
 ## Art
 
 Every image in `public/assets/farm/` (sprites, tiles, icons; `manifest.json`) is the **Isometric Farm Pack**
-supplied for this game (see its `public/assets/farm/README.md`). Licence, from that README: *"You can use,
-modify and ship these in commercial games. No attribution required."* So it is not listed in the in-game
-Credits sheet. Unchanged: the 1x and 2x PNGs are committed as shipped; the game draws the 2x set at half size.
-The pack's generator is in `tools/art/` (`npm run art`).
+supplied for this game (see its `public/assets/farm/README.md`), except the assets listed below. Licence, from
+that README: *"You can use, modify and ship these in commercial games. No attribution required."* So it is not
+listed in the in-game Credits sheet. The game draws the 2x set at half size. The pack's generator is in
+`tools/art/` (`npm run art`).
+
+Generated for this game with **Ludo.ai** and fitted to the grid by `tools/ludo/` (sources in
+`tools/ludo/source/`): the farmhouse (all seasons) and the grass, path, tilled/watered soil and unowned-land
+tiles (base, spring and summer). The rest of the pack's art is unchanged.
 
 `tools/art/fonts/DejaVuSans-Bold.ttf` (DejaVu fonts 2.37, used only by the generator for the text on the
 for-sale sign, market stall and coins) is under the Bitstream Vera / DejaVu licence, free to use and
