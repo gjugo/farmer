@@ -92,7 +92,7 @@ describe('work scheduler', () => {
   beforeEach(() => void vi.spyOn(Math, 'random').mockReturnValue(0.5));
   afterEach(() => vi.restoreAllMocks());
 
-  it('an assigned field goes plough → sow → harvest through a season with no input', () => {
+  it('an assigned field goes plough → sow → harvest through spring and summer with no input', () => {
     const game = farm();
     const field = build<FieldState>(game, FIELD, X + 1, Y + 5);
     expect(isPloughed(game.state.clock, field.state)).toBe(false);
@@ -100,7 +100,9 @@ describe('work scheduler', () => {
 
     expect(assignFarmer(game, field.id)).toEqual({ ok: true, farmer: 0 });
     expect(cropPlanOf(game.state, field.id)).toBe(PLAN_BEST);
-    play(game, SEASON_MS);
+    granaries(game, 1); // three corn harvests are more than the farmhouse holds
+    // Corn takes half a season, so a season alone has room for one corn harvest.
+    play(game, 2 * SEASON_MS);
 
     expect(log.slice(0, 3)).toEqual(['ploughed', 'planted', 'harvested']);
     expect(log.filter((e) => e === 'harvested').length).toBeGreaterThanOrEqual(3);
@@ -182,7 +184,7 @@ describe('work scheduler', () => {
     expect(coop.site).toBeDefined();
 
     // Back from sowing, nothing to do at the field while the corn grows: build the coop.
-    play(game, 20_000);
+    play(game, PLANT_WORK_MS + 20_000);
     expect(jobsByFarmer(game.state.clock, workersOf(game.state))[0]).toMatchObject({ kind: 'build', target: coop.id });
     expect(siteProgress(game.state, coop.id)?.farmer).toBe(0);
     play(game, buildWorkMs('coop') + 10_000);
@@ -311,8 +313,10 @@ describe('work scheduler', () => {
     const [field] = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
     hireFarmer(game);
     assignFarmer(game, field.id);
-    play(game, 20 * MIN);
+    // Two corn harvests (24) fit in the farmhouse store; the third (12 more) does not.
+    play(game, 3 * CROPS.corn.growMs + 5 * MIN);
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
+    expect(game.spaceFor('corn')).toBeLessThan(CROPS.corn.harvestQty);
 
     const coop = build<PenState>(game, 'coop', X + 1, Y + 5);
     for (let i = 0; i < 3; i++) buyAnimal(game, coop, 'chicken');
@@ -323,7 +327,7 @@ describe('work scheduler', () => {
     expect(log).toEqual(['fed']); // the field's farmer stays put: no room for the corn
     game.addItem('wheat', 1000); // fill the farmhouse store (feeding freed some)
     log.length = 0;
-    play(game, 2 * MIN);
+    play(game, ANIMALS.chicken.cycleMs);
 
     expect(game.spaceFor('corn')).toBe(0);
     expect(log).toEqual([]);

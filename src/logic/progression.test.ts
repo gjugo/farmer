@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ANIMALS, PENS } from '../data/animals';
 import { listBuildables, listBuildMenu } from '../data/buildables';
-import { CROP_LIST, FIELD } from '../data/crops';
+import { CROP_LIST, FIELD, getCrop } from '../data/crops';
 import { PROCESSORS } from '../data/processing';
 import { ACTIVE_GOALS, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL } from '../data/progression';
 import { buyAnimal, collect as collectAnimals, feedAll, type PenState } from './animals';
@@ -32,7 +32,7 @@ function wait(game: Game, ms: number): void {
 
 function growAndHarvest(game: Game, field: PlacedObject<FieldState>, crop = 'wheat'): void {
   expect(plant(game, field, crop).ok).toBe(true);
-  wait(game, 120_000);
+  wait(game, getCrop(crop)!.growMs);
   expect(harvest(game, field)).not.toBeNull();
 }
 
@@ -187,19 +187,19 @@ describe('unlocks', () => {
 });
 
 describe('goals', () => {
-  it('the first goals teach the loop: build a field, harvest 5 wheat, build a granary', () => {
+  it('the first goals teach the loop: build a field, harvest 20 wheat, build a granary', () => {
     const game = new Game();
     expect(game.progression.claimable()).toBe(0);
     expect(game.place(FIELD, free.x, free.y).ok).toBe(true);
     for (const f of fields(game).slice(0, 2)) growAndHarvest(game, f);
-    expect(sell(game, 'wheat', 5)).toBeGreaterThan(0);
+    expect(sell(game, 'wheat', 20)).toBeGreaterThan(0);
     expect(game.progression.goals().map((g) => [g.def.id, g.progress, g.complete])).toEqual([
       ['first-field', 1, true],
-      ['harvest-wheat', 5, true],
+      ['harvest-wheat', 20, true],
       ['build-granary', 0, false],
     ]);
     expect(game.progression.claimable()).toBe(2);
-    expect(game.snapshot().goals.map((g) => `${g.progress}/${g.target}`)).toEqual(['1/1', '5/5', '0/1']);
+    expect(game.snapshot().goals.map((g) => `${g.progress}/${g.target}`)).toEqual(['1/1', '20/20', '0/1']);
   });
 
   it('claim pays money and XP and fills the slot with the next goal', () => {
@@ -304,7 +304,7 @@ describe('save', () => {
     expect(loaded.progression.xp).toBe(150);
     expect(loaded.progression.goals().map((g) => [g.def.id, g.progress])).toEqual([
       ['first-field', 1],
-      ['harvest-wheat', 4],
+      ['harvest-wheat', 10],
       ['build-granary', 0],
     ]);
   });

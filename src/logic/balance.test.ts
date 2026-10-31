@@ -159,23 +159,26 @@ describe('level curve balance', () => {
   // relaxed L2 4.5, L5 40.3; busy L2 6.1, L5 41.0 (farmers do the work, so reacting faster no longer pays).
   // Plus building materials bought at the Market: casual L2 4.5, L5 41.0; relaxed L2 4.3, L5 40.0; busy L2 6.1, L5 41.0.
   // Plus storage (granary $30 + 5 wood, built for its goal): casual L2 4.0, L5 43.5; relaxed L2 4.0, L5 42.5; busy L2 5.8, L5 42.0.
-  const casual = simulate({ reactMs: 30_000, maxFields: 6, minutes: 50 });
-  const relaxed = simulate({ reactMs: 15_000, maxFields: 8, minutes: 50 });
-  const busy = simulate({ reactMs: 5_000, maxFields: 12, minutes: 50 });
+  // Slower pace (8 min wheat, 32 min seasons, 10× longer farm work, LEVEL_XP 150/900/2600/6000), checking every
+  // 60 / 30 / 10 s: casual L2 11.0, L5 168.0; relaxed L2 9.0, L5 178.5; busy L2 8.3, L5 161.7. Winter runs from minute 96 to 128.
+  // Merged with storage (granary goal after 20 wheat): casual L2 10.0, L5 171.0; relaxed L2 9.0, L5 168.0; busy L2 8.3, L5 166.0.
+  const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
+  const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
+  const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });
 
-  it('a casual player (checks every 30 s, up to 6 fields) reaches level 2 within 5 min and level 5 within 45 min', () => {
-    expect(minutes(casual.reachedAt.get(2))).toBeLessThanOrEqual(5);
-    expect(minutes(casual.reachedAt.get(5))).toBeLessThanOrEqual(45);
+  it('a casual player (checks every 60 s, up to 6 fields) reaches level 2 within 15 min and level 5 within 3 h', () => {
+    expect(minutes(casual.reachedAt.get(2))).toBeLessThanOrEqual(15);
+    expect(minutes(casual.reachedAt.get(5))).toBeLessThanOrEqual(180);
   });
 
-  it('a relaxed player (checks every 15 s, up to 8 fields) is well inside those limits', () => {
-    expect(minutes(relaxed.reachedAt.get(2))).toBeLessThanOrEqual(5);
-    expect(minutes(relaxed.reachedAt.get(5))).toBeLessThanOrEqual(45);
+  it('a relaxed player (checks every 30 s, up to 8 fields) is inside those limits', () => {
+    expect(minutes(relaxed.reachedAt.get(2))).toBeLessThanOrEqual(15);
+    expect(minutes(relaxed.reachedAt.get(5))).toBeLessThanOrEqual(180);
   });
 
-  it('a busy player (checks every 5 s, up to 12 fields) does not race through the levels', () => {
-    expect(minutes(busy.reachedAt.get(2))).toBeGreaterThanOrEqual(1);
-    expect(minutes(busy.reachedAt.get(5))).toBeGreaterThanOrEqual(12);
+  it('a busy player (checks every 10 s, up to 12 fields) does not race through the levels', () => {
+    expect(minutes(busy.reachedAt.get(2))).toBeGreaterThanOrEqual(8);
+    expect(minutes(busy.reachedAt.get(5))).toBeGreaterThanOrEqual(60);
   });
 
   it.each([

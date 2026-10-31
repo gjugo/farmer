@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FEED_PACK } from '../data/animals';
 import { getBuildable } from '../data/buildables';
-import { FIELD } from '../data/crops';
+import { CROPS, FIELD } from '../data/crops';
 import { GOALS } from '../data/progression';
 import { FARMHOUSE_STORE, STORAGE } from '../data/storage';
 import { buyAnimal, buyFeed, collect, feedAll, readyCount, type PenState } from './animals';
@@ -69,7 +69,7 @@ function holdings(state: GameState): Record<string, number> {
 function ripeWheat(game: Game): PlacedObject<FieldState> {
   const field = game.objectsOfType(FIELD)[0] as PlacedObject<FieldState>;
   expect(plant(game, field, 'wheat').ok).toBe(true);
-  game.state.clock.elapsed += 60_000;
+  game.state.clock.elapsed += CROPS.wheat.growMs;
   expect(cropStage(game.state.clock, field.state)).toBe('ripe');
   return field;
 }
@@ -202,9 +202,9 @@ describe('harvest', () => {
     expect(game.state).toEqual(before);
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
 
-    sell(game, 'egg', 2);
+    sell(game, 'egg', 8);
     expect(harvest(game, field).ok).toBe(true);
-    expect(game.count('wheat')).toBe(4);
+    expect(game.count('wheat')).toBe(10);
     expect(used(game.state, 'goods')).toBe(30);
   });
 });
@@ -341,7 +341,7 @@ describe('old saves', () => {
     sell(game, 'wheat', 22); // 28 left: room for 2
     expect(harvest(game, field)).toEqual({ ok: false, reason: 'full' });
     expect(game.addItem('egg', 5)).toBe(2);
-    sell(game, 'wheat', 4);
+    sell(game, 'wheat', 10);
     expect(harvest(game, field).ok).toBe(true);
   });
 

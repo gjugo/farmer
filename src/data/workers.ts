@@ -30,19 +30,19 @@ export const JOBS: Record<JobKind, { label: string; icon: string }> = {
 };
 
 /** Game milliseconds a farmer is busy for each job (building: see `buildWorkMs`). */
-export const PLOUGH_WORK_MS = 3_000;
-export const PLANT_WORK_MS = 4_000;
-export const HARVEST_WORK_MS = 3_000;
-export const FEED_WORK_MS = 4_000;
+export const PLOUGH_WORK_MS = 40_000;
+export const PLANT_WORK_MS = 30_000;
+export const HARVEST_WORK_MS = 40_000;
+export const FEED_WORK_MS = 20_000;
 /** Collecting eggs, milk or wool from a pen, or finished goods from a processing building (assigned farmers only). */
-export const COLLECT_WORK_MS = 2_000;
+export const COLLECT_WORK_MS = 20_000;
 /** Carrying a recipe's inputs into a processing building to queue a batch (assigned farmers only). */
-export const LOAD_WORK_MS = 2_000;
+export const LOAD_WORK_MS = 20_000;
 
 /** Building takes this long per footprint tile, within `BUILD_WORK_MIN_MS`..`BUILD_WORK_MAX_MS`. */
-export const BUILD_WORK_PER_TILE_MS = 1_500;
-export const BUILD_WORK_MIN_MS = 3_000;
-export const BUILD_WORK_MAX_MS = 20_000;
+export const BUILD_WORK_PER_TILE_MS = 15_000;
+export const BUILD_WORK_MIN_MS = 30_000;
+export const BUILD_WORK_MAX_MS = 180_000;
 
 /** Buildables a player lays without a farmer (cheap 1×1 pieces drawn in long runs). */
 export const NO_FARMER_BUILDABLES: readonly string[] = ['path'];

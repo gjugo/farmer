@@ -64,17 +64,20 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   "Build a chicken coop".
 - Click an object to open its action panel.
 - **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
-  after their cycle; click the pen (or **Collect**) to pick up eggs, milk and wool.
+  after their cycle (chicken 3 game-minutes, cow 6, sheep 8); click the pen (or **Collect**) to pick up eggs, milk and wool.
 - **Processing:** build a Feed Mill, Dairy, Bakery or Loom, open it and pick a recipe. Inputs are taken at once;
-  up to 3 jobs queue and run one at a time. Click the building (or **Collect**) to pick up finished goods.
+  up to 3 jobs queue and run one at a time (feed 2 game-minutes, butter 4, bread 5, cheese 8, cloth 10).
+  Click the building (or **Collect**) to pick up finished goods.
 - **Orders:** 📋 Orders shows 3 customer orders for goods you have had before. Fulfil hands over the goods
   for a reward above today's market value; the HUD badge counts orders you can fulfil now. A fulfilled slot
-  gets a new order after 2 game-minutes, a discarded one after 5.
-- **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Tap a growing field for
+  gets a new order after 8 game-minutes, a discarded one after 20.
+- **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Each takes a real part of its season:
+  wheat 8 game-minutes (10 wheat), carrot 10 (10 carrots), corn 16 (12 corn). Tap a growing field for
   its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
 - **Farmers:** building, ploughing, planting, harvesting, feeding, collecting and starting a batch each keep a farmer
-  busy for a few game-seconds. The farm starts with one farmer; hire more in 👨‍🌾 Farmers: $150 for the 2nd, ×1.2 for
-  each after, up to 20.
+  busy for a while: ploughing a field 40 game-seconds, sowing 30 s, harvesting 40 s, feeding a pen 20 s, collecting or
+  starting a batch 20 s, building 15 s per footprint tile (30 s–3 min; paths need no farmer), plus the walk there and
+  back. The farm starts with one farmer; hire more in 👨‍🌾 Farmers: $150 for the 2nd, ×1.2 for each after, up to 20.
   - **Workplaces:** fields, coops, pastures and processing buildings take one farmer each. Assign one with
     **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in the 👨‍🌾 Farmers
     sheet, which lists every farmer with their workplace and what they are doing now. A farmer works at one place.
@@ -95,8 +98,10 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. Work on a field, pen or building is refused
   until a path joins it to the door ("No path leads there"), and the build ghost turns red where no path reaches.
   New farms start with a road from the door to both fields; older saves get a farmhouse and roads to what they built.
-- **Seasons:** each season lasts 2 game days (day 1–2 spring, 3–4 summer, 5–6 autumn, 7–8 winter, then round again);
-  the HUD shows it next to the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
+- **Seasons:** a game day lasts 8 real minutes at ×1 and each season 4 days, about 30 minutes (days 1–4 spring,
+  5–8 summer, 9–12 autumn, 13–16 winter, then round again), so a year takes about 2 hours. The pace is slow on
+  purpose: a new player reaches level 2 in 10–15 minutes and level 5 in 2–3 hours. The HUD shows the season next to
+  the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
   which turns every empty field back to unploughed (faded soil); in winter nothing can be ploughed or sown.
   Each crop is sown only in its seasons (wheat: spring–autumn, carrot: spring and autumn, corn: spring and summer),
@@ -108,7 +113,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 
 ### Debug mode (QA)
 
-Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60**,
+Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60 / ×300**
+(at ×60 a season passes in 32 real seconds, at ×300 in under 7 and a whole year in under half a minute),
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary) and
 **Refresh orders** (fills every order slot now). **+10** adds only what the granaries or storehouses have room for.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
@@ -278,10 +284,11 @@ Never use `setTimeout`, `setInterval` or `Date.now()` for gameplay. Store a `Tim
 (`startTimer(clock, durationMs)`) in the object's state and read it with `timerProgress`,
 `timerRemaining` and `timerDone`. Timers run on game time, so they survive save/load and
 speed up with the debug clock speed. `game.now` is the current game time in ms;
-1 day = 4 real minutes at ×1 (`DAY_MS`). Subscribe to `game.events.on('day', ...)` for daily
-events. Time away is caught up when the game opens again (`src/logic/offline.ts`): timers simply end, and farmers do
-their work on the way. Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setting
-`clock.elapsed` directly skips the farmers.
+1 day = 8 real minutes at ×1 (`DAY_MS`), 1 season = 4 days (`SEASON_DAYS`). Subscribe to `game.events.on('day', ...)`
+for daily events. Keep durations in the data files (`src/data/*`, `src/logic/constants.ts`) and check the level
+curve with `src/logic/balance.test.ts` after changing them. Time away is caught up when the game opens again
+(`src/logic/offline.ts`, at ×1, up to `MAX_OFFLINE_MS`): timers simply end, and farmers do their work on the way.
+Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setting `clock.elapsed` directly skips the farmers.
 
 ### Other extension points
 

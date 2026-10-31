@@ -3,11 +3,11 @@ import type { KnownItemId } from './items';
 
 /**
  * Total XP needed to reach each level: `LEVEL_XP[n - 1]` is where level n starts.
- * The farm earns 1 XP per $1 of sales, plus goal rewards. Tuned so a new player
- * reaches level 2 in a few minutes and level 5 within about 45 minutes
+ * The farm earns 1 XP per $1 of sales, plus goal rewards. Tuned so a new player at ×1
+ * reaches level 2 in 10–15 minutes and level 5 in about 2–3 hours
  * (see `src/logic/balance.test.ts`).
  */
-export const LEVEL_XP: readonly number[] = [0, 350, 1400, 3500, 7000, 11_500, 17_000, 24_000, 32_000, 42_000];
+export const LEVEL_XP: readonly number[] = [0, 150, 900, 2600, 6000, 10_000, 15_000, 21_000, 28_000, 36_000];
 
 export const MAX_LEVEL = LEVEL_XP.length;
 
@@ -61,14 +61,14 @@ export type GoalDef = GoalTask & {
  */
 export const GOALS: readonly GoalDef[] = [
   { id: 'first-field', title: 'Build a field', icon: '🟫', kind: 'build', type: 'field', count: 1, reward: { money: 30, xp: 10 } },
-  { id: 'harvest-wheat', title: 'Harvest 5 wheat', icon: '🌾', kind: 'harvest', item: 'wheat', count: 5, reward: { money: 20, xp: 10 } },
+  { id: 'harvest-wheat', title: 'Harvest 20 wheat', icon: '🌾', kind: 'harvest', item: 'wheat', count: 20, reward: { money: 20, xp: 10 } },
   { id: 'build-granary', title: 'Build a granary', icon: '🌾', kind: 'build', type: 'granary', count: 1, reward: { money: 50, xp: 15 } },
-  { id: 'sell-wheat', title: 'Sell 5 wheat at the Market', icon: '🏪', kind: 'sell', item: 'wheat', count: 5, reward: { money: 30, xp: 15 } },
+  { id: 'sell-wheat', title: 'Sell 20 wheat at the Market', icon: '🏪', kind: 'sell', item: 'wheat', count: 20, reward: { money: 30, xp: 15 } },
   { id: 'buy-wood', title: 'Buy 10 wood at the Market', icon: '🪵', kind: 'buy', item: 'wood', count: 10, reward: { money: 40, xp: 15 } },
   { id: 'build-coop', title: 'Build a chicken coop', icon: '🐔', kind: 'build', type: 'coop', count: 1, reward: { money: 50, xp: 15 } },
   { id: 'own-chickens', title: 'Own 3 chickens', icon: '🐔', kind: 'own-animals', animal: 'chicken', count: 3, reward: { money: 60, xp: 20 } },
   { id: 'collect-eggs', title: 'Collect 6 eggs', icon: '🥚', kind: 'collect', item: 'egg', count: 6, reward: { money: 60, xp: 25 } },
-  { id: 'harvest-carrots', title: 'Harvest 12 carrots', icon: '🥕', kind: 'harvest', item: 'carrot', count: 12, reward: { money: 80, xp: 30 } },
+  { id: 'harvest-carrots', title: 'Harvest 30 carrots', icon: '🥕', kind: 'harvest', item: 'carrot', count: 30, reward: { money: 80, xp: 30 } },
   { id: 'bake-bread', title: 'Bake 3 bread', icon: '🍞', kind: 'make', item: 'bread', count: 3, reward: { money: 100, xp: 40 } },
   { id: 'own-fields', title: 'Own 6 fields', icon: '🟫', kind: 'own-buildings', type: 'field', count: 6, reward: { money: 100, xp: 40 } },
   { id: 'upgrade-granary', title: 'Upgrade a granary', icon: '🌾', kind: 'upgrade', type: 'granary', count: 1, reward: { money: 100, xp: 40 } },

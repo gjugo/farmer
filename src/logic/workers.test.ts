@@ -1,7 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import { FIELD } from '../data/crops';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
-import { BASE_HIRE_COST, buildWorkMs, BUILD_WORK_MAX_MS, BUILD_WORK_MIN_MS, MAX_FARMERS, PLANT_WORK_MS } from '../data/workers';
+import {
+  BASE_HIRE_COST,
+  buildWorkMs,
+  BUILD_WORK_MAX_MS,
+  BUILD_WORK_MIN_MS,
+  FEED_WORK_MS,
+  HARVEST_WORK_MS,
+  MAX_FARMERS,
+  PLANT_WORK_MS,
+  PLOUGH_WORK_MS,
+} from '../data/workers';
 import type { FarmContext } from '../game/context';
 import { NO_ROAD_MESSAGE, withFarmer } from '../game/workers';
 import { START_LAND } from './constants';
@@ -104,6 +114,14 @@ describe('farmers', () => {
     expect(buildWorkMs('path')).toBe(0);
     expect(buildWorkMs(FIELD)).toBeGreaterThanOrEqual(BUILD_WORK_MIN_MS);
     expect(buildWorkMs(FIELD)).toBeLessThanOrEqual(BUILD_WORK_MAX_MS);
+  });
+
+  it('farm work takes a while: building 30 s to 3 min by size, ploughing and harvesting 40 s, sowing 30 s, feeding 20 s', () => {
+    expect([BUILD_WORK_MIN_MS, BUILD_WORK_MAX_MS]).toEqual([30_000, 180_000]);
+    expect(buildWorkMs(FIELD)).toBe(60_000); // 2×2
+    expect(buildWorkMs('coop')).toBe(135_000); // 3×3
+    expect(buildWorkMs('pasture')).toBe(180_000); // 4×4, capped
+    expect([PLOUGH_WORK_MS, PLANT_WORK_MS, HARVEST_WORK_MS, FEED_WORK_MS]).toEqual([40_000, 30_000, 40_000, 20_000]);
   });
 });
 

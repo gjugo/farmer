@@ -21,9 +21,9 @@ export interface CropDef {
 
 /** Every crop that can be planted in a field, in menu order. */
 export const CROPS = {
-  wheat: { id: 'wheat', name: 'Wheat', plantCost: 8, growMs: 30_000, harvestItem: 'wheat', harvestQty: 4, icon: '🌾', unlockLevel: 1, seasons: ['spring', 'summer', 'autumn'] },
-  carrot: { id: 'carrot', name: 'Carrot', plantCost: 12, growMs: 45_000, harvestItem: 'carrot', harvestQty: 4, icon: '🥕', unlockLevel: 2, seasons: ['spring', 'autumn'] },
-  corn: { id: 'corn', name: 'Corn', plantCost: 16, growMs: 60_000, harvestItem: 'corn', harvestQty: 4, icon: '🌽', unlockLevel: 4, seasons: ['spring', 'summer'] },
+  wheat: { id: 'wheat', name: 'Wheat', plantCost: 8, growMs: 480_000, harvestItem: 'wheat', harvestQty: 10, icon: '🌾', unlockLevel: 1, seasons: ['spring', 'summer', 'autumn'] },
+  carrot: { id: 'carrot', name: 'Carrot', plantCost: 12, growMs: 600_000, harvestItem: 'carrot', harvestQty: 10, icon: '🥕', unlockLevel: 2, seasons: ['spring', 'autumn'] },
+  corn: { id: 'corn', name: 'Corn', plantCost: 16, growMs: 960_000, harvestItem: 'corn', harvestQty: 12, icon: '🌽', unlockLevel: 4, seasons: ['spring', 'summer'] },
 } as const satisfies Record<string, CropDef>;
 
 export type CropId = keyof typeof CROPS;
