@@ -16,6 +16,7 @@ import {
   startJob,
   type ProcessorState,
 } from '../../logic/processing';
+import { leftBehindMessage } from '../../logic/storage';
 import { ART_RES, ART_SCALE, artFor, MILL, SHADOW } from '../../scenes/art';
 import { addArtSprite, packAsset, textureKey } from '../../scenes/sprites';
 import { BUBBLE, SMOKE_AT } from './textures';
@@ -151,10 +152,12 @@ function animate(ctx: FarmContext, obj: PlacedObject<ProcessorState>, view: Obje
 
 function collectAndFloat(ctx: FarmContext, obj: PlacedObject<ProcessorState>): void {
   const got = collect(ctx.game, obj);
-  const fp = PROCESSORS[obj.type as ProcessorType].footprint;
+  const def = PROCESSORS[obj.type as ProcessorType];
   Object.entries(got).forEach(([itemId, n], i) => {
-    ctx.ui.floatText(obj.x + (fp.w - 1) / 2, obj.y - i * 0.6, `+${n} ${itemLabel(itemId)}`);
+    ctx.ui.floatText(obj.x + (def.footprint.w - 1) / 2, obj.y - i * 0.6, `+${n} ${itemLabel(itemId)}`);
   });
+  const left = readyCount(obj);
+  if (left > 0) ctx.ui.toast(leftBehindMessage(got, left, `the ${def.name.toLowerCase()}`), 'error');
 }
 
 function panel(ctx: FarmContext, obj: PlacedObject<ProcessorState>): PanelSpec {

@@ -115,23 +115,31 @@ export interface Buyer {
   readonly money: number;
   isUnlocked(unlockLevel: number | undefined): boolean;
   spend(amount: number): boolean;
-  addItem(itemId: ItemId, qty?: number): void;
+  /** How many more of the item there is room for. */
+  spaceFor(itemId: ItemId): number;
+  addItem(itemId: ItemId, qty?: number): number;
   readonly activity: Emitter<ActivityEvents>;
 }
 
-export type BuyResult = { ok: true; qty: number; spent: number } | { ok: false; reason: 'not-for-sale' | 'level' | 'money' };
+/** `qty` is what was bought: fewer than asked when the storehouses only had room for that many. */
+export type BuyResult = { ok: true; qty: number; spent: number } | { ok: false; reason: 'not-for-sale' | 'level' | 'money' | 'full' };
 
 /** Level from which the Market sells an item; Infinity when it never does. */
 export function buyUnlockLevel(itemId: ItemId): number {
   return isMaterial(itemId) ? MATERIAL_UNLOCK[itemId] : Infinity;
 }
 
-/** Buys `qty` units at today's price. Refuses (nothing changes) when it is not for sale, still locked, or too dear. */
+/**
+ * Buys `qty` units at today's price, or as many of them as the storehouses have room for. Refuses (nothing
+ * changes) when it is not for sale, still locked, there is no room at all, or the money isn't there.
+ */
 export function buy(game: Buyer, itemId: ItemId, qty: number): BuyResult {
   const price = buyPrice(game.day, itemId);
-  const n = Math.floor(qty);
-  if (price === null || !(n > 0)) return { ok: false, reason: 'not-for-sale' };
+  const asked = Math.floor(qty);
+  if (price === null || !(asked > 0)) return { ok: false, reason: 'not-for-sale' };
   if (!game.isUnlocked(buyUnlockLevel(itemId))) return { ok: false, reason: 'level' };
+  const n = Math.min(asked, game.spaceFor(itemId));
+  if (n <= 0) return { ok: false, reason: 'full' };
   const total = n * price;
   if (!game.spend(total)) return { ok: false, reason: 'money' };
   game.addItem(itemId, n);

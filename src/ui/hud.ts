@@ -2,6 +2,7 @@ import { getBuildable, listBuildMenu } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
 import { formatMaterials, formatMissing, isMaterial } from '../data/materials';
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
+import { STORAGE_POOLS, type StoragePool } from '../data/storage';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
 import { listHudButtons, listSettingsSections } from '../game/hooks';
 import { uiSignals } from '../game/signals';
@@ -9,12 +10,44 @@ import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
 import type { GameEvents } from '../logic/game';
 import { dayOfSeason, seasonOf } from '../logic/seasons';
+import { poolStatus, storageInfo, type PoolInfo } from '../logic/storage';
 import { buildableUnlockLevel } from '../logic/unlocks';
 import type { FarmScene } from '../scenes/FarmScene';
 import { h, formatMoney } from './dom';
 import { itemIcon, packIcon, withIcons } from './icons';
 
 const REFRESH_MS = 250;
+
+const POOL_LABEL: Record<StoragePool, { title: string; icon: string; building: string }> = {
+  goods: { title: 'Goods', icon: '🌾', building: 'granary' },
+  materials: { title: 'Materials', icon: '🪵', building: 'storehouse' },
+};
+
+/** A pool's used/capacity bar for the inventory sheet; it warns from 90% and says plainly when the pool is full. */
+function storageBar(pool: StoragePool, info: PoolInfo): HTMLElement {
+  const status = poolStatus(info);
+  const label = POOL_LABEL[pool];
+  const pct = info.capacity > 0 ? Math.min(100, Math.round((info.used / info.capacity) * 100)) : 100;
+  const note =
+    info.used > info.capacity
+      ? `Over capacity: nothing new comes in until you sell or use ${info.used - info.capacity}. Build or upgrade a ${label.building}.`
+      : status === 'full'
+        ? `Full: nothing more comes in. Build or upgrade a ${label.building}, or sell something.`
+        : status === 'warn'
+          ? `Almost full: build or upgrade a ${label.building} soon.`
+          : null;
+  return h(
+    'div',
+    { class: `storage-pool storage-${status}`, 'data-testid': `storage-${pool}`, 'data-used': info.used, 'data-capacity': info.capacity },
+    h('div', { class: 'storage-head' }, withIcons(`${label.icon} ${label.title}`), h('span', { class: 'storage-count' }, `${info.used} / ${info.capacity}`)),
+    h(
+      'div',
+      { class: 'storage-bar', role: 'progressbar', 'aria-label': `${label.title} stored`, 'aria-valuemin': 0, 'aria-valuemax': info.capacity, 'aria-valuenow': info.used },
+      h('div', { class: 'storage-fill', style: `width: ${pct}%` }),
+    ),
+    note ? h('p', { class: 'storage-note', 'data-testid': `storage-note-${pool}` }, note) : null,
+  );
+}
 
 /** The HTML overlay: top bar, side sheet (menus and action panels), tool banner, toasts and dialogs. */
 export class Hud implements UiApi {
@@ -389,8 +422,10 @@ export class Hud implements UiApi {
     return {
       id: 'inventory',
       title: () => '🎒 Inventory',
-      signature: () => JSON.stringify(game.state.inventory),
+      signature: () => JSON.stringify([game.state.inventory, storageInfo(game.state)]),
       render: (body) => {
+        const info = storageInfo(game.state);
+        body.append(h('div', { class: 'storage-bars' }, STORAGE_POOLS.map((pool) => storageBar(pool, info[pool]))));
         const known = new Set(ITEM_LIST.map((i) => i.id));
         const ids = [...ITEM_LIST.map((i) => i.id), ...Object.keys(game.state.inventory).filter((id) => !known.has(id))];
         const rows = ids.filter((id) => game.count(id) > 0);

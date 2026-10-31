@@ -3,6 +3,7 @@ import { isMaterial, MATERIAL_IDS, type MaterialId } from '../../data/materials'
 import type { FarmContext, SheetSpec } from '../../game/context';
 import { registerHudButton } from '../../game/hooks';
 import { buy, buyPrice, buyUnlockLevel, dailyPrice, msUntilNextDay, priceTrend, sell, sellAll } from '../../logic/market';
+import { fullMessage, storageInfo } from '../../logic/storage';
 import { formatMoney, h } from '../../ui/dom';
 import { itemIcon, withIcons } from '../../ui/icons';
 
@@ -42,12 +43,20 @@ function buyMaterial(ctx: FarmContext, id: MaterialId, qty: number): void {
   const item = getItem(id)!;
   const what = `${qty} ${item.icon} ${item.name}`;
   const r = buy(ctx.game, id, qty);
-  if (r.ok) ctx.ui.toast(`Bought ${what} for ${formatMoney(r.spent)}`, 'success');
+  if (r.ok && r.qty < qty) ctx.ui.toast(`Bought only ${r.qty} ${item.icon} ${item.name} for ${formatMoney(r.spent)}: the storehouse had room for no more`, 'info');
+  else if (r.ok) ctx.ui.toast(`Bought ${what} for ${formatMoney(r.spent)}`, 'success');
+  else if (r.reason === 'full') ctx.ui.toast(fullMessage('materials'), 'error');
   else if (r.reason === 'money') ctx.ui.toast(`Not enough money: ${what} costs ${formatMoney(qty * (buyPrice(ctx.game.day, id) ?? 0))}`, 'error');
   else if (r.reason === 'level') ctx.ui.toast(`${item.name} is sold from level ${buyUnlockLevel(id)}`, 'error');
 }
 
 /** The Buy section: one row per material with quick amounts and a quantity stepper. */
+/** Free room for materials. */
+function roomLeft(ctx: FarmContext): number {
+  const { used, capacity } = storageInfo(ctx.game.state).materials;
+  return Math.max(0, capacity - used);
+}
+
 function buySection(ctx: FarmContext, stepper: Map<MaterialId, number>): HTMLElement[] {
   const { game } = ctx;
   const day = game.day;
@@ -117,7 +126,11 @@ function buySection(ctx: FarmContext, stepper: Map<MaterialId, number>): HTMLEle
         );
       }),
     ),
-    h('p', { class: 'muted market-note' }, withIcons('Buildings need wood, stone and iron. Selling them back pays less than they cost.')),
+    h(
+      'p',
+      { class: 'muted market-note', 'data-testid': 'market-room' },
+      withIcons(`Storehouse room: ${roomLeft(ctx)} more. Buildings need wood, stone and iron. Selling them back pays less than they cost.`),
+    ),
   ];
 }
 
@@ -127,7 +140,7 @@ function marketSheet(ctx: FarmContext): SheetSpec {
   return {
     id: 'market',
     title: () => '🏪 Market',
-    signature: () => `${game.day}|${game.level}|${JSON.stringify(game.state.inventory)}`,
+    signature: () => `${game.day}|${game.level}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}`,
     render: (body) => {
       const day = game.day;
       body.append(

@@ -56,6 +56,21 @@ function build<S extends object>(game: Game, type: string, x: number, y: number,
   return r.object as unknown as PlacedObject<S>;
 }
 
+/** Room for a long run: `n` top-level granaries in free spots far from the farmhouse. */
+function granaries(game: Game, n: number): void {
+  const { width, height } = game.state.land;
+  for (let y = height - 2; y >= 0 && n > 0; y--) {
+    for (let x = width - 2; x >= 0 && n > 0; x--) {
+      if (!game.checkPlacement('granary', x, y).ok) continue;
+      const r = game.place('granary', x, y);
+      if (!r.ok) continue;
+      r.object.state.level = 3;
+      n--;
+    }
+  }
+  if (n > 0) throw new Error('no room for the granaries');
+}
+
 /** Plays `ms` of game time in frames of `frameMs` (×1). */
 function play(game: Game, ms: number, frameMs = 250): void {
   for (let t = 0; t < ms; t += frameMs) game.tick(Math.min(frameMs, ms - t));
@@ -85,6 +100,7 @@ describe('work scheduler', () => {
 
     expect(assignFarmer(game, field.id)).toEqual({ ok: true, farmer: 0 });
     expect(cropPlanOf(game.state, field.id)).toBe(PLAN_BEST);
+    granaries(game, 1); // three corn harvests are more than the farmhouse holds
     // Corn takes half a season, so a season alone has room for one corn harvest.
     play(game, 2 * SEASON_MS);
 
@@ -253,6 +269,7 @@ describe('work scheduler', () => {
       assignFarmer(game, b.id);
       assignFarmer(game, coop.id);
       build(game, 'dairy', X + 6, Y + 5, { site: true });
+      granaries(game, 2);
       return game;
     };
     const live = setUp();
@@ -281,6 +298,7 @@ describe('work scheduler', () => {
     setKeepMaking(game, mill.id, 'feed-from-wheat');
     game.addItem('wheat', 400);
     assignFarmer(game, mill.id);
+    granaries(game, 4);
 
     const started = performance.now();
     const result = catchUp(game, 7 * 24 * HOUR);
@@ -288,6 +306,50 @@ describe('work scheduler', () => {
     expect(result.work.harvested.corn).toBeGreaterThan(0);
     expect(result.work.made.feed).toBeGreaterThan(0);
     expect(nextWorkEvent(game)).toBeGreaterThan(game.now);
+  });
+
+  it('a full granary: the field and pen wait, and work goes on once there is room', () => {
+    const game = farm();
+    const [field] = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
+    hireFarmer(game);
+    assignFarmer(game, field.id);
+    // Two corn harvests (24) fit in the farmhouse store; the third (12 more) does not.
+    play(game, 3 * CROPS.corn.growMs + 5 * MIN);
+    expect(cropStage(game.state.clock, field.state)).toBe('ripe');
+    expect(game.spaceFor('corn')).toBeLessThan(CROPS.corn.harvestQty);
+
+    const coop = build<PenState>(game, 'coop', X + 1, Y + 5);
+    for (let i = 0; i < 3; i++) buyAnimal(game, coop, 'chicken');
+    game.addItem('feed', 10);
+    assignFarmer(game, coop.id);
+    const log = record(game, ['harvested', 'collected', 'fed']);
+    play(game, 20_000);
+    expect(log).toEqual(['fed']); // the field's farmer stays put: no room for the corn
+    game.addItem('wheat', 1000); // fill the farmhouse store (feeding freed some)
+    log.length = 0;
+    play(game, ANIMALS.chicken.cycleMs);
+
+    expect(game.spaceFor('corn')).toBe(0);
+    expect(log).toEqual([]);
+    expect(workplaceNext(game, field)).toEqual({ wait: 'full' });
+    expect(workplaceNext(game, coop)).toEqual({ wait: 'full' });
+
+    for (const id of ['wheat', 'corn']) game.removeItem(id, game.count(id));
+    play(game, MIN);
+    expect(log).toContain('harvested');
+    expect(log).toContain('collected');
+  });
+
+  it('a building keeps loading its queue while its goods wait for room', () => {
+    const game = farm();
+    const mill = build<ProcessorState>(game, 'feed-mill', X + 6, Y + 5);
+    mill.state.ready = { feed: 5 };
+    game.addItem('wheat', 10);
+    game.addItem('corn', 1000); // fill the farmhouse store
+    expect(game.spaceFor('feed')).toBe(0);
+    expect(workplaceNext(game, mill)).toEqual({ wait: 'full' });
+    setKeepMaking(game, mill.id, 'feed-from-wheat');
+    expect(workplaceNext(game, mill)).toMatchObject({ task: { kind: 'load' } });
   });
 
   it('assignments, plans, recipes and sites survive save/load; old saves have none', () => {

@@ -146,7 +146,17 @@ export const TEXTURE_ART: Record<string, string> = {
   loom: 'weaving_hut',
   'sale-sign': 'for_sale_sign',
   farmhouse: 'farmhouse',
+  granary: 'granary_1',
+  storehouse: 'storehouse_1',
 };
+
+/** Storage buildings have a sprite per level, e.g. `granary_2`; the build preview is level 1. */
+export const STORAGE_ART = { granary: 3, storehouse: 3 } as const;
+
+/** The sprite of a storage building at `level` (clamped to the levels drawn). */
+export function storageArt(type: keyof typeof STORAGE_ART, level: number): string {
+  return `${type}_${Math.max(1, Math.min(STORAGE_ART[type], Math.floor(level) || 1))}`;
+}
 
 /**
  * Game textures composed at boot from pack tiles laid out on a w × h footprint (nothing drawn by hand):
@@ -233,6 +243,7 @@ export function usedArt(): string[] {
     ...Object.values(TEXTURE_ART),
     MILL.body,
     MILL.sails,
+    ...(Object.keys(STORAGE_ART) as (keyof typeof STORAGE_ART)[]).flatMap((t) => Array.from({ length: STORAGE_ART[t] }, (_, i) => storageArt(t, i + 1))),
     ...CROP_ART_IDS.flatMap((c) => Object.keys(CROP_STAGES).map((s) => cropArt(c, s)!)),
     ...ANIMAL_ART,
     FARMER_ART,

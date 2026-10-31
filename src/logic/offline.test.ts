@@ -169,11 +169,8 @@ describe('offline catch-up', () => {
 
   it('runs 7 days on a busy farm well under a second', () => {
     const game = farm();
-    game.addItem('feed', 1000);
-    game.addItem('milk', 1000);
-    game.addItem('wheat', 1000);
-    game.addItem('egg', 1000);
-    game.addItem('wool', 1000);
+    // Far more than the farm has room for, like an old save: inputs for every animal and building.
+    Object.assign(game.state.inventory, { feed: 1000, milk: 1000, wheat: 1000, egg: 1000, wool: 1000 });
     for (const f of fields(game)) plant(game, f, 'corn');
     for (let i = 0; i < 6; i++) {
       const coop = place<PenState>(game, 'coop', i * 3, 0);

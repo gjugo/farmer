@@ -7,6 +7,7 @@ import { JOBS, type JobKind } from '../data/workers';
 import { canPloughNow, formatDuration } from '../logic/crops';
 import type { Game } from '../logic/game';
 import { findRoute } from '../logic/roads';
+import { fullMessage } from '../logic/storage';
 import type { PlacedObject } from '../logic/types';
 import { workplaceNext, type WorkplaceNext } from '../logic/work';
 import {
@@ -115,6 +116,8 @@ export function waitText(game: Game, next: Exclude<WorkplaceNext, { task: unknow
       return 'The queue is full';
     case 'inputs':
       return 'Waiting for ingredients';
+    case 'full':
+      return fullMessage('goods');
   }
 }
 

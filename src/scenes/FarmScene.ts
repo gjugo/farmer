@@ -7,7 +7,8 @@ import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/conte
 import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
 import { farmerName, NO_ROAD_MESSAGE, reachable, workplacePanel } from '../game/workers';
 import { formatDuration } from '../logic/crops';
-import { footprintOf, materialsRefundOf, refundOf, type PlaceResult } from '../logic/game';
+import { footprintOf, refundOf, type DemolishCheck, type PlaceResult } from '../logic/game';
+import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
@@ -63,10 +64,13 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
   'unknown-type': 'Unknown building',
 };
 
-/** What demolishing gives back, e.g. "$132 and 3 🪵 Wood + 1 🔩 Iron". */
-function refundText(obj: PlacedObject): string {
-  const materials = formatMaterials(materialsRefundOf(obj));
-  return `$${refundOf(obj)}${materials ? ` and ${materials}` : ''}`;
+/**
+ * What demolishing gives back, e.g. "$132 and 3 🪵 Wood + 1 🔩 Iron", plus what the storehouses have no room for.
+ */
+function demolishText(check: Extract<DemolishCheck, { ok: true }>): string {
+  const materials = formatMaterials(check.materials);
+  const lost = formatMaterials(check.lost);
+  return `$${check.money}${materials ? ` and ${materials}` : ''}${lost ? `. ${lost} won't fit in the storehouse and would be lost` : ''}`;
 }
 
 interface TouchState {
@@ -591,11 +595,7 @@ export class FarmScene extends Phaser.Scene {
         ui.toast(`The ${getBuildable(obj.type)!.name.toLowerCase()} stays`, 'error');
         return;
       }
-      const def = getBuildable(obj.type);
-      const refund = game.demolish(obj.id) ?? 0;
-      this.floatText(obj.x, obj.y, `+$${refund}`, '#c8ff9e');
-      const materials = formatMaterials(materialsRefundOf(obj));
-      if (materials) ui.toast(`${def?.name ?? obj.type} demolished: got back ${refundText(obj)}`, 'success');
+      void this.demolish(obj, false);
       return;
     }
     if (!obj) {
@@ -635,16 +635,39 @@ export class FarmScene extends Phaser.Scene {
           {
             label: obj.site ? `Cancel building (+$${refund})` : `Demolish (+$${refund})`,
             variant: 'danger',
-            onClick: async () => {
-              const name = def?.name ?? obj.type;
-              const ok = await ui.confirm(`Demolish the ${name.toLowerCase()}?`, `You get back ${refundText(obj)}.`, { confirmLabel: 'Demolish' });
-              if (!ok || game.demolish(obj.id) === null) return;
-              this.floatText(obj.x, obj.y, `+$${refund}`, '#c8ff9e');
-            },
+            onClick: () => void this.demolish(obj, true),
           },
         ],
       };
     });
+  }
+
+  /**
+   * Demolishes `obj` after saying what comes back. From the panel it always asks first; in demolish mode only
+   * when refunded materials would be lost for want of room. A granary or storehouse whose stock wouldn't fit
+   * without it is refused with a toast.
+   */
+  private async demolish(obj: PlacedObject, ask: boolean): Promise<void> {
+    const { game, ui } = this.ctx;
+    const def = getBuildable(obj.type);
+    const name = def?.name ?? obj.type;
+    const check = game.checkDemolish(obj.id);
+    if (!check.ok) {
+      if (check.reason === 'storage') ui.toast(demolishBlockedMessage(obj, check.excess), 'error');
+      return;
+    }
+    const losing = Object.keys(check.lost).length > 0;
+    if (ask || losing) {
+      const ok = await ui.confirm(`Demolish the ${name.toLowerCase()}?`, `You get back ${demolishText(check)}.`, { confirmLabel: 'Demolish' });
+      if (!ok) return;
+    }
+    const got = game.checkDemolish(obj.id);
+    if (!got.ok || game.demolish(obj.id) === null) {
+      if (!got.ok && got.reason === 'storage') ui.toast(demolishBlockedMessage(obj, got.excess), 'error');
+      return;
+    }
+    this.floatText(obj.x, obj.y, `+$${got.money}`, '#c8ff9e');
+    if (!ask && Object.keys(got.materials).length) ui.toast(`${name} demolished: got back ${demolishText(got)}`, 'success');
   }
 
   /** A construction site's panel: who builds it and how far they are, or why nobody does yet. */

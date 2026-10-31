@@ -39,6 +39,8 @@ export type GoalTask =
   | { kind: 'earn'; count: number }
   /** Build `count` buildables of `type`. */
   | { kind: 'build'; type: string; count: number }
+  /** Upgrade buildables of `type` `count` times. */
+  | { kind: 'upgrade'; type: string; count: number }
   // State goals
   | { kind: 'own-buildings'; type: string; count: number }
   | { kind: 'own-animals'; animal?: AnimalKind; count: number }
@@ -60,6 +62,7 @@ export type GoalDef = GoalTask & {
 export const GOALS: readonly GoalDef[] = [
   { id: 'first-field', title: 'Build a field', icon: '🟫', kind: 'build', type: 'field', count: 1, reward: { money: 30, xp: 10 } },
   { id: 'harvest-wheat', title: 'Harvest 20 wheat', icon: '🌾', kind: 'harvest', item: 'wheat', count: 20, reward: { money: 20, xp: 10 } },
+  { id: 'build-granary', title: 'Build a granary', icon: '🌾', kind: 'build', type: 'granary', count: 1, reward: { money: 50, xp: 15 } },
   { id: 'sell-wheat', title: 'Sell 20 wheat at the Market', icon: '🏪', kind: 'sell', item: 'wheat', count: 20, reward: { money: 30, xp: 15 } },
   { id: 'buy-wood', title: 'Buy 10 wood at the Market', icon: '🪵', kind: 'buy', item: 'wood', count: 10, reward: { money: 40, xp: 15 } },
   { id: 'build-coop', title: 'Build a chicken coop', icon: '🐔', kind: 'build', type: 'coop', count: 1, reward: { money: 50, xp: 15 } },
@@ -68,6 +71,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'harvest-carrots', title: 'Harvest 30 carrots', icon: '🥕', kind: 'harvest', item: 'carrot', count: 30, reward: { money: 80, xp: 30 } },
   { id: 'bake-bread', title: 'Bake 3 bread', icon: '🍞', kind: 'make', item: 'bread', count: 3, reward: { money: 100, xp: 40 } },
   { id: 'own-fields', title: 'Own 6 fields', icon: '🟫', kind: 'own-buildings', type: 'field', count: 6, reward: { money: 100, xp: 40 } },
+  { id: 'upgrade-granary', title: 'Upgrade a granary', icon: '🌾', kind: 'upgrade', type: 'granary', count: 1, reward: { money: 100, xp: 40 } },
   { id: 'reach-3', title: 'Reach level 3', icon: '⭐', kind: 'reach-level', count: 3, reward: { money: 100, xp: 50 } },
   { id: 'own-cows', title: 'Own 2 cows', icon: '🐄', kind: 'own-animals', animal: 'cow', count: 2, reward: { money: 120, xp: 50 } },
   { id: 'make-cheese', title: 'Make 3 cheese', icon: '🧀', kind: 'make', item: 'cheese', count: 3, reward: { money: 150, xp: 60 } },

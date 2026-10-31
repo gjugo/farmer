@@ -23,6 +23,7 @@ import {
   type FieldState,
 } from '../../logic/crops';
 import { nextSeasonAt, nextSeasonIn, seasonOf } from '../../logic/seasons';
+import { fullMessage, poolOf } from '../../logic/storage';
 import { ART_SCALE, cropArt, SHADOW } from '../../scenes/art';
 import { footprintLocal } from '../../scenes/iso';
 import { addArt, textureKey } from '../../scenes/sprites';
@@ -115,10 +116,22 @@ function syncView(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
   if (stage === 'ripe') startRipeEffects(ctx, fv);
 }
 
+/** Says the granaries are full, so no farmer walks out for a harvest that can't be stored. */
+function refuseIfFull(ctx: FarmContext, obj: PlacedObject<FieldState>): boolean {
+  const crop = fieldCrop(obj.state);
+  if (!crop || ctx.game.spaceFor(crop.harvestItem) >= crop.harvestQty) return false;
+  ctx.ui.toast(fullMessage(poolOf(crop.harvestItem)), 'error');
+  return true;
+}
+
 function doHarvest(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
+  if (refuseIfFull(ctx, obj)) return;
   withFarmer(ctx, 'harvest', obj, HARVEST_WORK_MS, () => {
     const result = harvest(ctx.game, obj);
-    if (!result) return false;
+    if (!result.ok) {
+      if (result.reason === 'full') refuseIfFull(ctx, obj);
+      return false;
+    }
     const item = getItem(result.crop.harvestItem);
     ctx.ui.floatText(obj.x + 0.5, obj.y, `+${result.qty} ${item?.name ?? result.crop.name}`, '#fff3a8');
     return true;

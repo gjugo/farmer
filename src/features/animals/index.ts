@@ -5,6 +5,7 @@ import { FEED_WORK_MS } from '../../data/workers';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
 import { withFarmer } from '../../game/workers';
+import { fullMessage, leftBehindMessage } from '../../logic/storage';
 import {
   animalProgress,
   animalsOf,
@@ -203,6 +204,8 @@ function collectAndFloat(ctx: FarmContext, obj: PlacedObject<PenState>): void {
     const fp = PENS[obj.type as PenType].footprint;
     ctx.ui.floatText(obj.x + (fp.w - 1) / 2, obj.y - i * 0.6, `+${n} ${itemLabel(itemId)}`);
   });
+  const left = readyCount(ctx.game.state.clock, obj);
+  if (left > 0) ctx.ui.toast(leftBehindMessage(got, left, `the ${PENS[obj.type as PenType].name.toLowerCase()}`), 'error');
 }
 
 const STATUS_TEXT: Record<AnimalStatus, (kind: AnimalKind) => string> = {
@@ -251,7 +254,8 @@ function penPanel(ctx: FarmContext, obj: PlacedObject<PenState>): PanelSpec {
       variant: 'secondary',
       disabled: !game.canAfford(FEED_PACK.price),
       onClick: () => {
-        if (!buyFeed(game)) ctx.ui.toast('Not enough money', 'error');
+        const r = buyFeed(game);
+        if (!r.ok) ctx.ui.toast(r.reason === 'full' ? fullMessage('goods') : 'Not enough money', 'error');
       },
     });
   }
