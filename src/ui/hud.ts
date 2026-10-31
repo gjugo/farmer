@@ -78,7 +78,8 @@ export class Hud implements UiApi {
   constructor(
     private readonly root: HTMLElement,
     ctx: FarmContext,
-    private readonly onNewGame: () => void,
+    /** Opens the pause menu (☰ Menu). */
+    private readonly onMenu: () => void,
   ) {
     this.ctx = ctx;
     this.build();
@@ -174,6 +175,7 @@ export class Hud implements UiApi {
       if (b.live) this.liveButtons.push({ btn: this.buttons.get(b.id)!, read: () => b.live!(this.ctx) });
     }
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
+    addButton('menu', '☰', 'Menu', () => this.onMenu());
 
     this.resources = new ResourceBar(this.ctx.game);
     const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day, level), tools, this.resources.el);
@@ -265,6 +267,11 @@ export class Hud implements UiApi {
   toggleSheet(sheet: SheetSpec): void {
     if (this.sheet?.id === sheet.id) this.closePanel();
     else this.showSheet(sheet);
+  }
+
+  /** Whether a side sheet or action panel is open. */
+  get panelOpen(): boolean {
+    return this.sheet !== null;
   }
 
   closePanel(): void {
@@ -470,29 +477,7 @@ export class Hud implements UiApi {
       signature: () => 'settings',
       render: (body) => {
         for (const section of listSettingsSections()) section.render(this.ctx, body);
-        body.append(
-          h('p', { class: 'muted' }, 'Your farm is saved automatically in this browser.'),
-          h(
-            'div',
-            { class: 'actions' },
-            h(
-              'button',
-              {
-                type: 'button',
-                class: 'btn btn-danger',
-                'data-testid': 'btn-new-game',
-                onclick: async () => {
-                  const ok = await this.confirm('Start a new game?', 'Your current farm, money and items will be lost.', { confirmLabel: 'New game' });
-                  if (ok) {
-                    this.onNewGame();
-                    this.toast('A fresh start! Welcome to your new farm.', 'success');
-                  }
-                },
-              },
-              'New game',
-            ),
-          ),
-        );
+        body.append(h('p', { class: 'muted' }, 'Your farm is saved automatically in this browser. Save, Load and New game are in ☰ Menu.'));
       },
     };
   }

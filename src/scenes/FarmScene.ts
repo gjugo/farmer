@@ -158,7 +158,7 @@ export class FarmScene extends Phaser.Scene {
 
   override update(_time: number, delta: number): void {
     const dt = this.farm.tick(delta);
-    this.panWithKeys(delta);
+    if (!this.farm.paused) this.panWithKeys(delta);
     this.clampCamera();
     if (this.sceneryDirty) {
       this.sceneryDirty = false;
