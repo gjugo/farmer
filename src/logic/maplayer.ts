@@ -549,7 +549,7 @@ onNewGame((state) => {
 });
 
 /**
- * The map layer for a save from before it (version 9): generated around everything the save holds, from raw,
+ * The map layer for a save from before it (version 10): generated around everything the save holds, from raw,
  * untrusted saved state. The seed comes from the save, so loading the same save twice gives the same map.
  */
 export function migrateMapLayer(raw: Record<string, unknown>): MapLayer {

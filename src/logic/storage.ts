@@ -1,6 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { getItem } from '../data/items';
-import { isMaterial, type MaterialCost } from '../data/materials';
+import { isStoredMaterial, type MaterialCost } from '../data/materials';
 import {
   FARMHOUSE_STORE,
   isStorageType,
@@ -35,7 +35,7 @@ export type StorageInfo = Record<StoragePool, PoolInfo>;
 
 /** Which pool an item is stored in. */
 export function poolOf(itemId: ItemId): StoragePool {
-  return isMaterial(itemId) ? 'materials' : 'goods';
+  return isStoredMaterial(itemId) ? 'materials' : 'goods';
 }
 
 /** The building's level, repaired if a save holds something odd. */

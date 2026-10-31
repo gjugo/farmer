@@ -1,4 +1,5 @@
 import { ANIMALS, FEED_PACK, isAnimalKind, PENS, type AnimalKind, type PenType } from '../data/animals';
+import { MANURE_PER_COLLECT } from '../data/soil';
 import { startTimer, timerDone, timerProgress, type Timer } from './clock';
 import type { Game } from './game';
 import type { ClockState, PlacedObject } from './types';
@@ -119,7 +120,9 @@ export function buyFeed(game: Game): BuyFeedResult {
 
 /**
  * Moves finished products into the inventory, as many as the granaries have room for; those animals become
- * hungry again. The rest stay ready in the pen (see `readyCount`). Returns itemId → amount collected.
+ * hungry again. The rest stay ready in the pen (see `readyCount`). Each animal collected from also leaves
+ * `MANURE_PER_COLLECT` manure, kept in the storehouse while it has room (the rest is lost, the product never
+ * waits for it). Returns itemId → amount of products collected.
  */
 export function collect(game: Game, obj: PlacedObject<PenState>): Record<string, number> {
   const got: Record<string, number> = {};
@@ -130,6 +133,8 @@ export function collect(game: Game, obj: PlacedObject<PenState>): Record<string,
     got[product] = (got[product] ?? 0) + 1;
     a.timer = null;
   }
+  const animals = Object.values(got).reduce((n, qty) => n + qty, 0);
+  if (animals > 0) game.addItem('manure', animals * MANURE_PER_COLLECT);
   if (Object.keys(got).length > 0) game.touch(obj);
   for (const [item, qty] of Object.entries(got)) game.activity.emit('collected', { item, qty });
   return got;

@@ -379,11 +379,11 @@ describe('quarries and mines take from their deposit', () => {
   });
 });
 
-describe('saves from before the map (version 9)', () => {
-  /** A version-9 save of a farm with a lodge, a quarry and a mine built, staffed and working. */
-  function v9(): string {
+describe('saves from before the map (version 10)', () => {
+  /** A version-10 save of a farm with a lodge, a quarry and a mine built, staffed and working. */
+  function v10(): string {
     const game = farm(false);
-    // In version 9 they stood anywhere: give them what they need here, then drop the map from the save.
+    // In version 10 they stood anywhere: give them what they need here, then drop the map from the save.
     addDeposit(mapOf(game.state), 'stone', { x: X + 4, y: Y + 5, w: 2, h: 2 });
     addDeposit(mapOf(game.state), 'iron', { x: X + 7, y: Y + 5, w: 2, h: 2 });
     staff(game, 'woodcutter', X + 1, Y + 5);
@@ -391,13 +391,13 @@ describe('saves from before the map (version 9)', () => {
     staff(game, 'mine', X + 7, Y + 5);
     game.advance(MIN);
     const raw = JSON.parse(serialize(game.state));
-    raw.version = 9;
+    raw.version = 10;
     delete raw.state.ext[MAP_SLICE];
     return JSON.stringify(raw);
   }
 
   it('loads with a map generated around its objects, never on top of them', () => {
-    const state = deserialize(v9());
+    const state = deserialize(v10());
     const layer = mapOf(state);
     expect(layer.trees.length).toBeGreaterThan(50);
     for (const o of state.objects) {
@@ -408,7 +408,7 @@ describe('saves from before the map (version 9)', () => {
   });
 
   it('every quarry and mine gets a matching deposit under it, every lodge a grove of about 8 trees in range', () => {
-    const state = deserialize(v9());
+    const state = deserialize(v10());
     const layer = mapOf(state);
     for (const o of state.objects) {
       const def = RESOURCES[o.type as ResourceType];
@@ -418,7 +418,7 @@ describe('saves from before the map (version 9)', () => {
   });
 
   it('its lodges, quarries and mines keep working', () => {
-    const game = new Game(deserialize(v9()));
+    const game = new Game(deserialize(v10()));
     const produced: Record<string, number> = {};
     game.activity.on('produced', ({ item, qty }) => (produced[item] = (produced[item] ?? 0) + qty));
     run(game, 2 * HOUR);
@@ -428,7 +428,7 @@ describe('saves from before the map (version 9)', () => {
   });
 
   it('the same save always gets the same map', () => {
-    const save = v9();
+    const save = v10();
     expect(mapOf(deserialize(save))).toEqual(mapOf(deserialize(save)));
   });
 });

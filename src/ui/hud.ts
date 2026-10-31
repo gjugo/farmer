@@ -1,10 +1,10 @@
 import { getBuildable, listBuildMenu } from '../data/buildables';
 import { getItem, ITEM_LIST } from '../data/items';
-import { formatMaterials, formatMissing, isMaterial } from '../data/materials';
+import { formatMaterials, formatMissing, isStoredMaterial } from '../data/materials';
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
 import { STORAGE_POOLS, type StoragePool } from '../data/storage';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
-import { listHudButtons, listSettingsSections } from '../game/hooks';
+import { listBuildMenuToggles, listHudButtons, listSettingsSections } from '../game/hooks';
 import { uiSignals } from '../game/signals';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
@@ -78,7 +78,8 @@ export class Hud implements UiApi {
   constructor(
     private readonly root: HTMLElement,
     ctx: FarmContext,
-    private readonly onNewGame: () => void,
+    /** Opens the pause menu (☰ Menu). */
+    private readonly onMenu: () => void,
   ) {
     this.ctx = ctx;
     this.build();
@@ -174,6 +175,7 @@ export class Hud implements UiApi {
       if (b.live) this.liveButtons.push({ btn: this.buttons.get(b.id)!, read: () => b.live!(this.ctx) });
     }
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
+    addButton('menu', '☰', 'Menu', () => this.onMenu());
 
     this.resources = new ResourceBar(this.ctx.game);
     const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day, level), tools, this.resources.el);
@@ -267,6 +269,11 @@ export class Hud implements UiApi {
     else this.showSheet(sheet);
   }
 
+  /** Whether a side sheet or action panel is open. */
+  get panelOpen(): boolean {
+    return this.sheet !== null;
+  }
+
   closePanel(): void {
     if (!this.sheet) return;
     this.sheet = null;
@@ -297,6 +304,35 @@ export class Hud implements UiApi {
         if (current.lines?.length) {
           body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => h('li', {}, withIcons(l)))));
         }
+        if (current.meters?.length) {
+          body.append(
+            h(
+              'div',
+              { class: 'meters' },
+              current.meters.map((m) =>
+                h(
+                  'div',
+                  { class: 'meter', 'data-testid': `panel-meter-${m.id}` },
+                  h('span', { class: 'meter-label' }, withIcons(m.label)),
+                  h(
+                    'div',
+                    {
+                      class: 'meter-bar',
+                      role: 'meter',
+                      'aria-label': m.label,
+                      'aria-valuemin': 0,
+                      'aria-valuemax': 100,
+                      'aria-valuenow': Math.round(m.value * 100),
+                    },
+                    h('div', { class: 'meter-fill', style: `transform: scaleX(${Math.max(0, Math.min(1, m.value))});${m.color ? ` background: ${m.color};` : ''}` }),
+                    h('span', { class: 'meter-text' }, m.text),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        if (current.hint) body.append(h('p', { class: 'panel-hint', 'data-testid': 'panel-hint' }, withIcons(current.hint)));
         if (current.progress) {
           body.append(
             h(
@@ -366,10 +402,37 @@ export class Hud implements UiApi {
       id: 'build',
       title: () => '🔨 Build',
       signature: () =>
-        `${game.level}|${listBuildMenu()
+        `${game.level}|${listBuildMenuToggles()
+          .map((t) => t.isOn(this.ctx))
+          .join(',')}|${listBuildMenu()
           .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(b.materials))}`)
           .join('|')}`,
       render: (body) => {
+        const toggles = listBuildMenuToggles();
+        if (toggles.length) {
+          body.append(
+            h(
+              'div',
+              { class: 'build-toggles' },
+              toggles.map((t) =>
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    class: `btn btn-secondary build-toggle${t.isOn(this.ctx) ? ' on' : ''}`,
+                    'aria-pressed': String(t.isOn(this.ctx)),
+                    'data-testid': `build-toggle-${t.id}`,
+                    onclick: () => {
+                      t.toggle(this.ctx);
+                      this.refresh();
+                    },
+                  },
+                  `${t.icon ? `${t.icon} ` : ''}${t.label}: ${t.isOn(this.ctx) ? 'on' : 'off'}`,
+                ),
+              ),
+            ),
+          );
+        }
         const groups = new Map<string, ReturnType<typeof listBuildMenu>>();
         for (const b of listBuildMenu()) {
           const key = b.category ?? 'other';
@@ -453,8 +516,8 @@ export class Hud implements UiApi {
               );
             }),
           );
-        const goods = rows.filter((id) => !isMaterial(id));
-        const materials = rows.filter(isMaterial);
+        const goods = rows.filter((id) => !isStoredMaterial(id));
+        const materials = rows.filter(isStoredMaterial);
         if (goods.length) body.append(list('inventory-list', goods));
         if (materials.length) {
           body.append(h('h3', { class: 'group-title' }, 'Building materials'), list('inventory-materials', materials));
@@ -470,29 +533,7 @@ export class Hud implements UiApi {
       signature: () => 'settings',
       render: (body) => {
         for (const section of listSettingsSections()) section.render(this.ctx, body);
-        body.append(
-          h('p', { class: 'muted' }, 'Your farm is saved automatically in this browser.'),
-          h(
-            'div',
-            { class: 'actions' },
-            h(
-              'button',
-              {
-                type: 'button',
-                class: 'btn btn-danger',
-                'data-testid': 'btn-new-game',
-                onclick: async () => {
-                  const ok = await this.confirm('Start a new game?', 'Your current farm, money and items will be lost.', { confirmLabel: 'New game' });
-                  if (ok) {
-                    this.onNewGame();
-                    this.toast('A fresh start! Welcome to your new farm.', 'success');
-                  }
-                },
-              },
-              'New game',
-            ),
-          ),
-        );
+        body.append(h('p', { class: 'muted' }, 'Your farm is saved automatically in this browser. Save, Load and New game are in ☰ Menu.'));
       },
     };
   }

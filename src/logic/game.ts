@@ -102,6 +102,8 @@ export class Game {
   readonly progression: Progression;
   private _state: GameState;
   private lastDay: number;
+  /** While true (home screen, pause menu) the clock stands still: `tick` moves nothing. Not saved. */
+  paused = false;
 
   constructor(state: GameState = createNewGame()) {
     this._state = state;
@@ -253,7 +255,7 @@ export class Game {
       type,
       x,
       y,
-      state: def.initialState?.() ?? {},
+      state: def.initialState?.({ x, y, now: this._state.clock.elapsed }) ?? {},
     };
     const workMs = options.site ? buildWorkMs(type) : 0;
     if (workMs > 0) object.site = { workMs, paid: def.cost };
@@ -317,9 +319,12 @@ export class Game {
 
   // Clock ---------------------------------------------------------------------
 
-  /** Advances the clock by a real-time delta (farmers work on the way, see `advance`); returns the game-time delta. */
+  /**
+   * Advances the clock by a real-time delta (farmers work on the way, see `advance`); returns the game-time delta.
+   * Paused, it returns 0 and nothing moves.
+   */
   tick(realDeltaMs: number): number {
-    const dt = gameDelta(this._state.clock, realDeltaMs);
+    const dt = this.paused ? 0 : gameDelta(this._state.clock, realDeltaMs);
     this.advance(dt);
     const day = this.day;
     if (day !== this.lastDay) {

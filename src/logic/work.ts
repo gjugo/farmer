@@ -4,16 +4,17 @@ import { CROP_LIST, FIELD, getCrop, type CropDef } from '../data/crops';
 import { findRecipe, isProcessorType } from '../data/processing';
 import { isResourceType } from '../data/resourceBuildings';
 import { PLOUGH_COST } from '../data/seasons';
-import { COLLECT_WORK_MS, FEED_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
+import { COLLECT_WORK_MS, FEED_WORK_MS, FERTILISE_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
 import * as animals from './animals';
-import { canPloughNow, cropStage, fieldCrop, harvest, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
+import { MANURE_BELOW } from '../data/soil';
+import { canPloughNow, checkFertilise, cropStage, fertilise, fertilityOf, fieldCrop, harvest, harvestYield, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import type { Game } from './game';
 import * as processing from './processing';
 import * as resources from './resources';
 import { findRoute, type Route } from './roads';
 import { nextSeasonAt } from './seasons';
 import type { GameState, PlacedObject } from './types';
-import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf, PLAN_BEST, PLAN_NONE, walkMs, workersOf } from './workers';
+import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf, PLAN_BEST, PLAN_FALLOW, walkMs, workersOf } from './workers';
 
 /**
  * The work scheduler: farmers assigned to a workplace do its next job by themselves, and free
@@ -39,7 +40,7 @@ export interface Task {
 export type WaitReason =
   | 'site' // still a construction site
   | 'growing' // a crop is growing
-  | 'no-plan' // the crop plan is "None"
+  | 'no-plan' // the crop plan is "Fallow"
   | 'season' // nothing on the plan can be sown now
   | 'money' // ploughing or seed costs more than the farm has
   | 'empty' // a pen without animals
@@ -58,17 +59,23 @@ export type WorkplaceNext = { task: Task } | { wait: WaitReason; cost?: number }
 
 const task = (kind: JobKind, workMs: number, run: (walkMs: number) => boolean): WorkplaceNext => ({ task: { kind, workMs, run } });
 
-/** The longest-growing unlocked crop that can be sown now and be ripe before its seasons end; null when none can. */
-export function bestCropNow(game: Game): CropDef | null {
+/**
+ * The longest-growing unlocked crop that can be sown now and be ripe before its seasons end; null when none can.
+ * It rotates: a crop other than `lastCrop` (the field's last harvest) comes first whenever one can be sown.
+ */
+export function bestCropNow(game: Game, lastCrop: string | null = null): CropDef | null {
   const ok = CROP_LIST.filter((c) => game.isUnlocked(c.unlockLevel) && seasonCheck(game.state.clock, c) === 'ok');
-  return ok.sort((a, b) => b.growMs - a.growMs)[0] ?? null;
+  return ok.sort((a, b) => Number(a.id === lastCrop) - Number(b.id === lastCrop) || b.growMs - a.growMs)[0] ?? null;
 }
 
 /** What the field's crop plan sows now, or null when it sows nothing now. */
 export function plannedCrop(game: Game, fieldId: string): CropDef | null {
   const plan = cropPlanOf(game.state, fieldId);
-  if (plan === PLAN_NONE) return null;
-  if (plan === PLAN_BEST) return bestCropNow(game);
+  if (plan === PLAN_FALLOW) return null;
+  if (plan === PLAN_BEST) {
+    const last = (game.getObject(fieldId)?.state as FieldState | undefined)?.lastCrop;
+    return bestCropNow(game, typeof last === 'string' ? last : null);
+  }
   const crop = getCrop(plan);
   return crop && game.isUnlocked(crop.unlockLevel) && seasonCheck(game.state.clock, crop) === 'ok' ? crop : null;
 }
@@ -78,11 +85,15 @@ function fieldNext(game: Game, obj: PlacedObject<FieldState>): WorkplaceNext {
   const stage = cropStage(clock, obj.state);
   if (stage === 'ripe') {
     const crop = fieldCrop(obj.state)!;
-    if (game.spaceFor(crop.harvestItem) < crop.harvestQty) return { wait: 'full' };
+    if (game.spaceFor(crop.harvestItem) < harvestYield(clock, obj)) return { wait: 'full' };
     return task('harvest', HARVEST_WORK_MS, () => harvest(game, obj).ok);
   }
   if (stage !== 'empty') return { wait: 'growing' };
-  if (cropPlanOf(game.state, obj.id) === PLAN_NONE) return { wait: 'no-plan' };
+  if (cropPlanOf(game.state, obj.id) === PLAN_FALLOW) return { wait: 'no-plan' };
+  // A worn field gets manure first, when there is enough in stock (whatever the season: it waits in the soil).
+  if (fertilityOf(clock, obj) < MANURE_BELOW && checkFertilise(game, obj).ok) {
+    return task('fertilise', FERTILISE_WORK_MS, () => fertilise(game, obj).ok);
+  }
   const crop = plannedCrop(game, obj.id);
   if (!crop) return { wait: 'season' };
   if (!isPloughed(clock, obj.state)) {

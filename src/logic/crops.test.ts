@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { CROPS, FIELD } from '../data/crops';
 import { PLOUGH_COST } from '../data/seasons';
+import { SOIL_QUALITY } from '../data/soil';
 import { START_LAND } from './constants';
 import {
   canPloughNow,
   cropStage,
+  fertilityOf,
   formatDuration,
   growthProgress,
   harvest,
@@ -21,6 +23,7 @@ import { Game } from './game';
 import { fromV6, maxLevelState, V6_START } from './test-utils';
 import { deserialize, serialize } from './save';
 import { SEASON_MS } from './seasons';
+import { areaSoil } from './soil';
 import type { PlacedObject } from './types';
 
 /** Advances game time by `ms` in frame-sized steps at the current speed. */
@@ -38,9 +41,10 @@ describe('fields', () => {
     const game = new Game(maxLevelState());
     const fields = game.objectsOfType(FIELD);
     expect(fields.map((f) => [f.x, f.y])).toEqual(STARTING_FIELDS.map((p) => [p.x, p.y]));
+    // Both lie on the rich patch of the starting land.
     expect(fields.map((f) => f.state)).toEqual([
-      { crop: null, timer: null, ploughedAt: 0 },
-      { crop: null, timer: null, ploughedAt: 0 },
+      { crop: null, timer: null, ploughedAt: 0, fertility: SOIL_QUALITY.rich, restingSince: 0, lastCrop: null },
+      { crop: null, timer: null, ploughedAt: 0, fertility: SOIL_QUALITY.rich, restingSince: 0, lastCrop: null },
     ]);
     expect(game.money).toBe(500); // starting fields are free
   });
@@ -144,7 +148,14 @@ describe('growth', () => {
       JSON.stringify({ version: 1, state: { objects: [{ id: 'o1', type: FIELD, x: V6_START.x, y: V6_START.y }] } }),
     );
     // Older farms' fields count as ploughed (and move with the farm into the bigger map).
-    expect(state.objects[0]).toEqual({ id: 'o1', type: FIELD, ...fromV6(V6_START.x, V6_START.y), state: { crop: null, timer: null, ploughedAt: 0 } });
+    // Fields from before soil start at the soil quality of their land.
+    const at = fromV6(V6_START.x, V6_START.y);
+    expect(state.objects[0]).toEqual({
+      id: 'o1',
+      type: FIELD,
+      ...at,
+      state: { crop: null, timer: null, ploughedAt: 0, fertility: areaSoil({ ...at, w: 2, h: 2 }), restingSince: 0, lastCrop: null },
+    });
   });
 });
 
@@ -160,19 +171,25 @@ describe('harvest', () => {
     expect(game.count('wheat')).toBe(0);
     run(game, CROPS.wheat.growMs);
     expect(stage()).toBe('ripe');
-    expect(harvest(game, field)).toEqual({ ok: true, crop: CROPS.wheat, qty: 10 });
-    expect(game.count('wheat')).toBe(10);
+    // The starting fields lie on rich soil (95%): 10 × 1.2125 → 12 wheat, and the harvest drains 8 points.
+    expect(harvest(game, field)).toEqual({ ok: true, crop: CROPS.wheat, qty: 12 });
+    expect(game.count('wheat')).toBe(12);
     expect(stage()).toBe('empty');
-    expect(field.state).toEqual({ crop: null, timer: null, ploughedAt: 0 }); // still ploughed
+    const now = game.state.clock.elapsed;
+    expect(field.state).toEqual({ crop: null, timer: null, ploughedAt: 0, fertility: 87, restingSince: now, lastCrop: 'wheat' }); // still ploughed
     expect(harvest(game, field)).toEqual({ ok: false, reason: 'not-ripe' });
-    expect(game.count('wheat')).toBe(10);
+    expect(game.count('wheat')).toBe(12);
   });
 
-  it('yields 10 wheat, 10 carrots or 12 corn', () => {
+  it('yields 10 wheat, 10 carrots or 12 corn on normal soil', () => {
     const yields: Record<string, number> = { wheat: 10, carrot: 10, corn: 12 };
     for (const crop of Object.values(CROPS)) {
       const game = new Game(maxLevelState());
-      const field = firstField(game);
+      const r = game.place(FIELD, START_LAND.x + 1, START_LAND.y + 4);
+      if (!r.ok) throw new Error(r.reason);
+      const field = r.object as PlacedObject<FieldState>;
+      expect(fertilityOf(game.state.clock, field)).toBe(SOIL_QUALITY.normal);
+      field.state.ploughedAt = 0;
       plant(game, field, crop.id);
       run(game, crop.growMs);
       harvest(game, field);
@@ -291,7 +308,7 @@ describe('seasons and ploughing', () => {
     plant(game, field, 'wheat');
     game.state.clock.elapsed = WINTER + 1000;
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
-    expect(harvest(game, field)).toEqual({ ok: true, crop: CROPS.wheat, qty: 10 });
+    expect(harvest(game, field)).toEqual({ ok: true, crop: CROPS.wheat, qty: 12 }); // on rich soil
     expect(isPloughed(game.state.clock, field.state)).toBe(false);
   });
 
@@ -314,8 +331,8 @@ describe('seasons and ploughing', () => {
         state: { clock: { elapsed }, objects: [{ id: 'o1', type: FIELD, x: V6_START.x, y: V6_START.y, state: { crop: 'wheat', timer: null } }] },
       });
     const summer = deserialize(v4(SUMMER + 7)).objects[0].state;
-    expect(summer).toEqual({ crop: 'wheat', timer: null, ploughedAt: SUMMER + 7 });
+    expect(summer).toMatchObject({ crop: 'wheat', timer: null, ploughedAt: SUMMER + 7 });
     expect(isPloughed({ elapsed: SUMMER + 7, speed: 1 }, summer as FieldState)).toBe(true);
-    expect(deserialize(v4(WINTER + 7)).objects[0].state).toEqual({ crop: 'wheat', timer: null, ploughedAt: null });
+    expect(deserialize(v4(WINTER + 7)).objects[0].state).toMatchObject({ crop: 'wheat', timer: null, ploughedAt: null });
   });
 });

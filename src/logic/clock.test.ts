@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { advance, createClock, dayOf, MAX_FRAME_MS, startTimer, timerDone, timerProgress, timerRemaining, timeOfDay } from './clock';
 import { DAY_MS } from './constants';
+import { Game } from './game';
 
 describe('clock', () => {
   it('a day lasts 8 real minutes at x1', () => {
@@ -45,5 +46,20 @@ describe('clock', () => {
     advance(c, 100);
     expect(timerDone(c, t)).toBe(true);
     expect(timerProgress(c, t)).toBe(1);
+  });
+});
+
+describe('pausing the game', () => {
+  it('a paused game does not move, even at x60', () => {
+    const g = new Game();
+    g.setSpeed(60);
+    g.tick(100);
+    const at = g.now;
+    g.paused = true;
+    for (let i = 0; i < 50; i++) expect(g.tick(100)).toBe(0);
+    expect(g.now).toBe(at);
+    g.paused = false;
+    expect(g.tick(100)).toBe(6000);
+    expect(g.now).toBe(at + 6000);
   });
 });

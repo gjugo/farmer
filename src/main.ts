@@ -7,13 +7,15 @@ import { readDebugInfo } from './game/hooks';
 import { Game, type FarmSnapshot } from './logic/game';
 import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
 import { ordersOf, type OrdersState } from './logic/orders';
-import { loadSave, saveToStorage, type SaveStorage } from './logic/save';
+import { loadSave, saveToStorage, serialize, type SaveStorage } from './logic/save';
+import { listSlots, readSlot, STORAGE_FULL, summarize, type SlotSummary } from './logic/slots';
 import { createNewGame } from './logic/state';
 import type { StorageInfo } from './logic/storage';
 import { BootScene } from './scenes/BootScene';
 import { FarmScene } from './scenes/FarmScene';
 import { isDebugMode, mountDebugPanel } from './ui/debug';
 import { Hud } from './ui/hud';
+import { Menu, type MenuMode } from './ui/menu';
 import { showWelcomeBack } from './ui/welcome';
 
 const AUTOSAVE_MS = 10_000;
@@ -33,6 +35,10 @@ declare global {
         audio: AudioDebugInfo;
         /** Goods and building materials stored against the room in granaries, storehouses and the farmhouse. */
         storage: StorageInfo;
+        /** Which menu is open: the home screen, the pause menu, or none (playing). The clock stands still in a menu. */
+        menu: MenuMode | null;
+        /** The autosave and the three manual save slots, as the Load screen lists them. */
+        slots: readonly SlotSummary[];
         /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
         iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
       }
@@ -50,20 +56,36 @@ function browserStorage(): SaveStorage {
 }
 
 const storage = browserStorage();
+const params = new URLSearchParams(window.location.search);
+/** `?menu=0` skips the home screen: straight into the autosaved farm, caught up on the time away. */
+const skipMenu = params.get('menu') === '0';
 const loaded = loadSave(storage);
 const game = new Game(loaded.state);
-// Catch up on the time the game was closed before anyone sees the farm (farmers work through it too).
-// Older saves have no time: no catch-up.
-let lastCatchUp: CatchUpResult | null = loaded.savedAt === null ? null : catchUp(game, Date.now() - loaded.savedAt);
+let lastCatchUp: CatchUpResult | null = null;
 let lastSavedAt = loaded.savedAt;
+/** Whether there is a farm to continue (or lose): a readable autosave on load, always once a game is under way. */
+let hasFarm = readSlot(storage, 'auto') !== null;
+/** When the farm behind the home screen was last saved: Continue catches up on the time since. */
+let homeSavedAt = loaded.savedAt;
 
 // While the tab is hidden the scene is paused, so the farm is only up to date as of `hiddenAt`.
 // Saves made then must say so, or the time between would be lost on the next load.
 let hiddenAt: number | null = null;
 let elapsedAtHide = 0;
+let saveFailing = false;
 const save = () => {
+  // The farm behind the home screen is the stored autosave itself, not yet caught up: writing it now with a new
+  // time would lose the time away.
+  if (menu.current === 'home') return;
   const at = hiddenAt ?? Date.now();
-  if (saveToStorage(storage, game.state, at)) lastSavedAt = at;
+  if (saveToStorage(storage, game.state, at)) {
+    lastSavedAt = at;
+    saveFailing = false;
+  } else if (!saveFailing) {
+    // Said once, not every 10 s; the game keeps running.
+    saveFailing = true;
+    ctx.ui.toast(STORAGE_FULL, 'error');
+  }
 };
 
 const ctx = { game, tools: new ToolState() } as FarmContext;
@@ -71,10 +93,8 @@ const iso = Object.freeze({
   tileToScreen: (x: number, y: number) => (ctx.scene as FarmScene | undefined)?.tileToScreen(x, y) ?? null,
 });
 const uiRoot = document.getElementById('ui')!;
-ctx.ui = new Hud(uiRoot, ctx, () => {
-  game.reset(createNewGame());
-  save();
-});
+const hud = new Hud(uiRoot, ctx, () => openMenu('paused'));
+ctx.ui = hud;
 
 /** Catches up on real time away (at ×1) and shows the summary when it was long enough. */
 function welcomeBack(awayMs: number): void {
@@ -82,11 +102,87 @@ function welcomeBack(awayMs: number): void {
   if (shouldShowSummary(lastCatchUp)) showWelcomeBack(uiRoot, lastCatchUp);
 }
 
-if (isDebugMode()) mountDebugPanel(uiRoot, ctx, welcomeBack);
-if (lastCatchUp) {
-  save();
-  if (shouldShowSummary(lastCatchUp)) showWelcomeBack(uiRoot, lastCatchUp);
+function openMenu(mode: MenuMode): void {
+  ctx.tools.cancel();
+  hud.closePanel();
+  game.paused = true;
+  menu.open(mode);
 }
+
+/** Closes the menu and lets the clock run again. */
+function play(): void {
+  menu.close();
+  game.paused = false;
+}
+
+const menu: Menu = new Menu(uiRoot, {
+  ctx,
+  storage,
+  hasFarm: () => hasFarm,
+  currentSummary: () => summarize('auto', { state: game.state, savedAt: homeSavedAt }),
+  currentState: () => game.state,
+  currentSaveText: () => serialize(game.state, Date.now()),
+  onContinue: () => {
+    play();
+    // Older saves have no time: no catch-up.
+    if (homeSavedAt !== null) welcomeBack(Date.now() - homeSavedAt);
+    save();
+  },
+  onResume: play,
+  onNewGame: () => {
+    game.reset(createNewGame());
+    lastCatchUp = null;
+    hasFarm = true;
+    play();
+    save();
+    hud.toast('A fresh start! Welcome to your new farm.', 'success');
+  },
+  onLoad: (id) => {
+    const slot = readSlot(storage, id);
+    if (!slot) return hud.toast('That save could not be read.', 'error');
+    game.reset(slot.state);
+    lastCatchUp = null;
+    hasFarm = true;
+    play();
+    // A manual slot is a snapshot and comes back exactly as saved; only the autosave catches up on time away.
+    if (id === 'auto' && slot.savedAt !== null) welcomeBack(Date.now() - slot.savedAt);
+    // The loaded farm is the autosave from now on.
+    save();
+    hud.toast(`Loaded ${id === 'auto' ? 'the autosave' : `slot ${id}`}`, 'success');
+  },
+  onQuit: () => {
+    save();
+    homeSavedAt = Date.now();
+    hasFarm = true;
+    openMenu('home');
+  },
+});
+
+if (isDebugMode()) mountDebugPanel(uiRoot, ctx, welcomeBack);
+if (skipMenu) {
+  // Catch up on the time the game was closed before anyone sees the farm (farmers work through it too).
+  // Older saves have no time: no catch-up.
+  lastCatchUp = loaded.savedAt === null ? null : catchUp(game, Date.now() - loaded.savedAt);
+  if (lastCatchUp) {
+    save();
+    if (shouldShowSummary(lastCatchUp)) showWelcomeBack(uiRoot, lastCatchUp);
+  }
+} else {
+  openMenu('home');
+}
+
+// Esc: back out of the menu, or open the pause menu when no tool, panel or dialog is open. Runs on the document,
+// before the HUD (closes a panel) and the scene (cancels a tool) see the key on the window; dialogs stop it earlier.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || e.defaultPrevented) return;
+  if (menu.current) {
+    if (menu.escape()) e.preventDefault();
+    return;
+  }
+  if (ctx.tools.mode.kind !== 'normal' || hud.panelOpen || uiRoot.querySelector('.dialog-backdrop')) return;
+  e.preventDefault();
+  openMenu('paused');
+});
 
 Object.defineProperty(window, 'farm', {
   get: () => {
@@ -98,6 +194,8 @@ Object.defineProperty(window, 'farm', {
       orders: snapshot.ext.orders as OrdersState,
       lastSavedAt,
       lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)),
+      menu: menu.current,
+      slots: Object.freeze(listSlots(storage).map((s) => Object.freeze(s))),
       iso,
     });
   },
@@ -116,7 +214,8 @@ document.addEventListener('visibilitychange', () => {
     // Leave out any game time that still ran after hiding, so nothing is counted twice.
     const away = Date.now() - hiddenAt - (game.now - elapsedAtHide);
     hiddenAt = null;
-    welcomeBack(away);
+    // The clock stands still in the menu: no catch-up (Continue catches up on the home screen's farm).
+    if (!menu.current) welcomeBack(away);
   }
 });
 window.addEventListener('pagehide', save);

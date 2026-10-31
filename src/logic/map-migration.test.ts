@@ -22,8 +22,9 @@ describe('version 6 saves on the bigger map', () => {
     expect(state.land).toMatchObject({ width: MAP_WIDTH, height: MAP_HEIGHT });
     const old = SAVE_V6.state.objects;
     expect(state.objects.map((o) => [o.id, o.type, o.x, o.y])).toEqual(old.map((o) => [o.id, o.type, o.x + 13, o.y + 10]));
-    // Nothing else about them changes; no farmhouse or road is added.
-    expect(state.objects.map((o) => o.state)).toEqual(old.map((o) => o.state));
+    // Nothing else about them changes (but fields getting their soil's fertility, see save.test.ts); no farmhouse or road is added.
+    const withoutSoil = ({ fertility: _f, restingSince: _r, lastCrop: _l, ...rest }: Record<string, unknown>) => rest;
+    expect(state.objects.map((o) => (o.type === 'field' ? withoutSoil(o.state) : o.state))).toEqual(old.map((o) => o.state));
     expect(state.nextObjectId).toBe(SAVE_V6.state.nextObjectId);
   });
 

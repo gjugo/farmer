@@ -30,6 +30,8 @@ export const ITEMS = {
   wood: { id: 'wood', name: 'Wood', category: 'material', price: 4, icon: '🪵' },
   stone: { id: 'stone', name: 'Stone', category: 'material', price: 5, icon: '🪨' },
   iron: { id: 'iron', name: 'Iron', category: 'material', price: 15, icon: '🔩' },
+  // Made by pens (see `MANURE_PER_COLLECT`), spread on fields. Kept in the storehouse so it never crowds out food.
+  manure: { id: 'manure', name: 'Manure', category: 'material', price: 1, icon: '💩' },
 } as const satisfies Record<string, ItemDef>;
 
 export type KnownItemId = keyof typeof ITEMS;

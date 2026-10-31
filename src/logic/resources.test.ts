@@ -359,7 +359,8 @@ describe('goals and saves', () => {
     };
     // In version 8, index 7 was "collect-eggs", 14 "make-cheese", 16 "buy-land", 17 "make-feed" and 18 "own-sheep".
     expect(GOALS[file(7)].id).toBe('collect-eggs');
-    expect(GOALS[file(14)].id).toBe('make-cheese');
+    // Not offered "make-cheese" yet: version 10's "spread-manure", inserted before it, comes first.
+    expect(GOALS[file(14)].id).toBe('spread-manure');
     expect(GOALS[file(16)].id).toBe('buy-land');
     // Offered up to "buy-land": the lodge comes next. Offered "make-feed" too: past the lodge, wood and quarry goals.
     expect(GOALS[file(17)].id).toBe('build-woodcutter');

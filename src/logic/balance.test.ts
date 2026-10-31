@@ -26,7 +26,7 @@ import { assignFarmer, hireCost, hireFarmer, workerAt } from './workers';
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
  * against the real prices. It looks at the farm every `reactMs` (no instant clicks) and,
  * like a Manor Lords lord, assigns farmers instead of doing the work: every field (crop plan
- * "Best in season") and pen gets a farmer, hiring more when it can afford one. It sells everything,
+ * "Best in season", which rotates crops; it never spreads manure) and pen gets a farmer, hiring more when it can afford one. It sells everything,
  * buys feed, builds up to `maxFields` fields (construction sites the free farmers build, with a path
  * to each), keeps chickens (and cows from level 3) and claims finished goals. Before building it buys
  * the materials it lacks at the Market, in fives like the Market's buttons. The map is the one a new game gets from
@@ -271,8 +271,12 @@ describe('level curve balance', () => {
   // busy L2 8.3, L5 166.0. Hiring farmers for them, or building them before level 3, cost 8+ min of L5 in this 3 h window.
   // With the bigger map, building only where it walls off none of its land (the busy player's fields had shut the
   // lodge out): casual L2 10.0, L5 162.0; relaxed L2 8.5, L5 164.5; busy L2 8.2, L5 168.9.
+  // Soil fertility (rich start patch, yield by fertility, drain per harvest, double for the same crop, "Best in season"
+  // rotating, no manure): casual L2 9.0, L5 173.0; relaxed L2 8.5, L5 158.0; busy L2 8.2, L5 162.0. Its fields end the
+  // 3 h worn down (often under 20%): fallow and manure are for a real player to use.
   // Map resources (the lodge fells the start grove, the quarry stands on the start outcrop, map seed MAP_SEED):
   // casual L2 10.0, L5 167.0; relaxed L2 8.5, L5 166.0; busy L2 8.2, L5 167.8.
+  // Map resources and soil fertility together: casual L2 9.0, L5 173.0; relaxed L2 8.5, L5 157.0; busy L2 8.2, L5 161.9.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });

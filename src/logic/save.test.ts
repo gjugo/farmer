@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { registerBuildable } from '../data/buildables';
+import { FIELD } from '../data/crops';
+import { SOIL_QUALITY } from '../data/soil';
 import { START_LAND } from './constants';
 import { Game } from './game';
 import { deserialize, loadFromStorage, loadSave, parseSave, SAVE_KEY, SAVE_VERSION, saveToStorage, serialize, type SaveStorage } from './save';
 import { getSlice, registerStateSlice } from './slices';
+import { GOALS } from '../data/progression';
+import { PROGRESSION, type ProgressionState } from './progression';
+import { areaSoil } from './soil';
 import { createNewGame } from './state';
 import { bareMap, fromV6, v6Land, V6_START } from './test-utils';
 
@@ -128,6 +133,33 @@ describe('save / load', () => {
     const s = deserialize(JSON.stringify(saved));
     expect(s.objects[0].state).toEqual({ hens: 3, eggs: 0 });
     expect(getSlice(s, 'test-market')).toEqual({ demand: 2, history: [] });
+  });
+
+  it('loads a version 9 save with fertility filled in: the soil quality of each field, no last crop', () => {
+    const state = createNewGame();
+    state.clock.elapsed = 5000;
+    const [a, b] = state.objects.filter((o) => o.type === FIELD);
+    // Version 9 fields had crop state only.
+    a.state = { crop: null, timer: null, ploughedAt: 0 };
+    b.state = { crop: 'wheat', timer: { start: 0, duration: 480_000 }, ploughedAt: 0 };
+    const loaded = parseSave(JSON.stringify({ version: 9, savedAt: 1, state })).state;
+    const fields = loaded.objects.filter((o) => o.type === FIELD);
+    expect(SAVE_VERSION).toBe(11);
+    expect(fields[0].state).toEqual({ crop: null, timer: null, ploughedAt: 0, fertility: SOIL_QUALITY.rich, restingSince: 5000, lastCrop: null });
+    expect(fields[1].state).toMatchObject({ crop: 'wheat', fertility: SOIL_QUALITY.rich, restingSince: null, lastCrop: null });
+    expect(fields.map((f) => f.state.fertility)).toEqual(fields.map((f) => areaSoil({ x: f.x, y: f.y, w: 2, h: 2 })));
+  });
+
+  it('a version 9 save skips the "spread-manure" goal once it is past it', () => {
+    const next = (nextGoal: number) => {
+      const state = createNewGame();
+      getSlice<ProgressionState>(state, PROGRESSION).nextGoal = nextGoal;
+      return getSlice<ProgressionState>(parseSave(JSON.stringify({ version: 9, savedAt: 1, state })).state, PROGRESSION).nextGoal;
+    };
+    // In version 9, index 13 was "own-cows" and 14 "make-cheese".
+    expect(GOALS[next(13)].id).toBe('own-cows');
+    expect(GOALS[next(14)].id).toBe('spread-manure');
+    expect(GOALS[next(15)].id).toBe('earn-1000');
   });
 
   it('falls back to a new game for missing, corrupt or unknown saves', () => {

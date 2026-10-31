@@ -191,10 +191,25 @@ def iron(c):
     _hl(c, "M44,59 L80,59", 4, 0.7)
 
 
+def manure(c):
+    """A forked heap of dark, straw-flecked dung: what a farmer spreads on worn fields."""
+    _shadow(c, rx=48)
+    c.path("M12,108 Q14,84 34,76 Q40,58 60,56 Q82,52 92,70 Q114,76 116,104 Q90,116 64,114 Q34,116 12,108 Z",
+           c.lin([(0, "#7a5230"), (0.6, "#5a3a1f"), (1, "#3f2914")], 0, 0, 0, 1), OUT, 4)
+    c.path("M34,78 Q52,70 64,76 Q80,68 92,72", "none", "#8d6640", 4)
+    c.path("M22,96 Q44,88 64,94 Q86,86 108,96", "none", "#8d6640", 3.5)
+    for (x1, y1, x2, y2) in ((40, 70, 52, 62), (70, 84, 84, 80), (28, 92, 38, 86), (88, 96, 100, 92), (56, 100, 66, 104)):
+        c.line((x1, y1), (x2, y2), "#e8c766", 3)
+    # A fork stuck in the heap, tines buried: only the handle and its grip show.
+    c.line((78, 60), (100, 14), "#9b6a3c", 5)
+    c.line((93, 11), (107, 18), "#7a4a24", 6)
+    _hl(c, "M42,62 Q50,58 58,58", 4, 0.35)
+
+
 ICONS = {
     "egg": egg, "milk": milk, "wool": wool, "feed": feed, "cheese": cheese, "butter": butter,
     "bread": bread, "cloth": cloth, "wheat": wheat_icon, "carrot": carrot_icon, "corn": corn_icon, "coins": coins,
-    "wood": wood, "stone": stone, "iron": iron,
+    "wood": wood, "stone": stone, "iron": iron, "manure": manure,
 }
 
 

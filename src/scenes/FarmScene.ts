@@ -13,8 +13,9 @@ import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
 import { depositAt, mapOf, treeAt } from '../logic/maplayer';
 import { farmhouseOf } from '../logic/roads';
+import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, grassArt, sceneryArt, seasonalArt, unownedArt } from './art';
+import { ART_RES, ART_SCALE, CURSOR, grassArt, groundTint, sceneryArt, seasonalArt, unownedArt } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
 import {
@@ -183,7 +184,7 @@ export class FarmScene extends Phaser.Scene {
 
   override update(_time: number, delta: number): void {
     const dt = this.farm.tick(delta);
-    this.panWithKeys(delta);
+    if (!this.farm.paused) this.panWithKeys(delta);
     this.clampCamera();
     if (this.sceneryDirty) {
       this.sceneryDirty = false;
@@ -258,6 +259,8 @@ export class FarmScene extends Phaser.Scene {
     // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
     const top = gridToWorld(x, y);
     bob.reset(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, art);
+    // Rich soil shows as lusher grass, owned or not.
+    bob.setTint(groundTint(soilAt(x, y)));
   }
 
   /**
@@ -742,6 +745,7 @@ export class FarmScene extends Phaser.Scene {
     if (key === this.lastPreview) return;
     this.lastPreview = key;
     runBuildPreview(this.ctx, p);
+    this.ctx.tools.events.emit('preview', p);
   }
 
   private onToolChange(mode: ToolMode): void {

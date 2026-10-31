@@ -43,6 +43,8 @@ export type GoalTask =
   | { kind: 'build'; type: string; count: number }
   /** Upgrade buildables of `type` `count` times. */
   | { kind: 'upgrade'; type: string; count: number }
+  /** Spread manure on fields `count` times. */
+  | { kind: 'fertilise'; count: number }
   // State goals
   | { kind: 'own-buildings'; type: string; count: number }
   | { kind: 'own-animals'; animal?: AnimalKind; count: number }
@@ -76,6 +78,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'upgrade-granary', title: 'Upgrade a granary', icon: '🌾', kind: 'upgrade', type: 'granary', count: 1, reward: { money: 100, xp: 40 } },
   { id: 'reach-3', title: 'Reach level 3', icon: '⭐', kind: 'reach-level', count: 3, reward: { money: 100, xp: 50 } },
   { id: 'own-cows', title: 'Own 2 cows', icon: '🐄', kind: 'own-animals', animal: 'cow', count: 2, reward: { money: 120, xp: 50 } },
+  { id: 'spread-manure', title: 'Spread manure on a field', icon: '💩', kind: 'fertilise', count: 1, reward: { money: 120, xp: 50 } },
   { id: 'make-cheese', title: 'Make 3 cheese', icon: '🧀', kind: 'make', item: 'cheese', count: 3, reward: { money: 150, xp: 60 } },
   { id: 'earn-1000', title: 'Earn $1,000 from sales', icon: '💰', kind: 'earn', count: 1000, reward: { money: 150, xp: 75 } },
   { id: 'buy-land', title: 'Buy a plot of land', icon: '🪧', kind: 'own-parcels', count: 1, reward: { money: 200, xp: 75 } },
