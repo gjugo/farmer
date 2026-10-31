@@ -41,12 +41,15 @@ function wait(game: Game, ms: number): void {
 }
 
 describe('building pens', () => {
-  it('coop costs $150 and pasture $300', () => {
+  it('a coop costs $100 + 8 wood and a pasture $230 + 12 wood', () => {
     const g = new Game(maxLevelState());
+    const wood = g.count('wood');
     pen(g, 'coop');
-    expect(g.money).toBe(350);
+    expect(g.money).toBe(400);
+    expect(g.count('wood')).toBe(wood - 8);
     pen(g, 'pasture', ox + 4, oy);
-    expect(g.money).toBe(50);
+    expect(g.money).toBe(170);
+    expect(g.count('wood')).toBe(wood - 20);
     expect(PENS.coop.footprint).toEqual({ w: 3, h: 3 });
     expect(PENS.pasture.footprint).toEqual({ w: 4, h: 4 });
   });
@@ -62,7 +65,7 @@ describe('buying animals', () => {
     const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     expect(buyAnimal(g, coop, 'chicken')).toEqual({ ok: true });
-    expect(g.money).toBe(350 - 60);
+    expect(g.money).toBe(500 - PENS.coop.cost - 60);
     expect(coop.state.animals).toEqual([{ kind: 'chicken', timer: null }]);
     expect(animalStatus(g.state.clock, coop.state.animals[0])).toBe('hungry');
   });
@@ -84,12 +87,13 @@ describe('buying animals', () => {
     const pasture = pen(g, 'pasture');
     for (const kind of ['cow', 'sheep', 'cow', 'sheep'] as const) expect(buyAnimal(g, pasture, kind).ok).toBe(true);
     expect(buyAnimal(g, pasture, 'sheep')).toEqual({ ok: false, reason: 'full' });
-    expect(g.money).toBe(10_500 - 300 - 2 * 250 - 2 * 180);
+    expect(g.money).toBe(10_500 - PENS.pasture.cost - 2 * 250 - 2 * 180);
   });
 
   it('refuses when the player cannot afford it, never going negative', () => {
     const g = new Game(maxLevelState());
-    const pasture = pen(g, 'pasture'); // $200 left
+    const pasture = pen(g, 'pasture');
+    g.spend(g.money - 200);
     expect(checkBuyAnimal(g, pasture, 'cow')).toEqual({ ok: false, reason: 'money' });
     expect(buyAnimal(g, pasture, 'cow')).toEqual({ ok: false, reason: 'money' });
     expect(g.money).toBe(200);

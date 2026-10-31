@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
-import { getBuildable } from '../data/buildables';
+import { getBuildable, type BuildableDef } from '../data/buildables';
 import { splitIcons } from '../data/items';
+import { formatMaterials, needsMaterialsMessage } from '../data/materials';
 import { buildWorkMs } from '../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
 import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
 import { reachable, withFarmer } from '../game/workers';
-import { demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
+import { demolishMaterialsRefund, demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
 import { ART_RES, ART_SCALE, CURSOR, grassArt, hash, SCENERY, unownedArt } from './art';
@@ -49,12 +50,19 @@ const FLOAT_FONT = Math.round(ISO_H * 0.45);
 
 const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string> = {
   money: 'Not enough money',
+  materials: 'Not enough building materials',
   locked: "That land isn't yours yet",
   level: 'Not unlocked yet — reach a higher farm level',
   occupied: 'Something is already there',
   'out-of-bounds': "Can't build outside the farm",
   'unknown-type': 'Unknown building',
 };
+
+/** What demolishing gives back, e.g. "$132 and 3 🪵 Wood + 1 🔩 Iron". */
+function refundText(def: BuildableDef | undefined): string {
+  const materials = formatMaterials(demolishMaterialsRefund(def));
+  return `$${demolishRefund(def)}${materials ? ` and ${materials}` : ''}`;
+}
 
 interface TouchState {
   startX: number;
@@ -518,13 +526,23 @@ export class FarmScene extends Phaser.Scene {
         ui.toast(PLACE_ERRORS[check.reason], 'error');
         return;
       }
+      // Then whether it can be paid for, so no farmer walks out for nothing.
+      const def = getBuildable(mode.type);
+      if (def && !game.canAfford(def.cost)) {
+        ui.toast(this.placeError(mode.type, 'money'), 'error');
+        return;
+      }
+      if (game.missingMaterials(def?.materials).length) {
+        ui.toast(this.placeError(mode.type, 'materials'), 'error');
+        return;
+      }
       withFarmer(this.ctx, 'build', { type: mode.type, x, y }, buildWorkMs(mode.type), () => {
         const result = game.place(mode.type, x, y);
         if (result.ok) {
           const cost = getBuildable(mode.type)?.cost ?? 0;
           if (cost > 0) this.floatText(x, y, `-$${cost}`, '#ffd6a0');
         } else {
-          ui.toast(PLACE_ERRORS[result.reason], 'error');
+          ui.toast(this.placeError(mode.type, result.reason), 'error');
         }
         return result.ok;
       });
@@ -540,8 +558,11 @@ export class FarmScene extends Phaser.Scene {
         ui.toast(`The ${getBuildable(obj.type)!.name.toLowerCase()} stays`, 'error');
         return;
       }
+      const def = getBuildable(obj.type);
       const refund = game.demolish(obj.id) ?? 0;
       this.floatText(obj.x, obj.y, `+$${refund}`, '#c8ff9e');
+      const materials = formatMaterials(demolishMaterialsRefund(def));
+      if (materials) ui.toast(`${def?.name ?? obj.type} demolished: got back ${refundText(def)}`, 'success');
       return;
     }
     if (!obj) {
@@ -549,6 +570,12 @@ export class FarmScene extends Phaser.Scene {
       return;
     }
     this.openObjectPanel(obj);
+  }
+
+  /** Toast text for a refused placement of `type`; missing materials are named. */
+  private placeError(type: string, reason: Exclude<PlaceResult, { ok: true }>['reason']): string {
+    if (reason !== 'materials') return PLACE_ERRORS[reason];
+    return needsMaterialsMessage(this.ctx.game.missingMaterials(getBuildable(type)?.materials));
   }
 
   private openObjectPanel(obj: PlacedObject): void {
@@ -571,8 +598,10 @@ export class FarmScene extends Phaser.Scene {
           {
             label: `Demolish (+$${refund})`,
             variant: 'danger',
-            onClick: () => {
-              game.demolish(obj.id);
+            onClick: async () => {
+              const name = def?.name ?? obj.type;
+              const ok = await ui.confirm(`Demolish the ${name.toLowerCase()}?`, `You get back ${refundText(def)}.`, { confirmLabel: 'Demolish' });
+              if (!ok || game.demolish(obj.id) === null) return;
               this.floatText(obj.x, obj.y, `+$${refund}`, '#c8ff9e');
             },
           },
@@ -605,7 +634,7 @@ export class FarmScene extends Phaser.Scene {
       const { x, y } = this.anchorFor(mode.type, tx, ty);
       const ok =
         this.ctx.game.checkPlacement(mode.type, x, y).ok &&
-        this.ctx.game.canAfford(def.cost) &&
+        this.ctx.game.canPayFor(mode.type) &&
         (buildWorkMs(mode.type) === 0 || reachable(this.ctx, { type: mode.type, x, y }));
       const top = gridToWorld(x, y);
       this.showCursors({ x, y, ...def.footprint }, ok ? CURSOR.ok : CURSOR.bad);

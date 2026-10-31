@@ -6,10 +6,12 @@ import { maxLevelState } from './test-utils';
 import { dailyPrice, msUntilNextDay, priceFactor, priceTrend, sell, sellAll } from './market';
 import { deserialize, serialize } from './save';
 
+/** A max-level farm on `day` with an empty inventory. */
 function gameOnDay(day: number): Game {
-  const game = new Game(maxLevelState());
-  game.state.clock.elapsed = (day - 1) * DAY_MS + 1000;
-  return game;
+  const state = maxLevelState();
+  state.inventory = {};
+  state.clock.elapsed = (day - 1) * DAY_MS + 1000;
+  return new Game(state);
 }
 
 describe('daily prices', () => {

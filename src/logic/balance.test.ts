@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { ANIMALS, PENS, type AnimalKind, type PenType } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD } from '../data/crops';
+import { isMaterial } from '../data/materials';
 import { buildWorkMs, FEED_WORK_MS, HARVEST_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
 import { buyAnimal, buyFeed, collect, feedAll, feedNeeded, type PenState } from './animals';
 import { cropStage, harvest, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import { Game } from './game';
-import { sell } from './market';
+import { buy, buyPrice, buyUnlockLevel, sell } from './market';
 import type { PlacedObject } from './types';
 import { assignJob, freeFarmers, hireCost, hireFarmer, workersOf } from './workers';
 
@@ -14,7 +15,8 @@ import { assignJob, freeFarmers, hireCost, hireFarmer, workersOf } from './worke
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
  * against the real prices. It looks at the farm every `reactMs` (no instant clicks),
  * keeps fields ploughed and planted with the best crop in season, sells everything,
- * builds up to `maxFields` fields, keeps chickens (and cows from level 3) and claims finished goals.
+ * builds up to `maxFields` fields, keeps chickens (and cows from level 3) and claims finished goals. Before building it
+ * buys the materials it lacks at the Market, in fives like the Market's buttons.
  * Farm work needs a free farmer for its real duration (without the walk: paths are left out);
  * it hires one more farmer for every `fieldsPerFarmer` fields. It never uses processing
  * buildings or buys land, so a real player who does should level at least as fast.
@@ -38,9 +40,15 @@ function simulate({ reactMs, maxFields, fieldsPerFarmer, minutes }: { reactMs: n
   };
   const build = (type: string, reserve: number): boolean => {
     const def = getBuildable(type)!;
-    if (game.money < def.cost + reserve || !game.isUnlocked(def.unlockLevel)) return false;
+    if (!game.isUnlocked(def.unlockLevel)) return false;
+    const shopping = game.missingMaterials(def.materials).map(([id, qty]) => [id, Math.ceil(qty / 5) * 5] as const);
+    if (shopping.some(([id]) => !game.isUnlocked(buyUnlockLevel(id)))) return false;
+    const shoppingCost = shopping.reduce((sum, [id, qty]) => sum + qty * buyPrice(game.day, id)!, 0);
+    if (game.money < def.cost + shoppingCost + reserve || freeFarmers(game.state) <= 0) return false;
     const spot = freeSpot(type);
-    return !!spot && work('build', spot, buildWorkMs(type), () => game.place(type, spot.x, spot.y).ok);
+    if (!spot) return false;
+    for (const [id, qty] of shopping) buy(game, id, qty);
+    return work('build', spot, buildWorkMs(type), () => game.place(type, spot.x, spot.y).ok);
   };
   const pens = (type: PenType) => game.objectsOfType(type) as PlacedObject<PenState>[];
   const bestCrop = () =>
@@ -51,7 +59,7 @@ function simulate({ reactMs, maxFields, fieldsPerFarmer, minutes }: { reactMs: n
     const fields = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
     for (const f of fields) work('harvest', f, HARVEST_WORK_MS, () => harvest(game, f) !== null);
     for (const type of ['coop', 'pasture'] as const) for (const p of pens(type)) collect(game, p);
-    for (const id of Object.keys(game.state.inventory)) if (id !== 'feed') sell(game, id);
+    for (const id of Object.keys(game.state.inventory)) if (id !== 'feed' && !isMaterial(id)) sell(game, id);
     for (const f of fields) {
       if (cropStage(game.state.clock, f.state) !== 'empty') continue;
       const crop = bestCrop();
@@ -101,6 +109,7 @@ describe('level curve balance', () => {
   // Earlier pace (30 s wheat, 2-day seasons, farmers left out): casual L2 2.5 min, L5 32.0; relaxed L5 21.5; busy L2 1.4, L5 15.7.
   // Slower pace (8 min wheat, 32 min seasons, 10× longer farm work, farmers simulated):
   // casual L2 12.0 min, L5 147.0; relaxed L2 11.0, L5 146.5; busy L2 10.7, L5 85.3. Winter runs from minute 96 to 128.
+  // With building materials bought at the Market as well: casual L2 12.0, L5 147.0; relaxed L2 11.0, L5 146.5; busy L2 10.7, L5 84.9.
   it('a casual player (checks every 60 s, up to 6 fields) reaches level 2 within 15 min and level 5 within 3 h', () => {
     const reached = simulate({ reactMs: 60_000, maxFields: 6, fieldsPerFarmer: 4, minutes: 190 });
     expect(minutes(reached.get(2))).toBeLessThanOrEqual(15);

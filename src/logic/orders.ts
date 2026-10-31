@@ -112,9 +112,9 @@ function randInt(s: { rng: number }, min: number, max: number): number {
 
 // Known goods ----------------------------------------------------------------------
 
-/** Feed is a supply bought for animals, not a good customers order. */
+/** Feed and building materials are supplies the farm buys, not goods customers order. */
 export function isOrderable(item: ItemDef | undefined): item is ItemDef {
-  return !!item && item.category !== 'feed';
+  return !!item && item.category !== 'feed' && item.category !== 'material';
 }
 
 /** Records that the player has had `itemId`. Returns true when it was new. */

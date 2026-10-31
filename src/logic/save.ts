@@ -1,6 +1,7 @@
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { PLOUGH_SEASONS } from '../data/seasons';
+import { GOALS } from '../data/progression';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
 import { migrateOrdersSlice } from './orders';
@@ -17,7 +18,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export interface SaveFile {
   version: number;
@@ -63,6 +64,16 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
         )
       : state.objects;
     return { ...raw, version: 5, state: { ...state, objects } };
+  },
+  // Building materials: the "buy wood" goal was inserted into the goal list. Farms already past that point skip it
+  // (their next-goal index moves along with the goals after it). Inventories need nothing: no materials yet.
+  5: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const p = ext[PROGRESSION];
+    const at = GOALS.findIndex((g) => g.id === 'buy-wood');
+    if (!isPlainObject(p) || typeof p.nextGoal !== 'number' || p.nextGoal <= at) return { ...raw, version: 6 };
+    return { ...raw, version: 6, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal: p.nextGoal + 1 } } } };
   },
 };
 

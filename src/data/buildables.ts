@@ -1,7 +1,12 @@
+import type { MaterialCost } from './materials';
+
 export interface BuildableDef {
   id: string;
   name: string;
+  /** Money cost in dollars. */
   cost: number;
+  /** Materials it takes on top of `cost`, bought at the Market. Paths and fields have none. */
+  materials?: MaterialCost;
   /** Size in tiles. */
   footprint: { w: number; h: number };
   /** Texture key: an art pack sprite, or a game key mapped to one in `TEXTURE_ART` (`src/scenes/art.ts`). */

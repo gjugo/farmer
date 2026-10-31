@@ -1,5 +1,6 @@
 import { registerBuildable } from './buildables';
 import type { KnownItemId } from './items';
+import type { MaterialCost } from './materials';
 
 export type ProcessorType = 'feed-mill' | 'dairy' | 'bakery' | 'loom';
 
@@ -18,6 +19,7 @@ export interface ProcessorDef {
   name: string;
   icon: string;
   cost: number;
+  materials: MaterialCost;
   /** Size in tiles. */
   footprint: { w: number; h: number };
   description: string;
@@ -36,7 +38,8 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     id: 'feed-mill',
     name: 'Feed Mill',
     icon: '🌰',
-    cost: 200,
+    cost: 110,
+    materials: { wood: 10, stone: 4 },
     footprint: { w: 2, h: 2 },
     description: 'Grinds wheat and corn into animal feed.',
     unlockLevel: 4,
@@ -50,7 +53,8 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     id: 'dairy',
     name: 'Dairy',
     icon: '🧀',
-    cost: 400,
+    cost: 265,
+    materials: { wood: 6, stone: 8, iron: 2 },
     footprint: { w: 3, h: 2 },
     description: 'Turns milk into cheese and butter.',
     unlockLevel: 3,
@@ -64,7 +68,8 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     id: 'bakery',
     name: 'Bakery',
     icon: '🍞',
-    cost: 350,
+    cost: 245,
+    materials: { wood: 6, stone: 10 },
     footprint: { w: 3, h: 2 },
     description: 'Bakes bread from wheat and eggs.',
     unlockLevel: 2,
@@ -75,7 +80,8 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     id: 'loom',
     name: 'Loom',
     icon: '🧵',
-    cost: 450,
+    cost: 325,
+    materials: { wood: 10, iron: 3 },
     footprint: { w: 2, h: 2 },
     description: 'Weaves wool into cloth.',
     unlockLevel: 5,
@@ -98,6 +104,7 @@ for (const p of Object.values(PROCESSORS)) {
     id: p.id,
     name: p.name,
     cost: p.cost,
+    materials: p.materials,
     footprint: p.footprint,
     texture: p.id,
     category: 'processing',

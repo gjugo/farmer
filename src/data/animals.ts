@@ -1,5 +1,6 @@
 import { registerBuildable } from './buildables';
 import type { KnownItemId } from './items';
+import type { MaterialCost } from './materials';
 
 export type AnimalKind = 'chicken' | 'cow' | 'sheep';
 export type PenType = 'coop' | 'pasture';
@@ -25,6 +26,7 @@ export interface PenDef {
   name: string;
   icon: string;
   cost: number;
+  materials: MaterialCost;
   /** Size in tiles. */
   footprint: { w: number; h: number };
   capacity: number;
@@ -46,7 +48,8 @@ export const PENS: Record<PenType, PenDef> = {
     id: 'coop',
     name: 'Chicken Coop',
     icon: '🐔',
-    cost: 150,
+    cost: 100,
+    materials: { wood: 8 },
     footprint: { w: 3, h: 3 },
     capacity: 6,
     animals: ['chicken'],
@@ -57,7 +60,8 @@ export const PENS: Record<PenType, PenDef> = {
     id: 'pasture',
     name: 'Pasture',
     icon: '🐄',
-    cost: 300,
+    cost: 230,
+    materials: { wood: 12 },
     footprint: { w: 4, h: 4 },
     capacity: 4,
     animals: ['cow', 'sheep'],
@@ -79,6 +83,7 @@ for (const pen of Object.values(PENS)) {
     id: pen.id,
     name: pen.name,
     cost: pen.cost,
+    materials: pen.materials,
     footprint: pen.footprint,
     texture: pen.id,
     category: 'animals',
