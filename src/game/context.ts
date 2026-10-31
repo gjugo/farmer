@@ -12,6 +12,16 @@ export interface PanelAction {
   variant?: 'primary' | 'secondary' | 'danger';
 }
 
+/** A drop-down in an action panel, e.g. a field's crop plan. */
+export interface PanelChoice {
+  /** Used in the `data-testid` (`panel-choice-<id>`). */
+  id: string;
+  label: string;
+  value: string;
+  options: { value: string; label: string; disabled?: boolean }[];
+  onChange: (value: string) => void;
+}
+
 /**
  * Content of the generic action panel. Panels are built by a function that is
  * called again whenever the game changes (and a few times per second while open),
@@ -23,6 +33,8 @@ export interface PanelSpec {
   icon?: string;
   lines?: string[];
   progress?: { value: number; label?: string };
+  /** Drop-downs shown above the actions. */
+  choices?: PanelChoice[];
   actions?: PanelAction[];
 }
 

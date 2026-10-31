@@ -14,7 +14,7 @@ import { runWork } from './work';
 export interface FarmerWork {
   /** Item id → harvested from fields. */
   harvested: Inventory;
-  /** Crop id → fields sown. */
+  /** Crop id → times sown (one field sown twice counts 2). */
   sown: Record<string, number>;
   /** Item id → collected from pens (eggs, milk, wool). */
   collected: Inventory;

@@ -1040,9 +1040,10 @@ button {
 }
 
 .farmer {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   padding: 6px 8px;
   margin-bottom: 4px;
   border-radius: 8px;
@@ -1050,6 +1051,7 @@ button {
 }
 
 .farmer-icon {
+  grid-row: span 2;
   font-size: 20px;
 }
 
@@ -1058,6 +1060,31 @@ button {
 }
 
 .farmer-status {
-  margin-left: auto;
-  white-space: nowrap;
+  font-size: 13px;
+}
+
+.farmer-workplace {
+  grid-column: 1 / -1;
+}
+
+/* Drop-downs in panels and sheets (crop plan, keep making, a farmer's workplace). */
+.panel-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.panel-choice select,
+.farmer-workplace {
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 2px solid var(--wood);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 400;
 }

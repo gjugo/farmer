@@ -4,8 +4,10 @@ import { splitIcons } from '../data/items';
 import { buildWorkMs } from '../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
 import { getBehavior, runStartHooks, runTileTapHandlers } from '../game/hooks';
-import { reachable, withFarmer } from '../game/workers';
-import { demolishRefund, footprintOf, type PlaceResult } from '../logic/game';
+import { farmerName, NO_ROAD_MESSAGE, reachable, workplacePanel } from '../game/workers';
+import { formatDuration } from '../logic/crops';
+import { footprintOf, refundOf, type PlaceResult } from '../logic/game';
+import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
 import type { PlacedObject } from '../logic/types';
 import { ART_RES, ART_SCALE, CURSOR, grassArt, hash, SCENERY, unownedArt } from './art';
@@ -43,6 +45,9 @@ const FLAT_CATEGORIES = new Set(['decor', 'crops']);
 const SCENERY_CHANCE = 0.07;
 /** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
 const SCENERY_CLEARANCE = 4;
+/** Construction sites are drawn faded to this, with a progress bar this wide (world pixels). */
+const SITE_ALPHA = 0.45;
+const SITE_BAR_W = 64;
 /** Size of floating text, in world pixels. */
 const FLOAT_FONT = Math.round(ISO_H * 0.45);
 
@@ -77,6 +82,8 @@ export class FarmScene extends Phaser.Scene {
   /** Buying a parcel announces each tile; the scenery is redone once per frame at most. */
   private sceneryDirty = false;
   private views = new Map<string, ObjectView & { obj: PlacedObject }>();
+  /** Progress bars over construction sites, by object id. */
+  private siteBars = new Map<string, { bar: Phaser.GameObjects.Container; fill: Phaser.GameObjects.Rectangle }>();
   private ghost!: Phaser.GameObjects.Image;
   /** Tile cursors (pack overlays) for the hover, build preview and demolish target. */
   private cursors: Phaser.GameObjects.Image[] = [];
@@ -151,8 +158,39 @@ export class FarmScene extends Phaser.Scene {
     for (const obj of this.farm.state.objects) {
       const behavior = getBehavior(obj.type);
       const view = this.views.get(obj.id);
-      if (behavior?.update && view) behavior.update(this.ctx, obj, view, dt);
+      if (!view) continue;
+      this.drawSite(view);
+      if (behavior?.update) behavior.update(this.ctx, obj, view, dt);
     }
+  }
+
+  /** A construction site is its building faded, with a bar showing how far the building work is. */
+  private drawSite(view: ObjectView & { obj: PlacedObject }): void {
+    const { obj } = view;
+    const alpha = obj.site ? SITE_ALPHA : 1;
+    if (view.container.alpha !== alpha) {
+      view.container.setAlpha(alpha);
+      view.ground.setAlpha(alpha);
+      view.shadows.setAlpha(alpha);
+    }
+    let decor = this.siteBars.get(obj.id);
+    if (!obj.site) {
+      if (decor) {
+        decor.bar.destroy();
+        this.siteBars.delete(obj.id);
+      }
+      return;
+    }
+    if (!decor) {
+      const back = this.add.rectangle(0, 0, SITE_BAR_W + 4, 10, 0x2b2118);
+      const fill = this.add.rectangle(-SITE_BAR_W / 2, 0, 0, 6, 0xf2b84b).setOrigin(0, 0.5);
+      const label = this.add.text(0, -16, '🚧', { fontSize: '22px', resolution: 2 }).setOrigin(0.5, 0.5);
+      const fp = footprintOf(obj);
+      const at = gridToWorld(obj.x + fp.w / 2, obj.y + fp.h / 2);
+      decor = { bar: this.add.container(at.x, at.y - ISO_H / 2, [back, fill, label]).setDepth(DEPTH.hover - 1), fill };
+      this.siteBars.set(obj.id, decor);
+    }
+    decor.fill.width = SITE_BAR_W * (siteProgress(this.farm.state, obj.id)?.progress ?? 0);
   }
 
   // World -----------------------------------------------------------------------
@@ -256,6 +294,8 @@ export class FarmScene extends Phaser.Scene {
   }
 
   private destroyView(id: string): void {
+    this.siteBars.get(id)?.bar.destroy();
+    this.siteBars.delete(id);
     const view = this.views.get(id);
     if (!view) return;
     getBehavior(view.obj.type)?.destroy?.(this.ctx, view.obj, view);
@@ -518,16 +558,19 @@ export class FarmScene extends Phaser.Scene {
         ui.toast(PLACE_ERRORS[check.reason], 'error');
         return;
       }
-      withFarmer(this.ctx, 'build', { type: mode.type, x, y }, buildWorkMs(mode.type), () => {
-        const result = game.place(mode.type, x, y);
-        if (result.ok) {
-          const cost = getBuildable(mode.type)?.cost ?? 0;
-          if (cost > 0) this.floatText(x, y, `-$${cost}`, '#ffd6a0');
-        } else {
-          ui.toast(PLACE_ERRORS[result.reason], 'error');
-        }
-        return result.ok;
-      });
+      // A farmer must be able to walk there to build it.
+      if (buildWorkMs(mode.type) > 0 && !reachable(this.ctx, { type: mode.type, x, y })) {
+        ui.toast(NO_ROAD_MESSAGE, 'error');
+        return;
+      }
+      // Buildings become construction sites that free farmers build; paths are laid at once.
+      const result = game.place(mode.type, x, y, { site: true });
+      if (!result.ok) {
+        ui.toast(PLACE_ERRORS[result.reason], 'error');
+        return;
+      }
+      const cost = getBuildable(mode.type)?.cost ?? 0;
+      if (cost > 0) this.floatText(x, y, `-$${cost}`, '#ffd6a0');
       return;
     }
     const obj = game.objectAt(tx, ty);
@@ -553,23 +596,27 @@ export class FarmScene extends Phaser.Scene {
 
   private openObjectPanel(obj: PlacedObject): void {
     const behavior = getBehavior(obj.type);
-    if (behavior?.onClick?.(this.ctx, obj) === true) return;
+    // A construction site can't be used: no click actions, and its panel shows the building work only.
+    if (!obj.site && behavior?.onClick?.(this.ctx, obj) === true) return;
     const { game, ui } = this.ctx;
     const def = getBuildable(obj.type);
     ui.openPanel(() => {
       if (!game.getObject(obj.id)) return null; // demolished meanwhile
-      const spec: PanelSpec = behavior?.panel?.(this.ctx, obj) ?? {
-        title: def?.name ?? obj.type,
-        lines: def?.description ? [def.description] : [],
-      };
-      const refund = demolishRefund(def);
+      const spec: PanelSpec = obj.site
+        ? this.sitePanel(obj)
+        : (behavior?.panel?.(this.ctx, obj) ?? { title: def?.name ?? obj.type, lines: def?.description ? [def.description] : [] });
+      const work = workplacePanel(this.ctx, obj);
+      const refund = refundOf(obj);
       if (def?.fixed) return spec;
       return {
         ...spec,
+        lines: [...(spec.lines ?? []), ...(work?.lines ?? [])],
+        choices: [...(spec.choices ?? []), ...(work?.choices ?? [])],
         actions: [
           ...(spec.actions ?? []),
+          ...(work?.actions ?? []),
           {
-            label: `Demolish (+$${refund})`,
+            label: obj.site ? `Cancel building (+$${refund})` : `Demolish (+$${refund})`,
             variant: 'danger',
             onClick: () => {
               game.demolish(obj.id);
@@ -579,6 +626,23 @@ export class FarmScene extends Phaser.Scene {
         ],
       };
     });
+  }
+
+  /** A construction site's panel: who builds it and how far they are, or why nobody does yet. */
+  private sitePanel(obj: PlacedObject): PanelSpec {
+    const def = getBuildable(obj.type);
+    const site = obj.site!;
+    const building = siteProgress(this.farm.state, obj.id);
+    const lines = [`Construction site: a free farmer builds it in ${formatDuration(site.workMs)}. It can't be used until it is finished.`];
+    if (!reachable(this.ctx, obj)) lines.push(`⚠️ ${NO_ROAD_MESSAGE}`);
+    else if (building) lines.push(`🔨 ${farmerName(building.farmer)} is building it.`);
+    else lines.push('Waiting for a free farmer (sites are built oldest first).');
+    return {
+      title: `${def?.name ?? obj.type} (building)`,
+      icon: '🚧',
+      lines,
+      progress: { value: building?.progress ?? 0, label: building ? 'Building' : 'Not started' },
+    };
   }
 
   // Tool feedback -------------------------------------------------------------------

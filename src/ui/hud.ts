@@ -201,7 +201,9 @@ export class Hud implements UiApi {
     this.updateStats();
     if (!this.sheet) return;
     const sig = this.sheet.signature();
-    if (sig !== this.sheetSignature) {
+    // Rebuilding the body would close a drop-down the player has open: wait until it loses focus.
+    const picking = document.activeElement instanceof HTMLSelectElement && this.sheetBodyEl.contains(document.activeElement);
+    if (sig !== this.sheetSignature && !picking) {
       this.sheetSignature = sig;
       this.sheetTitleEl.replaceChildren(...withIcons(this.sheet.title()));
       this.sheetBodyEl.replaceChildren();
@@ -265,6 +267,22 @@ export class Hud implements UiApi {
               current.progress.label ? h('span', { class: 'progress-label' }, current.progress.label) : null,
             ),
           );
+        }
+        for (const [i, c] of (current.choices ?? []).entries()) {
+          const select = h(
+            'select',
+            {
+              id: `panel-choice-${c.id}`,
+              'data-testid': `panel-choice-${c.id}`,
+              onchange: () => {
+                spec?.choices?.[i]?.onChange(select.value);
+                select.blur();
+                this.refresh();
+              },
+            },
+            c.options.map((o) => h('option', { value: o.value, selected: o.value === c.value, disabled: !!o.disabled }, o.label)),
+          );
+          body.append(h('label', { class: 'panel-choice', for: `panel-choice-${c.id}` }, h('span', {}, ...withIcons(c.label)), select));
         }
         if (current.actions?.length) {
           body.append(

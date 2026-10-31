@@ -1,13 +1,27 @@
 import Phaser from 'phaser';
 import { FARMHOUSE } from '../../data/farmhouse';
-import { JOBS, MAX_FARMERS } from '../../data/workers';
-import type { FarmContext, SheetSpec } from '../../game/context';
+import { MAX_FARMERS, type JobKind } from '../../data/workers';
+import type { FarmContext, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
+import { farmerActivity, farmerName, placeName } from '../../game/workers';
 import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
 import type { Game } from '../../logic/game';
 import { farmhouseOf } from '../../logic/roads';
-import { freeFarmers, hireCost, hireFarmer, jobPhase, jobsByFarmer, workersOf, type Job, type JobPhase } from '../../logic/workers';
+import { siteProgress, sitesOf } from '../../logic/work';
+import {
+  assignFarmer,
+  freeFarmers,
+  hireCost,
+  hireFarmer,
+  isWorkplaceType,
+  jobPhase,
+  jobsByFarmer,
+  unassignFarmer,
+  workerAt,
+  workersOf,
+  type Job,
+} from '../../logic/workers';
 import { facing, FARMER_ART, type Facing, type FarmerAnim } from '../../scenes/art';
 import { DEPTH, walkerDepth } from '../../scenes/depth';
 import { gridToWorld } from '../../scenes/iso';
@@ -16,11 +30,13 @@ import { formatMoney, h } from '../../ui/dom';
 import { withIcons } from '../../ui/icons';
 
 /**
- * Farmers: building, planting, harvesting and feeding animals each send a farmer from the
- * farmhouse along the paths to the work, a few seconds of it, and back. Idle farmers rest at
- * the farmhouse. The farm starts with one; hire more from 👨‍🌾 Farmers in the HUD.
- * Rules live in `src/logic/workers.ts` and `src/logic/roads.ts`, numbers in `src/data/workers.ts`,
- * and call sites go through `withFarmer` (`src/game/workers.ts`).
+ * Farmers: every job sends a farmer from the farmhouse along the paths to the work, a few
+ * seconds of it, and back. A farmer assigned to a field, pen or processing building does its
+ * work by themselves; free farmers take hand-ordered jobs and build construction sites. Idle
+ * farmers rest at the farmhouse. The farm starts with one; hire more from 👨‍🌾 Farmers in the HUD.
+ * Rules live in `src/logic/workers.ts` (state, hiring, assignments), `src/logic/work.ts` (the
+ * scheduler) and `src/logic/roads.ts`, numbers in `src/data/workers.ts`; hand-ordered work goes
+ * through `withFarmer` and object panels get their farmer block from `workplacePanel` (`src/game/workers.ts`).
  */
 
 /** Each farmer's running job, by farmer number. */
@@ -28,10 +44,36 @@ function jobsOf(game: Game): (Job | undefined)[] {
   return jobsByFarmer(game.state.clock, workersOf(game.state));
 }
 
-const PHASE_NOTE: Record<JobPhase, string> = { out: ' (on the way)', work: '', back: ' (heading home)' };
+/** Built workplaces in build order: what a farmer can be assigned to. */
+function workplaces(game: Game): PlacedObject[] {
+  return game.state.objects.filter((o) => isWorkplaceType(o.type) && !o.site);
+}
 
-function jobLeft(game: Game, job: Job): string {
-  return formatDuration(timerRemaining(game.state.clock, job.timer));
+/** The drop-down that sets farmer `i`'s workplace. */
+function workplaceSelect(ctx: FarmContext, i: number): HTMLSelectElement {
+  const { game } = ctx;
+  const w = workersOf(game.state);
+  const select = h(
+    'select',
+    {
+      class: 'farmer-workplace',
+      'aria-label': `Workplace of ${farmerName(i)}`,
+      'data-testid': `farmer-workplace-${i}`,
+      onchange: () => {
+        if (select.value) assignFarmer(game, select.value, i);
+        else unassignFarmer(game, i);
+        select.blur();
+        ctx.ui.toast(select.value ? `${farmerName(i)} now works at ${placeName(game, game.getObject(select.value)!)}` : `${farmerName(i)} is free`, 'success');
+      },
+    },
+    h('option', { value: '', selected: !w.workplaces[i] }, 'No workplace (free)'),
+    workplaces(game).map((o) => {
+      const other = workerAt(game.state, o.id);
+      const taken = other !== null && other !== i ? ` · ${farmerName(other)}` : '';
+      return h('option', { value: o.id, selected: w.workplaces[i] === o.id }, `${placeName(game, o)}${taken}`);
+    }),
+  );
+  return select;
 }
 
 function farmersSheet(ctx: FarmContext): SheetSpec {
@@ -39,48 +81,44 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
   return {
     id: 'farmers',
     title: () => '👨‍🌾 Farmers',
+    // Activities change all the time and are updated in place by tick(); a rebuild would close an open drop-down.
     signature: () => {
       const cost = hireCost(game.state);
-      const jobs = jobsOf(game).map((j) => (j ? `${j.kind}@${j.timer.start}:${jobPhase(game.state.clock, j).phase}` : '-'));
-      return `${workersOf(game.state).farmers}|${cost}|${cost !== null && game.canAfford(cost)}|${jobs.join(',')}`;
+      const w = workersOf(game.state);
+      return `${w.farmers}|${cost}|${cost !== null && game.canAfford(cost)}|${w.workplaces.join(',')}|${workplaces(game).map((o) => o.id).join(',')}`;
     },
     render: (body) => {
       const { farmers } = workersOf(game.state);
-      const jobs = jobsOf(game);
+      const sites = sitesOf(game.state).length;
       body.append(
         h(
           'p',
           { class: 'muted farmers-intro' },
-          'Farmers build, plant, harvest and feed the animals. They walk from the farmhouse along paths, so a job needs a path from the farmhouse door to it.',
+          'Give a farmer a workplace and they do its work by themselves: plough, sow and harvest a field, feed and collect a pen, keep a building making its recipe. Free farmers (no workplace, or nothing to do there) build construction sites and do what you tap. Farmers walk from the farmhouse along paths.',
         ),
         h(
           'p',
           { class: 'farmers-count', 'data-testid': 'farmers-count' },
           h('strong', {}, `${freeFarmers(game.state)} of ${farmers}`),
           ` ${farmers === 1 ? 'farmer' : 'farmers'} free`,
+          sites > 0 ? ` · 🚧 ${sites} ${sites === 1 ? 'site' : 'sites'} to build` : '',
         ),
         h(
           'ul',
           { class: 'farmers-list', 'data-testid': 'farmers-list' },
-          Array.from({ length: farmers }, (_, i) => {
-            const job = jobs[i];
-            return h(
+          Array.from({ length: farmers }, (_, i) =>
+            h(
               'li',
-              { class: `farmer${job ? ' busy' : ''}`, 'data-testid': `farmer-${i}`, 'data-state': job ? job.kind : 'idle' },
+              { class: 'farmer', 'data-testid': `farmer-${i}` },
               h('span', { class: 'farmer-icon', 'aria-hidden': 'true' }, '👨‍🌾'),
-              h('span', { class: 'farmer-name' }, `Farmer ${i + 1}`),
-              job
-                ? h(
-                    'span',
-                    { class: 'farmer-status' },
-                    ...withIcons(`${JOBS[job.kind].icon} ${JOBS[job.kind].label}${PHASE_NOTE[jobPhase(game.state.clock, job).phase]} · `),
-                    h('span', { class: 'farmer-left', 'data-job': i }, jobLeft(game, job)),
-                  )
-                : h('span', { class: 'farmer-status muted' }, 'Resting at the farmhouse'),
-            );
-          }),
+              h('span', { class: 'farmer-name' }, farmerName(i)),
+              h('span', { class: 'farmer-status', 'data-farmer': i, 'data-testid': `farmer-activity-${i}` }),
+              workplaceSelect(ctx, i),
+            ),
+          ),
         ),
       );
+      updateActivities(game, body);
       const cost = hireCost(game.state);
       if (cost === null) {
         body.append(h('p', { class: 'muted', 'data-testid': 'farmers-max' }, `Your farm employs the most farmers it can (${MAX_FARMERS}).`));
@@ -110,15 +148,23 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
       );
       if (short > 0) body.append(h('p', { class: 'muted' }, `You need ${formatMoney(short)} more — sell goods at the Market.`));
     },
-    tick: (body) => {
-      const jobs = jobsOf(game);
-      for (const el of body.querySelectorAll<HTMLElement>('.farmer-left')) {
-        const job = jobs[Number(el.dataset.job)];
-        const text = job ? jobLeft(game, job) : '';
-        if (el.textContent !== text) el.textContent = text;
-      }
-    },
+    tick: (body) => updateActivities(game, body),
   };
+}
+
+/** Writes each farmer's activity (with the time left on their job) into the sheet, in place. */
+function updateActivities(game: Game, body: HTMLElement): void {
+  const jobs = jobsOf(game);
+  for (const el of body.querySelectorAll<HTMLElement>('.farmer-status')) {
+    const i = Number(el.dataset.farmer);
+    const job = jobs[i];
+    const text = `${farmerActivity(game, i)}${job ? ` · ${formatDuration(timerRemaining(game.state.clock, job.timer))}` : ''}`;
+    if (el.dataset.text === text) continue;
+    el.dataset.text = text;
+    el.dataset.state = job ? job.kind : workersOf(game.state).workplaces[i] ? 'waiting' : 'idle';
+    el.closest('.farmer')?.classList.toggle('busy', !!job);
+    el.replaceChildren(...withIcons(text));
+  }
 }
 
 registerHudButton({
@@ -132,11 +178,33 @@ registerHudButton({
 /** The running game, for the debug info (set at game start). */
 let current: Game | null = null;
 
-registerDebugInfo('workers', () =>
-  current ? Object.freeze({ farmers: workersOf(current.state).farmers, free: freeFarmers(current.state), hireCost: hireCost(current.state) }) : null,
-);
+/**
+ * `window.farm.workers`, for QA: the farmers with their workplace and activity, assignments, crop plans,
+ * recipes and construction sites (with build progress).
+ */
+registerDebugInfo('workers', () => {
+  const game = current;
+  if (!game) return null;
+  const w = workersOf(game.state);
+  const jobs = jobsOf(game);
+  return structuredClone({
+    farmers: w.farmers,
+    free: freeFarmers(game.state),
+    hireCost: hireCost(game.state),
+    list: Array.from({ length: w.farmers }, (_, i) => ({
+      farmer: i,
+      workplace: w.workplaces[i],
+      job: jobs[i]?.kind ?? null,
+      activity: farmerActivity(game, i),
+    })),
+    assignments: Object.fromEntries(w.workplaces.flatMap((id, i) => (id ? [[id, i]] : []))),
+    plans: w.plans,
+    recipes: w.recipes,
+    sites: sitesOf(game.state).map((o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, ...o.site!, builder: siteProgress(game.state, o.id) })),
+  });
+});
 
-/** Where idle farmers wait, in grid units from the farmhouse's top-left tile: two on the bench, the rest standing about. */
+/** Where idle farmers wait, in grid units from the farmhouse's top-left tile: two on the bench, the rest standing about (see `seatOf`). */
 const SEATS: { x: number; y: number; anim: FarmerAnim; facing: Facing }[] = [
   { x: 0.45, y: 1.69, anim: 'sit', facing: 'sw' },
   { x: 0.8, y: 1.69, anim: 'sit', facing: 'sw' },
@@ -155,6 +223,24 @@ interface FarmerSprite {
   bar: Phaser.GameObjects.Container;
   fill: Phaser.GameObjects.Rectangle;
 }
+
+/** Farmer `i`'s spot at the farmhouse: a seat, or past them a crowd in front of the house. */
+function seatOf(i: number): (typeof SEATS)[number] {
+  if (i < SEATS.length) return SEATS[i];
+  const k = i - SEATS.length;
+  return { x: -0.35 - (k % 3) * 0.32, y: 0.4 + Math.floor(k / 3) * 0.45, anim: 'idle', facing: 'se' };
+}
+
+/** The animation for each job's work. */
+const WORK_ANIM: Record<JobKind, FarmerAnim> = {
+  build: 'build',
+  plough: 'plough',
+  plant: 'plant',
+  harvest: 'harvest',
+  feed: 'feed',
+  collect: 'harvest',
+  load: 'feed',
+};
 
 const BAR_W = 40;
 /** The bar floats this far above the farmer's feet. */
@@ -198,7 +284,7 @@ function along(line: Point[], t: number): { at: Point; dir: Point } {
 /** Where farmer `i` is, what they do and which way they face right now. */
 function farmerPose(game: Game, i: number, job: Job | undefined): { at: Point; anim: FarmerAnim; facing: Facing; progress: number | null } | null {
   const house = farmhouseOf(game.state);
-  const seat = SEATS[i % SEATS.length];
+  const seat = seatOf(i);
   const home = house ? { x: house.x + seat.x, y: house.y + seat.y } : null;
   if (!job) return home && { at: home, anim: seat.anim, facing: seat.facing, progress: null };
   const route = job.route ?? [];
@@ -206,7 +292,7 @@ function farmerPose(game: Game, i: number, job: Job | undefined): { at: Point; a
   const { phase, t } = jobPhase(game.state.clock, job);
   if (phase === 'work') {
     const { dir } = along(line, 1);
-    return { at: { x: job.x, y: job.y }, anim: job.kind, facing: facing(dir.x, dir.y), progress: t };
+    return { at: { x: job.x, y: job.y }, anim: WORK_ANIM[job.kind], facing: facing(dir.x, dir.y), progress: t };
   }
   const { at, dir } = along(line, phase === 'out' ? t : 1 - t);
   return { at, anim: 'walk', facing: phase === 'out' ? facing(dir.x, dir.y) : facing(-dir.x, -dir.y), progress: null };
@@ -256,6 +342,7 @@ registerBehavior(FARMHOUSE, {
       lines: [
         `Home of your ${farmers === 1 ? 'farmer' : `${farmers} farmers`}; ${free} resting on the bench out front.`,
         'Farmers walk out of the door along paths. Lay a path from the door to every field, pen and building you want worked.',
+        'Give farmers a workplace in 👨‍🌾 Farmers or from the workplace itself.',
       ],
     };
   },
