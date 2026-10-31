@@ -2924,6 +2924,246 @@
    }
   },
   {
+   "name": "granary_1",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "granary for goods, level 1, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/granary_1.png",
+     "w": 496,
+     "h": 390,
+     "shadow": "2x/buildings/granary_1_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/granary_1.png",
+     "w": 248,
+     "h": 195,
+     "shadow": "1x/buildings/granary_1_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
+     ]
+    }
+   }
+  },
+  {
+   "name": "storehouse_1",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "storehouse for building materials, level 1, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/storehouse_1.png",
+     "w": 496,
+     "h": 402,
+     "shadow": "2x/buildings/storehouse_1_shadow.png",
+     "anchor": [
+      248.0,
+      150.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/storehouse_1.png",
+     "w": 248,
+     "h": 201,
+     "shadow": "1x/buildings/storehouse_1_shadow.png",
+     "anchor": [
+      124.0,
+      75.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    }
+   }
+  },
+  {
+   "name": "granary_2",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "granary for goods, level 2, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/granary_2.png",
+     "w": 518,
+     "h": 390,
+     "shadow": "2x/buildings/granary_2_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.47876,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/granary_2.png",
+     "w": 259,
+     "h": 195,
+     "shadow": "1x/buildings/granary_2_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.47876,
+      0.35385
+     ]
+    }
+   }
+  },
+  {
+   "name": "storehouse_2",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "storehouse for building materials, level 2, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/storehouse_2.png",
+     "w": 496,
+     "h": 402,
+     "shadow": "2x/buildings/storehouse_2_shadow.png",
+     "anchor": [
+      248.0,
+      150.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/storehouse_2.png",
+     "w": 248,
+     "h": 201,
+     "shadow": "1x/buildings/storehouse_2_shadow.png",
+     "anchor": [
+      124.0,
+      75.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    }
+   }
+  },
+  {
+   "name": "granary_3",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "granary for goods, level 3, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/granary_3.png",
+     "w": 530,
+     "h": 390,
+     "shadow": "2x/buildings/granary_3_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.46792,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/granary_3.png",
+     "w": 265,
+     "h": 195,
+     "shadow": "1x/buildings/granary_3_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.46792,
+      0.35385
+     ]
+    }
+   }
+  },
+  {
+   "name": "storehouse_3",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "storehouse for building materials, level 3, 2x2",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/storehouse_3.png",
+     "w": 496,
+     "h": 402,
+     "shadow": "2x/buildings/storehouse_3_shadow.png",
+     "anchor": [
+      248.0,
+      150.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/storehouse_3.png",
+     "w": 248,
+     "h": 201,
+     "shadow": "1x/buildings/storehouse_3_shadow.png",
+     "anchor": [
+      124.0,
+      75.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    }
+   }
+  },
+  {
    "name": "chicken_coop",
    "category": "buildings",
    "type": "image",

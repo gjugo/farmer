@@ -612,8 +612,143 @@ def farmhouse():
     return c
 
 
+# ================================================================== GRANARY 2x2 (levels 1-3)
+def silo(c, x, y, r, z1, color="#e9dcc0", roof="#c4503a"):
+    """A round grain silo with hoops and a conical cap."""
+    cx, ct, rx, ry = c.cylinder(x, y, 0.025, z1, r, color, top=shade(color, 0.12))
+    for k in range(1, int(z1 / 0.22) + 1):
+        _, zy = c.P(x, y, k * 0.22)
+        c.path(f"M{f2(cx - rx)},{f2(zy)} A{f2(rx)},{f2(ry)} 0 0 0 {f2(cx + rx)},{f2(zy)}", "none", shade(color, -0.3), 2.2)
+    c.cone(x, y, z1, z1 + r * 0.9, r * 1.08, roof)
+    tip = c.P(x, y, z1 + r * 0.9)
+    c.circle(tip[0], tip[1], 4.5, "#f2c14e", OUT, 2)
+
+
+def granary(level):
+    """A raised wooden granary on staddle stones; level 2 adds a silo, level 3 a second, taller one and a gilded vane."""
+    c = bcanvas(2, 2, top=470)
+    pad(c, 2, 2, "#e3c88f", pattern="dirt")
+    if level >= 2:
+        silo(c, 1.62, 0.42, 0.26, 1.05 + (0.25 if level >= 3 else 0.0))
+    x0, y0, x1, y1, zs, zw, zr = 0.22, 0.5, 1.32, 1.68, 0.14, 0.78, 1.32
+    WOOD = "#d9a25a"
+    STONE = "#b8b1a4"
+    # staddle stones: a mushroom stone under each corner keeps the grain dry
+    for (sx, sy) in ((x0 + 0.08, y1 - 0.08), (x1 - 0.08, y1 - 0.08), (x1 - 0.08, y0 + 0.08), ((x0 + x1) / 2, y1 - 0.08)):
+        c.cylinder(sx, sy, 0, zs - 0.03, 0.05, STONE, r1=0.035, sw=2, shadow=False)
+        c.cylinder(sx, sy, zs - 0.03, zs, 0.08, shade(STONE, 0.1), sw=2, shadow=False)
+    c.box(x0, y0, zs, x1, y1, zw, shade(WOOD, 0.12), WOOD, shade(WOOD, -0.12))
+    L, R = Plane(c, "y", y1), Plane(c, "x", x1)
+    L.planks(x0, x1, zs, zw, 0.09, "#7a4a22", 0.45)
+    R.planks(y0, y1, zs, zw, 0.09, "#7a4a22", 0.45)
+    R.door((y0 + y1) / 2, 0.42, 0.5, "#a8642f", frame=TRIM, xbrace="#7a4a22")
+    # wooden steps up to the door
+    for k in range(3):
+        u = (y0 + y1) / 2
+        z = zs * (2 - k) / 3
+        c.box(x1 + 0.04 + k * 0.08, u - 0.18, 0, x1 + 0.12 + k * 0.08, u + 0.18, z + 0.04, "#c48a4f", "#b07a43", "#9a6533", sw=2, shadow=False)
+    edge_trim(c, x0, y0, x1, y1, zs, zw, TRIM, 6)
+    c.gable_roof(x0, y0, x1, y1, zw, zr, "#e0b13e" if level >= 3 else "#b5653a", along="x", oh=0.12, gable_color=shade(WOOD, 0.1),
+                 rows=5, cols=8)
+    hanging_sign(c, L, 0.75, 0.66, IC.wheat_icon, size=0.2)
+    if level >= 3:
+        silo(c, 1.78, 0.84, 0.2, 0.95)
+        ym = (y0 + y1) / 2
+        rp = c.P(x0 + 0.5, ym, zr + 0.02)
+        c.line(rp, (rp[0], rp[1] - 36), OUT, 3)
+        c.path(f"M{f2(rp[0] - 14)},{f2(rp[1] - 32)} l14,-9 l16,5 l-7,6 Z", "#f2c14e", OUT, 1.5)
+    # sacks of grain in front
+    sack(c, 0.35, 1.88, 0.8, "#efe2c8", label="#f2c14e")
+    if level >= 2:
+        sack(c, 0.68, 1.92, 0.75, "#e9d3a6")
+    return c
+
+
+# ================================================================== STOREHOUSE 2x2 (levels 1-3)
+def log_pile(c, x0, y, x1, z_rows=2, r=0.075):
+    """Logs stacked along x in front of plane y, cut ends toward the lower-right."""
+    for row in range(z_rows):
+        n = int((x1 - x0) / (2 * r)) - row
+        for k in range(n):
+            x = x0 + r + row * r + k * 2 * r
+            z = r + row * 1.7 * r
+            back, front = c.P(x, y - 0.32, z), c.P(x, y, z)
+            rx, ry = K * r * 0.85, K * r * 1.05
+            c.path(f"M{f2(back[0])},{f2(back[1] - ry)} L{f2(front[0])},{f2(front[1] - ry)} L{f2(front[0])},{f2(front[1] + ry)} "
+                   f"L{f2(back[0])},{f2(back[1] + ry)} Z", c.lin([(0, "#b0743e"), (1, "#7a4a24")], 0, 0, 0, 1), OUT, 2)
+            c.ell(front[0], front[1], rx, ry, c.rad([(0, "#f3d29a"), (0.7, "#e2b36f"), (1, "#b98446")]), 0, OUT, 2)
+            c.ell(front[0], front[1], rx * 0.45, ry * 0.45, "none", 0, "#b98446", 1.5)
+    c.shadow_pts([(x0, y - 0.32, 0), (x1, y - 0.32, 0), (x0, y, 0), (x1, y, 0), (x0, y, r * 2 * z_rows), (x1, y - 0.32, r * 2 * z_rows)])
+
+
+def stone_blocks(c, x, y, n=3):
+    rnd = random.Random(int(x * 31 + y * 7))
+    G = "#a7adb3"
+    spots = [(0, 0, 0), (0.2, 0, 0), (0.1, 0.0, 0.12), (0.0, 0.18, 0), (0.2, 0.18, 0)][:n]
+    for (dx, dy, dz) in sorted(spots, key=lambda s: (s[2], s[0] + s[1])):
+        g = shade(G, rnd.uniform(-0.08, 0.08))
+        c.box(x + dx, y + dy, dz, x + dx + 0.18, y + dy + 0.16, dz + 0.12, shade(g, 0.15), g, shade(g, -0.15), sw=2)
+
+
+def storehouse(level):
+    """A stone-and-timber store for building materials; level 2 adds a lean-to with logs and stone, level 3 a
+    hoist on the gable and a crate of iron."""
+    c = bcanvas(2, 2, top=420)
+    pad(c, 2, 2, "#cfc6b4", pattern="stone")
+    x0, y0, x1, y1, zb, zw, zr = 0.25, 0.3, 1.45, 1.35, 0.3, 0.8, 1.3
+    STONE = "#b9b2a6"
+    TIMBER = "#c8925a"
+    c.box(x0, y0, 0, x1, y1, zb, shade(STONE, 0.1), STONE, shade(STONE, -0.12))
+    c.box(x0, y0, zb, x1, y1, zw, shade(TIMBER, 0.1), TIMBER, shade(TIMBER, -0.12))
+    L, R = Plane(c, "y", y1), Plane(c, "x", x1)
+    rnd = random.Random(5)
+    for pl, u0, u1 in ((L, x0, x1), (R, y0, y1)):
+        for z in (0.1, 0.2):
+            pl.line(u0, z, u1, z, shade(STONE, -0.3), 1.6, opacity=0.7)
+        u = u0 + 0.05
+        while u < u1 - 0.05:
+            for zz in (0.0, 0.1, 0.2):
+                uu = u + rnd.uniform(0, 0.06)
+                pl.line(uu, zz + 0.01, uu, zz + 0.09, shade(STONE, -0.3), 1.4, opacity=0.7)
+            u += 0.16
+        pl.planks(u0, u1, zb, zw, 0.1, "#6b4426", 0.4)
+    R.door((y0 + y1) / 2, 0.6, 0.62, "#8a5a32", frame="#6b4426", double=True, xbrace="#5a3a20")
+    L.window((x0 + x1) / 2 - 0.15, 0.46, 0.26, 0.2, frame="#6b4426")
+    edge_trim(c, x0, y0, x1, y1, 0, zw, "#6b4426", 6)
+    c.gable_roof(x0, y0, x1, y1, zw, zr, "#6f7d8c", along="x", oh=0.12, gable_color=TIMBER, rows=5, cols=9)
+    hanging_sign(c, L, 0.45, 0.7, IC.wood, size=0.18)
+    if level >= 3:
+        # hoist beam out of the gable with a rope and hook
+        ym = (y0 + y1) / 2
+        a, b = c.P(x1, ym, zw + 0.3), c.P(x1 + 0.3, ym, zw + 0.3)
+        c.limb(a, b, "#5a3a20", 7)
+        c.line(b, (b[0], b[1] + 60), "#d8c7a0", 2.5)
+        c.path(f"M{f2(b[0])},{f2(b[1] + 60)} q8,2 6,10 q-3,5 -8,1", "none", "#5a5a5a", 3)
+    if level >= 2:
+        # lean-to on the right with logs and stone under it
+        lx0, ly0, lx1, ly1 = x1 + 0.08, y0 + 0.05, 1.92, y1 - 0.05
+        for (px, py) in ((lx1, ly0), (lx1, ly1)):
+            c.box(px - 0.03, py - 0.03, 0, px + 0.03, py + 0.03, 0.55, "#c48a4f", "#a8703b", "#8f5f35", sw=2)
+        log_pile(c, lx0, ly0 + 0.4, lx1 - 0.06, z_rows=3)
+        stone_blocks(c, lx0 + 0.02, ly0 + 0.55, 5 if level >= 3 else 3)
+        q = c.PP([(lx0 - 0.02, ly0 - 0.06, 0.66), (lx0 - 0.02, ly1 + 0.06, 0.66), (lx1 + 0.08, ly1 + 0.06, 0.55), (lx1 + 0.08, ly0 - 0.06, 0.55)])
+        c.poly(q, c.lin([(0, "#8795a4"), (1, "#5f6b78")], 0, 0, 1, 0), OUT, 2.5)
+        c.shadow_pts([(lx0, ly0, 0.66), (lx0, ly1, 0.66), (lx1, ly1, 0.55), (lx1, ly0, 0.55)])
+    # a small log pile in front of the left wall
+    log_pile(c, 0.3, 1.78, 0.95, z_rows=2)
+    if level >= 3:
+        crate(c, 1.3, 1.72, s=1.1, wood="#a8703b")
+        for k in range(3):
+            p = c.P(1.22 + k * 0.08, 1.72, 0.19)
+            c.path(f"M{f2(p[0] - 10)},{f2(p[1])} l20,0 l4,-6 l-20,0 Z", "#a9b4bf", OUT, 1.8)
+    return c
+
+
 def build():
     image("buildings", "barn", barn(), (4, 4), notes="pasture shelter / barn, 4x4")
+    for lv in (1, 2, 3):
+        image("buildings", f"granary_{lv}", granary(lv), (2, 2), notes=f"granary for goods, level {lv}, 2x2")
+        image("buildings", f"storehouse_{lv}", storehouse(lv), (2, 2), notes=f"storehouse for building materials, level {lv}, 2x2")
     image("buildings", "chicken_coop", coop(), (3, 3), notes="chicken coop with run, 3x3")
     image("buildings", "feed_mill", mill_body(), (2, 2), notes="windmill / feed mill body without sails, 2x2 – layer feed_mill_sails on top")
     fr = mill_sails_frames(8)
