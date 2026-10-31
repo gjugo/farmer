@@ -13,7 +13,7 @@ import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
 import { farmhouseOf } from '../logic/roads';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, grassArt, hash, SCENERY, unownedArt } from './art';
+import { ART_RES, ART_SCALE, CURSOR, grassArt, sceneryArt, seasonalArt, unownedArt } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
 import {
@@ -33,7 +33,7 @@ import {
   type Footprint,
   type Point,
 } from './iso';
-import { addArt, addShadow, fitScale, packAsset, textureKey } from './sprites';
+import { addArt, addShadow, artSeason, fitScale, packAsset, textureKey } from './sprites';
 
 const DRAG_THRESHOLD = 8;
 /** At zoom 2 the 2x art is drawn pixel for pixel. */
@@ -43,8 +43,6 @@ const KEY_PAN_SPEED = 700; // screen px per second
 const MAP_TOP_ROOM = ISO_H * 3;
 /** Build-menu categories whose base art lies flat on the ground (under every shadow and standing thing). */
 const FLAT_CATEGORIES = new Set(['decor', 'crops']);
-/** Share of locked tiles that get a tree, bush or rock. */
-const SCENERY_CHANCE = 0.07;
 /** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
 const SCENERY_CLEARANCE = 4;
 /** Construction sites are drawn faded to this, with a progress bar this wide (world pixels). */
@@ -218,7 +216,7 @@ export class FarmScene extends Phaser.Scene {
     this.groundBobs = new Array(width * height);
     for (let sum = 0; sum <= width + height - 2; sum++) {
       for (let x = Math.max(0, sum - height + 1); x <= Math.min(sum, width - 1); x++) {
-        this.groundBobs[(sum - x) * width + x] = blitter.create(0, 0, 'grass_0');
+        this.groundBobs[(sum - x) * width + x] = blitter.create(0, 0, seasonalArt('grass_0', artSeason()));
       }
     }
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) this.paintTile(x, y);
@@ -230,7 +228,7 @@ export class FarmScene extends Phaser.Scene {
     const { land } = this.farm.state;
     const bob = this.groundBobs[y * land.width + x];
     if (!bob) return;
-    const art = isOwned(land, x, y) ? grassArt(x, y) : unownedArt(x, y);
+    const art = seasonalArt(isOwned(land, x, y) ? grassArt(x, y) : unownedArt(x, y), artSeason());
     const [ax, ay] = packAsset(art)?.res[ART_RES].anchor ?? [0, 0];
     // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
     const top = gridToWorld(x, y);
@@ -238,7 +236,7 @@ export class FarmScene extends Phaser.Scene {
   }
 
   /**
-   * A few trees, bushes and rocks on locked land, scattered from a fixed seed (not saved), away from the
+   * A few trees, bushes, rocks and ponds on locked land, scattered from a fixed seed (not saved), away from the
    * farm's edge. They go when their land is bought.
    */
   private placeScenery(): void {
@@ -254,8 +252,8 @@ export class FarmScene extends Phaser.Scene {
     };
     for (let y = 0; y < land.height; y++) {
       for (let x = 0; x < land.width; x++) {
-        if ((hash(x, y, 7) % 1000) / 1000 >= SCENERY_CHANCE || isOwned(land, x, y) || nearOwned(x, y)) continue;
-        const art = SCENERY[hash(x, y, 11) % SCENERY.length];
+        const art = sceneryArt(x, y);
+        if (!art || isOwned(land, x, y) || nearOwned(x, y)) continue;
         const at = gridToWorld(x, y);
         this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img: addArt(this, at.x, at.y, art) });
         const shadow = addShadow(this, at.x, at.y, art);

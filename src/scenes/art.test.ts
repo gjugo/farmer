@@ -9,7 +9,19 @@ import { ITEM_LIST, splitIcons } from '../data/items';
 import { GRANARY_PILES, PILE_STAGES, STOREHOUSE_PILES } from '../data/resources';
 import { HOUSE_PILES } from '../logic/stockpiles';
 import '../data/processing';
+import { SEASONS } from '../data/seasons';
+import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from '../logic/constants';
 import {
+  baseArt,
+  noteWinterArt,
+  POND,
+  sceneryArt,
+  SCENERY,
+  SEASONAL_ART,
+  seasonalArt,
+  seasonalComposed,
+  STORAGE_ART,
+  storageArt,
   ART_RES,
   artFor,
   COMPOSED,
@@ -39,6 +51,7 @@ import { ISO_H, ISO_W } from './iso';
 const PACK = resolve(__dirname, '../../public/assets/farm');
 const manifest = JSON.parse(readFileSync(resolve(PACK, 'manifest.json'), 'utf8')) as PackManifest;
 const assets = new Map(manifest.assets.map((a) => [a.name, a]));
+noteWinterArt(manifest);
 
 describe('path autotile', () => {
   // Every one of the 16 neighbour masks, with the piece that joins exactly those edges.
@@ -170,6 +183,93 @@ describe('art pack', () => {
 
   it('uses the shadow suffix of the pack’s files', () => {
     expect(assets.get('chicken_coop')!.res['2x'].shadow).toBe(`2x/buildings/chicken_coop${SHADOW}.png`);
+  });
+});
+
+describe('seasonal art', () => {
+  it('maps base art to its season', () => {
+    expect(seasonalArt('grass_1', 'winter')).toBe('grass_1_winter');
+    expect(seasonalArt('unowned_0', 'spring')).toBe('unowned_0_spring');
+    expect(seasonalArt('path_ne_sw', 'autumn')).toBe('path_ne_sw_autumn');
+    expect(seasonalArt('tree_oak', 'summer')).toBe('tree_oak_summer');
+    expect(seasonalArt(POND, 'winter')).toBe('pond_winter');
+    expect(seasonalArt('tree_oak_shadow', 'winter')).toBe('tree_oak_winter_shadow');
+    // composed at boot from the seasonal tiles
+    expect(seasonalArt('field', 'winter')).toBe('field_winter');
+    expect(seasonalArt('pasture-grass', 'autumn')).toBe('pasture-grass_autumn');
+  });
+
+  it('gives buildings snow in winter only, and leaves art without seasons alone', () => {
+    expect(seasonalArt('farmhouse', 'winter')).toBe('farmhouse_winter');
+    expect(seasonalArt('farmhouse', 'summer')).toBe('farmhouse');
+    expect(seasonalArt('chicken_coop_shadow', 'winter')).toBe('chicken_coop_winter_shadow');
+    for (const name of ['farmer', 'cow', 'fence_post', 'wheat_2_growing', 'feed_mill_sails', 'missing', 'crop-sparkle']) {
+      for (const season of SEASONS) expect(seasonalArt(name, season), name).toBe(name);
+    }
+  });
+
+  it('finds the base art again', () => {
+    for (const name of [...SEASONAL_ART, 'farmhouse', 'granary_2', 'field', 'tree_oak_shadow']) {
+      for (const season of SEASONS) expect(baseArt(seasonalArt(name, season))).toBe(name);
+    }
+    expect(baseArt('farmer')).toBe('farmer');
+    expect(baseArt('farmhouse_spring')).toBe('farmhouse_spring'); // not a sprite the pack has
+  });
+
+  it('every base sprite with seasonal versions has all four in the manifest, the same size and anchor', () => {
+    for (const name of SEASONAL_ART) {
+      const base = assets.get(name)!;
+      expect(base, name).toBeDefined();
+      for (const season of SEASONS) {
+        const art = assets.get(`${name}_${season}`);
+        expect(art, `${name}_${season}`).toBeDefined();
+        expect(existsSync(resolve(PACK, art!.res[ART_RES].file)), art!.res[ART_RES].file).toBe(true);
+        if (art!.category === 'tiles') {
+          // The ground Blitter only swaps frames: every season's tile must sit exactly where the base one does.
+          expect(art!.res[ART_RES].anchor, art!.name).toEqual(base.res[ART_RES].anchor);
+          expect([art!.res[ART_RES].w, art!.res[ART_RES].h], art!.name).toEqual([base.res[ART_RES].w, base.res[ART_RES].h]);
+        }
+      }
+    }
+  });
+
+  it('every building sprite has a winter version, so every building gets snow on its roof', () => {
+    const buildings = manifest.assets.filter((a) => a.category === 'buildings' && !a.name.endsWith('_winter') && a.type === 'image');
+    expect(buildings.length).toBeGreaterThan(10);
+    for (const b of buildings) {
+      expect(assets.has(`${b.name}_winter`), `${b.name}_winter`).toBe(true);
+      expect(seasonalArt(b.name, 'winter')).toBe(`${b.name}_winter`);
+    }
+    // the farmhouse, coop, processors and every storage level the game draws
+    const drawn = [...listBuildables().map((b) => artFor(b.texture)), ...(Object.keys(STORAGE_ART) as (keyof typeof STORAGE_ART)[]).flatMap((t) => [1, 2, 3].map((l) => storageArt(t, l)))];
+    for (const name of drawn) {
+      if (assets.get(name)?.category === 'buildings') expect(usedArt(), name).toContain(`${name}_winter`);
+    }
+  });
+
+  it('composes fields and the pasture for every season from seasonal tiles', () => {
+    const composed = seasonalComposed();
+    for (const key of Object.keys(COMPOSED)) for (const season of SEASONS) expect(composed[`${key}_${season}`], `${key}_${season}`).toBeDefined();
+    for (const tile of composed.field_winter.tiles) expect(tile.art).toBe('soil_tilled_x_winter');
+    for (const { tiles } of Object.values(composed)) for (const t of tiles) expect(assets.has(t.art), t.art).toBe(true);
+  });
+
+  it('scatters a few ponds on the locked land of a new map, apart from the trees, bushes and rocks', () => {
+    let ponds = 0;
+    let other = 0;
+    for (let y = 0; y < MAP_HEIGHT; y++) {
+      for (let x = 0; x < MAP_WIDTH; x++) {
+        const art = sceneryArt(x, y);
+        // away from the starting land, like FarmScene.placeScenery
+        const near = x >= START_LAND.x - 4 && x < START_LAND.x + START_LAND.w + 4 && y >= START_LAND.y - 4 && y < START_LAND.y + START_LAND.h + 4;
+        if (!art || near) continue;
+        if (art === POND) ponds++;
+        else other++;
+        expect([...SCENERY, POND]).toContain(art);
+      }
+    }
+    expect(ponds).toBeGreaterThanOrEqual(2);
+    expect(ponds).toBeLessThan(other / 3);
   });
 });
 

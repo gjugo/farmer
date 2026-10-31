@@ -1,11 +1,13 @@
 import type Phaser from 'phaser';
-import { ART_SCALE, artFor, COMPOSED, SHADOW, type PackAsset, type PackManifest } from './art';
+import type { Season } from '../data/seasons';
+import { ART_SCALE, artFor, COMPOSED, noteWinterArt, seasonalArt, SHADOW, type PackAsset, type PackManifest } from './art';
 import { ISO_W } from './iso';
 
 /**
  * Drawing pack sprites: every pack texture's frames carry the manifest anchor as their pivot (set by the Boot
  * scene), so an image placed at a point stands on it the way the pack intends. Sprites are 2x art drawn at
- * ART_SCALE.
+ * ART_SCALE. Everything drawn through `textureKey`, `addArt` and `addShadow` gets the season being drawn (see
+ * `setArtSeason`).
  */
 
 const pack = new Map<string, PackAsset>();
@@ -13,6 +15,18 @@ const pack = new Map<string, PackAsset>();
 export function setPack(manifest: PackManifest): void {
   pack.clear();
   for (const asset of manifest.assets) pack.set(asset.name, asset);
+  noteWinterArt(manifest);
+}
+
+/** The season the farm is drawn in (src/features/seasons switches it). */
+let look: Season = 'spring';
+
+export function setArtSeason(season: Season): void {
+  look = season;
+}
+
+export function artSeason(): Season {
+  return look;
 }
 
 export function packAsset(name: string): PackAsset | undefined {
@@ -28,9 +42,11 @@ export function artFootprint(key: string): { w: number; h: number } {
   return fp && fp[0] > 0 && fp[1] > 0 ? { w: fp[0], h: fp[1] } : { w: 1, h: 1 };
 }
 
-/** The Phaser texture behind a game texture key, or `missing` when it was never loaded. */
+/** The Phaser texture behind a game texture key in the season being drawn, or `missing` when it was never loaded. */
 export function textureKey(scene: Phaser.Scene, key: string): string {
   const name = artFor(key);
+  const now = seasonalArt(name, look);
+  if (scene.textures.exists(now)) return now;
   return scene.textures.exists(name) ? name : 'missing';
 }
 
@@ -46,8 +62,8 @@ export function addArtSprite(scene: Phaser.Scene, x: number, y: number, key: str
 
 /** The shadow layer of a pack sprite at (x, y), or null when it has none. */
 export function addShadow(scene: Phaser.Scene, x: number, y: number, key: string): Phaser.GameObjects.Image | null {
-  const name = `${artFor(key)}${SHADOW}`;
-  return scene.textures.exists(name) ? scene.add.image(x, y, name).setScale(ART_SCALE) : null;
+  const name = textureKey(scene, `${artFor(key)}${SHADOW}`);
+  return name !== 'missing' ? scene.add.image(x, y, name).setScale(ART_SCALE) : null;
 }
 
 /**

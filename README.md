@@ -127,6 +127,15 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   Each crop is sown only in its seasons (wheat: spring–autumn, carrot: spring and autumn, corn: spring and summer),
   and only while it will be ripe before they end. A ripe crop keeps in the field, even into winter.
   The new farm's two starting fields come ploughed.
+- **Seasonal look:** the farm looks like its season. Spring is bright green with flowers and blossoming trees, summer a
+  deep warm green with dry patches, autumn ochre grass, fallen leaves and orange, red and yellow trees, winter snow on
+  the ground, paths, roofs and rocks, bare snowy trees, frozen fields and frozen ponds (a few small ponds lie on the
+  locked land as scenery). On top: a subtle colour grade and background on the farm camera (cooler in winter, warmer
+  in autumn; the HTML HUD is untouched) and weather particles in screen space (snowfall in winter, drifting leaves
+  in autumn, a few petals in spring, clear summers), at most 150 and thinner when zoomed out. The look follows the
+  game clock: at once on load, New game, debug **Next season** and after time away, with a 1.5 s crossfade when the
+  season comes round while playing. ⚙️ Settings → **Weather effects** turns the particles off (localStorage
+  `farmer.weather`); it starts off when the system asks for reduced motion.
 - **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
   Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
   (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
@@ -154,7 +163,9 @@ granaries and storehouses) in placement order as `{ id, type, pools, piles, draw
 chips are `data-testid="resource-<category>"` (`crops`, `animal`, `feed`, `goods`, `materials`) with `data-count` (and
 `data-delta` while a change shows); the pools are `resources-pool-goods` / `resources-pool-materials` (`data-used`,
 `data-capacity`, class `storage-ok|warn|full`), the popover `resources-popover` with rows `resources-item-<id>`.
-`window.farm.season` is `{ season, dayOfSeason, msLeft }` (e.g. `season: 'winter'`, game ms until the next season).
+`window.farm.season` is `{ season, dayOfSeason, msLeft, look, weather }` (e.g. `season: 'winter'`, game ms until the
+next season); `look` is the season the farm is drawn in (it follows `season`, a crossfade at most behind) and
+`weather` the number of weather particles alive now (0 in summer or with weather effects off, never over 150).
 `window.farm.workers` is `{ farmers, free, hireCost, list, assignments, plans, recipes, sites }`: `list[i]` is
 `{ farmer, workplace, job, activity }` (workplace: object id or null; job: the running job's kind or null; activity:
 the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
@@ -219,7 +230,8 @@ src/
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
     processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
-    seasons/           season-change toasts, `window.farm.season`
+    seasons/           season-change toasts, the seasonal look (art swap, colour grade, crossfade), weather
+                       particles and their setting, `window.farm.season`
     market/            🏪 Market HUD button: sell panel and Buy section for building materials
     storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade,
                        `window.farm.storage`, the one-time notice for old saves; stock piles in the yards

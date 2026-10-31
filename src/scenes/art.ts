@@ -4,6 +4,8 @@
  * unit-tested; the Boot scene loads what is listed here.
  */
 
+import { SEASONS, type Season } from '../data/seasons';
+
 /** Where the pack lives, relative to the page (vite `base: './'`). */
 export const ART_BASE = 'assets/farm/';
 /** The resolution loaded into Phaser: crisp on phones and when zoomed in. */
@@ -240,6 +242,74 @@ export function pileArt(kind: string, stage: number): string | null {
 
 /** Scenery standing on locked land (gone once the land is bought). */
 export const SCENERY = ['tree_oak', 'tree_apple', 'tree_pine', 'bush', 'bush_berry', 'rock_small', 'rock_large'] as const;
+/** A small decorative pond on locked land (no gameplay); scattered apart from the other scenery. */
+export const POND = 'pond';
+/** Share of locked tiles that get a tree, bush or rock, and (of the rest) per mille that get a pond. */
+export const SCENERY_CHANCE = 0.07;
+export const POND_PER_MILLE = 14;
+
+/** The scenery a tile would carry if it is locked land away from the farm, from a fixed seed: null for none. */
+export function sceneryArt(x: number, y: number): string | null {
+  if ((hash(x, y, 7) % 1000) / 1000 < SCENERY_CHANCE) return SCENERY[hash(x, y, 11) % SCENERY.length];
+  return hash(x, y, 13) % 1000 < POND_PER_MILLE ? POND : null;
+}
+
+// Seasons -----------------------------------------------------------------------
+
+/**
+ * Sprites drawn in four seasonal versions, `<name>_<season>`: the ground (grass, locked land, every path piece,
+ * soil) and the scenery. Fields and the pasture are composed per season from these at boot.
+ */
+export const SEASONAL_ART: readonly string[] = [
+  ...GRASS,
+  ...UNOWNED,
+  ...Array.from({ length: 16 }, (_, m) => pathPiece(m)),
+  SOIL.dry,
+  SOIL.wet,
+  ...SCENERY,
+  POND,
+];
+const seasonal = new Set<string>(SEASONAL_ART);
+
+/** Buildings with a `<name>_winter` version (snow on the roof). The art generator makes one for every building. */
+const winterOnly = new Set<string>();
+
+/** Notes which buildings the pack has a winter version of: every `buildings` sprite with a `<name>_winter` twin. */
+export function noteWinterArt(manifest: PackManifest): void {
+  const names = new Set(manifest.assets.map((a) => a.name));
+  winterOnly.clear();
+  for (const a of manifest.assets) if (a.category === 'buildings' && names.has(`${a.name}_winter`)) winterOnly.add(a.name);
+}
+
+const SEASON_SUFFIX = new RegExp(`_(${SEASONS.join('|')})$`);
+
+/**
+ * The sprite (or composed texture) to draw for `name` in `season`: `grass_1` → `grass_1_winter`, `farmhouse` →
+ * `farmhouse_winter` in winter only, a shadow layer follows its sprite. Names without seasonal art come back as is.
+ */
+export function seasonalArt(name: string, season: Season): string {
+  if (name.endsWith(SHADOW)) return `${seasonalArt(name.slice(0, -SHADOW.length), season)}${SHADOW}`;
+  if (seasonal.has(name) || Object.hasOwn(COMPOSED, name)) return `${name}_${season}`;
+  return season === 'winter' && winterOnly.has(name) ? `${name}_winter` : name;
+}
+
+/** The base name of a seasonal sprite (`grass_1_winter` → `grass_1`); other names come back as is. */
+export function baseArt(name: string): string {
+  if (name.endsWith(SHADOW)) return `${baseArt(name.slice(0, -SHADOW.length))}${SHADOW}`;
+  const m = SEASON_SUFFIX.exec(name);
+  if (!m) return name;
+  const base = name.slice(0, m.index);
+  return seasonal.has(base) || Object.hasOwn(COMPOSED, base) || (m[1] === 'winter' && winterOnly.has(base)) ? base : name;
+}
+
+/** Every season's version of the composed textures (fields, pasture), laid out from seasonal tiles. */
+export function seasonalComposed(): Record<string, Composed> {
+  const out: Record<string, Composed> = {};
+  for (const [key, c] of Object.entries(COMPOSED)) {
+    for (const season of SEASONS) out[`${key}_${season}`] = { ...c, tiles: c.tiles.map((t) => ({ ...t, art: seasonalArt(t.art, season) })) };
+  }
+  return out;
+}
 
 /** Every pack sprite the game draws; the Boot scene loads these (and their shadows). */
 export function usedArt(): string[] {
@@ -260,7 +330,10 @@ export function usedArt(): string[] {
     FARMER_ART,
     ...ICON_ART,
     ...SCENERY,
+    POND,
     ...PILE_ART.flatMap((k) => Array.from({ length: PILE_ART_STAGES }, (_, i) => pileArt(k, i + 1)!)),
   ]);
+  // Every season's version of what is used (ground and scenery in four seasons, buildings in winter).
+  for (const name of [...names]) for (const season of SEASONS) names.add(seasonalArt(name, season));
   return [...names];
 }

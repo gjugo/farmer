@@ -4744,6 +4744,44 @@
    }
   },
   {
+   "name": "pond",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small decorative pond",
+   "res": {
+    "2x": {
+     "file": "2x/props/pond.png",
+     "w": 144,
+     "h": 108,
+     "anchor": [
+      74.0,
+      2.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/props/pond.png",
+     "w": 72,
+     "h": 54,
+     "anchor": [
+      37.0,
+      1.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    }
+   }
+  },
+  {
    "name": "farmer",
    "category": "people",
    "type": "spritesheet",
@@ -6541,6 +6579,5718 @@
      "origin": [
       0.37037,
       -0.20455
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_0_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_0_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_0_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_1_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_1_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_1_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_2_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_2_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_2_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_single_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_single in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_single_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_single_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw_nw in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_x_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_x_spring.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_x_spring.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_x_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_x_spring.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_x_spring.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_y_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_y_spring.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_y_spring.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_y_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_y_spring.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_y_spring.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_0_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "unowned land in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_0_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_0_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_1_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "overgrown unowned land in spring",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_1_spring.png",
+     "w": 256,
+     "h": 168,
+     "anchor": [
+      128.0,
+      40.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_1_spring.png",
+     "w": 128,
+     "h": 84,
+     "anchor": [
+      64.0,
+      20.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_0_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_0_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_0_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_1_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_1_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_1_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_2_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_2_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_2_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_single_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_single in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_single_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_single_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw_nw in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_x_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_x_summer.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_x_summer.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_x_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_x_summer.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_x_summer.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_y_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_y_summer.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_y_summer.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_y_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_y_summer.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_y_summer.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_0_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "unowned land in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_0_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_0_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_1_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "overgrown unowned land in summer",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_1_summer.png",
+     "w": 256,
+     "h": 168,
+     "anchor": [
+      128.0,
+      40.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_1_summer.png",
+     "w": 128,
+     "h": 84,
+     "anchor": [
+      64.0,
+      20.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_0_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_0_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_0_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_1_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_1_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_1_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_2_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_2_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_2_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_single_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_single in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_single_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_single_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw_nw in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_x_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_x_autumn.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_x_autumn.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_x_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_x_autumn.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_x_autumn.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_y_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_y_autumn.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_y_autumn.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_y_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_y_autumn.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_y_autumn.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_0_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "unowned land in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_0_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_0_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_1_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "overgrown unowned land in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_1_autumn.png",
+     "w": 256,
+     "h": 168,
+     "anchor": [
+      128.0,
+      40.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_1_autumn.png",
+     "w": 128,
+     "h": 84,
+     "anchor": [
+      64.0,
+      20.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_0_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_0_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_0_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_1_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_1_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_1_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_2_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_2_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_2_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_single_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_single in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_single_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_single_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_sw_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_sw_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_se_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_se_sw_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_se_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_se_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "path_ne_se_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "path_ne_se_sw_nw in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/path_ne_se_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/path_ne_se_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_x_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_x_winter.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_x_winter.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_x_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_x_winter.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_x_winter.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_tilled_y_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "tilled soil in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_tilled_y_winter.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_tilled_y_winter.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "soil_watered_y_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "watered soil in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/soil_watered_y_winter.png",
+     "w": 256,
+     "h": 136,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/soil_watered_y_winter.png",
+     "w": 128,
+     "h": 68,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_0_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "unowned land in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_0_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_0_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unowned_1_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "overgrown unowned land in winter",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/unowned_1_winter.png",
+     "w": 256,
+     "h": 168,
+     "anchor": [
+      128.0,
+      40.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/unowned_1_winter.png",
+     "w": 128,
+     "h": 84,
+     "anchor": [
+      64.0,
+      20.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_oak_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "round tree in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_oak_spring.png",
+     "w": 190,
+     "h": 280,
+     "shadow": "2x/props/tree_oak_spring_shadow.png",
+     "anchor": [
+      78.0,
+      144.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_oak_spring.png",
+     "w": 95,
+     "h": 140,
+     "shadow": "1x/props/tree_oak_spring_shadow.png",
+     "anchor": [
+      39.0,
+      72.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_apple_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "apple tree in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_apple_spring.png",
+     "w": 198,
+     "h": 280,
+     "shadow": "2x/props/tree_apple_spring_shadow.png",
+     "anchor": [
+      86.0,
+      144.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_apple_spring.png",
+     "w": 99,
+     "h": 140,
+     "shadow": "1x/props/tree_apple_spring_shadow.png",
+     "anchor": [
+      43.0,
+      72.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_pine_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pine tree in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_pine_spring.png",
+     "w": 152,
+     "h": 290,
+     "shadow": "2x/props/tree_pine_spring_shadow.png",
+     "anchor": [
+      66.0,
+      168.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_pine_spring.png",
+     "w": 76,
+     "h": 145,
+     "shadow": "1x/props/tree_pine_spring_shadow.png",
+     "anchor": [
+      33.0,
+      84.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "bush in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_spring.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_spring_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_spring.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_spring_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_berry_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "berry bush in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_berry_spring.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_berry_spring_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_berry_spring.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_berry_spring_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_small_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small rock in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_small_spring.png",
+     "w": 70,
+     "h": 60,
+     "shadow": "2x/props/rock_small_spring_shadow.png",
+     "anchor": [
+      32.0,
+      -32.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_small_spring.png",
+     "w": 35,
+     "h": 30,
+     "shadow": "1x/props/rock_small_spring_shadow.png",
+     "anchor": [
+      16.0,
+      -16.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_large_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rock cluster in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_large_spring.png",
+     "w": 148,
+     "h": 82,
+     "shadow": "2x/props/rock_large_spring_shadow.png",
+     "anchor": [
+      70.0,
+      -18.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_large_spring.png",
+     "w": 74,
+     "h": 41,
+     "shadow": "1x/props/rock_large_spring_shadow.png",
+     "anchor": [
+      35.0,
+      -9.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    }
+   }
+  },
+  {
+   "name": "pond_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small decorative pond in spring",
+   "res": {
+    "2x": {
+     "file": "2x/props/pond_spring.png",
+     "w": 144,
+     "h": 108,
+     "anchor": [
+      74.0,
+      2.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/props/pond_spring.png",
+     "w": 72,
+     "h": 54,
+     "anchor": [
+      37.0,
+      1.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_oak_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "round tree in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_oak_summer.png",
+     "w": 190,
+     "h": 280,
+     "shadow": "2x/props/tree_oak_summer_shadow.png",
+     "anchor": [
+      78.0,
+      144.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_oak_summer.png",
+     "w": 95,
+     "h": 140,
+     "shadow": "1x/props/tree_oak_summer_shadow.png",
+     "anchor": [
+      39.0,
+      72.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_apple_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "apple tree in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_apple_summer.png",
+     "w": 198,
+     "h": 280,
+     "shadow": "2x/props/tree_apple_summer_shadow.png",
+     "anchor": [
+      86.0,
+      144.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_apple_summer.png",
+     "w": 99,
+     "h": 140,
+     "shadow": "1x/props/tree_apple_summer_shadow.png",
+     "anchor": [
+      43.0,
+      72.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_pine_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pine tree in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_pine_summer.png",
+     "w": 152,
+     "h": 290,
+     "shadow": "2x/props/tree_pine_summer_shadow.png",
+     "anchor": [
+      66.0,
+      168.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_pine_summer.png",
+     "w": 76,
+     "h": 145,
+     "shadow": "1x/props/tree_pine_summer_shadow.png",
+     "anchor": [
+      33.0,
+      84.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "bush in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_summer.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_summer_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_summer.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_summer_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_berry_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "berry bush in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_berry_summer.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_berry_summer_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_berry_summer.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_berry_summer_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_small_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small rock in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_small_summer.png",
+     "w": 70,
+     "h": 60,
+     "shadow": "2x/props/rock_small_summer_shadow.png",
+     "anchor": [
+      32.0,
+      -32.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_small_summer.png",
+     "w": 35,
+     "h": 30,
+     "shadow": "1x/props/rock_small_summer_shadow.png",
+     "anchor": [
+      16.0,
+      -16.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_large_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rock cluster in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_large_summer.png",
+     "w": 148,
+     "h": 82,
+     "shadow": "2x/props/rock_large_summer_shadow.png",
+     "anchor": [
+      70.0,
+      -18.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_large_summer.png",
+     "w": 74,
+     "h": 41,
+     "shadow": "1x/props/rock_large_summer_shadow.png",
+     "anchor": [
+      35.0,
+      -9.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    }
+   }
+  },
+  {
+   "name": "pond_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small decorative pond in summer",
+   "res": {
+    "2x": {
+     "file": "2x/props/pond_summer.png",
+     "w": 144,
+     "h": 108,
+     "anchor": [
+      74.0,
+      2.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/props/pond_summer.png",
+     "w": 72,
+     "h": 54,
+     "anchor": [
+      37.0,
+      1.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_oak_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "round tree in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_oak_autumn.png",
+     "w": 190,
+     "h": 280,
+     "shadow": "2x/props/tree_oak_autumn_shadow.png",
+     "anchor": [
+      78.0,
+      144.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_oak_autumn.png",
+     "w": 95,
+     "h": 140,
+     "shadow": "1x/props/tree_oak_autumn_shadow.png",
+     "anchor": [
+      39.0,
+      72.0
+     ],
+     "origin": [
+      0.41053,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_apple_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "apple tree in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_apple_autumn.png",
+     "w": 198,
+     "h": 280,
+     "shadow": "2x/props/tree_apple_autumn_shadow.png",
+     "anchor": [
+      86.0,
+      144.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_apple_autumn.png",
+     "w": 99,
+     "h": 140,
+     "shadow": "1x/props/tree_apple_autumn_shadow.png",
+     "anchor": [
+      43.0,
+      72.0
+     ],
+     "origin": [
+      0.43434,
+      0.51429
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_pine_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pine tree in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_pine_autumn.png",
+     "w": 152,
+     "h": 290,
+     "shadow": "2x/props/tree_pine_autumn_shadow.png",
+     "anchor": [
+      66.0,
+      168.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_pine_autumn.png",
+     "w": 76,
+     "h": 145,
+     "shadow": "1x/props/tree_pine_autumn_shadow.png",
+     "anchor": [
+      33.0,
+      84.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "bush in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_autumn.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_autumn_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_autumn.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_autumn_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_berry_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "berry bush in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_berry_autumn.png",
+     "w": 126,
+     "h": 112,
+     "shadow": "2x/props/bush_berry_autumn_shadow.png",
+     "anchor": [
+      58.0,
+      6.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_berry_autumn.png",
+     "w": 63,
+     "h": 56,
+     "shadow": "1x/props/bush_berry_autumn_shadow.png",
+     "anchor": [
+      29.0,
+      3.0
+     ],
+     "origin": [
+      0.46032,
+      0.05357
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_small_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small rock in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_small_autumn.png",
+     "w": 70,
+     "h": 60,
+     "shadow": "2x/props/rock_small_autumn_shadow.png",
+     "anchor": [
+      32.0,
+      -32.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_small_autumn.png",
+     "w": 35,
+     "h": 30,
+     "shadow": "1x/props/rock_small_autumn_shadow.png",
+     "anchor": [
+      16.0,
+      -16.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_large_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rock cluster in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_large_autumn.png",
+     "w": 148,
+     "h": 82,
+     "shadow": "2x/props/rock_large_autumn_shadow.png",
+     "anchor": [
+      70.0,
+      -18.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_large_autumn.png",
+     "w": 74,
+     "h": 41,
+     "shadow": "1x/props/rock_large_autumn_shadow.png",
+     "anchor": [
+      35.0,
+      -9.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    }
+   }
+  },
+  {
+   "name": "pond_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small decorative pond in autumn",
+   "res": {
+    "2x": {
+     "file": "2x/props/pond_autumn.png",
+     "w": 144,
+     "h": 108,
+     "anchor": [
+      74.0,
+      2.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/props/pond_autumn.png",
+     "w": 72,
+     "h": 54,
+     "anchor": [
+      37.0,
+      1.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_oak_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "round tree in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_oak_winter.png",
+     "w": 152,
+     "h": 260,
+     "shadow": "2x/props/tree_oak_winter_shadow.png",
+     "anchor": [
+      70.0,
+      140.0
+     ],
+     "origin": [
+      0.46053,
+      0.53846
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_oak_winter.png",
+     "w": 76,
+     "h": 130,
+     "shadow": "1x/props/tree_oak_winter_shadow.png",
+     "anchor": [
+      35.0,
+      70.0
+     ],
+     "origin": [
+      0.46053,
+      0.53846
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_apple_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "apple tree in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_apple_winter.png",
+     "w": 132,
+     "h": 268,
+     "shadow": "2x/props/tree_apple_winter_shadow.png",
+     "anchor": [
+      50.0,
+      148.0
+     ],
+     "origin": [
+      0.37879,
+      0.55224
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_apple_winter.png",
+     "w": 66,
+     "h": 134,
+     "shadow": "1x/props/tree_apple_winter_shadow.png",
+     "anchor": [
+      25.0,
+      74.0
+     ],
+     "origin": [
+      0.37879,
+      0.55224
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_pine_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pine tree in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_pine_winter.png",
+     "w": 152,
+     "h": 290,
+     "shadow": "2x/props/tree_pine_winter_shadow.png",
+     "anchor": [
+      66.0,
+      168.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_pine_winter.png",
+     "w": 76,
+     "h": 145,
+     "shadow": "1x/props/tree_pine_winter_shadow.png",
+     "anchor": [
+      33.0,
+      84.0
+     ],
+     "origin": [
+      0.43421,
+      0.57931
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "bush in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_winter.png",
+     "w": 98,
+     "h": 108,
+     "shadow": "2x/props/bush_winter_shadow.png",
+     "anchor": [
+      44.0,
+      8.0
+     ],
+     "origin": [
+      0.44898,
+      0.07407
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_winter.png",
+     "w": 49,
+     "h": 54,
+     "shadow": "1x/props/bush_winter_shadow.png",
+     "anchor": [
+      22.0,
+      4.0
+     ],
+     "origin": [
+      0.44898,
+      0.07407
+     ]
+    }
+   }
+  },
+  {
+   "name": "bush_berry_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "berry bush in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/bush_berry_winter.png",
+     "w": 98,
+     "h": 110,
+     "shadow": "2x/props/bush_berry_winter_shadow.png",
+     "anchor": [
+      44.0,
+      10.0
+     ],
+     "origin": [
+      0.44898,
+      0.09091
+     ]
+    },
+    "1x": {
+     "file": "1x/props/bush_berry_winter.png",
+     "w": 49,
+     "h": 55,
+     "shadow": "1x/props/bush_berry_winter_shadow.png",
+     "anchor": [
+      22.0,
+      5.0
+     ],
+     "origin": [
+      0.44898,
+      0.09091
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_small_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small rock in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_small_winter.png",
+     "w": 70,
+     "h": 60,
+     "shadow": "2x/props/rock_small_winter_shadow.png",
+     "anchor": [
+      32.0,
+      -32.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_small_winter.png",
+     "w": 35,
+     "h": 30,
+     "shadow": "1x/props/rock_small_winter_shadow.png",
+     "anchor": [
+      16.0,
+      -16.0
+     ],
+     "origin": [
+      0.45714,
+      -0.53333
+     ]
+    }
+   }
+  },
+  {
+   "name": "rock_large_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rock cluster in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/rock_large_winter.png",
+     "w": 148,
+     "h": 82,
+     "shadow": "2x/props/rock_large_winter_shadow.png",
+     "anchor": [
+      70.0,
+      -18.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    },
+    "1x": {
+     "file": "1x/props/rock_large_winter.png",
+     "w": 74,
+     "h": 41,
+     "shadow": "1x/props/rock_large_winter_shadow.png",
+     "anchor": [
+      35.0,
+      -9.0
+     ],
+     "origin": [
+      0.47297,
+      -0.21951
+     ]
+    }
+   }
+  },
+  {
+   "name": "pond_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "small decorative pond in winter",
+   "res": {
+    "2x": {
+     "file": "2x/props/pond_winter.png",
+     "w": 144,
+     "h": 108,
+     "anchor": [
+      74.0,
+      2.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/props/pond_winter.png",
+     "w": 72,
+     "h": 54,
+     "anchor": [
+      37.0,
+      1.0
+     ],
+     "origin": [
+      0.51389,
+      0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "barn_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    4,
+    4
+   ],
+   "notes": "barn in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/barn_winter.png",
+     "w": 1008,
+     "h": 676,
+     "shadow": "2x/buildings/barn_winter_shadow.png",
+     "anchor": [
+      504.0,
+      168.0
+     ],
+     "origin": [
+      0.5,
+      0.24852
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/barn_winter.png",
+     "w": 504,
+     "h": 338,
+     "shadow": "1x/buildings/barn_winter_shadow.png",
+     "anchor": [
+      252.0,
+      84.0
+     ],
+     "origin": [
+      0.5,
+      0.24852
+     ]
+    }
+   }
+  },
+  {
+   "name": "granary_1_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "granary_1 in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/granary_1_winter.png",
+     "w": 496,
+     "h": 390,
+     "shadow": "2x/buildings/granary_1_winter_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/granary_1_winter.png",
+     "w": 248,
+     "h": 195,
+     "shadow": "1x/buildings/granary_1_winter_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.5,
+      0.35385
+     ]
+    }
+   }
+  },
+  {
+   "name": "storehouse_1_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "storehouse_1 in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/storehouse_1_winter.png",
+     "w": 496,
+     "h": 402,
+     "shadow": "2x/buildings/storehouse_1_winter_shadow.png",
+     "anchor": [
+      248.0,
+      150.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/storehouse_1_winter.png",
+     "w": 248,
+     "h": 201,
+     "shadow": "1x/buildings/storehouse_1_winter_shadow.png",
+     "anchor": [
+      124.0,
+      75.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    }
+   }
+  },
+  {
+   "name": "granary_2_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "granary_2 in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/granary_2_winter.png",
+     "w": 518,
+     "h": 390,
+     "shadow": "2x/buildings/granary_2_winter_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.47876,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/granary_2_winter.png",
+     "w": 259,
+     "h": 195,
+     "shadow": "1x/buildings/granary_2_winter_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.47876,
+      0.35385
+     ]
+    }
+   }
+  },
+  {
+   "name": "storehouse_2_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "storehouse_2 in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/storehouse_2_winter.png",
+     "w": 496,
+     "h": 402,
+     "shadow": "2x/buildings/storehouse_2_winter_shadow.png",
+     "anchor": [
+      248.0,
+      150.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/storehouse_2_winter.png",
+     "w": 248,
+     "h": 201,
+     "shadow": "1x/buildings/storehouse_2_winter_shadow.png",
+     "anchor": [
+      124.0,
+      75.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    }
+   }
+  },
+  {
+   "name": "granary_3_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "granary_3 in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/granary_3_winter.png",
+     "w": 530,
+     "h": 390,
+     "shadow": "2x/buildings/granary_3_winter_shadow.png",
+     "anchor": [
+      248.0,
+      138.0
+     ],
+     "origin": [
+      0.46792,
+      0.35385
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/granary_3_winter.png",
+     "w": 265,
+     "h": 195,
+     "shadow": "1x/buildings/granary_3_winter_shadow.png",
+     "anchor": [
+      124.0,
+      69.0
+     ],
+     "origin": [
+      0.46792,
+      0.35385
+     ]
+    }
+   }
+  },
+  {
+   "name": "storehouse_3_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "storehouse_3 in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/storehouse_3_winter.png",
+     "w": 496,
+     "h": 402,
+     "shadow": "2x/buildings/storehouse_3_winter_shadow.png",
+     "anchor": [
+      248.0,
+      150.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/storehouse_3_winter.png",
+     "w": 248,
+     "h": 201,
+     "shadow": "1x/buildings/storehouse_3_winter_shadow.png",
+     "anchor": [
+      124.0,
+      75.0
+     ],
+     "origin": [
+      0.5,
+      0.37313
+     ]
+    }
+   }
+  },
+  {
+   "name": "chicken_coop_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "chicken_coop in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/chicken_coop_winter.png",
+     "w": 752,
+     "h": 504,
+     "shadow": "2x/buildings/chicken_coop_winter_shadow.png",
+     "anchor": [
+      376.0,
+      120.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/chicken_coop_winter.png",
+     "w": 376,
+     "h": 252,
+     "shadow": "1x/buildings/chicken_coop_winter_shadow.png",
+     "anchor": [
+      188.0,
+      60.0
+     ],
+     "origin": [
+      0.5,
+      0.2381
+     ]
+    }
+   }
+  },
+  {
+   "name": "feed_mill_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "feed_mill in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/feed_mill_winter.png",
+     "w": 496,
+     "h": 456,
+     "shadow": "2x/buildings/feed_mill_winter_shadow.png",
+     "anchor": [
+      248.0,
+      202.0
+     ],
+     "origin": [
+      0.5,
+      0.44298
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/feed_mill_winter.png",
+     "w": 248,
+     "h": 228,
+     "shadow": "1x/buildings/feed_mill_winter_shadow.png",
+     "anchor": [
+      124.0,
+      101.0
+     ],
+     "origin": [
+      0.5,
+      0.44298
+     ]
+    }
+   }
+  },
+  {
+   "name": "feed_mill_static_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "feed_mill_static in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/feed_mill_static_winter.png",
+     "w": 496,
+     "h": 522,
+     "shadow": "2x/buildings/feed_mill_static_winter_shadow.png",
+     "anchor": [
+      248.0,
+      268.0
+     ],
+     "origin": [
+      0.5,
+      0.51341
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/feed_mill_static_winter.png",
+     "w": 248,
+     "h": 261,
+     "shadow": "1x/buildings/feed_mill_static_winter_shadow.png",
+     "anchor": [
+      124.0,
+      134.0
+     ],
+     "origin": [
+      0.5,
+      0.51341
+     ]
+    }
+   }
+  },
+  {
+   "name": "dairy_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "dairy in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/dairy_winter.png",
+     "w": 624,
+     "h": 470,
+     "shadow": "2x/buildings/dairy_winter_shadow.png",
+     "anchor": [
+      248.0,
+      146.0
+     ],
+     "origin": [
+      0.39744,
+      0.31064
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/dairy_winter.png",
+     "w": 312,
+     "h": 235,
+     "shadow": "1x/buildings/dairy_winter_shadow.png",
+     "anchor": [
+      124.0,
+      73.0
+     ],
+     "origin": [
+      0.39744,
+      0.31064
+     ]
+    }
+   }
+  },
+  {
+   "name": "bakery_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "bakery in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/bakery_winter.png",
+     "w": 624,
+     "h": 566,
+     "shadow": "2x/buildings/bakery_winter_shadow.png",
+     "anchor": [
+      248.0,
+      242.0
+     ],
+     "origin": [
+      0.39744,
+      0.42756
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/bakery_winter.png",
+     "w": 312,
+     "h": 283,
+     "shadow": "1x/buildings/bakery_winter_shadow.png",
+     "anchor": [
+      124.0,
+      121.0
+     ],
+     "origin": [
+      0.39744,
+      0.42756
+     ]
+    }
+   }
+  },
+  {
+   "name": "weaving_hut_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "weaving_hut in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/weaving_hut_winter.png",
+     "w": 496,
+     "h": 396,
+     "shadow": "2x/buildings/weaving_hut_winter_shadow.png",
+     "anchor": [
+      248.0,
+      140.0
+     ],
+     "origin": [
+      0.5,
+      0.35354
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/weaving_hut_winter.png",
+     "w": 248,
+     "h": 198,
+     "shadow": "1x/buildings/weaving_hut_winter_shadow.png",
+     "anchor": [
+      124.0,
+      70.0
+     ],
+     "origin": [
+      0.5,
+      0.35354
+     ]
+    }
+   }
+  },
+  {
+   "name": "market_stall_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    1
+   ],
+   "notes": "market_stall in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/market_stall_winter.png",
+     "w": 416,
+     "h": 382,
+     "shadow": "2x/buildings/market_stall_winter_shadow.png",
+     "anchor": [
+      122.0,
+      148.0
+     ],
+     "origin": [
+      0.29327,
+      0.38743
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/market_stall_winter.png",
+     "w": 208,
+     "h": 191,
+     "shadow": "1x/buildings/market_stall_winter_shadow.png",
+     "anchor": [
+      61.0,
+      74.0
+     ],
+     "origin": [
+      0.29327,
+      0.38743
+     ]
+    }
+   }
+  },
+  {
+   "name": "farmhouse_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "farmhouse in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/farmhouse_winter.png",
+     "w": 516,
+     "h": 508,
+     "shadow": "2x/buildings/farmhouse_winter_shadow.png",
+     "anchor": [
+      248.0,
+      242.0
+     ],
+     "origin": [
+      0.48062,
+      0.47638
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/farmhouse_winter.png",
+     "w": 258,
+     "h": 254,
+     "shadow": "1x/buildings/farmhouse_winter_shadow.png",
+     "anchor": [
+      124.0,
+      121.0
+     ],
+     "origin": [
+      0.48062,
+      0.47638
+     ]
+    }
+   }
+  },
+  {
+   "name": "for_sale_sign_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "for_sale_sign in winter: snow on the roof",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/for_sale_sign_winter.png",
+     "w": 162,
+     "h": 230,
+     "shadow": "2x/buildings/for_sale_sign_winter_shadow.png",
+     "anchor": [
+      68.0,
+      92.0
+     ],
+     "origin": [
+      0.41975,
+      0.4
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/for_sale_sign_winter.png",
+     "w": 81,
+     "h": 115,
+     "shadow": "1x/buildings/for_sale_sign_winter_shadow.png",
+     "anchor": [
+      34.0,
+      46.0
+     ],
+     "origin": [
+      0.41975,
+      0.4
      ]
     }
    }
