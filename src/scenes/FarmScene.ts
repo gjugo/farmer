@@ -137,7 +137,7 @@ export class FarmScene extends Phaser.Scene {
     this.ghostReason = this.add
       .text(0, 0, '', {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: `${Math.round(FLOAT_FONT * 0.7)}px`,
+        fontSize: `${FLOAT_FONT}px`,
         fontStyle: 'bold',
         color: '#ffd0c8',
         stroke: '#2b2118',

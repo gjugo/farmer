@@ -89,6 +89,22 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   room; the welcome-back summary lists what was produced. Goals: "Build a woodcutter's lodge", "Produce 20 wood" and
   "Build a quarry" come after "Buy a plot of land", "Mine 5 iron" after "Mill 12 feed" (a lodge or quarry built
   earlier counts).
+- **Resources on the map:** wood, stone and iron come from real places. A new game generates (from a seed) and saves
+  forests, stone outcrops and iron veins: a grove of about 10 trees and a 2×2 outcrop on the starting land, large
+  forests and more outcrops (2×2 or 3×3) on locked land, and at least two iron veins, only on locked land, one in a
+  parcel next to the start. Bushes and ponds stay decorative; trees and deposits stay when their land is bought.
+  - A **lodge** works the trees within 6 tiles of its footprint: each cycle fells the nearest grown tree in range, which
+    becomes a stump when the cycle ends and grows back about a season (32 game-minutes) later. With no grown tree in
+    range it waits (*no grown tree within 6 tiles*), the panel says when the next one grows back, and its farmer sets
+    off again then. The build ghost shades the tiles it reaches and counts the trees there.
+  - A **quarry** must stand on a stone outcrop and a **mine** on an iron vein (at least one footprint tile on it); the
+    build ghost outlines the deposits and is red elsewhere. Deposits are finite (an outcrop 400 stone, a 3×3 one 600,
+    a vein 150 iron) and each cycle takes its yield from them; the panel shows what is left. A used-up deposit stops
+    the building (*Deposit used up*), turns to rubble, and the building can be demolished. The Market stays the
+    fallback.
+  - Grown trees and deposits block building (the ghost says why under it); stumps and rubble don't, and building over
+    them clears them for good. Regrowth and depletion follow game time, worked out from the stored times, so ×60, ×1
+    and time away give the same map.
 - Click an object to open its action panel.
 - **Land:** the map is 64 × 48 tiles and a new farm owns the 16 × 12 in its middle. The game opens on the owned land
   with about 2 tiles around it (on a phone it stays close enough that a tile is at least 40 px wide, centred on the
@@ -159,7 +175,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60 / ×300**
 (at ×60 a season passes in 32 real seconds, at ×300 in under 7 and a whole year in under half a minute),
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary) and
-**Refresh orders** (fills every order slot now). **+10** adds only what the granaries or storehouses have room for.
+**Refresh orders** (fills every order slot now) and **Regrow all trees** (every stump grows back at once). **+10** adds only what the granaries or storehouses have room for.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
@@ -171,6 +187,10 @@ so to click "just inside" an edge, stay at least 2 px inside it.
 level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`). A `woodcutter`, `quarry`
 or `mine` entry has `state: { cycle, waiting, day, today }`: the cycle being worked (`{ start, duration }` or null),
 the output waiting for room, and what was made on `day`.
+`window.farm.map` is `{ trees: { grown, stumps }, deposits, treeAt(x, y), sprites }`: `deposits` lists every stone
+outcrop and iron vein as `{ kind: 'stone' | 'iron', x, y, w, h, left, amount }`; `treeAt(x, y)` is null or
+`{ x, y, status: 'grown' | 'stump', felledAt, regrowsAt }` (a tree a lodge is felling is grown with a `felledAt` in the
+future); `sprites` counts the tree and deposit sprites drawn. The saved layer is `window.farm.ext.map`.
 `window.farm.stockpiles` is `{ buildings, sprites }`: `buildings` lists every storing building (farmhouse, finished
 granaries and storehouses) in placement order as `{ id, type, pools, piles, drawn }`, where `pools[pool]` is
 `{ held, capacity }` (its share of the pool's stock), `piles` maps each pile (`crops`, `animal`, `feed`, `goods`, `wood`,
@@ -216,6 +236,8 @@ src/
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
     storage.ts         goods/materials pools: capacity, used, spaceFor (Game.addItem takes only what fits), upgrades
     resources.ts       woodcutter, quarry, mine: production cycles, output waiting for room, idle reasons
+    maplayer.ts        the map layer: forests (felled time, lazy regrowth) and deposits (what is left), seeded
+                       generation for new games and old saves, the placement rule for trees and deposits
     stockpiles.ts      which stock pile stage each storing building shows (the shared pools split in placement order)
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
@@ -255,6 +277,8 @@ src/
                        `window.farm.storage`, the one-time notice for old saves; stock piles in the yards
                        (piles.ts, `window.farm.stockpiles`)
     resources/         woodcutter's lodge, quarry, mine: work chips/dust, waiting-output bubble, panel
+    nature/            trees, stumps, outcrops and veins on the map; the lodge's reach on the build ghost;
+                       `window.farm.map`
                        (data: src/data/resourceBuildings.ts, logic: src/logic/resources.ts)
     orders/            📋 Orders HUD button (with badge) and orders panel
     workers/           👨‍🌾 Farmers HUD button, hire and workplace sheet, farmers at work on the map, `window.farm.workers`
@@ -388,6 +412,8 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 Autosaved to `localStorage` (`farmer.save`) every 10 s and when the tab is hidden or closed.
 Saves are versioned (`SAVE_VERSION` in `src/logic/save.ts`). Missing fields fall back to
 defaults, so adding state needs no migration; restructuring does (add one to `migrations`).
+Version 10 added the map layer: an older save gets one generated around what it has built (never on top of it),
+with a full deposit under every quarry and mine and a grove of about 8 trees in reach of every lodge.
 Settings → **New game** resets the farm after a confirmation.
 
 ## Art

@@ -148,7 +148,7 @@ onGameStart((ctx) => {
   const label = scene.add
     .text(0, 0, '', {
       fontFamily: 'system-ui, sans-serif',
-      fontSize: `${Math.round(ISO_H * 0.32)}px`,
+      fontSize: `${Math.round(ISO_H * 0.5)}px`,
       fontStyle: 'bold',
       color: '#eaffd6',
       stroke: '#2b2118',
@@ -183,7 +183,7 @@ onGameStart((ctx) => {
             if (stump) stumps++;
             else grown++;
           }
-          reach.fillStyle(tree ? 0x9be36b : 0xf4f0c8, tree ? 0.38 : 0.16);
+          reach.fillStyle(tree ? 0x9be36b : 0xf4f0c8, tree ? 0.45 : 0.22);
           reach.fillPoints(diamond(x, y), true);
         }
       }
