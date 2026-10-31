@@ -102,10 +102,10 @@ export function sell(game: Seller, itemId: ItemId, qty = game.count(itemId)): nu
   return total;
 }
 
-/** Sells every sellable item in the inventory. Returns the total earned. */
+/** Sells every sellable item in the inventory but building materials, which are kept for building. Returns the total earned. */
 export function sellAll(game: Seller): number {
   let total = 0;
-  for (const itemId of Object.keys(game.state.inventory)) total += sell(game, itemId);
+  for (const itemId of Object.keys(game.state.inventory)) if (!isMaterial(itemId)) total += sell(game, itemId);
   return total;
 }
 

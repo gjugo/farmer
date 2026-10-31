@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { getBuildable, listBuildMenu } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { ITEM_LIST, ITEMS } from '../data/items';
-import { formatMaterials, MATERIAL_IDS, MATERIAL_UNLOCK } from '../data/materials';
+import { formatMaterials, MATERIAL_IDS, MATERIAL_UNLOCK, needsMaterialsMessage } from '../data/materials';
 import { GOALS } from '../data/progression';
 import { DAY_MS, START_LAND } from './constants';
 import { demolishMaterialsRefund, demolishRefund, Game } from './game';
-import { buy, buyPrice, dailyPrice, PRICE_MAX_FACTOR, sell } from './market';
+import { buy, buyPrice, dailyPrice, PRICE_MAX_FACTOR, sell, sellAll } from './market';
 import { isOrderable } from './orders';
 import { PROGRESSION, type ProgressionState } from './progression';
 import { deserialize, serialize } from './save';
@@ -55,6 +55,10 @@ describe('material costs', () => {
     }
     expect(formatMaterials({ wood: 6, stone: 8, iron: 2 })).toBe('6 🪵 Wood + 8 🪨 Stone + 2 🔩 Iron');
     expect(formatMaterials(undefined)).toBe('');
+    expect(needsMaterialsMessage([['wood', 4]])).toBe('Needs 4 more 🪵 Wood: buy it at the 🏪 Market');
+    expect(needsMaterialsMessage([['wood', 4], ['stone', 1], ['iron', 2]])).toBe(
+      'Needs 4 more 🪵 Wood, 1 more 🪨 Stone and 2 more 🔩 Iron: buy them at the 🏪 Market',
+    );
   });
 });
 
@@ -182,6 +186,12 @@ describe('buying at the Market', () => {
     expect(buy(game, 'wheat', 1)).toEqual({ ok: false, reason: 'not-for-sale' });
     expect(buy(game, 'wood', 0)).toEqual({ ok: false, reason: 'not-for-sale' });
     expect(game.money).toBe(500);
+  });
+
+  it('"sell everything" keeps the materials', () => {
+    const game = farm({ inventory: { wood: 3, egg: 2 } });
+    expect(sellAll(game)).toBe(2 * dailyPrice(1, 'egg')!);
+    expect(game.state.inventory).toEqual({ wood: 3 });
   });
 
   it('buying and selling back always loses money and gives no XP', () => {

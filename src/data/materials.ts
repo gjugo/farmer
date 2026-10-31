@@ -29,3 +29,14 @@ export function materialEntries(cost: MaterialCost | undefined): [MaterialId, nu
     return qty > 0 ? [[id, qty] as [MaterialId, number]] : [];
   });
 }
+
+/** "4 more 🪵 Wood and 2 more 🔩 Iron", for materials missing to pay a cost. */
+export function formatMissing(missing: readonly (readonly [MaterialId, number])[]): string {
+  const parts = missing.map(([id, qty]) => `${qty} more ${ITEMS[id].icon} ${ITEMS[id].name}`);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : (parts[0] ?? '');
+}
+
+/** Why a building can't be paid for, e.g. "Needs 4 more 🪵 Wood: buy it at the 🏪 Market". */
+export function needsMaterialsMessage(missing: readonly (readonly [MaterialId, number])[]): string {
+  return `Needs ${formatMissing(missing)}: buy ${missing.length > 1 ? 'them' : 'it'} at the 🏪 Market`;
+}

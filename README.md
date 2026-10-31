@@ -28,8 +28,19 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 
 - **Pan:** drag the map, or WASD / arrow keys. **Zoom:** mouse wheel or pinch.
 - **Build:** 🔨 Build → pick an item → click/tap a tile. A green ghost means the spot is valid.
-  Esc, right-click or **Cancel** leaves build mode.
-- **Demolish:** 🧹 → click an object (refunds 50% of its cost).
+  Esc, right-click or **Cancel** leaves build mode. Each item shows its money cost and the **building materials**
+  it takes (🪵 wood, 🪨 stone, 🔩 iron); what you can't pay for is greyed out with what is missing
+  ("Needs 4 more 🪵 Wood"), its ghost turns red, and placing it says to buy the rest at the 🏪 Market.
+  Paths and fields cost money only; coops, pastures and processing buildings need wood and/or stone,
+  and the dairy and loom also need iron.
+- **Demolish:** 🧹 → click an object, or **Demolish** in its panel (which asks first and says what comes back).
+  Gives back 50% of its money cost and 50% of its materials (rounded down).
+- **Market:** 🏪 Market sells anything in the inventory at today's price (**Sell everything** keeps building
+  materials). Its **Buy building materials** section sells wood, stone and (from level 3) iron: **Buy 1/5/10**, or
+  pick any amount with the − / + stepper. Buy prices change daily like sell prices and are always above anything the
+  Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
+  purchase is refused with a toast. New farms start without materials; the goal "Buy 10 wood" comes just before
+  "Build a chicken coop".
 - Click an object to open its action panel.
 - **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
   after their cycle; click the pen (or **Collect**) to pick up eggs, milk and wool.
@@ -90,7 +101,7 @@ src/
     placement.ts       canPlace / objectAt
     clock.ts           game clock, Day N, game-time timers
     seasons.ts         seasons from the game clock (2 days each), season runs for ploughing and sowing windows
-    market.ts          daily sell prices (base × 0.8–1.2 by day + item id), sell / sellAll
+    market.ts          daily sell prices (base × 0.8–1.2 by day + item id), sell / sellAll; material buy prices, buy
     parcels.ts         land parcels, adjacency, parcel prices ($500, ×1.5), buyParcel
     save.ts            versioned save/load + migrations + defaults
     slices.ts          feature-owned global state (GameState.ext)
@@ -100,6 +111,7 @@ src/
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
+    materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     buildables.ts      build menu registry (+ the core Path)
     crops.ts           crop catalogue (with each crop's seasons) + the Field buildable
     seasons.ts         season names, icons, length, ploughing seasons and cost
@@ -125,7 +137,7 @@ src/
     processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
     seasons/           season-change toasts, `window.farm.season`
-    market/            🏪 Market HUD button and sell panel
+    market/            🏪 Market HUD button: sell panel and Buy section for building materials
     orders/            📋 Orders HUD button (with badge) and orders panel
     workers/           👨‍🌾 Farmers HUD button, hire sheet, farmers at work on the map (data: src/data/workers.ts,
                        logic: src/logic/workers.ts; work goes through `withFarmer` in src/game/workers.ts)
@@ -163,7 +175,8 @@ interface CoopState { hens: number; timer: Timer | null }
 registerBuildable({
   id: 'coop',
   name: 'Chicken coop',
-  cost: 120,
+  cost: 100, // money
+  materials: { wood: 8 }, // optional: { wood?, stone?, iron? }, bought at the Market; omit for money-only
   footprint: { w: 3, h: 3 }, // the sprite's footprint in the manifest
   texture: 'chicken_coop',
   category: 'animals',
@@ -195,8 +208,10 @@ registerBehavior<CoopState>('coop', {
 });
 ```
 
-The build menu, ghost preview, placement rules, charging, demolish refunds, saving and the
-action panel all come for free. A "Demolish" action is appended to every object panel.
+The build menu (with money and material costs), ghost preview, placement rules, charging money and
+materials (`game.place` refuses with reason `money` or `materials` and changes nothing), demolish refunds
+(half of both), saving and the action panel all come for free. Keep money + materials at their usual buy
+prices (about $6 wood, $7 stone, $22 iron) in line with the level curve (`src/logic/balance.test.ts`). A "Demolish" action is appended to every object panel.
 
 ### Add a timer
 
@@ -220,6 +235,8 @@ events. There is no offline progress: time only passes while the game is open.
   `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the farmhouse to the
   site, and sends a farmer along the path only if the action succeeded.
 - **Selling:** `sell(game, itemId, qty?)` / `dailyPrice(game.day, itemId)` from `src/logic/market.ts`.
+- **Buying materials:** `buy(game, itemId, qty)` / `buyPrice(game.day, itemId)` from `src/logic/market.ts`;
+  `game.missingMaterials(def.materials)` and `game.canPayFor(type)` say whether a building can be paid for.
 - **Feedback:** `ctx.ui.toast(msg, 'success' | 'error')`, `ctx.ui.floatText(tileX, tileY, text)`.
   Money changes float next to the money counter automatically.
 - **Events:** `game.events.on('money' | 'inventory' | 'objectAdded' | 'objectRemoved' | 'objectChanged' | 'land' | 'day' | 'speed' | 'reset', fn)`.
