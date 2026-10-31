@@ -6,7 +6,7 @@ import { refreshOrders } from '../logic/orders';
 import { nextSeasonAt } from '../logic/seasons';
 import { h } from './dom';
 
-export const SPEEDS = [1, 10, 60] as const;
+export const SPEEDS = [1, 10, 60, 300] as const;
 
 export function isDebugMode(search = window.location.search): boolean {
   return new URLSearchParams(search).get('debug') === '1';

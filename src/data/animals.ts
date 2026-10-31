@@ -38,9 +38,9 @@ export interface PenDef {
 }
 
 export const ANIMALS: Record<AnimalKind, AnimalDef> = {
-  chicken: { id: 'chicken', name: 'Chicken', icon: '🐔', price: 60, pen: 'coop', feedPerCycle: 1, product: 'egg', cycleMs: 40_000, unlockLevel: 1 },
-  cow: { id: 'cow', name: 'Cow', icon: '🐄', price: 250, pen: 'pasture', feedPerCycle: 2, product: 'milk', cycleMs: 90_000, unlockLevel: 3 },
-  sheep: { id: 'sheep', name: 'Sheep', icon: '🐑', price: 180, pen: 'pasture', feedPerCycle: 1, product: 'wool', cycleMs: 120_000, unlockLevel: 5 },
+  chicken: { id: 'chicken', name: 'Chicken', icon: '🐔', price: 60, pen: 'coop', feedPerCycle: 1, product: 'egg', cycleMs: 180_000, unlockLevel: 1 },
+  cow: { id: 'cow', name: 'Cow', icon: '🐄', price: 250, pen: 'pasture', feedPerCycle: 2, product: 'milk', cycleMs: 360_000, unlockLevel: 3 },
+  sheep: { id: 'sheep', name: 'Sheep', icon: '🐑', price: 180, pen: 'pasture', feedPerCycle: 1, product: 'wool', cycleMs: 480_000, unlockLevel: 5 },
 };
 
 export const PENS: Record<PenType, PenDef> = {

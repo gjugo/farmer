@@ -77,7 +77,7 @@ describe('work scheduler', () => {
   beforeEach(() => void vi.spyOn(Math, 'random').mockReturnValue(0.5));
   afterEach(() => vi.restoreAllMocks());
 
-  it('an assigned field goes plough → sow → harvest through a season with no input', () => {
+  it('an assigned field goes plough → sow → harvest through spring and summer with no input', () => {
     const game = farm();
     const field = build<FieldState>(game, FIELD, X + 1, Y + 5);
     expect(isPloughed(game.state.clock, field.state)).toBe(false);
@@ -85,7 +85,8 @@ describe('work scheduler', () => {
 
     expect(assignFarmer(game, field.id)).toEqual({ ok: true, farmer: 0 });
     expect(cropPlanOf(game.state, field.id)).toBe(PLAN_BEST);
-    play(game, SEASON_MS);
+    // Corn takes half a season, so a season alone has room for one corn harvest.
+    play(game, 2 * SEASON_MS);
 
     expect(log.slice(0, 3)).toEqual(['ploughed', 'planted', 'harvested']);
     expect(log.filter((e) => e === 'harvested').length).toBeGreaterThanOrEqual(3);
@@ -167,7 +168,7 @@ describe('work scheduler', () => {
     expect(coop.site).toBeDefined();
 
     // Back from sowing, nothing to do at the field while the corn grows: build the coop.
-    play(game, 20_000);
+    play(game, PLANT_WORK_MS + 20_000);
     expect(jobsByFarmer(game.state.clock, workersOf(game.state))[0]).toMatchObject({ kind: 'build', target: coop.id });
     expect(siteProgress(game.state, coop.id)?.farmer).toBe(0);
     play(game, buildWorkMs('coop') + 10_000);

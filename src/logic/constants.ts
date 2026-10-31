@@ -12,8 +12,8 @@ export const START_LAND = {
 
 export const STARTING_MONEY = 500;
 
-/** One in-game day lasts 4 real minutes at ×1 speed. */
-export const DAY_MS = 4 * 60 * 1000;
+/** One in-game day lasts 8 real minutes at ×1 speed. */
+export const DAY_MS = 8 * 60 * 1000;
 
 /** Share of the build cost returned when demolishing. */
 export const DEMOLISH_REFUND = 0.5;

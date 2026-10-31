@@ -14,8 +14,8 @@ import type { GameState, Inventory, ItemId } from './types';
 
 export const ORDER_SLOTS = 3;
 /** Game time before a fulfilled / discarded slot gets a new order. */
-export const FULFIL_REFILL_MS = 2 * 60_000;
-export const DISCARD_REFILL_MS = 5 * 60_000;
+export const FULFIL_REFILL_MS = 8 * 60_000;
+export const DISCARD_REFILL_MS = 20 * 60_000;
 /** Reward = base value of the goods × a factor in this range (the market pays at most 1.2×). */
 export const REWARD_MIN_FACTOR = 1.25;
 export const REWARD_MAX_FACTOR = 1.6;

@@ -45,8 +45,8 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     unlockLevel: 4,
     anim: 'sails',
     recipes: [
-      { id: 'feed-from-wheat', inputs: { wheat: 2 }, output: { item: 'feed', qty: 3 }, durationMs: 20_000 },
-      { id: 'feed-from-corn', inputs: { corn: 1 }, output: { item: 'feed', qty: 2 }, durationMs: 20_000 },
+      { id: 'feed-from-wheat', inputs: { wheat: 2 }, output: { item: 'feed', qty: 3 }, durationMs: 120_000 },
+      { id: 'feed-from-corn', inputs: { corn: 1 }, output: { item: 'feed', qty: 2 }, durationMs: 120_000 },
     ],
   },
   dairy: {
@@ -60,8 +60,8 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     unlockLevel: 3,
     anim: 'smoke',
     recipes: [
-      { id: 'cheese', inputs: { milk: 2 }, output: { item: 'cheese', qty: 1 }, durationMs: 90_000 },
-      { id: 'butter', inputs: { milk: 1 }, output: { item: 'butter', qty: 1 }, durationMs: 45_000 },
+      { id: 'cheese', inputs: { milk: 2 }, output: { item: 'cheese', qty: 1 }, durationMs: 480_000 },
+      { id: 'butter', inputs: { milk: 1 }, output: { item: 'butter', qty: 1 }, durationMs: 240_000 },
     ],
   },
   bakery: {
@@ -74,7 +74,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     description: 'Bakes bread from wheat and eggs.',
     unlockLevel: 2,
     anim: 'smoke',
-    recipes: [{ id: 'bread', inputs: { wheat: 3, egg: 1 }, output: { item: 'bread', qty: 1 }, durationMs: 60_000 }],
+    recipes: [{ id: 'bread', inputs: { wheat: 3, egg: 1 }, output: { item: 'bread', qty: 1 }, durationMs: 300_000 }],
   },
   loom: {
     id: 'loom',
@@ -86,7 +86,7 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     description: 'Weaves wool into cloth.',
     unlockLevel: 5,
     anim: 'smoke',
-    recipes: [{ id: 'cloth', inputs: { wool: 2 }, output: { item: 'cloth', qty: 1 }, durationMs: 120_000 }],
+    recipes: [{ id: 'cloth', inputs: { wool: 2 }, output: { item: 'cloth', qty: 1 }, durationMs: 600_000 }],
   },
 };
 

@@ -174,14 +174,14 @@ describe('feeding', () => {
 });
 
 describe('production and collection', () => {
-  it('a fed chicken lays an egg after 40 s of game time', () => {
+  it('a fed chicken lays an egg after 3 min of game time', () => {
     const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     buyFeed(g);
     feedAll(g, coop);
     const hen = coop.state.animals[0];
-    wait(g, 39_000);
+    wait(g, 179_000);
     expect(animalStatus(g.state.clock, hen)).toBe('producing');
     expect(collect(g, coop)).toEqual({});
     wait(g, 1_000);
@@ -195,7 +195,7 @@ describe('production and collection', () => {
     expect(g.count('egg')).toBe(1);
   });
 
-  it('a cow eats 2 feed and gives milk after 90 s; a sheep eats 1 and gives wool after 120 s', () => {
+  it('a cow eats 2 feed and gives milk after 6 min; a sheep eats 1 and gives wool after 8 min', () => {
     const g = new Game(maxLevelState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
@@ -204,9 +204,9 @@ describe('production and collection', () => {
     g.addItem('feed', 3);
     feedAll(g, pasture);
     expect(g.count('feed')).toBe(0);
-    wait(g, 90_000);
+    wait(g, 360_000);
     expect(collect(g, pasture)).toEqual({ milk: 1 });
-    wait(g, 30_000);
+    wait(g, 120_000);
     expect(collect(g, pasture)).toEqual({ wool: 1 });
     expect(g.count('milk')).toBe(1);
     expect(g.count('wool')).toBe(1);
@@ -218,8 +218,8 @@ describe('production and collection', () => {
     buyAnimal(g, coop, 'chicken');
     g.addItem('feed', 1);
     feedAll(g, coop);
-    g.setSpeed(60);
-    for (let i = 0; i < 4; i++) g.tick(200); // 800 ms real = 48 s game
+    g.setSpeed(300);
+    for (let i = 0; i < 4; i++) g.tick(200); // 800 ms real = 240 s game
     expect(collect(g, coop)).toEqual({ egg: 1 });
   });
 });
@@ -233,12 +233,12 @@ describe('saving', () => {
     buyAnimal(g, coop, 'chicken');
     g.addItem('feed', 1);
     feedAll(g, coop);
-    wait(g, 30_000);
+    wait(g, 150_000);
 
     const g2 = new Game(deserialize(serialize(g.state)));
     const loaded = g2.getObject(coop.id) as PlacedObject<PenState>;
     expect(loaded.state.animals.map((a) => animalStatus(g2.state.clock, a))).toEqual(['producing', 'hungry']);
-    wait(g2, 10_000);
+    wait(g2, 30_000);
     expect(collect(g2, loaded)).toEqual({ egg: 1 });
   });
 

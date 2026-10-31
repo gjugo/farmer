@@ -107,21 +107,23 @@ describe('level curve balance', () => {
   // With assigned farmers (hired at $150, ×1.2), construction sites and paths: casual L2 4.5, L5 41.0;
   // relaxed L2 4.5, L5 40.3; busy L2 6.1, L5 41.0 (farmers do the work, so reacting faster no longer pays).
   // Plus building materials bought at the Market: casual L2 4.5, L5 41.0; relaxed L2 4.3, L5 40.0; busy L2 6.1, L5 41.0.
-  it('a casual player (checks every 30 s, up to 6 fields) reaches level 2 within 5 min and level 5 within 45 min', () => {
-    const reached = simulate({ reactMs: 30_000, maxFields: 6, minutes: 50 });
-    expect(minutes(reached.get(2))).toBeLessThanOrEqual(5);
-    expect(minutes(reached.get(5))).toBeLessThanOrEqual(45);
+  // Slower pace (8 min wheat, 32 min seasons, 10× longer farm work, LEVEL_XP 150/900/2600/6000), checking every
+  // 60 / 30 / 10 s: casual L2 11.0, L5 168.0; relaxed L2 9.0, L5 178.5; busy L2 8.3, L5 161.7. Winter runs from minute 96 to 128.
+  it('a casual player (checks every 60 s, up to 6 fields) reaches level 2 within 15 min and level 5 within 3 h', () => {
+    const reached = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
+    expect(minutes(reached.get(2))).toBeLessThanOrEqual(15);
+    expect(minutes(reached.get(5))).toBeLessThanOrEqual(180);
   });
 
-  it('a relaxed player (checks every 15 s, up to 8 fields) is well inside those limits', () => {
-    const reached = simulate({ reactMs: 15_000, maxFields: 8, minutes: 50 });
-    expect(minutes(reached.get(2))).toBeLessThanOrEqual(5);
-    expect(minutes(reached.get(5))).toBeLessThanOrEqual(45);
+  it('a relaxed player (checks every 30 s, up to 8 fields) is inside those limits', () => {
+    const reached = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
+    expect(minutes(reached.get(2))).toBeLessThanOrEqual(15);
+    expect(minutes(reached.get(5))).toBeLessThanOrEqual(180);
   });
 
-  it('a busy player (checks every 5 s, up to 12 fields) does not race through the levels', () => {
-    const reached = simulate({ reactMs: 5_000, maxFields: 12, minutes: 50 });
-    expect(minutes(reached.get(2))).toBeGreaterThanOrEqual(1);
-    expect(minutes(reached.get(5))).toBeGreaterThanOrEqual(12);
+  it('a busy player (checks every 10 s, up to 12 fields) does not race through the levels', () => {
+    const reached = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });
+    expect(minutes(reached.get(2))).toBeGreaterThanOrEqual(8);
+    expect(minutes(reached.get(5))).toBeGreaterThanOrEqual(60);
   });
 });

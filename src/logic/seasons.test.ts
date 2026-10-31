@@ -6,10 +6,18 @@ import { dayOfSeason, nextSeasonAt, nextSeasonIn, SEASON_MS, seasonAt, seasonOf,
 const clockAt = (elapsed: number) => ({ elapsed, speed: 1 });
 
 describe('seasons', () => {
-  it('a season lasts 2 days: days 1–2 spring, 3–4 summer, 5–6 autumn, 7–8 winter, then spring again', () => {
-    expect(SEASON_DAYS).toBe(2);
-    const byDay = Array.from({ length: 10 }, (_, d) => seasonAt(d * DAY_MS));
-    expect(byDay).toEqual(['spring', 'spring', 'summer', 'summer', 'autumn', 'autumn', 'winter', 'winter', 'spring', 'spring']);
+  it('a season lasts 4 days (32 real minutes at ×1): days 1–4 spring, 5–8 summer, 9–12 autumn, 13–16 winter, then spring again', () => {
+    expect(SEASON_DAYS).toBe(4);
+    expect(SEASON_MS).toBe(32 * 60_000);
+    const byDay = Array.from({ length: 18 }, (_, d) => seasonAt(d * DAY_MS));
+    expect(byDay).toEqual([
+      ...Array<string>(4).fill('spring'),
+      ...Array<string>(4).fill('summer'),
+      ...Array<string>(4).fill('autumn'),
+      ...Array<string>(4).fill('winter'),
+      'spring',
+      'spring',
+    ]);
     expect(seasonOf(clockAt(0))).toBe('spring');
     expect(seasonOf(clockAt(SEASON_MS - 1))).toBe('spring');
     expect(seasonOf(clockAt(SEASON_MS))).toBe('summer');
@@ -18,7 +26,8 @@ describe('seasons', () => {
   it('counts the day within the season', () => {
     expect(dayOfSeason(clockAt(0))).toBe(1);
     expect(dayOfSeason(clockAt(DAY_MS))).toBe(2);
-    expect(dayOfSeason(clockAt(2 * DAY_MS))).toBe(1);
+    expect(dayOfSeason(clockAt(SEASON_MS - 1))).toBe(4);
+    expect(dayOfSeason(clockAt(4 * DAY_MS))).toBe(1);
   });
 
   it('finds the next season change', () => {
