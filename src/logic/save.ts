@@ -2,14 +2,19 @@ import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { PLOUGH_SEASONS } from '../data/seasons';
 import { GOALS } from '../data/progression';
+import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
+import { createLand, isOwned, setOwned, setOwnedRect, type Rect } from './land';
+import { FARM_PARCELS, isParcelOwned } from './parcels';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
 import { migrateOrdersSlice } from './orders';
 import { ensureFarmhouse } from './roads';
-import { applySliceDefaults, isPlainObject } from './slices';
+import { applySliceDefaults, isPlainObject, shiftSlices } from './slices';
 import { createNewGame } from './state';
 import type { GameState, Inventory, LandState, PlacedObject } from './types';
 import { requiredLevel, xpForLevel } from './unlocks';
+// The workers slice holds tile coordinates (jobs and their routes); the map migration must know how to move them.
+import './workers';
 
 export const SAVE_KEY = 'farmer.save';
 
@@ -18,7 +23,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export interface SaveFile {
   version: number;
@@ -75,7 +80,50 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     if (!isPlainObject(p) || typeof p.nextGoal !== 'number' || p.nextGoal <= at) return { ...raw, version: 6 };
     return { ...raw, version: 6, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal: p.nextGoal + 1 } } } };
   },
+  // Bigger map: the old farm moves into the middle of the new one (see `growMap`).
+  6: (raw) => ({ ...raw, version: 7, state: growMap(isPlainObject(raw.state) ? raw.state : {}) }),
 };
+
+/** The map and starting land of saves up to version 6, written out because the constants have moved on since. */
+const V6_MAP = { width: 32, height: 24 } as const;
+const V6_START = { x: 11, y: 8, w: 10, h: 8 } as const;
+
+/**
+ * Moves a version-6 farm into the middle of today's bigger map: every saved tile coordinate (objects, owned land,
+ * slices such as the farmers' jobs and routes) shifts by the offset between the old and new starting land, so the
+ * farm keeps its shape. The farm also gets the whole new starting land, and any parcel it partly owns becomes its own.
+ */
+export function growMap(state: Record<string, unknown>): Record<string, unknown> {
+  const dx = START_LAND.x - V6_START.x;
+  const dy = START_LAND.y - V6_START.y;
+  const land = createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND);
+  const old = isPlainObject(state.land) ? state.land : {};
+  const valid =
+    old.width === V6_MAP.width && old.height === V6_MAP.height && Array.isArray(old.owned) && old.owned.length === V6_MAP.width * V6_MAP.height;
+  if (valid) {
+    (old.owned as unknown[]).forEach((t, i) => {
+      if (t === 1) setOwned(land, (i % V6_MAP.width) + dx, Math.floor(i / V6_MAP.width) + dy, true);
+    });
+  } else {
+    // A missing or broken grid loaded as a new game's land back then.
+    setOwnedRect(land, { ...V6_START, x: V6_START.x + dx, y: V6_START.y + dy }, true);
+  }
+  for (const p of FARM_PARCELS) {
+    if (!isParcelOwned(land, p) && ownsSomeOf(land, p)) setOwnedRect(land, p, true);
+  }
+  const objects = Array.isArray(state.objects)
+    ? state.objects.map((o: unknown) =>
+        isPlainObject(o) && typeof o.x === 'number' && typeof o.y === 'number' ? { ...o, x: o.x + dx, y: o.y + dy } : o,
+      )
+    : state.objects;
+  const ext = isPlainObject(state.ext) ? shiftSlices(state.ext, dx, dy) : state.ext;
+  return { ...state, land, objects, ext };
+}
+
+function ownsSomeOf(land: LandState, p: Rect): boolean {
+  for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) if (isOwned(land, x, y)) return true;
+  return false;
+}
 
 export type SaveStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 

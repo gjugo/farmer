@@ -5,6 +5,7 @@ import { Game } from './game';
 import { deserialize, loadFromStorage, loadSave, parseSave, SAVE_KEY, SAVE_VERSION, saveToStorage, serialize, type SaveStorage } from './save';
 import { getSlice, registerStateSlice } from './slices';
 import { createNewGame } from './state';
+import { fromV6, v6Land, V6_START } from './test-utils';
 
 function memoryStorage(): SaveStorage & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -19,6 +20,8 @@ function memoryStorage(): SaveStorage & { data: Map<string, string> } {
 // Free land below the starting fields, the farmhouse and the road between them.
 const ix = START_LAND.x + 2;
 const iy = START_LAND.y + 5;
+// A free tile of the version-6 map (32×24, starting land at (11, 8)), for old saves.
+const oldTile = { x: V6_START.x + 2, y: V6_START.y + 5 };
 
 describe('save / load', () => {
   it('round-trips money, inventory, objects, land and day', () => {
@@ -68,12 +71,12 @@ describe('save / load', () => {
     const old = JSON.stringify({
       money: 742,
       inventory: { wheat: 12, bogus: -3 },
-      objects: [{ id: 'o7', type: 'path', x: ix, y: iy }],
+      objects: [{ id: 'o7', type: 'path', ...oldTile }],
     });
     const s = deserialize(old);
     expect(s.money).toBe(742);
     expect(s.inventory).toEqual({ wheat: 12 });
-    expect(s.objects[0]).toEqual({ id: 'o7', type: 'path', x: ix, y: iy, state: {} });
+    expect(s.objects[0]).toEqual({ id: 'o7', type: 'path', ...fromV6(oldTile.x, oldTile.y), state: {} });
     // A farm from before farmhouses gets one, with a path at its door.
     expect(s.objects.slice(1).map((o) => [o.id, o.type])).toEqual([
       ['o8', 'farmhouse'],
@@ -94,8 +97,8 @@ describe('save / load', () => {
 
   it('loads version 1 and 2 saves without a saved time, so the first load does not catch up', () => {
     for (const version of [1, 2]) {
-      const old = JSON.stringify({ version, savedAt: 1_700_000_000_000, state: { ...createNewGame(), money: 321 } });
-      const loaded = parseSave(old);
+      const file = JSON.stringify({ version, savedAt: 1_700_000_000_000, state: { land: v6Land(), money: 321 } });
+      const loaded = parseSave(file);
       expect(loaded.state.money).toBe(321);
       expect(loaded.savedAt).toBeNull();
     }
