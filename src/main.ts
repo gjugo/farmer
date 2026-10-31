@@ -9,6 +9,7 @@ import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './l
 import { ordersOf, type OrdersState } from './logic/orders';
 import { loadSave, saveToStorage, type SaveStorage } from './logic/save';
 import { createNewGame } from './logic/state';
+import type { StorageInfo } from './logic/storage';
 import { BootScene } from './scenes/BootScene';
 import { FarmScene } from './scenes/FarmScene';
 import { isDebugMode, mountDebugPanel } from './ui/debug';
@@ -30,6 +31,8 @@ declare global {
         lastSavedAt: number | null;
         lastCatchUp: CatchUpResult | null;
         audio: AudioDebugInfo;
+        /** Goods and building materials stored against the room in granaries, storehouses and the farmhouse. */
+        storage: StorageInfo;
         /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
         iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
       }

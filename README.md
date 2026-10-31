@@ -34,10 +34,26 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   Paths and fields cost money only; coops, pastures and processing buildings need wood and/or stone,
   and the dairy and loom also need iron.
 - **Demolish:** 🧹 → click an object, or **Demolish** in its panel (which asks first and says what comes back).
-  Gives back 50% of its money cost and 50% of its materials (rounded down).
+  Gives back 50% of its money cost and 50% of its materials (rounded down), materials only as far as the storehouses
+  have room: the confirm says what would be lost (demolish mode asks first too when something would be lost).
+  A granary or storehouse can't be demolished while its stock wouldn't fit without it ("Sell or use 40 goods first").
+- **Storage:** everything the farm holds needs room. **Goods** (crops, eggs, milk, wool, feed, cheese, bread, …) go
+  in **granaries**, **materials** (wood, stone, iron) in **storehouses**; the farmhouse holds 30 of each on top. A
+  granary holds 100 / 250 / 500 goods at level 1 / 2 / 3 ($60 + 12 🪵 to build), a storehouse 60 / 150 / 300 materials
+  ($60 + 8 🪵 + 8 🪨). Click one for its panel: level, the pool's used/capacity, what is stored, and **Upgrade** with its
+  cost (level 3 needs 🔩 iron) or why it can't be done yet. An upgrade keeps a farmer busy like building. The level
+  shows on the map (each level has its own art, plus an "Lv 2" badge). 🎒 Inventory shows both pools as bars, warns
+  from 90% and says clearly when one is full. Wherever items come in, only what fits goes in: a harvest is refused
+  ("The granary is full: …") and the crop stays ripe in the field; eggs, milk and wool stay in the pen and finished
+  goods in their building until there is room (Collect takes what fits and says what is left); a feed pack is refused
+  and materials bought at the Market are capped at the room left; debug **+10** adds what fits. Selling, fulfilling
+  orders and starting processing jobs free room at once. Time away only moves goods into pens and buildings, as
+  always. Saves from before storage keep everything, even above capacity, but nothing new comes into an over-full
+  pool until it is back under; a one-time toast suggests building a granary.
 - **Market:** 🏪 Market sells anything in the inventory at today's price (**Sell everything** keeps building
   materials). Its **Buy building materials** section sells wood, stone and (from level 3) iron: **Buy 1/5/10**, or
-  pick any amount with the − / + stepper. Buy prices change daily like sell prices and are always above anything the
+  pick any amount with the − / + stepper. It shows the storehouse room left; a purchase is capped at that room
+  ("Bought only 5 …") and refused when there is none. Buy prices change daily like sell prices and are always above anything the
   Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
   purchase is refused with a toast. New farms start without materials; the goal "Buy 10 wood" comes just before
   "Build a chicken coop".
@@ -75,7 +91,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 
 Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60**,
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary) and
-**Refresh orders** (fills every order slot now).
+**Refresh orders** (fills every order slot now). **+10** adds only what the granaries or storehouses have room for.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
@@ -83,6 +99,8 @@ orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId
 `window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
+`window.farm.storage` is `{ goods: { used, capacity }, materials: { used, capacity } }`; each storage building's
+level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`).
 `window.farm.season` is `{ season, dayOfSeason, msLeft }` (e.g. `season: 'winter'`, game ms until the next season).
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
@@ -109,9 +127,11 @@ src/
     workers.ts         farmers: hiring, jobs that keep a farmer busy (state slice `workers`)
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
+    storage.ts         goods/materials pools: capacity, used, spaceFor (Game.addItem takes only what fits), upgrades
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
+    storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
     buildables.ts      build menu registry (+ the core Path)
     crops.ts           crop catalogue (with each crop's seasons) + the Field buildable
     seasons.ts         season names, icons, length, ploughing seasons and cost
@@ -138,6 +158,8 @@ src/
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
     seasons/           season-change toasts, `window.farm.season`
     market/            🏪 Market HUD button: sell panel and Buy section for building materials
+    storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade,
+                       `window.farm.storage`, the one-time notice for old saves
     orders/            📋 Orders HUD button (with badge) and orders panel
     workers/           👨‍🌾 Farmers HUD button, hire sheet, farmers at work on the map (data: src/data/workers.ts,
                        logic: src/logic/workers.ts; work goes through `withFarmer` in src/game/workers.ts)
@@ -237,6 +259,9 @@ events. There is no offline progress: time only passes while the game is open.
 - **Selling:** `sell(game, itemId, qty?)` / `dailyPrice(game.day, itemId)` from `src/logic/market.ts`.
 - **Buying materials:** `buy(game, itemId, qty)` / `buyPrice(game.day, itemId)` from `src/logic/market.ts`;
   `game.missingMaterials(def.materials)` and `game.canPayFor(type)` say whether a building can be paid for.
+- **Items coming in:** always `game.addItem(itemId, qty)`. It takes only what the storage pools have room for and
+  returns how many went in; check `game.spaceFor(itemId)` first for all-or-nothing intake (like a harvest), and
+  leave what didn't fit where it was (in the pen, the building, the field). Rules: `src/logic/storage.ts`.
 - **Feedback:** `ctx.ui.toast(msg, 'success' | 'error')`, `ctx.ui.floatText(tileX, tileY, text)`.
   Money changes float next to the money counter automatically.
 - **Events:** `game.events.on('money' | 'inventory' | 'objectAdded' | 'objectRemoved' | 'objectChanged' | 'land' | 'day' | 'speed' | 'reset', fn)`.

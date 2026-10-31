@@ -4,6 +4,7 @@ import type { FarmContext } from '../game/context';
 import { catchUpGame } from '../logic/offline';
 import { refreshOrders } from '../logic/orders';
 import { nextSeasonAt } from '../logic/seasons';
+import { fullMessage, poolOf } from '../logic/storage';
 import { h } from './dom';
 
 export const SPEEDS = [1, 10, 60] as const;
@@ -96,8 +97,11 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
           class: 'btn',
           'data-testid': 'debug-add-item',
           onclick: () => {
-            game.addItem(select.value, 10);
-            ctx.ui.toast(`+10 ${ITEM_LIST.find((i) => i.id === select.value)?.name ?? select.value}`, 'success');
+            // Like any other intake, only what fits goes in.
+            const n = game.addItem(select.value, 10);
+            const name = ITEM_LIST.find((i) => i.id === select.value)?.name ?? select.value;
+            if (n === 0) ctx.ui.toast(fullMessage(poolOf(select.value)), 'error');
+            else ctx.ui.toast(`+${n} ${name}${n < 10 ? ' (all that fit)' : ''}`, 'success');
           },
         },
         '+10',

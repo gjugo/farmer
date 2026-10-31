@@ -1,4 +1,5 @@
 import { getBuildable } from '../data/buildables';
+import { getItem } from '../data/items';
 import { isMaterial, type MaterialCost } from '../data/materials';
 import {
   FARMHOUSE_STORE,
@@ -88,6 +89,16 @@ export function fullMessage(pool: StoragePool): string {
   return pool === 'goods'
     ? 'The granary is full: build or upgrade a granary, or sell something'
     : 'The storehouse is full: build or upgrade a storehouse, or use or sell some materials';
+}
+
+/**
+ * Says what a collection left behind for want of room, e.g. "Collected 2 🥚 Egg: 3 more wait in the coop.
+ * The granary is full: …". Goods waiting in pens and buildings are never lost.
+ */
+export function leftBehindMessage(got: Record<string, number>, left: number, where: string): string {
+  const taken = Object.entries(got).map(([id, n]) => `${n} ${getItem(id)?.icon ?? ''} ${getItem(id)?.name ?? id}`.replace('  ', ' '));
+  const head = taken.length ? `Collected ${taken.join(', ')}: ${left} more wait in ${where}.` : `${left} wait in ${where}.`;
+  return `${head} ${fullMessage('goods')}`;
 }
 
 /** Name of what a pool holds, singular or plural: "good"/"goods", "material"/"materials". */
