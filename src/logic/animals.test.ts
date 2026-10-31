@@ -115,11 +115,11 @@ describe('buying animals', () => {
 describe('feeding', () => {
   it('buys 5 feed for $25, refusing when short', () => {
     const g = new Game(maxLevelState());
-    expect(buyFeed(g)).toBe(true);
+    expect(buyFeed(g)).toEqual({ ok: true });
     expect(g.count('feed')).toBe(FEED_PACK.qty);
     expect(g.money).toBe(500 - FEED_PACK.price);
     g.spend(g.money - 10);
-    expect(buyFeed(g)).toBe(false);
+    expect(buyFeed(g)).toEqual({ ok: false, reason: 'money' });
     expect(g.count('feed')).toBe(5);
     expect(g.money).toBe(10);
   });

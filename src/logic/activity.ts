@@ -19,6 +19,8 @@ export interface ActivityEvents {
   income: { amount: number };
   /** The player built something (starting objects of a new game do not count). */
   placed: { type: string };
+  /** A building (a granary or storehouse) was upgraded to `level`. */
+  upgraded: { type: string; level: number };
   /** The player bought a parcel of land. */
   landBought: { parcel: string; price: number };
   /** A field was ploughed. */

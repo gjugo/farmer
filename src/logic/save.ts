@@ -1,9 +1,9 @@
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { PLOUGH_SEASONS } from '../data/seasons';
-import { GOALS } from '../data/progression';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
+import { STORAGE_SLICE } from './storage';
 import { migrateOrdersSlice } from './orders';
 import { ensureFarmhouse } from './roads';
 import { applySliceDefaults, isPlainObject } from './slices';
@@ -18,7 +18,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export interface SaveFile {
   version: number;
@@ -67,13 +67,29 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
   },
   // Building materials: the "buy wood" goal was inserted into the goal list. Farms already past that point skip it
   // (their next-goal index moves along with the goals after it). Inventories need nothing: no materials yet.
+  // Indexes are into the goal list of the version migrated to (later versions insert more goals).
   5: (raw) => {
     const state = isPlainObject(raw.state) ? raw.state : {};
     const ext = isPlainObject(state.ext) ? state.ext : {};
     const p = ext[PROGRESSION];
-    const at = GOALS.findIndex((g) => g.id === 'buy-wood');
+    const at = 3; // "buy-wood" in version 6
     if (!isPlainObject(p) || typeof p.nextGoal !== 'number' || p.nextGoal <= at) return { ...raw, version: 6 };
     return { ...raw, version: 6, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal: p.nextGoal + 1 } } } };
+  },
+  // Storage: goods and materials need room in granaries and storehouses. The farm keeps everything it holds (even
+  // above capacity) and is told once to build a granary. Two goals were inserted; farms past them skip them.
+  6: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const p = ext[PROGRESSION];
+    let progression = p;
+    if (isPlainObject(p) && typeof p.nextGoal === 'number') {
+      let nextGoal = p.nextGoal;
+      // "build-granary" and "upgrade-granary" in version 7.
+      for (const at of [2, 11]) if (nextGoal > at) nextGoal++;
+      progression = { ...p, nextGoal };
+    }
+    return { ...raw, version: 7, state: { ...state, ext: { ...ext, [PROGRESSION]: progression, [STORAGE_SLICE]: { pendingNotice: true } } } };
   },
 };
 

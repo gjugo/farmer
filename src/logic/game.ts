@@ -10,6 +10,7 @@ import { setOwned } from './land';
 import { canPlace, objectAt, type Footprint, type PlacementResult } from './placement';
 import { Progression, type GoalView } from './progression';
 import { createNewGame } from './state';
+import { capacity, excessWithout, spaceFor, used } from './storage';
 import type { GameState, ItemId, PlacedObject } from './types';
 import { buildableUnlockLevel, isUnlocked, type Unlock } from './unlocks';
 
@@ -40,6 +41,13 @@ export type PlaceResult =
 
 /** Materials still missing to pay `cost`, e.g. `[['wood', 4]]`; empty when there is enough of each. */
 export type MissingMaterials = [MaterialId, number][];
+
+/** What demolishing an object would do: refused, or the money and materials back (and what doesn't fit). */
+export type DemolishCheck =
+  | { ok: true; money: number; materials: MaterialCost; lost: MaterialCost }
+  | { ok: false; reason: 'missing' | 'fixed' }
+  /** A storage building whose stock wouldn't fit without it: `excess` items too many. */
+  | { ok: false; reason: 'storage'; excess: number };
 
 export function footprintOf(obj: PlacedObject): Footprint {
   return getBuildable(obj.type)?.footprint ?? { w: 1, h: 1 };
@@ -136,9 +144,22 @@ export class Game {
     return inventory.count(this._state.inventory, itemId);
   }
 
-  addItem(itemId: ItemId, qty = 1): void {
-    inventory.add(this._state.inventory, itemId, qty);
-    if (qty > 0) this.events.emit('inventory', { itemId, count: this.count(itemId), delta: qty });
+  /** How many more of `itemId` the farm has room for (see `src/logic/storage.ts`). */
+  spaceFor(itemId: ItemId): number {
+    return spaceFor(this._state, itemId);
+  }
+
+  /**
+   * Puts items into the inventory, as many as there is room for: every way items come in goes through here.
+   * Returns how many went in (`qty` when all fit); the caller keeps the rest where it was.
+   */
+  addItem(itemId: ItemId, qty = 1): number {
+    if (!Number.isInteger(qty) || qty < 0) throw new RangeError(`Invalid quantity: ${qty}`);
+    const n = Math.min(qty, this.spaceFor(itemId));
+    if (n <= 0) return 0;
+    inventory.add(this._state.inventory, itemId, n);
+    this.events.emit('inventory', { itemId, count: this.count(itemId), delta: n });
+    return n;
   }
 
   removeItem(itemId: ItemId, qty = 1): boolean {
@@ -214,19 +235,43 @@ export class Game {
   }
 
   /**
-   * Removes an object and refunds part of its money and materials (see `demolishRefund`, `demolishMaterialsRefund`).
-   * Returns the money refund, or null if not found or fixed (the farmhouse).
+   * What demolishing `id` would give back, without changing anything. Refunded materials only come back as far
+   * as the storehouses have room once the object is gone; `lost` is the rest. A granary or storehouse can't go
+   * while its pool's stock wouldn't fit without it.
+   */
+  checkDemolish(id: string): DemolishCheck {
+    const object = this.getObject(id);
+    if (!object) return { ok: false, reason: 'missing' };
+    const def = getBuildable(object.type);
+    if (def?.fixed) return { ok: false, reason: 'fixed' };
+    const excess = excessWithout(this._state, object);
+    if (excess > 0) return { ok: false, reason: 'storage', excess };
+    let room = Math.max(0, capacity(this._state, 'materials', id) - used(this._state, 'materials'));
+    const materials: MaterialCost = {};
+    const lost: MaterialCost = {};
+    for (const [item, qty] of materialEntries(demolishMaterialsRefund(def))) {
+      const back = Math.min(qty, room);
+      room -= back;
+      if (back > 0) materials[item] = back;
+      if (qty > back) lost[item] = qty - back;
+    }
+    return { ok: true, money: demolishRefund(def), materials, lost };
+  }
+
+  /**
+   * Removes an object and refunds part of its money and materials (see `checkDemolish`).
+   * Returns the money refund, or null when refused (not found, fixed like the farmhouse, or a storage building
+   * whose stock wouldn't fit without it): then nothing changes.
    */
   demolish(id: string): number | null {
+    const check = this.checkDemolish(id);
+    if (!check.ok) return null;
     const i = this._state.objects.findIndex((o) => o.id === id);
-    if (i < 0 || getBuildable(this._state.objects[i].type)?.fixed) return null;
     const [object] = this._state.objects.splice(i, 1);
-    const def = getBuildable(object.type);
-    const refund = demolishRefund(def);
     this.events.emit('objectRemoved', object);
-    this.earn(refund);
-    for (const [item, qty] of materialEntries(demolishMaterialsRefund(def))) this.addItem(item, qty);
-    return refund;
+    this.earn(check.money);
+    for (const [item, qty] of materialEntries(check.materials)) this.addItem(item, qty);
+    return check.money;
   }
 
   /** Announce that `obj.state` was mutated, so views and panels refresh. */
