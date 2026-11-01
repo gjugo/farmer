@@ -3407,34 +3407,32 @@
     2,
     2
    ],
-   "notes": "loom / weaving hut, 2x2",
+   "notes": "loom / weaving hut, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/weaving_hut.png",
-     "w": 496,
-     "h": 396,
-     "shadow": "2x/buildings/weaving_hut_shadow.png",
+     "w": 507,
+     "h": 387,
      "anchor": [
-      248.0,
-      140.0
+      253.0,
+      129.0
      ],
      "origin": [
-      0.5,
-      0.35354
+      0.49901,
+      0.33333
      ]
     },
     "1x": {
      "file": "1x/buildings/weaving_hut.png",
-     "w": 248,
-     "h": 198,
-     "shadow": "1x/buildings/weaving_hut_shadow.png",
+     "w": 254,
+     "h": 194,
      "anchor": [
-      124.0,
-      70.0
+      126.5,
+      64.5
      ],
      "origin": [
-      0.5,
-      0.35354
+      0.49803,
+      0.33247
      ]
     }
    }
@@ -3487,34 +3485,32 @@
     2,
     2
    ],
-   "notes": "woodcutter's lodge: log cabin, chopping block and wood pile, 2x2",
+   "notes": "woodcutter's lodge: log cabin, chopping block and wood pile, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/woodcutter_lodge.png",
-     "w": 498,
-     "h": 448,
-     "shadow": "2x/buildings/woodcutter_lodge_shadow.png",
+     "w": 507,
+     "h": 306,
      "anchor": [
-      248.0,
-      196.0
+      253.0,
+      44.0
      ],
      "origin": [
-      0.49799,
-      0.4375
+      0.49901,
+      0.14379
      ]
     },
     "1x": {
      "file": "1x/buildings/woodcutter_lodge.png",
-     "w": 249,
-     "h": 224,
-     "shadow": "1x/buildings/woodcutter_lodge_shadow.png",
+     "w": 254,
+     "h": 153,
      "anchor": [
-      124.0,
-      98.0
+      126.5,
+      22.0
      ],
      "origin": [
-      0.49799,
-      0.4375
+      0.49803,
+      0.14379
      ]
     }
    }
@@ -3527,34 +3523,32 @@
     2,
     2
    ],
-   "notes": "stone quarry: stepped rock face, crane and cut blocks, 2x2",
+   "notes": "stone quarry: stepped rock face, crane and cut blocks, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/quarry.png",
-     "w": 528,
-     "h": 382,
-     "shadow": "2x/buildings/quarry_shadow.png",
+     "w": 507,
+     "h": 306,
      "anchor": [
-      248.0,
-      130.0
+      253.0,
+      48.0
      ],
      "origin": [
-      0.4697,
-      0.34031
+      0.49901,
+      0.15686
      ]
     },
     "1x": {
      "file": "1x/buildings/quarry.png",
-     "w": 264,
-     "h": 191,
-     "shadow": "1x/buildings/quarry_shadow.png",
+     "w": 254,
+     "h": 153,
      "anchor": [
-      124.0,
-      65.0
+      126.5,
+      24.0
      ],
      "origin": [
-      0.4697,
-      0.34031
+      0.49803,
+      0.15686
      ]
     }
    }
@@ -3567,34 +3561,32 @@
     2,
     2
    ],
-   "notes": "iron mine: hill with a timber-framed tunnel, rails and an ore cart, 2x2",
+   "notes": "iron mine: hill with a timber-framed tunnel, rails and an ore cart, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/mine.png",
-     "w": 496,
-     "h": 328,
-     "shadow": "2x/buildings/mine_shadow.png",
+     "w": 505,
+     "h": 287,
      "anchor": [
-      248.0,
-      76.0
+      252.0,
+      29.0
      ],
      "origin": [
-      0.5,
-      0.23171
+      0.49901,
+      0.10105
      ]
     },
     "1x": {
      "file": "1x/buildings/mine.png",
-     "w": 248,
-     "h": 164,
-     "shadow": "1x/buildings/mine_shadow.png",
+     "w": 252,
+     "h": 144,
      "anchor": [
-      124.0,
-      38.0
+      126.0,
+      14.5
      ],
      "origin": [
       0.5,
-      0.23171
+      0.10069
      ]
     }
    }
@@ -3645,34 +3637,32 @@
     1,
     1
    ],
-   "notes": "'for sale' sign for unowned plots, 1x1",
+   "notes": "'for sale' sign for unowned plots, 1x1 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/for_sale_sign.png",
-     "w": 162,
-     "h": 230,
-     "shadow": "2x/buildings/for_sale_sign_shadow.png",
+     "w": 84,
+     "h": 164,
      "anchor": [
-      68.0,
-      92.0
+      42.0,
+      88.0
      ],
      "origin": [
-      0.41975,
-      0.4
+      0.5,
+      0.53659
      ]
     },
     "1x": {
      "file": "1x/buildings/for_sale_sign.png",
-     "w": 81,
-     "h": 115,
-     "shadow": "1x/buildings/for_sale_sign_shadow.png",
+     "w": 42,
+     "h": 82,
      "anchor": [
-      34.0,
-      46.0
+      21.0,
+      44.0
      ],
      "origin": [
-      0.41975,
-      0.4
+      0.5,
+      0.53659
      ]
     }
    }
@@ -13807,34 +13797,32 @@
     2,
     2
    ],
-   "notes": "weaving_hut in winter: snow on the roof",
+   "notes": "weaving_hut in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/weaving_hut_winter.png",
-     "w": 496,
-     "h": 396,
-     "shadow": "2x/buildings/weaving_hut_winter_shadow.png",
+     "w": 505,
+     "h": 404,
      "anchor": [
-      248.0,
-      140.0
+      252.0,
+      146.0
      ],
      "origin": [
-      0.5,
-      0.35354
+      0.49901,
+      0.36139
      ]
     },
     "1x": {
      "file": "1x/buildings/weaving_hut_winter.png",
-     "w": 248,
-     "h": 198,
-     "shadow": "1x/buildings/weaving_hut_winter_shadow.png",
+     "w": 252,
+     "h": 202,
      "anchor": [
-      124.0,
-      70.0
+      126.0,
+      73.0
      ],
      "origin": [
       0.5,
-      0.35354
+      0.36139
      ]
     }
    }
@@ -13887,34 +13875,32 @@
     2,
     2
    ],
-   "notes": "woodcutter_lodge in winter: snow on the roof",
+   "notes": "woodcutter_lodge in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/woodcutter_lodge_winter.png",
-     "w": 498,
-     "h": 448,
-     "shadow": "2x/buildings/woodcutter_lodge_winter_shadow.png",
+     "w": 506,
+     "h": 308,
      "anchor": [
-      248.0,
-      196.0
+      253.0,
+      45.0
      ],
      "origin": [
-      0.49799,
-      0.4375
+      0.5,
+      0.1461
      ]
     },
     "1x": {
      "file": "1x/buildings/woodcutter_lodge_winter.png",
-     "w": 249,
-     "h": 224,
-     "shadow": "1x/buildings/woodcutter_lodge_winter_shadow.png",
+     "w": 253,
+     "h": 154,
      "anchor": [
-      124.0,
-      98.0
+      126.5,
+      22.5
      ],
      "origin": [
-      0.49799,
-      0.4375
+      0.5,
+      0.1461
      ]
     }
    }
@@ -13927,34 +13913,32 @@
     2,
     2
    ],
-   "notes": "quarry in winter: snow on the roof",
+   "notes": "quarry in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/quarry_winter.png",
-     "w": 528,
-     "h": 382,
-     "shadow": "2x/buildings/quarry_winter_shadow.png",
+     "w": 506,
+     "h": 307,
      "anchor": [
-      248.0,
-      130.0
+      253.0,
+      49.0
      ],
      "origin": [
-      0.4697,
-      0.34031
+      0.5,
+      0.15961
      ]
     },
     "1x": {
      "file": "1x/buildings/quarry_winter.png",
-     "w": 264,
-     "h": 191,
-     "shadow": "1x/buildings/quarry_winter_shadow.png",
+     "w": 253,
+     "h": 154,
      "anchor": [
-      124.0,
-      65.0
+      126.5,
+      24.5
      ],
      "origin": [
-      0.4697,
-      0.34031
+      0.5,
+      0.15909
      ]
     }
    }
@@ -13967,34 +13951,32 @@
     2,
     2
    ],
-   "notes": "mine in winter: snow on the roof",
+   "notes": "mine in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/mine_winter.png",
-     "w": 496,
-     "h": 328,
-     "shadow": "2x/buildings/mine_winter_shadow.png",
+     "w": 505,
+     "h": 274,
      "anchor": [
-      248.0,
-      76.0
+      252.0,
+      16.0
      ],
      "origin": [
-      0.5,
-      0.23171
+      0.49901,
+      0.05839
      ]
     },
     "1x": {
      "file": "1x/buildings/mine_winter.png",
-     "w": 248,
-     "h": 164,
-     "shadow": "1x/buildings/mine_winter_shadow.png",
+     "w": 252,
+     "h": 137,
      "anchor": [
-      124.0,
-      38.0
+      126.0,
+      8.0
      ],
      "origin": [
       0.5,
-      0.23171
+      0.05839
      ]
     }
    }
@@ -14045,34 +14027,32 @@
     1,
     1
    ],
-   "notes": "for_sale_sign in winter: snow on the roof",
+   "notes": "for_sale_sign in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/for_sale_sign_winter.png",
-     "w": 162,
-     "h": 230,
-     "shadow": "2x/buildings/for_sale_sign_winter_shadow.png",
+     "w": 80,
+     "h": 164,
      "anchor": [
-      68.0,
-      92.0
+      40.0,
+      87.0
      ],
      "origin": [
-      0.41975,
-      0.4
+      0.5,
+      0.53049
      ]
     },
     "1x": {
      "file": "1x/buildings/for_sale_sign_winter.png",
-     "w": 81,
-     "h": 115,
-     "shadow": "1x/buildings/for_sale_sign_winter_shadow.png",
+     "w": 40,
+     "h": 82,
      "anchor": [
-      34.0,
-      46.0
+      20.0,
+      43.5
      ],
      "origin": [
-      0.41975,
-      0.4
+      0.5,
+      0.53049
      ]
     }
    }

@@ -20,11 +20,11 @@ import { BUBBLE } from '../processing/textures';
  * content in `src/data/resourceBuildings.ts`; the farmers' cycles are run by the work scheduler (`src/logic/work.ts`).
  */
 
-/** Where the work happens in each sprite (grid point on the footprint): the chopping block, the cut blocks, the tunnel. */
+/** Where the work happens in each Ludo.ai sprite (grid point on the footprint): the chopping block, the rock face, the tunnel mouth. */
 const WORK_AT: Record<ResourceType, { x: number; y: number; texture: string }> = {
-  woodcutter: { x: 1.25, y: 1.72, texture: 'res-chip' },
-  quarry: { x: 1.0, y: 1.45, texture: 'res-dust' },
-  mine: { x: 0.8, y: 1.35, texture: 'res-dust' },
+  woodcutter: { x: 0.95, y: 1.43, texture: 'res-chip' },
+  quarry: { x: 1.17, y: 0.71, texture: 'res-dust' },
+  mine: { x: 0.65, y: 0.95, texture: 'res-dust' },
 };
 
 registerTexture('res-chip', {
