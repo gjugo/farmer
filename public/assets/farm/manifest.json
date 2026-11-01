@@ -3305,34 +3305,32 @@
     3,
     2
    ],
-   "notes": "dairy, 3x2 (3 tiles along x, 2 along y)",
+   "notes": "dairy, 3x2 (3 tiles along x, 2 along y) (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/dairy.png",
-     "w": 624,
-     "h": 470,
-     "shadow": "2x/buildings/dairy_shadow.png",
+     "w": 636,
+     "h": 387,
      "anchor": [
-      248.0,
-      146.0
+      255.0,
+      64.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40094,
+      0.16537
      ]
     },
     "1x": {
      "file": "1x/buildings/dairy.png",
-     "w": 312,
-     "h": 235,
-     "shadow": "1x/buildings/dairy_shadow.png",
+     "w": 318,
+     "h": 194,
      "anchor": [
-      124.0,
-      73.0
+      127.5,
+      32.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40094,
+      0.16495
      ]
     }
    }
@@ -3345,34 +3343,32 @@
     3,
     2
    ],
-   "notes": "bakery, 3x2 (3 tiles along x, 2 along y)",
+   "notes": "bakery, 3x2 (3 tiles along x, 2 along y) (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/bakery.png",
-     "w": 624,
-     "h": 566,
-     "shadow": "2x/buildings/bakery_shadow.png",
+     "w": 635,
+     "h": 410,
      "anchor": [
-      248.0,
-      242.0
+      255.0,
+      87.0
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40157,
+      0.2122
      ]
     },
     "1x": {
      "file": "1x/buildings/bakery.png",
-     "w": 312,
-     "h": 283,
-     "shadow": "1x/buildings/bakery_shadow.png",
+     "w": 318,
+     "h": 205,
      "anchor": [
-      124.0,
-      121.0
+      127.5,
+      43.5
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40094,
+      0.2122
      ]
     }
    }
@@ -13691,34 +13687,32 @@
     3,
     2
    ],
-   "notes": "dairy in winter: snow on the roof",
+   "notes": "dairy in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/dairy_winter.png",
-     "w": 624,
-     "h": 470,
-     "shadow": "2x/buildings/dairy_winter_shadow.png",
+     "w": 634,
+     "h": 385,
      "anchor": [
-      248.0,
-      146.0
+      254.0,
+      62.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40063,
+      0.16104
      ]
     },
     "1x": {
      "file": "1x/buildings/dairy_winter.png",
-     "w": 312,
-     "h": 235,
-     "shadow": "1x/buildings/dairy_winter_shadow.png",
+     "w": 317,
+     "h": 192,
      "anchor": [
-      124.0,
-      73.0
+      127.0,
+      31.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40063,
+      0.16146
      ]
     }
    }
@@ -13731,34 +13725,32 @@
     3,
     2
    ],
-   "notes": "bakery in winter: snow on the roof",
+   "notes": "bakery in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/bakery_winter.png",
-     "w": 624,
-     "h": 566,
-     "shadow": "2x/buildings/bakery_winter_shadow.png",
+     "w": 634,
+     "h": 411,
      "anchor": [
-      248.0,
-      242.0
+      254.0,
+      89.0
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40063,
+      0.21655
      ]
     },
     "1x": {
      "file": "1x/buildings/bakery_winter.png",
-     "w": 312,
-     "h": 283,
-     "shadow": "1x/buildings/bakery_winter_shadow.png",
+     "w": 317,
+     "h": 206,
      "anchor": [
-      124.0,
-      121.0
+      127.0,
+      44.5
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40063,
+      0.21602
      ]
     }
    }
