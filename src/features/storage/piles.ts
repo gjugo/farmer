@@ -16,13 +16,13 @@ import { addArt, addShadow } from '../../scenes/sprites';
  */
 
 /**
- * Where each pile stands, in tiles from the building's top-left corner: in the yard in front of it, inside its
- * own 2×2 footprint, clear of the walls, steps, silos and lean-to of every level. Pile art is drawn around the
- * middle of a tile (see tools/art/piles.py). Listed back to front.
+ * Where each pile stands, in tiles from the building's top-left corner: on the open yard at the front of its own
+ * 2×2 pad, clear of the walls, posts and bays of every level. Pile art is drawn around the middle of a tile (see
+ * tools/art/piles.py). Listed back to front.
  */
 const SLOTS: Record<string, Record<string, { x: number; y: number }>> = {
-  granary: { crops: { x: 0.42, y: 1.84 }, animal: { x: 0.98, y: 1.84 }, feed: { x: 1.5, y: 1.72 }, goods: { x: 1.8, y: 1.42 } },
-  storehouse: { wood: { x: 0.42, y: 1.7 }, stone: { x: 1.05, y: 1.74 }, iron: { x: 1.72, y: 1.62 } },
+  granary: { crops: { x: 0.45, y: 1.6 }, animal: { x: 1.0, y: 1.72 }, goods: { x: 1.75, y: 1.1 }, feed: { x: 1.6, y: 1.62 } },
+  storehouse: { wood: { x: 0.52, y: 1.45 }, stone: { x: 1.0, y: 1.65 }, iron: { x: 1.6, y: 1.55 } },
   farmhouse: { house_goods: { x: 1.84, y: 0.64 }, house_materials: { x: 1.85, y: 1.02 } },
 };
 

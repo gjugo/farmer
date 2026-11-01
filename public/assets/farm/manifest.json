@@ -2931,34 +2931,32 @@
     2,
     2
    ],
-   "notes": "granary for goods, level 1, 2x2",
+   "notes": "granary for goods, level 1, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/granary_1.png",
-     "w": 496,
-     "h": 390,
-     "shadow": "2x/buildings/granary_1_shadow.png",
+     "w": 505,
+     "h": 371,
      "anchor": [
-      248.0,
-      138.0
+      252.0,
+      116.0
      ],
      "origin": [
-      0.5,
-      0.35385
+      0.49901,
+      0.31267
      ]
     },
     "1x": {
      "file": "1x/buildings/granary_1.png",
-     "w": 248,
-     "h": 195,
-     "shadow": "1x/buildings/granary_1_shadow.png",
+     "w": 252,
+     "h": 186,
      "anchor": [
-      124.0,
-      69.0
+      126.0,
+      58.0
      ],
      "origin": [
       0.5,
-      0.35385
+      0.31183
      ]
     }
    }
@@ -2971,34 +2969,32 @@
     2,
     2
    ],
-   "notes": "storehouse for building materials, level 1, 2x2",
+   "notes": "storehouse for building materials, level 1, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/storehouse_1.png",
-     "w": 496,
-     "h": 402,
-     "shadow": "2x/buildings/storehouse_1_shadow.png",
+     "w": 506,
+     "h": 365,
      "anchor": [
-      248.0,
-      150.0
+      252.0,
+      108.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49802,
+      0.29589
      ]
     },
     "1x": {
      "file": "1x/buildings/storehouse_1.png",
-     "w": 248,
-     "h": 201,
-     "shadow": "1x/buildings/storehouse_1_shadow.png",
+     "w": 253,
+     "h": 182,
      "anchor": [
-      124.0,
-      75.0
+      126.0,
+      54.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49802,
+      0.2967
      ]
     }
    }
@@ -3011,34 +3007,32 @@
     2,
     2
    ],
-   "notes": "granary for goods, level 2, 2x2",
+   "notes": "granary for goods, level 2, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/granary_2.png",
-     "w": 518,
-     "h": 390,
-     "shadow": "2x/buildings/granary_2_shadow.png",
+     "w": 506,
+     "h": 346,
      "anchor": [
-      248.0,
-      138.0
+      253.0,
+      91.0
      ],
      "origin": [
-      0.47876,
-      0.35385
+      0.5,
+      0.26301
      ]
     },
     "1x": {
      "file": "1x/buildings/granary_2.png",
-     "w": 259,
-     "h": 195,
-     "shadow": "1x/buildings/granary_2_shadow.png",
+     "w": 253,
+     "h": 173,
      "anchor": [
-      124.0,
-      69.0
+      126.5,
+      45.5
      ],
      "origin": [
-      0.47876,
-      0.35385
+      0.5,
+      0.26301
      ]
     }
    }
@@ -3051,34 +3045,32 @@
     2,
     2
    ],
-   "notes": "storehouse for building materials, level 2, 2x2",
+   "notes": "storehouse for building materials, level 2, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/storehouse_2.png",
-     "w": 496,
-     "h": 402,
-     "shadow": "2x/buildings/storehouse_2_shadow.png",
+     "w": 507,
+     "h": 343,
      "anchor": [
-      248.0,
-      150.0
+      253.0,
+      85.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49901,
+      0.24781
      ]
     },
     "1x": {
      "file": "1x/buildings/storehouse_2.png",
-     "w": 248,
-     "h": 201,
-     "shadow": "1x/buildings/storehouse_2_shadow.png",
+     "w": 254,
+     "h": 172,
      "anchor": [
-      124.0,
-      75.0
+      126.5,
+      42.5
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49803,
+      0.24709
      ]
     }
    }
@@ -3091,34 +3083,32 @@
     2,
     2
    ],
-   "notes": "granary for goods, level 3, 2x2",
+   "notes": "granary for goods, level 3, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/granary_3.png",
-     "w": 530,
-     "h": 390,
-     "shadow": "2x/buildings/granary_3_shadow.png",
+     "w": 506,
+     "h": 412,
      "anchor": [
-      248.0,
-      138.0
+      253.0,
+      157.0
      ],
      "origin": [
-      0.46792,
-      0.35385
+      0.5,
+      0.38107
      ]
     },
     "1x": {
      "file": "1x/buildings/granary_3.png",
-     "w": 265,
-     "h": 195,
-     "shadow": "1x/buildings/granary_3_shadow.png",
+     "w": 253,
+     "h": 206,
      "anchor": [
-      124.0,
-      69.0
+      126.5,
+      78.5
      ],
      "origin": [
-      0.46792,
-      0.35385
+      0.5,
+      0.38107
      ]
     }
    }
@@ -3131,34 +3121,32 @@
     2,
     2
    ],
-   "notes": "storehouse for building materials, level 3, 2x2",
+   "notes": "storehouse for building materials, level 3, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/storehouse_3.png",
-     "w": 496,
-     "h": 402,
-     "shadow": "2x/buildings/storehouse_3_shadow.png",
+     "w": 506,
+     "h": 355,
      "anchor": [
-      248.0,
-      150.0
+      252.0,
+      97.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49802,
+      0.27324
      ]
     },
     "1x": {
      "file": "1x/buildings/storehouse_3.png",
-     "w": 248,
-     "h": 201,
-     "shadow": "1x/buildings/storehouse_3_shadow.png",
+     "w": 253,
+     "h": 178,
      "anchor": [
-      124.0,
-      75.0
+      126.0,
+      48.5
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49802,
+      0.27247
      ]
     }
    }
@@ -13393,34 +13381,32 @@
     2,
     2
    ],
-   "notes": "granary_1 in winter: snow on the roof",
+   "notes": "granary_1 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/granary_1_winter.png",
-     "w": 496,
-     "h": 390,
-     "shadow": "2x/buildings/granary_1_winter_shadow.png",
+     "w": 507,
+     "h": 362,
      "anchor": [
-      248.0,
-      138.0
+      253.0,
+      107.0
      ],
      "origin": [
-      0.5,
-      0.35385
+      0.49901,
+      0.29558
      ]
     },
     "1x": {
      "file": "1x/buildings/granary_1_winter.png",
-     "w": 248,
-     "h": 195,
-     "shadow": "1x/buildings/granary_1_winter_shadow.png",
+     "w": 254,
+     "h": 181,
      "anchor": [
-      124.0,
-      69.0
+      126.5,
+      53.5
      ],
      "origin": [
-      0.5,
-      0.35385
+      0.49803,
+      0.29558
      ]
     }
    }
@@ -13433,34 +13419,32 @@
     2,
     2
    ],
-   "notes": "storehouse_1 in winter: snow on the roof",
+   "notes": "storehouse_1 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/storehouse_1_winter.png",
-     "w": 496,
-     "h": 402,
-     "shadow": "2x/buildings/storehouse_1_winter_shadow.png",
+     "w": 506,
+     "h": 367,
      "anchor": [
-      248.0,
-      150.0
+      252.0,
+      110.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49802,
+      0.29973
      ]
     },
     "1x": {
      "file": "1x/buildings/storehouse_1_winter.png",
-     "w": 248,
-     "h": 201,
-     "shadow": "1x/buildings/storehouse_1_winter_shadow.png",
+     "w": 253,
+     "h": 184,
      "anchor": [
-      124.0,
-      75.0
+      126.0,
+      55.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49802,
+      0.29891
      ]
     }
    }
@@ -13473,34 +13457,32 @@
     2,
     2
    ],
-   "notes": "granary_2 in winter: snow on the roof",
+   "notes": "granary_2 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/granary_2_winter.png",
-     "w": 518,
-     "h": 390,
-     "shadow": "2x/buildings/granary_2_winter_shadow.png",
+     "w": 505,
+     "h": 345,
      "anchor": [
-      248.0,
-      138.0
+      253.0,
+      90.0
      ],
      "origin": [
-      0.47876,
-      0.35385
+      0.50099,
+      0.26087
      ]
     },
     "1x": {
      "file": "1x/buildings/granary_2_winter.png",
-     "w": 259,
-     "h": 195,
-     "shadow": "1x/buildings/granary_2_winter_shadow.png",
+     "w": 252,
+     "h": 172,
      "anchor": [
-      124.0,
-      69.0
+      126.5,
+      45.0
      ],
      "origin": [
-      0.47876,
-      0.35385
+      0.50198,
+      0.26163
      ]
     }
    }
@@ -13513,34 +13495,32 @@
     2,
     2
    ],
-   "notes": "storehouse_2 in winter: snow on the roof",
+   "notes": "storehouse_2 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/storehouse_2_winter.png",
-     "w": 496,
-     "h": 402,
-     "shadow": "2x/buildings/storehouse_2_winter_shadow.png",
+     "w": 505,
+     "h": 343,
      "anchor": [
-      248.0,
-      150.0
+      252.0,
+      85.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49901,
+      0.24781
      ]
     },
     "1x": {
      "file": "1x/buildings/storehouse_2_winter.png",
-     "w": 248,
-     "h": 201,
-     "shadow": "1x/buildings/storehouse_2_winter_shadow.png",
+     "w": 252,
+     "h": 172,
      "anchor": [
-      124.0,
-      75.0
+      126.0,
+      42.5
      ],
      "origin": [
       0.5,
-      0.37313
+      0.24709
      ]
     }
    }
@@ -13553,34 +13533,32 @@
     2,
     2
    ],
-   "notes": "granary_3 in winter: snow on the roof",
+   "notes": "granary_3 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/granary_3_winter.png",
-     "w": 530,
-     "h": 390,
-     "shadow": "2x/buildings/granary_3_winter_shadow.png",
+     "w": 507,
+     "h": 411,
      "anchor": [
-      248.0,
-      138.0
+      254.0,
+      156.0
      ],
      "origin": [
-      0.46792,
-      0.35385
+      0.50099,
+      0.37956
      ]
     },
     "1x": {
      "file": "1x/buildings/granary_3_winter.png",
-     "w": 265,
-     "h": 195,
-     "shadow": "1x/buildings/granary_3_winter_shadow.png",
+     "w": 254,
+     "h": 206,
      "anchor": [
-      124.0,
-      69.0
+      127.0,
+      78.0
      ],
      "origin": [
-      0.46792,
-      0.35385
+      0.5,
+      0.37864
      ]
     }
    }
@@ -13593,34 +13571,32 @@
     2,
     2
    ],
-   "notes": "storehouse_3 in winter: snow on the roof",
+   "notes": "storehouse_3 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/storehouse_3_winter.png",
-     "w": 496,
-     "h": 402,
-     "shadow": "2x/buildings/storehouse_3_winter_shadow.png",
+     "w": 505,
+     "h": 355,
      "anchor": [
-      248.0,
-      150.0
+      252.0,
+      97.0
      ],
      "origin": [
-      0.5,
-      0.37313
+      0.49901,
+      0.27324
      ]
     },
     "1x": {
      "file": "1x/buildings/storehouse_3_winter.png",
-     "w": 248,
-     "h": 201,
-     "shadow": "1x/buildings/storehouse_3_winter_shadow.png",
+     "w": 252,
+     "h": 178,
      "anchor": [
-      124.0,
-      75.0
+      126.0,
+      48.5
      ],
      "origin": [
       0.5,
-      0.37313
+      0.27247
      ]
     }
    }
