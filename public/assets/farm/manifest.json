@@ -5597,34 +5597,32 @@
     1,
     1
    ],
-   "notes": "crops stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "crops stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_crops_1.png",
-     "w": 72,
-     "h": 70,
-     "shadow": "2x/piles/pile_crops_1_shadow.png",
+     "w": 88,
+     "h": 71,
      "anchor": [
-      36.0,
-      -20.0
+      39.0,
+      -19.0
      ],
      "origin": [
-      0.5,
-      -0.28571
+      0.44318,
+      -0.26761
      ]
     },
     "1x": {
      "file": "1x/piles/pile_crops_1.png",
-     "w": 36,
-     "h": 35,
-     "shadow": "1x/piles/pile_crops_1_shadow.png",
+     "w": 44,
+     "h": 36,
      "anchor": [
-      18.0,
-      -10.0
+      19.5,
+      -9.5
      ],
      "origin": [
-      0.5,
-      -0.28571
+      0.44318,
+      -0.26389
      ]
     }
    }
@@ -5637,34 +5635,32 @@
     1,
     1
    ],
-   "notes": "crops stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "crops stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_crops_2.png",
-     "w": 78,
-     "h": 80,
-     "shadow": "2x/piles/pile_crops_2_shadow.png",
+     "w": 110,
+     "h": 77,
      "anchor": [
-      36.0,
-      -20.0
+      51.0,
+      -22.0
      ],
      "origin": [
-      0.46154,
-      -0.25
+      0.46364,
+      -0.28571
      ]
     },
     "1x": {
      "file": "1x/piles/pile_crops_2.png",
-     "w": 39,
-     "h": 40,
-     "shadow": "1x/piles/pile_crops_2_shadow.png",
+     "w": 55,
+     "h": 38,
      "anchor": [
-      18.0,
-      -10.0
+      25.5,
+      -11.0
      ],
      "origin": [
-      0.46154,
-      -0.25
+      0.46364,
+      -0.28947
      ]
     }
    }
@@ -5677,34 +5673,32 @@
     1,
     1
    ],
-   "notes": "crops stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "crops stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_crops_3.png",
-     "w": 108,
-     "h": 80,
-     "shadow": "2x/piles/pile_crops_3_shadow.png",
+     "w": 123,
+     "h": 93,
      "anchor": [
-      66.0,
-      -20.0
+      56.0,
+      -11.0
      ],
      "origin": [
-      0.61111,
-      -0.25
+      0.45528,
+      -0.11828
      ]
     },
     "1x": {
      "file": "1x/piles/pile_crops_3.png",
-     "w": 54,
-     "h": 40,
-     "shadow": "1x/piles/pile_crops_3_shadow.png",
+     "w": 62,
+     "h": 46,
      "anchor": [
-      33.0,
-      -10.0
+      28.0,
+      -5.5
      ],
      "origin": [
-      0.61111,
-      -0.25
+      0.45161,
+      -0.11957
      ]
     }
    }
@@ -5717,34 +5711,32 @@
     1,
     1
    ],
-   "notes": "crops stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "crops stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_crops_4.png",
-     "w": 110,
-     "h": 92,
-     "shadow": "2x/piles/pile_crops_4_shadow.png",
+     "w": 129,
+     "h": 95,
      "anchor": [
-      66.0,
-      -8.0
+      63.0,
+      -5.0
      ],
      "origin": [
-      0.6,
-      -0.08696
+      0.48837,
+      -0.05263
      ]
     },
     "1x": {
      "file": "1x/piles/pile_crops_4.png",
-     "w": 55,
-     "h": 46,
-     "shadow": "1x/piles/pile_crops_4_shadow.png",
+     "w": 64,
+     "h": 48,
      "anchor": [
-      33.0,
-      -4.0
+      31.5,
+      -2.5
      ],
      "origin": [
-      0.6,
-      -0.08696
+      0.49219,
+      -0.05208
      ]
     }
    }
@@ -5757,34 +5749,32 @@
     1,
     1
    ],
-   "notes": "animal stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "animal stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_animal_1.png",
-     "w": 90,
-     "h": 82,
-     "shadow": "2x/piles/pile_animal_1_shadow.png",
+     "w": 97,
+     "h": 84,
      "anchor": [
-      38.0,
-      -14.0
+      45.0,
+      -16.0
      ],
      "origin": [
-      0.42222,
-      -0.17073
+      0.46392,
+      -0.19048
      ]
     },
     "1x": {
      "file": "1x/piles/pile_animal_1.png",
-     "w": 45,
-     "h": 41,
-     "shadow": "1x/piles/pile_animal_1_shadow.png",
+     "w": 48,
+     "h": 42,
      "anchor": [
-      19.0,
-      -7.0
+      22.5,
+      -8.0
      ],
      "origin": [
-      0.42222,
-      -0.17073
+      0.46875,
+      -0.19048
      ]
     }
    }
@@ -5797,34 +5787,32 @@
     1,
     1
    ],
-   "notes": "animal stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "animal stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_animal_2.png",
-     "w": 130,
-     "h": 82,
-     "shadow": "2x/piles/pile_animal_2_shadow.png",
+     "w": 116,
+     "h": 85,
      "anchor": [
-      78.0,
-      -14.0
+      55.0,
+      -9.0
      ],
      "origin": [
-      0.6,
-      -0.17073
+      0.47414,
+      -0.10588
      ]
     },
     "1x": {
      "file": "1x/piles/pile_animal_2.png",
-     "w": 65,
-     "h": 41,
-     "shadow": "1x/piles/pile_animal_2_shadow.png",
+     "w": 58,
+     "h": 42,
      "anchor": [
-      39.0,
-      -7.0
+      27.5,
+      -4.5
      ],
      "origin": [
-      0.6,
-      -0.17073
+      0.47414,
+      -0.10714
      ]
     }
    }
@@ -5837,34 +5825,32 @@
     1,
     1
    ],
-   "notes": "animal stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "animal stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_animal_3.png",
-     "w": 132,
-     "h": 96,
-     "shadow": "2x/piles/pile_animal_3_shadow.png",
+     "w": 133,
+     "h": 87,
      "anchor": [
-      78.0,
-      -14.0
+      66.0,
+      -15.0
      ],
      "origin": [
-      0.59091,
-      -0.14583
+      0.49624,
+      -0.17241
      ]
     },
     "1x": {
      "file": "1x/piles/pile_animal_3.png",
      "w": 66,
-     "h": 48,
-     "shadow": "1x/piles/pile_animal_3_shadow.png",
+     "h": 44,
      "anchor": [
-      39.0,
-      -7.0
+      33.0,
+      -7.5
      ],
      "origin": [
-      0.59091,
-      -0.14583
+      0.5,
+      -0.17045
      ]
     }
    }
@@ -5877,34 +5863,32 @@
     1,
     1
    ],
-   "notes": "animal stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "animal stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_animal_4.png",
-     "w": 132,
-     "h": 102,
-     "shadow": "2x/piles/pile_animal_4_shadow.png",
+     "w": 136,
+     "h": 129,
      "anchor": [
-      78.0,
-      -8.0
+      67.0,
+      27.0
      ],
      "origin": [
-      0.59091,
-      -0.07843
+      0.49265,
+      0.2093
      ]
     },
     "1x": {
      "file": "1x/piles/pile_animal_4.png",
-     "w": 66,
-     "h": 51,
-     "shadow": "1x/piles/pile_animal_4_shadow.png",
+     "w": 68,
+     "h": 64,
      "anchor": [
-      39.0,
-      -4.0
+      33.5,
+      13.5
      ],
      "origin": [
-      0.59091,
-      -0.07843
+      0.49265,
+      0.21094
      ]
     }
    }
@@ -5917,34 +5901,32 @@
     1,
     1
    ],
-   "notes": "feed stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "feed stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_feed_1.png",
-     "w": 46,
-     "h": 54,
-     "shadow": "2x/piles/pile_feed_1_shadow.png",
+     "w": 62,
+     "h": 61,
      "anchor": [
-      34.0,
-      -22.0
+      28.0,
+      -20.0
      ],
      "origin": [
-      0.73913,
-      -0.40741
+      0.45161,
+      -0.32787
      ]
     },
     "1x": {
      "file": "1x/piles/pile_feed_1.png",
-     "w": 23,
-     "h": 27,
-     "shadow": "1x/piles/pile_feed_1_shadow.png",
+     "w": 31,
+     "h": 30,
      "anchor": [
-      17.0,
-      -11.0
+      14.0,
+      -10.0
      ],
      "origin": [
-      0.73913,
-      -0.40741
+      0.45161,
+      -0.33333
      ]
     }
    }
@@ -5957,34 +5939,32 @@
     1,
     1
    ],
-   "notes": "feed stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "feed stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_feed_2.png",
-     "w": 102,
-     "h": 68,
-     "shadow": "2x/piles/pile_feed_2_shadow.png",
+     "w": 87,
+     "h": 78,
      "anchor": [
-      64.0,
-      -22.0
+      41.0,
+      -19.0
      ],
      "origin": [
-      0.62745,
-      -0.32353
+      0.47126,
+      -0.24359
      ]
     },
     "1x": {
      "file": "1x/piles/pile_feed_2.png",
-     "w": 51,
-     "h": 34,
-     "shadow": "1x/piles/pile_feed_2_shadow.png",
+     "w": 44,
+     "h": 39,
      "anchor": [
-      32.0,
-      -11.0
+      20.5,
+      -9.5
      ],
      "origin": [
-      0.62745,
-      -0.32353
+      0.46591,
+      -0.24359
      ]
     }
    }
@@ -5997,34 +5977,32 @@
     1,
     1
    ],
-   "notes": "feed stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "feed stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_feed_3.png",
-     "w": 102,
-     "h": 84,
-     "shadow": "2x/piles/pile_feed_3_shadow.png",
+     "w": 113,
+     "h": 105,
      "anchor": [
-      64.0,
-      -22.0
+      54.0,
+      9.0
      ],
      "origin": [
-      0.62745,
-      -0.2619
+      0.47788,
+      0.08571
      ]
     },
     "1x": {
      "file": "1x/piles/pile_feed_3.png",
-     "w": 51,
-     "h": 42,
-     "shadow": "1x/piles/pile_feed_3_shadow.png",
+     "w": 56,
+     "h": 52,
      "anchor": [
-      32.0,
-      -11.0
+      27.0,
+      4.5
      ],
      "origin": [
-      0.62745,
-      -0.2619
+      0.48214,
+      0.08654
      ]
     }
    }
@@ -6037,34 +6015,32 @@
     1,
     1
    ],
-   "notes": "feed stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "feed stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_feed_4.png",
-     "w": 102,
-     "h": 98,
-     "shadow": "2x/piles/pile_feed_4_shadow.png",
+     "w": 115,
+     "h": 108,
      "anchor": [
-      64.0,
-      -8.0
+      56.0,
+      12.0
      ],
      "origin": [
-      0.62745,
-      -0.08163
+      0.48696,
+      0.11111
      ]
     },
     "1x": {
      "file": "1x/piles/pile_feed_4.png",
-     "w": 51,
-     "h": 49,
-     "shadow": "1x/piles/pile_feed_4_shadow.png",
+     "w": 58,
+     "h": 54,
      "anchor": [
-      32.0,
-      -4.0
+      28.0,
+      6.0
      ],
      "origin": [
-      0.62745,
-      -0.08163
+      0.48276,
+      0.11111
      ]
     }
    }
@@ -6077,34 +6053,32 @@
     1,
     1
    ],
-   "notes": "goods stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "goods stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_goods_1.png",
-     "w": 78,
-     "h": 70,
-     "shadow": "2x/piles/pile_goods_1_shadow.png",
+     "w": 72,
+     "h": 59,
      "anchor": [
-      48.0,
-      -18.0
+      32.0,
+      -31.0
      ],
      "origin": [
-      0.61538,
-      -0.25714
+      0.44444,
+      -0.52542
      ]
     },
     "1x": {
      "file": "1x/piles/pile_goods_1.png",
-     "w": 39,
-     "h": 35,
-     "shadow": "1x/piles/pile_goods_1_shadow.png",
+     "w": 36,
+     "h": 30,
      "anchor": [
-      24.0,
-      -9.0
+      16.0,
+      -15.5
      ],
      "origin": [
-      0.61538,
-      -0.25714
+      0.44444,
+      -0.51667
      ]
     }
    }
@@ -6117,34 +6091,32 @@
     1,
     1
    ],
-   "notes": "goods stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "goods stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_goods_2.png",
-     "w": 106,
-     "h": 84,
-     "shadow": "2x/piles/pile_goods_2_shadow.png",
+     "w": 91,
+     "h": 62,
      "anchor": [
-      48.0,
-      -18.0
+      44.0,
+      -35.0
      ],
      "origin": [
-      0.45283,
-      -0.21429
+      0.48352,
+      -0.56452
      ]
     },
     "1x": {
      "file": "1x/piles/pile_goods_2.png",
-     "w": 53,
-     "h": 42,
-     "shadow": "1x/piles/pile_goods_2_shadow.png",
+     "w": 46,
+     "h": 31,
      "anchor": [
-      24.0,
-      -9.0
+      22.0,
+      -17.5
      ],
      "origin": [
-      0.45283,
-      -0.21429
+      0.47826,
+      -0.56452
      ]
     }
    }
@@ -6157,34 +6129,32 @@
     1,
     1
    ],
-   "notes": "goods stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "goods stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_goods_3.png",
-     "w": 140,
-     "h": 92,
-     "shadow": "2x/piles/pile_goods_3_shadow.png",
+     "w": 126,
+     "h": 96,
      "anchor": [
-      82.0,
-      -18.0
+      60.0,
+      -2.0
      ],
      "origin": [
-      0.58571,
-      -0.19565
+      0.47619,
+      -0.02083
      ]
     },
     "1x": {
      "file": "1x/piles/pile_goods_3.png",
-     "w": 70,
-     "h": 46,
-     "shadow": "1x/piles/pile_goods_3_shadow.png",
+     "w": 63,
+     "h": 48,
      "anchor": [
-      41.0,
-      -9.0
+      30.0,
+      -1.0
      ],
      "origin": [
-      0.58571,
-      -0.19565
+      0.47619,
+      -0.02083
      ]
     }
    }
@@ -6197,34 +6167,32 @@
     1,
     1
    ],
-   "notes": "goods stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "goods stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_goods_4.png",
-     "w": 140,
-     "h": 108,
-     "shadow": "2x/piles/pile_goods_4_shadow.png",
+     "w": 145,
+     "h": 103,
      "anchor": [
-      82.0,
+      72.0,
       -2.0
      ],
      "origin": [
-      0.58571,
-      -0.01852
+      0.49655,
+      -0.01942
      ]
     },
     "1x": {
      "file": "1x/piles/pile_goods_4.png",
-     "w": 70,
-     "h": 54,
-     "shadow": "1x/piles/pile_goods_4_shadow.png",
+     "w": 72,
+     "h": 52,
      "anchor": [
-      41.0,
+      36.0,
       -1.0
      ],
      "origin": [
-      0.58571,
-      -0.01852
+      0.5,
+      -0.01923
      ]
     }
    }
@@ -6237,34 +6205,32 @@
     1,
     1
    ],
-   "notes": "wood stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "wood stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_wood_1.png",
-     "w": 132,
-     "h": 88,
-     "shadow": "2x/piles/pile_wood_1_shadow.png",
+     "w": 103,
+     "h": 70,
      "anchor": [
-      64.0,
-      -16.0
+      47.0,
+      -30.0
      ],
      "origin": [
-      0.48485,
-      -0.18182
+      0.45631,
+      -0.42857
      ]
     },
     "1x": {
      "file": "1x/piles/pile_wood_1.png",
-     "w": 66,
-     "h": 44,
-     "shadow": "1x/piles/pile_wood_1_shadow.png",
+     "w": 52,
+     "h": 35,
      "anchor": [
-      32.0,
-      -8.0
+      23.5,
+      -15.0
      ],
      "origin": [
-      0.48485,
-      -0.18182
+      0.45192,
+      -0.42857
      ]
     }
    }
@@ -6277,34 +6243,32 @@
     1,
     1
    ],
-   "notes": "wood stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "wood stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_wood_2.png",
-     "w": 136,
-     "h": 100,
-     "shadow": "2x/piles/pile_wood_2_shadow.png",
+     "w": 127,
+     "h": 88,
      "anchor": [
-      64.0,
-      -4.0
+      65.0,
+      -20.0
      ],
      "origin": [
-      0.47059,
-      -0.04
+      0.51181,
+      -0.22727
      ]
     },
     "1x": {
      "file": "1x/piles/pile_wood_2.png",
-     "w": 68,
-     "h": 50,
-     "shadow": "1x/piles/pile_wood_2_shadow.png",
+     "w": 64,
+     "h": 44,
      "anchor": [
-      32.0,
-      -2.0
+      32.5,
+      -10.0
      ],
      "origin": [
-      0.47059,
-      -0.04
+      0.50781,
+      -0.22727
      ]
     }
    }
@@ -6317,34 +6281,32 @@
     1,
     1
    ],
-   "notes": "wood stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "wood stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_wood_3.png",
-     "w": 140,
-     "h": 110,
-     "shadow": "2x/piles/pile_wood_3_shadow.png",
+     "w": 151,
+     "h": 103,
      "anchor": [
-      64.0,
-      6.0
+      70.0,
+      -9.0
      ],
      "origin": [
-      0.45714,
-      0.05455
+      0.46358,
+      -0.08738
      ]
     },
     "1x": {
      "file": "1x/piles/pile_wood_3.png",
-     "w": 70,
-     "h": 55,
-     "shadow": "1x/piles/pile_wood_3_shadow.png",
+     "w": 76,
+     "h": 52,
      "anchor": [
-      32.0,
-      3.0
+      35.0,
+      -4.5
      ],
      "origin": [
-      0.45714,
-      0.05455
+      0.46053,
+      -0.08654
      ]
     }
    }
@@ -6357,34 +6319,32 @@
     1,
     1
    ],
-   "notes": "wood stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "wood stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_wood_4.png",
-     "w": 146,
-     "h": 110,
-     "shadow": "2x/piles/pile_wood_4_shadow.png",
+     "w": 156,
+     "h": 107,
      "anchor": [
-      64.0,
-      6.0
+      77.0,
+      -1.0
      ],
      "origin": [
-      0.43836,
-      0.05455
+      0.49359,
+      -0.00935
      ]
     },
     "1x": {
      "file": "1x/piles/pile_wood_4.png",
-     "w": 73,
-     "h": 55,
-     "shadow": "1x/piles/pile_wood_4_shadow.png",
+     "w": 78,
+     "h": 54,
      "anchor": [
-      32.0,
-      3.0
+      38.5,
+      -0.5
      ],
      "origin": [
-      0.43836,
-      0.05455
+      0.49359,
+      -0.00926
      ]
     }
    }
@@ -6397,34 +6357,32 @@
     1,
     1
    ],
-   "notes": "stone stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "stone stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_stone_1.png",
-     "w": 90,
-     "h": 70,
-     "shadow": "2x/piles/pile_stone_1_shadow.png",
+     "w": 75,
+     "h": 55,
      "anchor": [
-      52.0,
-      -32.0
+      33.0,
+      -35.0
      ],
      "origin": [
-      0.57778,
-      -0.45714
+      0.44,
+      -0.63636
      ]
     },
     "1x": {
      "file": "1x/piles/pile_stone_1.png",
-     "w": 45,
-     "h": 35,
-     "shadow": "1x/piles/pile_stone_1_shadow.png",
+     "w": 38,
+     "h": 28,
      "anchor": [
-      26.0,
-      -16.0
+      16.5,
+      -17.5
      ],
      "origin": [
-      0.57778,
-      -0.45714
+      0.43421,
+      -0.625
      ]
     }
    }
@@ -6437,34 +6395,32 @@
     1,
     1
    ],
-   "notes": "stone stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "stone stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_stone_2.png",
-     "w": 110,
-     "h": 80,
-     "shadow": "2x/piles/pile_stone_2_shadow.png",
+     "w": 117,
+     "h": 84,
      "anchor": [
       52.0,
       -22.0
      ],
      "origin": [
-      0.47273,
-      -0.275
+      0.44444,
+      -0.2619
      ]
     },
     "1x": {
      "file": "1x/piles/pile_stone_2.png",
-     "w": 55,
-     "h": 40,
-     "shadow": "1x/piles/pile_stone_2_shadow.png",
+     "w": 58,
+     "h": 42,
      "anchor": [
       26.0,
       -11.0
      ],
      "origin": [
-      0.47273,
-      -0.275
+      0.44828,
+      -0.2619
      ]
     }
    }
@@ -6477,34 +6433,32 @@
     1,
     1
    ],
-   "notes": "stone stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "stone stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_stone_3.png",
-     "w": 110,
-     "h": 98,
-     "shadow": "2x/piles/pile_stone_3_shadow.png",
+     "w": 119,
+     "h": 87,
      "anchor": [
-      52.0,
-      -4.0
+      56.0,
+      -19.0
      ],
      "origin": [
-      0.47273,
-      -0.04082
+      0.47059,
+      -0.21839
      ]
     },
     "1x": {
      "file": "1x/piles/pile_stone_3.png",
-     "w": 55,
-     "h": 49,
-     "shadow": "1x/piles/pile_stone_3_shadow.png",
+     "w": 60,
+     "h": 44,
      "anchor": [
-      26.0,
-      -2.0
+      28.0,
+      -9.5
      ],
      "origin": [
-      0.47273,
-      -0.04082
+      0.46667,
+      -0.21591
      ]
     }
    }
@@ -6517,34 +6471,32 @@
     1,
     1
    ],
-   "notes": "stone stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "stone stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_stone_4.png",
-     "w": 110,
-     "h": 104,
-     "shadow": "2x/piles/pile_stone_4_shadow.png",
+     "w": 123,
+     "h": 105,
      "anchor": [
-      52.0,
-      2.0
+      61.0,
+      6.0
      ],
      "origin": [
-      0.47273,
-      0.01923
+      0.49593,
+      0.05714
      ]
     },
     "1x": {
      "file": "1x/piles/pile_stone_4.png",
-     "w": 55,
+     "w": 62,
      "h": 52,
-     "shadow": "1x/piles/pile_stone_4_shadow.png",
      "anchor": [
-      26.0,
-      1.0
+      30.5,
+      3.0
      ],
      "origin": [
-      0.47273,
-      0.01923
+      0.49194,
+      0.05769
      ]
     }
    }
@@ -6557,34 +6509,32 @@
     1,
     1
    ],
-   "notes": "iron stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "iron stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_iron_1.png",
-     "w": 110,
+     "w": 91,
      "h": 68,
-     "shadow": "2x/piles/pile_iron_1_shadow.png",
      "anchor": [
-      54.0,
-      -30.0
+      43.0,
+      -31.0
      ],
      "origin": [
-      0.49091,
-      -0.44118
+      0.47253,
+      -0.45588
      ]
     },
     "1x": {
      "file": "1x/piles/pile_iron_1.png",
-     "w": 55,
+     "w": 46,
      "h": 34,
-     "shadow": "1x/piles/pile_iron_1_shadow.png",
      "anchor": [
-      27.0,
-      -15.0
+      21.5,
+      -15.5
      ],
      "origin": [
-      0.49091,
-      -0.44118
+      0.46739,
+      -0.45588
      ]
     }
    }
@@ -6597,34 +6547,32 @@
     1,
     1
    ],
-   "notes": "iron stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "iron stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_iron_2.png",
-     "w": 110,
-     "h": 74,
-     "shadow": "2x/piles/pile_iron_2_shadow.png",
+     "w": 111,
+     "h": 92,
      "anchor": [
-      54.0,
-      -24.0
+      52.0,
+      -5.0
      ],
      "origin": [
-      0.49091,
-      -0.32432
+      0.46847,
+      -0.05435
      ]
     },
     "1x": {
      "file": "1x/piles/pile_iron_2.png",
-     "w": 55,
-     "h": 37,
-     "shadow": "1x/piles/pile_iron_2_shadow.png",
+     "w": 56,
+     "h": 46,
      "anchor": [
-      27.0,
-      -12.0
+      26.0,
+      -2.5
      ],
      "origin": [
-      0.49091,
-      -0.32432
+      0.46429,
+      -0.05435
      ]
     }
    }
@@ -6637,34 +6585,32 @@
     1,
     1
    ],
-   "notes": "iron stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "iron stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_iron_3.png",
-     "w": 110,
-     "h": 84,
-     "shadow": "2x/piles/pile_iron_3_shadow.png",
+     "w": 114,
+     "h": 100,
      "anchor": [
-      54.0,
-      -16.0
+      56.0,
+      4.0
      ],
      "origin": [
-      0.49091,
-      -0.19048
+      0.49123,
+      0.04
      ]
     },
     "1x": {
      "file": "1x/piles/pile_iron_3.png",
-     "w": 55,
-     "h": 42,
-     "shadow": "1x/piles/pile_iron_3_shadow.png",
+     "w": 57,
+     "h": 50,
      "anchor": [
-      27.0,
-      -8.0
+      28.0,
+      2.0
      ],
      "origin": [
-      0.49091,
-      -0.19048
+      0.49123,
+      0.04
      ]
     }
    }
@@ -6677,34 +6623,32 @@
     1,
     1
    ],
-   "notes": "iron stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "iron stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_iron_4.png",
-     "w": 110,
-     "h": 92,
-     "shadow": "2x/piles/pile_iron_4_shadow.png",
+     "w": 124,
+     "h": 104,
      "anchor": [
-      54.0,
-      -8.0
+      61.0,
+      6.0
      ],
      "origin": [
-      0.49091,
-      -0.08696
+      0.49194,
+      0.05769
      ]
     },
     "1x": {
      "file": "1x/piles/pile_iron_4.png",
-     "w": 55,
-     "h": 46,
-     "shadow": "1x/piles/pile_iron_4_shadow.png",
+     "w": 62,
+     "h": 52,
      "anchor": [
-      27.0,
-      -4.0
+      30.5,
+      3.0
      ],
      "origin": [
-      0.49091,
-      -0.08696
+      0.49194,
+      0.05769
      ]
     }
    }
@@ -6717,34 +6661,32 @@
     1,
     1
    ],
-   "notes": "house_goods stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_goods stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_goods_1.png",
-     "w": 42,
-     "h": 48,
-     "shadow": "2x/piles/pile_house_goods_1_shadow.png",
+     "w": 51,
+     "h": 45,
      "anchor": [
-      24.0,
-      -32.0
+      22.0,
+      -34.0
      ],
      "origin": [
-      0.57143,
-      -0.66667
+      0.43137,
+      -0.75556
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_goods_1.png",
-     "w": 21,
-     "h": 24,
-     "shadow": "1x/piles/pile_house_goods_1_shadow.png",
+     "w": 26,
+     "h": 22,
      "anchor": [
-      12.0,
-      -16.0
+      11.0,
+      -17.0
      ],
      "origin": [
-      0.57143,
-      -0.66667
+      0.42308,
+      -0.77273
      ]
     }
    }
@@ -6757,34 +6699,32 @@
     1,
     1
    ],
-   "notes": "house_goods stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_goods stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_goods_2.png",
-     "w": 68,
-     "h": 70,
-     "shadow": "2x/piles/pile_house_goods_2_shadow.png",
+     "w": 77,
+     "h": 55,
      "anchor": [
-      26.0,
+      36.0,
       -32.0
      ],
      "origin": [
-      0.38235,
-      -0.45714
+      0.46753,
+      -0.58182
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_goods_2.png",
-     "w": 34,
-     "h": 35,
-     "shadow": "1x/piles/pile_house_goods_2_shadow.png",
+     "w": 38,
+     "h": 28,
      "anchor": [
-      13.0,
+      18.0,
       -16.0
      ],
      "origin": [
-      0.38235,
-      -0.45714
+      0.47368,
+      -0.57143
      ]
     }
    }
@@ -6797,34 +6737,32 @@
     1,
     1
    ],
-   "notes": "house_goods stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_goods stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_goods_3.png",
-     "w": 88,
-     "h": 70,
-     "shadow": "2x/piles/pile_house_goods_3_shadow.png",
+     "w": 87,
+     "h": 68,
      "anchor": [
-      46.0,
-      -32.0
+      43.0,
+      -29.0
      ],
      "origin": [
-      0.52273,
-      -0.45714
+      0.49425,
+      -0.42647
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_goods_3.png",
      "w": 44,
-     "h": 35,
-     "shadow": "1x/piles/pile_house_goods_3_shadow.png",
+     "h": 34,
      "anchor": [
-      23.0,
-      -16.0
+      21.5,
+      -14.5
      ],
      "origin": [
-      0.52273,
-      -0.45714
+      0.48864,
+      -0.42647
      ]
     }
    }
@@ -6837,34 +6775,32 @@
     1,
     1
    ],
-   "notes": "house_goods stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_goods stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_goods_4.png",
-     "w": 88,
-     "h": 72,
-     "shadow": "2x/piles/pile_house_goods_4_shadow.png",
+     "w": 96,
+     "h": 74,
      "anchor": [
-      46.0,
-      -30.0
+      48.0,
+      -17.0
      ],
      "origin": [
-      0.52273,
-      -0.41667
+      0.5,
+      -0.22973
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_goods_4.png",
-     "w": 44,
-     "h": 36,
-     "shadow": "1x/piles/pile_house_goods_4_shadow.png",
+     "w": 48,
+     "h": 37,
      "anchor": [
-      23.0,
-      -15.0
+      24.0,
+      -8.5
      ],
      "origin": [
-      0.52273,
-      -0.41667
+      0.5,
+      -0.22973
      ]
     }
    }
@@ -6877,34 +6813,32 @@
     1,
     1
    ],
-   "notes": "house_materials stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_materials stock pile, fill stage 1 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_materials_1.png",
-     "w": 90,
-     "h": 60,
-     "shadow": "2x/piles/pile_house_materials_1_shadow.png",
+     "w": 62,
+     "h": 44,
      "anchor": [
-      40.0,
-      -28.0
+      28.0,
+      -42.0
      ],
      "origin": [
-      0.44444,
-      -0.46667
+      0.45161,
+      -0.95455
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_materials_1.png",
-     "w": 45,
-     "h": 30,
-     "shadow": "1x/piles/pile_house_materials_1_shadow.png",
+     "w": 31,
+     "h": 22,
      "anchor": [
-      20.0,
-      -14.0
+      14.0,
+      -21.0
      ],
      "origin": [
-      0.44444,
-      -0.46667
+      0.45161,
+      -0.95455
      ]
     }
    }
@@ -6917,34 +6851,32 @@
     1,
     1
    ],
-   "notes": "house_materials stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_materials stock pile, fill stage 2 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_materials_2.png",
-     "w": 104,
-     "h": 68,
-     "shadow": "2x/piles/pile_house_materials_2_shadow.png",
+     "w": 80,
+     "h": 55,
      "anchor": [
-      40.0,
-      -28.0
+      37.0,
+      -33.0
      ],
      "origin": [
-      0.38462,
-      -0.41176
+      0.4625,
+      -0.6
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_materials_2.png",
-     "w": 52,
-     "h": 34,
-     "shadow": "1x/piles/pile_house_materials_2_shadow.png",
+     "w": 40,
+     "h": 28,
      "anchor": [
-      20.0,
-      -14.0
+      18.5,
+      -16.5
      ],
      "origin": [
-      0.38462,
-      -0.41176
+      0.4625,
+      -0.58929
      ]
     }
    }
@@ -6957,34 +6889,32 @@
     1,
     1
    ],
-   "notes": "house_materials stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_materials stock pile, fill stage 3 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_materials_3.png",
-     "w": 108,
-     "h": 88,
-     "shadow": "2x/piles/pile_house_materials_3_shadow.png",
+     "w": 92,
+     "h": 65,
      "anchor": [
-      40.0,
-      -18.0
+      45.0,
+      -24.0
      ],
      "origin": [
-      0.37037,
-      -0.20455
+      0.48913,
+      -0.36923
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_materials_3.png",
-     "w": 54,
-     "h": 44,
-     "shadow": "1x/piles/pile_house_materials_3_shadow.png",
+     "w": 46,
+     "h": 32,
      "anchor": [
-      20.0,
-      -9.0
+      22.5,
+      -12.0
      ],
      "origin": [
-      0.37037,
-      -0.20455
+      0.48913,
+      -0.375
      ]
     }
    }
@@ -6997,34 +6927,32 @@
     1,
     1
    ],
-   "notes": "house_materials stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile",
+   "notes": "house_materials stock pile, fill stage 4 of 4, centred on (0.5, 0.5) of its tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/piles/pile_house_materials_4.png",
-     "w": 108,
-     "h": 88,
-     "shadow": "2x/piles/pile_house_materials_4_shadow.png",
+     "w": 105,
+     "h": 74,
      "anchor": [
-      40.0,
-      -18.0
+      52.0,
+      -19.0
      ],
      "origin": [
-      0.37037,
-      -0.20455
+      0.49524,
+      -0.25676
      ]
     },
     "1x": {
      "file": "1x/piles/pile_house_materials_4.png",
-     "w": 54,
-     "h": 44,
-     "shadow": "1x/piles/pile_house_materials_4_shadow.png",
+     "w": 52,
+     "h": 37,
      "anchor": [
-      20.0,
-      -9.0
+      26.0,
+      -9.5
      ],
      "origin": [
-      0.37037,
-      -0.20455
+      0.5,
+      -0.25676
      ]
     }
    }
