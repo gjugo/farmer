@@ -16,6 +16,8 @@ git (or rerun the commands below) after running it.
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
 | `bakery`, `bakery_winter` | `bakery_raw.png`, `bakery_winter_raw.png` | all |
 | `dairy`, `dairy_winter` | `dairy_raw.png`, `dairy_winter_raw.png` | all |
+| `granary_1..3`, each with `_winter` | `granary_{1,2,3}_raw.png`, `granary_{1,2,3}_winter_raw.png` | all |
+| `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
 | `farmer` (spritesheet) | see **Farmer** below | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
@@ -79,6 +81,29 @@ edge one and a half times the front-right edge" got rectangles, but never in exa
 `--pad` re-proportions the pad: it keeps L and R, moves B to where the footprint puts it and stretches each
 face's columns to match (each half is an x-scale plus a y-shear, so walls stay vertical). Pick the image that
 needs the least of it: the bakery is 1.67:1, the dairy 1.17:1.
+
+The granary and storehouse have a sprite per level. Level 1 came from `generateWithStyle`, with the building on the
+back half of the pad and the front half left as an open yard for the stock piles (`SLOTS` in
+`src/features/storage/piles.ts`). Levels 2 and 3 are `editImage` on the level below ("keep the same ... exactly, but
+make it bigger: add a bay ..."), so each level is the same building grown. A winter image on
+the same canvas size as its summer image is fitted with the summer corners, so the two line up exactly.
+
+```bash
+$P $L/fit_building.py $L/source/granary_1_raw.png /tmp/props granary_1 2 2 44 397 771 387 397.5 573.8
+$P $L/fit_building.py $L/source/granary_1_winter_raw.png /tmp/props granary_1_winter 2 2 45 379 756 369 390.5 551.8
+$P $L/fit_building.py $L/source/granary_2_raw.png /tmp/props granary_2 2 2 44 388 755 380 391.5 561.8
+$P $L/fit_building.py $L/source/granary_2_winter_raw.png /tmp/props granary_2_winter 2 2 44 388 755 380 391.5 561.8
+$P $L/fit_building.py $L/source/granary_3_raw.png /tmp/props granary_3 2 2 53 493 752 485 394.5 663.8
+$P $L/fit_building.py $L/source/granary_3_winter_raw.png /tmp/props granary_3_winter 2 2 53 493 752 485 394.5 663.8
+$P $L/fit_building.py $L/source/storehouse_1_raw.png /tmp/props storehouse_1 2 2 49 361 739 359 392 532.5
+$P $L/fit_building.py $L/source/storehouse_1_winter_raw.png /tmp/props storehouse_1_winter 2 2 43 357 725 355 382 526.5
+for n in storehouse_2 storehouse_2_winter storehouse_3 storehouse_3_winter; do
+  $P $L/fit_building.py $L/source/${n}_raw.png /tmp/props $n 2 2 38 425 724 425 381 596.5
+done
+for t in granary storehouse; do for l in 1 2 3; do
+  $P $L/install_prop.py /tmp/props ${t}_$l; $P $L/install_prop.py /tmp/props ${t}_${l}_winter
+done; done
+```
 
 Install with `install_prop.py` (it reads the `NAME.json` the fit writes), or copy `/tmp/2x_<name>.png` and
 `/tmp/1x_<name>.png` to `public/assets/farm/{2x,1x}/buildings/<name>.png` and set the asset's `w`, `h`, `anchor`
