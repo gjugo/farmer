@@ -3,7 +3,7 @@ import { SEASON_INFO, type Season } from '../../data/seasons';
 import type { FarmContext } from '../../game/context';
 import { onGameStart, registerDebugInfo, registerSettingsSection } from '../../game/hooks';
 import { dayOfSeason, nextSeasonAt, seasonOf } from '../../logic/seasons';
-import { baseArt, seasonalArt } from '../../scenes/art';
+import { baseArt, seasonalArt, seasonalGroundTint } from '../../scenes/art';
 import { artSeason, setArtSeason, textureKey } from '../../scenes/sprites';
 import { h } from '../../ui/dom';
 import { CROSSFADE_MS, isNaturalChange, isIdentity, SEASON_LOOK, weatherBudget } from './look';
@@ -43,11 +43,12 @@ function retexture(scene: Phaser.Scene): void {
       if (o instanceof Phaser.GameObjects.Container) {
         visit(o.list);
       } else if (o instanceof Phaser.GameObjects.Blitter) {
-        // Every season's ground tile has the same size and anchor, so a bob only changes frame.
+        // Every season's ground tile has the same size and anchor, so a bob only changes frame (and rich soil's tint).
         for (const bob of o.children.list) {
           const name = (bob as unknown as { frame: Phaser.Textures.Frame }).frame.name; // protected in the typings only
           const next = seasonalArt(baseArt(name), season);
           if (next !== name && o.texture.has(next)) bob.setFrame(next);
+          bob.setTint(seasonalGroundTint(bob.tint, season));
         }
       } else if (o instanceof Phaser.GameObjects.Image) {
         const key = o.texture.key;

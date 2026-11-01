@@ -260,7 +260,7 @@ export class FarmScene extends Phaser.Scene {
     const top = gridToWorld(x, y);
     bob.reset(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, art);
     // Rich soil shows as lusher grass, owned or not.
-    bob.setTint(groundTint(soilAt(x, y)));
+    bob.setTint(groundTint(soilAt(x, y), artSeason()));
   }
 
   /**

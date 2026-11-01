@@ -3621,34 +3621,32 @@
     2,
     2
    ],
-   "notes": "farmhouse, 2x2: door at x 1.3 on the front-left (+y) face, bench for idle farmers in front",
+   "notes": "farmhouse, 2x2 (Ludo.ai, cel-shaded): door on the front-left (+y) face, shadow baked onto its pad",
    "res": {
     "2x": {
      "file": "2x/buildings/farmhouse.png",
-     "w": 516,
-     "h": 508,
-     "shadow": "2x/buildings/farmhouse_shadow.png",
+     "w": 508,
+     "h": 415,
      "anchor": [
-      248.0,
-      242.0
+      253.0,
+      159.0
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.49803,
+      0.38313
      ]
     },
     "1x": {
      "file": "1x/buildings/farmhouse.png",
-     "w": 258,
-     "h": 254,
-     "shadow": "1x/buildings/farmhouse_shadow.png",
+     "w": 254,
+     "h": 208,
      "anchor": [
-      124.0,
-      121.0
+      126.5,
+      79.5
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.49803,
+      0.38221
      ]
     }
    }
@@ -4349,34 +4347,32 @@
     1,
     1
    ],
-   "notes": "round tree on 1 tile",
+   "notes": "round tree on 1 tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_oak.png",
-     "w": 190,
-     "h": 280,
-     "shadow": "2x/props/tree_oak_shadow.png",
+     "w": 223,
+     "h": 253,
      "anchor": [
-      78.0,
+      111.0,
       144.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.49776,
+      0.56917
      ]
     },
     "1x": {
      "file": "1x/props/tree_oak.png",
-     "w": 95,
-     "h": 140,
-     "shadow": "1x/props/tree_oak_shadow.png",
+     "w": 112,
+     "h": 126,
      "anchor": [
-      39.0,
+      55.5,
       72.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.49554,
+      0.57143
      ]
     }
    }
@@ -4389,34 +4385,32 @@
     1,
     1
    ],
-   "notes": "apple tree",
+   "notes": "apple tree (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_apple.png",
-     "w": 198,
-     "h": 280,
-     "shadow": "2x/props/tree_apple_shadow.png",
+     "w": 193,
+     "h": 235,
      "anchor": [
-      86.0,
-      144.0
+      95.0,
+      130.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49223,
+      0.55319
      ]
     },
     "1x": {
      "file": "1x/props/tree_apple.png",
-     "w": 99,
-     "h": 140,
-     "shadow": "1x/props/tree_apple_shadow.png",
+     "w": 96,
+     "h": 118,
      "anchor": [
-      43.0,
-      72.0
+      47.5,
+      65.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49479,
+      0.55085
      ]
     }
    }
@@ -4429,34 +4423,32 @@
     1,
     1
    ],
-   "notes": "pine tree",
+   "notes": "pine tree (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_pine.png",
-     "w": 152,
-     "h": 290,
-     "shadow": "2x/props/tree_pine_shadow.png",
+     "w": 198,
+     "h": 304,
      "anchor": [
-      66.0,
-      168.0
+      99.0,
+      204.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     },
     "1x": {
      "file": "1x/props/tree_pine.png",
-     "w": 76,
-     "h": 145,
-     "shadow": "1x/props/tree_pine_shadow.png",
+     "w": 99,
+     "h": 152,
      "anchor": [
-      33.0,
-      84.0
+      49.5,
+      102.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     }
    }
@@ -4549,34 +4541,32 @@
     1,
     1
    ],
-   "notes": "small rock",
+   "notes": "small rock (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_small.png",
-     "w": 70,
-     "h": 60,
-     "shadow": "2x/props/rock_small_shadow.png",
+     "w": 90,
+     "h": 102,
      "anchor": [
-      32.0,
-      -32.0
+      39.0,
+      6.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     },
     "1x": {
      "file": "1x/props/rock_small.png",
-     "w": 35,
-     "h": 30,
-     "shadow": "1x/props/rock_small_shadow.png",
+     "w": 45,
+     "h": 51,
      "anchor": [
-      16.0,
-      -16.0
+      19.5,
+      3.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     }
    }
@@ -4589,34 +4579,32 @@
     1,
     1
    ],
-   "notes": "rock cluster",
+   "notes": "rock cluster (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_large.png",
-     "w": 148,
-     "h": 82,
-     "shadow": "2x/props/rock_large_shadow.png",
+     "w": 169,
+     "h": 161,
      "anchor": [
-      70.0,
-      -18.0
+      79.0,
+      39.0
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.46746,
+      0.24224
      ]
     },
     "1x": {
      "file": "1x/props/rock_large.png",
-     "w": 74,
-     "h": 41,
-     "shadow": "1x/props/rock_large_shadow.png",
+     "w": 84,
+     "h": 80,
      "anchor": [
-      35.0,
-      -9.0
+      39.5,
+      19.5
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.47024,
+      0.24375
      ]
     }
    }
@@ -4987,34 +4975,32 @@
     1,
     1
    ],
-   "notes": "a felled tree's stump (grows back)",
+   "notes": "a felled tree's stump (grows back) (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_stump.png",
-     "w": 88,
-     "h": 72,
-     "shadow": "2x/props/tree_stump_shadow.png",
+     "w": 143,
+     "h": 114,
      "anchor": [
-      46.0,
-      -28.0
+      66.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.46154,
+      0.0
      ]
     },
     "1x": {
      "file": "1x/props/tree_stump.png",
-     "w": 44,
-     "h": 36,
-     "shadow": "1x/props/tree_stump_shadow.png",
+     "w": 72,
+     "h": 57,
      "anchor": [
-      23.0,
-      -14.0
+      33.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.45833,
+      0.0
      ]
     }
    }
@@ -5027,34 +5013,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile",
+   "notes": "stone outcrop tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_0.png",
-     "w": 150,
-     "h": 130,
-     "shadow": "2x/props/outcrop_0_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      86.0,
-      10.0
+      95.0,
+      58.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46798,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_0.png",
-     "w": 75,
-     "h": 65,
-     "shadow": "1x/props/outcrop_0_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      43.0,
-      5.0
+      47.5,
+      29.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46569,
+      0.30208
      ]
     }
    }
@@ -5067,34 +5051,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile",
+   "notes": "stone outcrop tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_1.png",
-     "w": 178,
-     "h": 130,
-     "shadow": "2x/props/outcrop_1_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      92.0,
-      6.0
+      96.0,
+      58.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47291,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_1.png",
-     "w": 89,
-     "h": 65,
-     "shadow": "1x/props/outcrop_1_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      46.0,
-      3.0
+      48.0,
+      29.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47059,
+      0.30208
      ]
     }
    }
@@ -5107,34 +5089,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile",
+   "notes": "stone outcrop tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_2.png",
-     "w": 168,
-     "h": 122,
-     "shadow": "2x/props/outcrop_2_shadow.png",
+     "w": 160,
+     "h": 189,
      "anchor": [
-      70.0,
-      0.0
+      75.0,
+      70.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37037
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_2.png",
-     "w": 84,
-     "h": 61,
-     "shadow": "1x/props/outcrop_2_shadow.png",
+     "w": 80,
+     "h": 94,
      "anchor": [
-      35.0,
-      0.0
+      37.5,
+      35.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37234
      ]
     }
    }
@@ -5147,34 +5127,32 @@
     1,
     1
    ],
-   "notes": "worked-out stone outcrop tile",
+   "notes": "worked-out stone outcrop tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_spent.png",
-     "w": 164,
-     "h": 84,
-     "shadow": "2x/props/outcrop_spent_shadow.png",
+     "w": 78,
+     "h": 88,
      "anchor": [
-      82.0,
-      -22.0
+      34.0,
+      -5.0
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_spent.png",
-     "w": 82,
-     "h": 42,
-     "shadow": "1x/props/outcrop_spent_shadow.png",
+     "w": 39,
+     "h": 44,
      "anchor": [
-      41.0,
-      -11.0
+      17.0,
+      -2.5
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     }
    }
@@ -10909,34 +10887,32 @@
     1,
     1
    ],
-   "notes": "round tree in spring",
+   "notes": "round tree in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_oak_spring.png",
-     "w": 190,
-     "h": 280,
-     "shadow": "2x/props/tree_oak_spring_shadow.png",
+     "w": 224,
+     "h": 253,
      "anchor": [
-      78.0,
+      112.0,
       144.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.5,
+      0.56917
      ]
     },
     "1x": {
      "file": "1x/props/tree_oak_spring.png",
-     "w": 95,
-     "h": 140,
-     "shadow": "1x/props/tree_oak_spring_shadow.png",
+     "w": 112,
+     "h": 126,
      "anchor": [
-      39.0,
+      56.0,
       72.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.5,
+      0.57143
      ]
     }
    }
@@ -10949,34 +10925,32 @@
     1,
     1
    ],
-   "notes": "apple tree in spring",
+   "notes": "apple tree in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_apple_spring.png",
-     "w": 198,
-     "h": 280,
-     "shadow": "2x/props/tree_apple_spring_shadow.png",
+     "w": 192,
+     "h": 235,
      "anchor": [
-      86.0,
-      144.0
+      95.0,
+      130.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49479,
+      0.55319
      ]
     },
     "1x": {
      "file": "1x/props/tree_apple_spring.png",
-     "w": 99,
-     "h": 140,
-     "shadow": "1x/props/tree_apple_spring_shadow.png",
+     "w": 96,
+     "h": 118,
      "anchor": [
-      43.0,
-      72.0
+      47.5,
+      65.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49479,
+      0.55085
      ]
     }
    }
@@ -10989,34 +10963,32 @@
     1,
     1
    ],
-   "notes": "pine tree in spring",
+   "notes": "pine tree in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_pine_spring.png",
-     "w": 152,
-     "h": 290,
-     "shadow": "2x/props/tree_pine_spring_shadow.png",
+     "w": 198,
+     "h": 304,
      "anchor": [
-      66.0,
-      168.0
+      99.0,
+      204.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     },
     "1x": {
      "file": "1x/props/tree_pine_spring.png",
-     "w": 76,
-     "h": 145,
-     "shadow": "1x/props/tree_pine_spring_shadow.png",
+     "w": 99,
+     "h": 152,
      "anchor": [
-      33.0,
-      84.0
+      49.5,
+      102.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     }
    }
@@ -11109,34 +11081,32 @@
     1,
     1
    ],
-   "notes": "small rock in spring",
+   "notes": "small rock in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_small_spring.png",
-     "w": 70,
-     "h": 60,
-     "shadow": "2x/props/rock_small_spring_shadow.png",
+     "w": 90,
+     "h": 102,
      "anchor": [
-      32.0,
-      -32.0
+      39.0,
+      6.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     },
     "1x": {
      "file": "1x/props/rock_small_spring.png",
-     "w": 35,
-     "h": 30,
-     "shadow": "1x/props/rock_small_spring_shadow.png",
+     "w": 45,
+     "h": 51,
      "anchor": [
-      16.0,
-      -16.0
+      19.5,
+      3.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     }
    }
@@ -11149,34 +11119,32 @@
     1,
     1
    ],
-   "notes": "rock cluster in spring",
+   "notes": "rock cluster in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_large_spring.png",
-     "w": 148,
-     "h": 82,
-     "shadow": "2x/props/rock_large_spring_shadow.png",
+     "w": 169,
+     "h": 161,
      "anchor": [
-      70.0,
-      -18.0
+      79.0,
+      39.0
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.46746,
+      0.24224
      ]
     },
     "1x": {
      "file": "1x/props/rock_large_spring.png",
-     "w": 74,
-     "h": 41,
-     "shadow": "1x/props/rock_large_spring_shadow.png",
+     "w": 84,
+     "h": 80,
      "anchor": [
-      35.0,
-      -9.0
+      39.5,
+      19.5
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.47024,
+      0.24375
      ]
     }
    }
@@ -11227,34 +11195,32 @@
     1,
     1
    ],
-   "notes": "a felled tree's stump (grows back) in spring",
+   "notes": "a felled tree's stump (grows back) in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_stump_spring.png",
-     "w": 88,
-     "h": 72,
-     "shadow": "2x/props/tree_stump_spring_shadow.png",
+     "w": 143,
+     "h": 114,
      "anchor": [
-      46.0,
-      -28.0
+      66.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.46154,
+      0.0
      ]
     },
     "1x": {
      "file": "1x/props/tree_stump_spring.png",
-     "w": 44,
-     "h": 36,
-     "shadow": "1x/props/tree_stump_spring_shadow.png",
+     "w": 72,
+     "h": 57,
      "anchor": [
-      23.0,
-      -14.0
+      33.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.45833,
+      0.0
      ]
     }
    }
@@ -11267,34 +11233,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in spring",
+   "notes": "stone outcrop tile in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_0_spring.png",
-     "w": 150,
-     "h": 130,
-     "shadow": "2x/props/outcrop_0_spring_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      86.0,
-      10.0
+      95.0,
+      58.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46798,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_0_spring.png",
-     "w": 75,
-     "h": 65,
-     "shadow": "1x/props/outcrop_0_spring_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      43.0,
-      5.0
+      47.5,
+      29.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46569,
+      0.30208
      ]
     }
    }
@@ -11307,34 +11271,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in spring",
+   "notes": "stone outcrop tile in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_1_spring.png",
-     "w": 178,
-     "h": 130,
-     "shadow": "2x/props/outcrop_1_spring_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      92.0,
-      6.0
+      96.0,
+      58.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47291,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_1_spring.png",
-     "w": 89,
-     "h": 65,
-     "shadow": "1x/props/outcrop_1_spring_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      46.0,
-      3.0
+      48.0,
+      29.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47059,
+      0.30208
      ]
     }
    }
@@ -11347,34 +11309,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in spring",
+   "notes": "stone outcrop tile in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_2_spring.png",
-     "w": 168,
-     "h": 122,
-     "shadow": "2x/props/outcrop_2_spring_shadow.png",
+     "w": 160,
+     "h": 189,
      "anchor": [
-      70.0,
-      0.0
+      75.0,
+      70.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37037
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_2_spring.png",
-     "w": 84,
-     "h": 61,
-     "shadow": "1x/props/outcrop_2_spring_shadow.png",
+     "w": 80,
+     "h": 94,
      "anchor": [
-      35.0,
-      0.0
+      37.5,
+      35.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37234
      ]
     }
    }
@@ -11387,34 +11347,32 @@
     1,
     1
    ],
-   "notes": "worked-out stone outcrop tile in spring",
+   "notes": "worked-out stone outcrop tile in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_spent_spring.png",
-     "w": 164,
-     "h": 84,
-     "shadow": "2x/props/outcrop_spent_spring_shadow.png",
+     "w": 78,
+     "h": 88,
      "anchor": [
-      82.0,
-      -22.0
+      34.0,
+      -5.0
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_spent_spring.png",
-     "w": 82,
-     "h": 42,
-     "shadow": "1x/props/outcrop_spent_spring_shadow.png",
+     "w": 39,
+     "h": 44,
      "anchor": [
-      41.0,
-      -11.0
+      17.0,
+      -2.5
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     }
    }
@@ -11547,34 +11505,32 @@
     1,
     1
    ],
-   "notes": "round tree in summer",
+   "notes": "round tree in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_oak_summer.png",
-     "w": 190,
-     "h": 280,
-     "shadow": "2x/props/tree_oak_summer_shadow.png",
+     "w": 223,
+     "h": 253,
      "anchor": [
-      78.0,
+      111.0,
       144.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.49776,
+      0.56917
      ]
     },
     "1x": {
      "file": "1x/props/tree_oak_summer.png",
-     "w": 95,
-     "h": 140,
-     "shadow": "1x/props/tree_oak_summer_shadow.png",
+     "w": 112,
+     "h": 126,
      "anchor": [
-      39.0,
+      55.5,
       72.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.49554,
+      0.57143
      ]
     }
    }
@@ -11587,34 +11543,32 @@
     1,
     1
    ],
-   "notes": "apple tree in summer",
+   "notes": "apple tree in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_apple_summer.png",
-     "w": 198,
-     "h": 280,
-     "shadow": "2x/props/tree_apple_summer_shadow.png",
+     "w": 193,
+     "h": 235,
      "anchor": [
-      86.0,
-      144.0
+      95.0,
+      130.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49223,
+      0.55319
      ]
     },
     "1x": {
      "file": "1x/props/tree_apple_summer.png",
-     "w": 99,
-     "h": 140,
-     "shadow": "1x/props/tree_apple_summer_shadow.png",
+     "w": 96,
+     "h": 118,
      "anchor": [
-      43.0,
-      72.0
+      47.5,
+      65.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49479,
+      0.55085
      ]
     }
    }
@@ -11627,34 +11581,32 @@
     1,
     1
    ],
-   "notes": "pine tree in summer",
+   "notes": "pine tree in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_pine_summer.png",
-     "w": 152,
-     "h": 290,
-     "shadow": "2x/props/tree_pine_summer_shadow.png",
+     "w": 198,
+     "h": 304,
      "anchor": [
-      66.0,
-      168.0
+      99.0,
+      204.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     },
     "1x": {
      "file": "1x/props/tree_pine_summer.png",
-     "w": 76,
-     "h": 145,
-     "shadow": "1x/props/tree_pine_summer_shadow.png",
+     "w": 99,
+     "h": 152,
      "anchor": [
-      33.0,
-      84.0
+      49.5,
+      102.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     }
    }
@@ -11747,34 +11699,32 @@
     1,
     1
    ],
-   "notes": "small rock in summer",
+   "notes": "small rock in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_small_summer.png",
-     "w": 70,
-     "h": 60,
-     "shadow": "2x/props/rock_small_summer_shadow.png",
+     "w": 90,
+     "h": 102,
      "anchor": [
-      32.0,
-      -32.0
+      39.0,
+      6.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     },
     "1x": {
      "file": "1x/props/rock_small_summer.png",
-     "w": 35,
-     "h": 30,
-     "shadow": "1x/props/rock_small_summer_shadow.png",
+     "w": 45,
+     "h": 51,
      "anchor": [
-      16.0,
-      -16.0
+      19.5,
+      3.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     }
    }
@@ -11787,34 +11737,32 @@
     1,
     1
    ],
-   "notes": "rock cluster in summer",
+   "notes": "rock cluster in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_large_summer.png",
-     "w": 148,
-     "h": 82,
-     "shadow": "2x/props/rock_large_summer_shadow.png",
+     "w": 169,
+     "h": 161,
      "anchor": [
-      70.0,
-      -18.0
+      79.0,
+      39.0
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.46746,
+      0.24224
      ]
     },
     "1x": {
      "file": "1x/props/rock_large_summer.png",
-     "w": 74,
-     "h": 41,
-     "shadow": "1x/props/rock_large_summer_shadow.png",
+     "w": 84,
+     "h": 80,
      "anchor": [
-      35.0,
-      -9.0
+      39.5,
+      19.5
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.47024,
+      0.24375
      ]
     }
    }
@@ -11865,34 +11813,32 @@
     1,
     1
    ],
-   "notes": "a felled tree's stump (grows back) in summer",
+   "notes": "a felled tree's stump (grows back) in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_stump_summer.png",
-     "w": 88,
-     "h": 72,
-     "shadow": "2x/props/tree_stump_summer_shadow.png",
+     "w": 143,
+     "h": 114,
      "anchor": [
-      46.0,
-      -28.0
+      66.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.46154,
+      0.0
      ]
     },
     "1x": {
      "file": "1x/props/tree_stump_summer.png",
-     "w": 44,
-     "h": 36,
-     "shadow": "1x/props/tree_stump_summer_shadow.png",
+     "w": 72,
+     "h": 57,
      "anchor": [
-      23.0,
-      -14.0
+      33.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.45833,
+      0.0
      ]
     }
    }
@@ -11905,34 +11851,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in summer",
+   "notes": "stone outcrop tile in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_0_summer.png",
-     "w": 150,
-     "h": 130,
-     "shadow": "2x/props/outcrop_0_summer_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      86.0,
-      10.0
+      95.0,
+      58.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46798,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_0_summer.png",
-     "w": 75,
-     "h": 65,
-     "shadow": "1x/props/outcrop_0_summer_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      43.0,
-      5.0
+      47.5,
+      29.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46569,
+      0.30208
      ]
     }
    }
@@ -11945,34 +11889,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in summer",
+   "notes": "stone outcrop tile in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_1_summer.png",
-     "w": 178,
-     "h": 130,
-     "shadow": "2x/props/outcrop_1_summer_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      92.0,
-      6.0
+      96.0,
+      58.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47291,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_1_summer.png",
-     "w": 89,
-     "h": 65,
-     "shadow": "1x/props/outcrop_1_summer_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      46.0,
-      3.0
+      48.0,
+      29.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47059,
+      0.30208
      ]
     }
    }
@@ -11985,34 +11927,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in summer",
+   "notes": "stone outcrop tile in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_2_summer.png",
-     "w": 168,
-     "h": 122,
-     "shadow": "2x/props/outcrop_2_summer_shadow.png",
+     "w": 160,
+     "h": 189,
      "anchor": [
-      70.0,
-      0.0
+      75.0,
+      70.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37037
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_2_summer.png",
-     "w": 84,
-     "h": 61,
-     "shadow": "1x/props/outcrop_2_summer_shadow.png",
+     "w": 80,
+     "h": 94,
      "anchor": [
-      35.0,
-      0.0
+      37.5,
+      35.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37234
      ]
     }
    }
@@ -12025,34 +11965,32 @@
     1,
     1
    ],
-   "notes": "worked-out stone outcrop tile in summer",
+   "notes": "worked-out stone outcrop tile in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_spent_summer.png",
-     "w": 164,
-     "h": 84,
-     "shadow": "2x/props/outcrop_spent_summer_shadow.png",
+     "w": 78,
+     "h": 88,
      "anchor": [
-      82.0,
-      -22.0
+      34.0,
+      -5.0
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_spent_summer.png",
-     "w": 82,
-     "h": 42,
-     "shadow": "1x/props/outcrop_spent_summer_shadow.png",
+     "w": 39,
+     "h": 44,
      "anchor": [
-      41.0,
-      -11.0
+      17.0,
+      -2.5
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     }
    }
@@ -12185,34 +12123,32 @@
     1,
     1
    ],
-   "notes": "round tree in autumn",
+   "notes": "round tree in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_oak_autumn.png",
-     "w": 190,
-     "h": 280,
-     "shadow": "2x/props/tree_oak_autumn_shadow.png",
+     "w": 223,
+     "h": 253,
      "anchor": [
-      78.0,
+      111.0,
       144.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.49776,
+      0.56917
      ]
     },
     "1x": {
      "file": "1x/props/tree_oak_autumn.png",
-     "w": 95,
-     "h": 140,
-     "shadow": "1x/props/tree_oak_autumn_shadow.png",
+     "w": 112,
+     "h": 126,
      "anchor": [
-      39.0,
+      55.5,
       72.0
      ],
      "origin": [
-      0.41053,
-      0.51429
+      0.49554,
+      0.57143
      ]
     }
    }
@@ -12225,34 +12161,32 @@
     1,
     1
    ],
-   "notes": "apple tree in autumn",
+   "notes": "apple tree in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_apple_autumn.png",
-     "w": 198,
-     "h": 280,
-     "shadow": "2x/props/tree_apple_autumn_shadow.png",
+     "w": 193,
+     "h": 235,
      "anchor": [
-      86.0,
-      144.0
+      95.0,
+      130.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49223,
+      0.55319
      ]
     },
     "1x": {
      "file": "1x/props/tree_apple_autumn.png",
-     "w": 99,
-     "h": 140,
-     "shadow": "1x/props/tree_apple_autumn_shadow.png",
+     "w": 96,
+     "h": 118,
      "anchor": [
-      43.0,
-      72.0
+      47.5,
+      65.0
      ],
      "origin": [
-      0.43434,
-      0.51429
+      0.49479,
+      0.55085
      ]
     }
    }
@@ -12265,34 +12199,32 @@
     1,
     1
    ],
-   "notes": "pine tree in autumn",
+   "notes": "pine tree in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_pine_autumn.png",
-     "w": 152,
-     "h": 290,
-     "shadow": "2x/props/tree_pine_autumn_shadow.png",
+     "w": 198,
+     "h": 304,
      "anchor": [
-      66.0,
-      168.0
+      99.0,
+      204.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     },
     "1x": {
      "file": "1x/props/tree_pine_autumn.png",
-     "w": 76,
-     "h": 145,
-     "shadow": "1x/props/tree_pine_autumn_shadow.png",
+     "w": 99,
+     "h": 152,
      "anchor": [
-      33.0,
-      84.0
+      49.5,
+      102.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     }
    }
@@ -12385,34 +12317,32 @@
     1,
     1
    ],
-   "notes": "small rock in autumn",
+   "notes": "small rock in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_small_autumn.png",
-     "w": 70,
-     "h": 60,
-     "shadow": "2x/props/rock_small_autumn_shadow.png",
+     "w": 90,
+     "h": 102,
      "anchor": [
-      32.0,
-      -32.0
+      39.0,
+      6.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     },
     "1x": {
      "file": "1x/props/rock_small_autumn.png",
-     "w": 35,
-     "h": 30,
-     "shadow": "1x/props/rock_small_autumn_shadow.png",
+     "w": 45,
+     "h": 51,
      "anchor": [
-      16.0,
-      -16.0
+      19.5,
+      3.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     }
    }
@@ -12425,34 +12355,32 @@
     1,
     1
    ],
-   "notes": "rock cluster in autumn",
+   "notes": "rock cluster in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_large_autumn.png",
-     "w": 148,
-     "h": 82,
-     "shadow": "2x/props/rock_large_autumn_shadow.png",
+     "w": 169,
+     "h": 161,
      "anchor": [
-      70.0,
-      -18.0
+      79.0,
+      39.0
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.46746,
+      0.24224
      ]
     },
     "1x": {
      "file": "1x/props/rock_large_autumn.png",
-     "w": 74,
-     "h": 41,
-     "shadow": "1x/props/rock_large_autumn_shadow.png",
+     "w": 84,
+     "h": 80,
      "anchor": [
-      35.0,
-      -9.0
+      39.5,
+      19.5
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.47024,
+      0.24375
      ]
     }
    }
@@ -12503,34 +12431,32 @@
     1,
     1
    ],
-   "notes": "a felled tree's stump (grows back) in autumn",
+   "notes": "a felled tree's stump (grows back) in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_stump_autumn.png",
-     "w": 88,
-     "h": 72,
-     "shadow": "2x/props/tree_stump_autumn_shadow.png",
+     "w": 143,
+     "h": 114,
      "anchor": [
-      46.0,
-      -28.0
+      66.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.46154,
+      0.0
      ]
     },
     "1x": {
      "file": "1x/props/tree_stump_autumn.png",
-     "w": 44,
-     "h": 36,
-     "shadow": "1x/props/tree_stump_autumn_shadow.png",
+     "w": 72,
+     "h": 57,
      "anchor": [
-      23.0,
-      -14.0
+      33.0,
+      0.0
      ],
      "origin": [
-      0.52273,
-      -0.38889
+      0.45833,
+      0.0
      ]
     }
    }
@@ -12543,34 +12469,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in autumn",
+   "notes": "stone outcrop tile in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_0_autumn.png",
-     "w": 150,
-     "h": 130,
-     "shadow": "2x/props/outcrop_0_autumn_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      86.0,
-      10.0
+      95.0,
+      58.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46798,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_0_autumn.png",
-     "w": 75,
-     "h": 65,
-     "shadow": "1x/props/outcrop_0_autumn_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      43.0,
-      5.0
+      47.5,
+      29.0
      ],
      "origin": [
-      0.57333,
-      0.07692
+      0.46569,
+      0.30208
      ]
     }
    }
@@ -12583,34 +12507,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in autumn",
+   "notes": "stone outcrop tile in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_1_autumn.png",
-     "w": 178,
-     "h": 130,
-     "shadow": "2x/props/outcrop_1_autumn_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      92.0,
-      6.0
+      96.0,
+      58.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47291,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_1_autumn.png",
-     "w": 89,
-     "h": 65,
-     "shadow": "1x/props/outcrop_1_autumn_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      46.0,
-      3.0
+      48.0,
+      29.0
      ],
      "origin": [
-      0.51685,
-      0.04615
+      0.47059,
+      0.30208
      ]
     }
    }
@@ -12623,34 +12545,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in autumn",
+   "notes": "stone outcrop tile in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_2_autumn.png",
-     "w": 168,
-     "h": 122,
-     "shadow": "2x/props/outcrop_2_autumn_shadow.png",
+     "w": 160,
+     "h": 189,
      "anchor": [
-      70.0,
-      0.0
+      75.0,
+      70.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37037
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_2_autumn.png",
-     "w": 84,
-     "h": 61,
-     "shadow": "1x/props/outcrop_2_autumn_shadow.png",
+     "w": 80,
+     "h": 94,
      "anchor": [
-      35.0,
-      0.0
+      37.5,
+      35.0
      ],
      "origin": [
-      0.41667,
-      0.0
+      0.46875,
+      0.37234
      ]
     }
    }
@@ -12663,34 +12583,32 @@
     1,
     1
    ],
-   "notes": "worked-out stone outcrop tile in autumn",
+   "notes": "worked-out stone outcrop tile in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_spent_autumn.png",
-     "w": 164,
-     "h": 84,
-     "shadow": "2x/props/outcrop_spent_autumn_shadow.png",
+     "w": 78,
+     "h": 88,
      "anchor": [
-      82.0,
-      -22.0
+      34.0,
+      -5.0
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_spent_autumn.png",
-     "w": 82,
-     "h": 42,
-     "shadow": "1x/props/outcrop_spent_autumn_shadow.png",
+     "w": 39,
+     "h": 44,
      "anchor": [
-      41.0,
-      -11.0
+      17.0,
+      -2.5
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     }
    }
@@ -12823,34 +12741,32 @@
     1,
     1
    ],
-   "notes": "round tree in winter",
+   "notes": "round tree in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_oak_winter.png",
-     "w": 152,
-     "h": 260,
-     "shadow": "2x/props/tree_oak_winter_shadow.png",
+     "w": 213,
+     "h": 246,
      "anchor": [
-      70.0,
-      140.0
+      106.0,
+      137.0
      ],
      "origin": [
-      0.46053,
-      0.53846
+      0.49765,
+      0.55691
      ]
     },
     "1x": {
      "file": "1x/props/tree_oak_winter.png",
-     "w": 76,
-     "h": 130,
-     "shadow": "1x/props/tree_oak_winter_shadow.png",
+     "w": 106,
+     "h": 123,
      "anchor": [
-      35.0,
-      70.0
+      53.0,
+      68.5
      ],
      "origin": [
-      0.46053,
-      0.53846
+      0.5,
+      0.55691
      ]
     }
    }
@@ -12863,34 +12779,32 @@
     1,
     1
    ],
-   "notes": "apple tree in winter",
+   "notes": "apple tree in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_apple_winter.png",
-     "w": 132,
-     "h": 268,
-     "shadow": "2x/props/tree_apple_winter_shadow.png",
+     "w": 188,
+     "h": 225,
      "anchor": [
-      50.0,
-      148.0
+      94.0,
+      120.0
      ],
      "origin": [
-      0.37879,
-      0.55224
+      0.5,
+      0.53333
      ]
     },
     "1x": {
      "file": "1x/props/tree_apple_winter.png",
-     "w": 66,
-     "h": 134,
-     "shadow": "1x/props/tree_apple_winter_shadow.png",
+     "w": 94,
+     "h": 112,
      "anchor": [
-      25.0,
-      74.0
+      47.0,
+      60.0
      ],
      "origin": [
-      0.37879,
-      0.55224
+      0.5,
+      0.53571
      ]
     }
    }
@@ -12903,34 +12817,32 @@
     1,
     1
    ],
-   "notes": "pine tree in winter",
+   "notes": "pine tree in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_pine_winter.png",
-     "w": 152,
-     "h": 290,
-     "shadow": "2x/props/tree_pine_winter_shadow.png",
+     "w": 198,
+     "h": 304,
      "anchor": [
-      66.0,
-      168.0
+      99.0,
+      204.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     },
     "1x": {
      "file": "1x/props/tree_pine_winter.png",
-     "w": 76,
-     "h": 145,
-     "shadow": "1x/props/tree_pine_winter_shadow.png",
+     "w": 99,
+     "h": 152,
      "anchor": [
-      33.0,
-      84.0
+      49.5,
+      102.0
      ],
      "origin": [
-      0.43421,
-      0.57931
+      0.5,
+      0.67105
      ]
     }
    }
@@ -13023,34 +12935,32 @@
     1,
     1
    ],
-   "notes": "small rock in winter",
+   "notes": "small rock in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_small_winter.png",
-     "w": 70,
-     "h": 60,
-     "shadow": "2x/props/rock_small_winter_shadow.png",
+     "w": 90,
+     "h": 102,
      "anchor": [
-      32.0,
-      -32.0
+      39.0,
+      6.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     },
     "1x": {
      "file": "1x/props/rock_small_winter.png",
-     "w": 35,
-     "h": 30,
-     "shadow": "1x/props/rock_small_winter_shadow.png",
+     "w": 45,
+     "h": 51,
      "anchor": [
-      16.0,
-      -16.0
+      19.5,
+      3.0
      ],
      "origin": [
-      0.45714,
-      -0.53333
+      0.43333,
+      0.05882
      ]
     }
    }
@@ -13063,34 +12973,32 @@
     1,
     1
    ],
-   "notes": "rock cluster in winter",
+   "notes": "rock cluster in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/rock_large_winter.png",
-     "w": 148,
-     "h": 82,
-     "shadow": "2x/props/rock_large_winter_shadow.png",
+     "w": 169,
+     "h": 161,
      "anchor": [
-      70.0,
-      -18.0
+      79.0,
+      39.0
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.46746,
+      0.24224
      ]
     },
     "1x": {
      "file": "1x/props/rock_large_winter.png",
-     "w": 74,
-     "h": 41,
-     "shadow": "1x/props/rock_large_winter_shadow.png",
+     "w": 84,
+     "h": 80,
      "anchor": [
-      35.0,
-      -9.0
+      39.5,
+      19.5
      ],
      "origin": [
-      0.47297,
-      -0.21951
+      0.47024,
+      0.24375
      ]
     }
    }
@@ -13141,34 +13049,32 @@
     1,
     1
    ],
-   "notes": "a felled tree's stump (grows back) in winter",
+   "notes": "a felled tree's stump (grows back) in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/tree_stump_winter.png",
-     "w": 82,
-     "h": 66,
-     "shadow": "2x/props/tree_stump_winter_shadow.png",
+     "w": 143,
+     "h": 115,
      "anchor": [
-      40.0,
-      -28.0
+      66.0,
+      1.0
      ],
      "origin": [
-      0.4878,
-      -0.42424
+      0.46154,
+      0.0087
      ]
     },
     "1x": {
      "file": "1x/props/tree_stump_winter.png",
-     "w": 41,
-     "h": 33,
-     "shadow": "1x/props/tree_stump_winter_shadow.png",
+     "w": 72,
+     "h": 58,
      "anchor": [
-      20.0,
-      -14.0
+      33.0,
+      0.5
      ],
      "origin": [
-      0.4878,
-      -0.42424
+      0.45833,
+      0.00862
      ]
     }
    }
@@ -13181,34 +13087,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in winter",
+   "notes": "stone outcrop tile in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_0_winter.png",
-     "w": 150,
-     "h": 138,
-     "shadow": "2x/props/outcrop_0_winter_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      86.0,
-      18.0
+      95.0,
+      58.0
      ],
      "origin": [
-      0.57333,
-      0.13043
+      0.46798,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_0_winter.png",
-     "w": 75,
-     "h": 69,
-     "shadow": "1x/props/outcrop_0_winter_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      43.0,
-      9.0
+      47.5,
+      29.0
      ],
      "origin": [
-      0.57333,
-      0.13043
+      0.46569,
+      0.30208
      ]
     }
    }
@@ -13221,34 +13125,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in winter",
+   "notes": "stone outcrop tile in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_1_winter.png",
-     "w": 178,
-     "h": 136,
-     "shadow": "2x/props/outcrop_1_winter_shadow.png",
+     "w": 203,
+     "h": 191,
      "anchor": [
-      92.0,
-      12.0
+      96.0,
+      58.0
      ],
      "origin": [
-      0.51685,
-      0.08824
+      0.47291,
+      0.30366
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_1_winter.png",
-     "w": 89,
-     "h": 68,
-     "shadow": "1x/props/outcrop_1_winter_shadow.png",
+     "w": 102,
+     "h": 96,
      "anchor": [
-      46.0,
-      6.0
+      48.0,
+      29.0
      ],
      "origin": [
-      0.51685,
-      0.08824
+      0.47059,
+      0.30208
      ]
     }
    }
@@ -13261,34 +13163,32 @@
     1,
     1
    ],
-   "notes": "stone outcrop tile in winter",
+   "notes": "stone outcrop tile in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_2_winter.png",
-     "w": 168,
-     "h": 136,
-     "shadow": "2x/props/outcrop_2_winter_shadow.png",
+     "w": 160,
+     "h": 189,
      "anchor": [
-      70.0,
-      14.0
+      75.0,
+      70.0
      ],
      "origin": [
-      0.41667,
-      0.10294
+      0.46875,
+      0.37037
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_2_winter.png",
-     "w": 84,
-     "h": 68,
-     "shadow": "1x/props/outcrop_2_winter_shadow.png",
+     "w": 80,
+     "h": 94,
      "anchor": [
-      35.0,
-      7.0
+      37.5,
+      35.0
      ],
      "origin": [
-      0.41667,
-      0.10294
+      0.46875,
+      0.37234
      ]
     }
    }
@@ -13301,34 +13201,32 @@
     1,
     1
    ],
-   "notes": "worked-out stone outcrop tile in winter",
+   "notes": "worked-out stone outcrop tile in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/outcrop_spent_winter.png",
-     "w": 164,
-     "h": 84,
-     "shadow": "2x/props/outcrop_spent_winter_shadow.png",
+     "w": 78,
+     "h": 88,
      "anchor": [
-      82.0,
-      -22.0
+      34.0,
+      -5.0
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     },
     "1x": {
      "file": "1x/props/outcrop_spent_winter.png",
-     "w": 82,
-     "h": 42,
-     "shadow": "1x/props/outcrop_spent_winter_shadow.png",
+     "w": 39,
+     "h": 44,
      "anchor": [
-      41.0,
-      -11.0
+      17.0,
+      -2.5
      ],
      "origin": [
-      0.5,
-      -0.2619
+      0.4359,
+      -0.05682
      ]
     }
    }
@@ -14141,34 +14039,32 @@
     2,
     2
    ],
-   "notes": "farmhouse in winter: snow on the roof",
+   "notes": "farmhouse in winter (Ludo.ai, cel-shaded): snow on the roof and pad, icicles",
    "res": {
     "2x": {
      "file": "2x/buildings/farmhouse_winter.png",
-     "w": 516,
-     "h": 508,
-     "shadow": "2x/buildings/farmhouse_winter_shadow.png",
+     "w": 503,
+     "h": 403,
      "anchor": [
-      248.0,
-      242.0
+      252.0,
+      150.0
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.50099,
+      0.37221
      ]
     },
     "1x": {
      "file": "1x/buildings/farmhouse_winter.png",
-     "w": 258,
-     "h": 254,
-     "shadow": "1x/buildings/farmhouse_winter_shadow.png",
+     "w": 252,
+     "h": 202,
      "anchor": [
-      124.0,
-      121.0
+      126.0,
+      75.0
      ],
      "origin": [
-      0.48062,
-      0.47638
+      0.5,
+      0.37129
      ]
     }
    }

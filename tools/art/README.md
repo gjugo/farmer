@@ -6,6 +6,9 @@ New content (crops, animals, buildings for later levels) gets its art here, so i
 
 The `.py` files are the pack's `source/` folder, unchanged. Colours live at the top of each module.
 
+Some assets are now Ludo.ai art built by `tools/ludo/` (see its README). `npm run art` overwrites them with
+this generator's versions: restore them from git afterwards.
+
 | File | What it draws |
 | --- | --- |
 | `core.py` | `Canvas` (SVG drawing helpers, isometric projection `P(x, y, z)`, shadows), shared colours |

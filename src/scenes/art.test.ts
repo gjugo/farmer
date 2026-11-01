@@ -33,6 +33,7 @@ import {
   fencePiece,
   groundTint,
   RICH_GROUND_TINT,
+  seasonalGroundTint,
   GATE,
   ICON_ART,
   NE,
@@ -286,13 +287,30 @@ describe('splitIcons', () => {
 
 describe('soil on the ground', () => {
   it('draws rich soil as lusher grass and leaves normal and poor ground as it is', () => {
-    expect(groundTint(SOIL_QUALITY.rich)).toBe(RICH_GROUND_TINT);
-    expect(groundTint(SOIL_QUALITY.normal)).toBe(0xffffff);
-    expect(groundTint(SOIL_QUALITY.poor)).toBe(0xffffff);
-    // A multiply that keeps green strongest: greener, a touch deeper.
-    const [r, g, b] = [RICH_GROUND_TINT >> 16, (RICH_GROUND_TINT >> 8) & 0xff, RICH_GROUND_TINT & 0xff];
-    expect(g).toBeGreaterThan(r);
-    expect(g).toBeGreaterThan(b);
+    for (const season of SEASONS) {
+      expect(groundTint(SOIL_QUALITY.rich, season)).toBe(RICH_GROUND_TINT[season]);
+      expect(groundTint(SOIL_QUALITY.normal, season)).toBe(0xffffff);
+      expect(groundTint(SOIL_QUALITY.poor, season)).toBe(0xffffff);
+    }
+    const rgb = (t: number) => [t >> 16, (t >> 8) & 0xff, t & 0xff];
+    // While the grass grows, a multiply that keeps green strongest: greener, a touch deeper.
+    for (const season of ['spring', 'summer', 'autumn'] as const) {
+      const [r, g, b] = rgb(RICH_GROUND_TINT[season]);
+      expect(g).toBeGreaterThan(r);
+      expect(g).toBeGreaterThan(b);
+    }
+    // On snow, green would read as mint: winter's is a faint cool shade instead.
+    const [r, g, b] = rgb(RICH_GROUND_TINT.winter);
+    expect(b).toBeGreaterThanOrEqual(g);
+    expect(g).toBeGreaterThanOrEqual(r);
+    expect(Math.min(r, g, b)).toBeGreaterThan(0xd8);
+  });
+
+  it('switches rich soil to the new season’s tint and leaves untinted ground alone', () => {
+    expect(seasonalGroundTint(RICH_GROUND_TINT.summer, 'winter')).toBe(RICH_GROUND_TINT.winter);
+    expect(seasonalGroundTint(RICH_GROUND_TINT.winter, 'spring')).toBe(RICH_GROUND_TINT.spring);
+    expect(seasonalGroundTint(RICH_GROUND_TINT.autumn, 'autumn')).toBe(RICH_GROUND_TINT.autumn);
+    expect(seasonalGroundTint(0xffffff, 'winter')).toBe(0xffffff);
   });
 
   it('has an icon for manure', () => {
