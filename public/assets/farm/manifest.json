@@ -1131,34 +1131,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: none",
+   "notes": "fence through tile centre; rails reach edges: none (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_post.png",
-     "w": 64,
-     "h": 108,
-     "shadow": "2x/fences/fence_post_shadow.png",
+     "w": 37,
+     "h": 94,
      "anchor": [
-      22.0,
-      8.0
+      14.0,
+      12.0
      ],
      "origin": [
-      0.34375,
-      0.07407
+      0.37838,
+      0.12766
      ]
     },
     "1x": {
      "file": "1x/fences/fence_post.png",
-     "w": 32,
-     "h": 54,
-     "shadow": "1x/fences/fence_post_shadow.png",
+     "w": 18,
+     "h": 47,
      "anchor": [
-      11.0,
-      4.0
+      7.0,
+      6.0
      ],
      "origin": [
-      0.34375,
-      0.07407
+      0.38889,
+      0.12766
      ]
     }
    }
@@ -1171,34 +1169,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne",
+   "notes": "fence through tile centre; rails reach edges: ne (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne.png",
-     "w": 114,
-     "h": 124,
-     "shadow": "2x/fences/fence_ne_shadow.png",
+     "w": 92,
+     "h": 107,
      "anchor": [
-      22.0,
-      24.0
+      14.0,
+      25.0
      ],
      "origin": [
-      0.19298,
-      0.19355
+      0.15217,
+      0.23364
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne.png",
-     "w": 57,
-     "h": 62,
-     "shadow": "1x/fences/fence_ne_shadow.png",
+     "w": 46,
+     "h": 54,
      "anchor": [
-      11.0,
-      12.0
+      7.0,
+      12.5
      ],
      "origin": [
-      0.19298,
-      0.19355
+      0.15217,
+      0.23148
      ]
     }
    }
@@ -1211,34 +1207,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: se",
+   "notes": "fence through tile centre; rails reach edges: se (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_se.png",
-     "w": 110,
-     "h": 128,
-     "shadow": "2x/fences/fence_se_shadow.png",
+     "w": 92,
+     "h": 123,
      "anchor": [
-      22.0,
-      8.0
+      14.0,
+      12.0
      ],
      "origin": [
-      0.2,
-      0.0625
+      0.15217,
+      0.09756
      ]
     },
     "1x": {
      "file": "1x/fences/fence_se.png",
-     "w": 55,
-     "h": 64,
-     "shadow": "1x/fences/fence_se_shadow.png",
+     "w": 46,
+     "h": 62,
      "anchor": [
-      11.0,
-      4.0
+      7.0,
+      6.0
      ],
      "origin": [
-      0.2,
-      0.0625
+      0.15217,
+      0.09677
      ]
     }
    }
@@ -1251,34 +1245,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: sw",
+   "notes": "fence through tile centre; rails reach edges: sw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_sw.png",
-     "w": 116,
-     "h": 130,
-     "shadow": "2x/fences/fence_sw_shadow.png",
+     "w": 92,
+     "h": 123,
      "anchor": [
-      74.0,
-      8.0
+      69.0,
+      12.0
      ],
      "origin": [
-      0.63793,
-      0.06154
+      0.75,
+      0.09756
      ]
     },
     "1x": {
      "file": "1x/fences/fence_sw.png",
-     "w": 58,
-     "h": 65,
-     "shadow": "1x/fences/fence_sw_shadow.png",
+     "w": 46,
+     "h": 62,
      "anchor": [
-      37.0,
-      4.0
+      34.5,
+      6.0
      ],
      "origin": [
-      0.63793,
-      0.06154
+      0.75,
+      0.09677
      ]
     }
    }
@@ -1291,34 +1283,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: nw",
+   "notes": "fence through tile centre; rails reach edges: nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_nw.png",
-     "w": 114,
-     "h": 124,
-     "shadow": "2x/fences/fence_nw_shadow.png",
+     "w": 92,
+     "h": 107,
      "anchor": [
-      72.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.63158,
-      0.19355
+      0.75,
+      0.23364
      ]
     },
     "1x": {
      "file": "1x/fences/fence_nw.png",
-     "w": 57,
-     "h": 62,
-     "shadow": "1x/fences/fence_nw_shadow.png",
+     "w": 46,
+     "h": 54,
      "anchor": [
-      36.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.63158,
-      0.19355
+      0.75,
+      0.23148
      ]
     }
    }
@@ -1331,34 +1321,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne, se",
+   "notes": "fence through tile centre; rails reach edges: ne, se (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne_se.png",
-     "w": 114,
-     "h": 144,
-     "shadow": "2x/fences/fence_ne_se_shadow.png",
+     "w": 92,
+     "h": 136,
      "anchor": [
-      22.0,
-      24.0
+      14.0,
+      25.0
      ],
      "origin": [
-      0.19298,
-      0.16667
+      0.15217,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne_se.png",
-     "w": 57,
-     "h": 72,
-     "shadow": "1x/fences/fence_ne_se_shadow.png",
+     "w": 46,
+     "h": 68,
      "anchor": [
-      11.0,
-      12.0
+      7.0,
+      12.5
      ],
      "origin": [
-      0.19298,
-      0.16667
+      0.15217,
+      0.18382
      ]
     }
    }
@@ -1371,34 +1359,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne, sw",
+   "notes": "fence through tile centre; rails reach edges: ne, sw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne_sw.png",
-     "w": 166,
-     "h": 146,
-     "shadow": "2x/fences/fence_ne_sw_shadow.png",
+     "w": 147,
+     "h": 136,
      "anchor": [
-      74.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46939,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne_sw.png",
-     "w": 83,
-     "h": 73,
-     "shadow": "1x/fences/fence_ne_sw_shadow.png",
+     "w": 74,
+     "h": 68,
      "anchor": [
-      37.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46622,
+      0.18382
      ]
     }
    }
@@ -1411,34 +1397,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne, nw",
+   "notes": "fence through tile centre; rails reach edges: ne, nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne_nw.png",
-     "w": 164,
-     "h": 124,
-     "shadow": "2x/fences/fence_ne_nw_shadow.png",
+     "w": 147,
+     "h": 107,
      "anchor": [
-      72.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.43902,
-      0.19355
+      0.46939,
+      0.23364
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne_nw.png",
-     "w": 82,
-     "h": 62,
-     "shadow": "1x/fences/fence_ne_nw_shadow.png",
+     "w": 74,
+     "h": 54,
      "anchor": [
-      36.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.43902,
-      0.19355
+      0.46622,
+      0.23148
      ]
     }
    }
@@ -1451,34 +1435,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: se, sw",
+   "notes": "fence through tile centre; rails reach edges: se, sw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_se_sw.png",
-     "w": 162,
-     "h": 130,
-     "shadow": "2x/fences/fence_se_sw_shadow.png",
+     "w": 147,
+     "h": 123,
      "anchor": [
-      74.0,
-      8.0
+      69.0,
+      12.0
      ],
      "origin": [
-      0.45679,
-      0.06154
+      0.46939,
+      0.09756
      ]
     },
     "1x": {
      "file": "1x/fences/fence_se_sw.png",
-     "w": 81,
-     "h": 65,
-     "shadow": "1x/fences/fence_se_sw_shadow.png",
+     "w": 74,
+     "h": 62,
      "anchor": [
-      37.0,
-      4.0
+      34.5,
+      6.0
      ],
      "origin": [
-      0.45679,
-      0.06154
+      0.46622,
+      0.09677
      ]
     }
    }
@@ -1491,34 +1473,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: se, nw",
+   "notes": "fence through tile centre; rails reach edges: se, nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_se_nw.png",
-     "w": 160,
-     "h": 144,
-     "shadow": "2x/fences/fence_se_nw_shadow.png",
+     "w": 147,
+     "h": 136,
      "anchor": [
-      72.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.45,
-      0.16667
+      0.46939,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_se_nw.png",
-     "w": 80,
-     "h": 72,
-     "shadow": "1x/fences/fence_se_nw_shadow.png",
+     "w": 74,
+     "h": 68,
      "anchor": [
-      36.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.45,
-      0.16667
+      0.46622,
+      0.18382
      ]
     }
    }
@@ -1531,34 +1511,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: sw, nw",
+   "notes": "fence through tile centre; rails reach edges: sw, nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_sw_nw.png",
-     "w": 116,
-     "h": 146,
-     "shadow": "2x/fences/fence_sw_nw_shadow.png",
+     "w": 92,
+     "h": 136,
      "anchor": [
-      74.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.63793,
-      0.16438
+      0.75,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_sw_nw.png",
-     "w": 58,
-     "h": 73,
-     "shadow": "1x/fences/fence_sw_nw_shadow.png",
+     "w": 46,
+     "h": 68,
      "anchor": [
-      37.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.63793,
-      0.16438
+      0.75,
+      0.18382
      ]
     }
    }
@@ -1571,34 +1549,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne, se, sw",
+   "notes": "fence through tile centre; rails reach edges: ne, se, sw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne_se_sw.png",
-     "w": 166,
-     "h": 146,
-     "shadow": "2x/fences/fence_ne_se_sw_shadow.png",
+     "w": 147,
+     "h": 136,
      "anchor": [
-      74.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46939,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne_se_sw.png",
-     "w": 83,
-     "h": 73,
-     "shadow": "1x/fences/fence_ne_se_sw_shadow.png",
+     "w": 74,
+     "h": 68,
      "anchor": [
-      37.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46622,
+      0.18382
      ]
     }
    }
@@ -1611,34 +1587,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne, se, nw",
+   "notes": "fence through tile centre; rails reach edges: ne, se, nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne_se_nw.png",
-     "w": 164,
-     "h": 144,
-     "shadow": "2x/fences/fence_ne_se_nw_shadow.png",
+     "w": 147,
+     "h": 136,
      "anchor": [
-      72.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.43902,
-      0.16667
+      0.46939,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne_se_nw.png",
-     "w": 82,
-     "h": 72,
-     "shadow": "1x/fences/fence_ne_se_nw_shadow.png",
+     "w": 74,
+     "h": 68,
      "anchor": [
-      36.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.43902,
-      0.16667
+      0.46622,
+      0.18382
      ]
     }
    }
@@ -1651,34 +1625,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne, sw, nw",
+   "notes": "fence through tile centre; rails reach edges: ne, sw, nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne_sw_nw.png",
-     "w": 166,
-     "h": 146,
-     "shadow": "2x/fences/fence_ne_sw_nw_shadow.png",
+     "w": 147,
+     "h": 136,
      "anchor": [
-      74.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46939,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne_sw_nw.png",
-     "w": 83,
-     "h": 73,
-     "shadow": "1x/fences/fence_ne_sw_nw_shadow.png",
+     "w": 74,
+     "h": 68,
      "anchor": [
-      37.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46622,
+      0.18382
      ]
     }
    }
@@ -1691,34 +1663,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: se, sw, nw",
+   "notes": "fence through tile centre; rails reach edges: se, sw, nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_se_sw_nw.png",
-     "w": 162,
-     "h": 146,
-     "shadow": "2x/fences/fence_se_sw_nw_shadow.png",
+     "w": 147,
+     "h": 136,
      "anchor": [
-      74.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.45679,
-      0.16438
+      0.46939,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_se_sw_nw.png",
-     "w": 81,
-     "h": 73,
-     "shadow": "1x/fences/fence_se_sw_nw_shadow.png",
+     "w": 74,
+     "h": 68,
      "anchor": [
-      37.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.45679,
-      0.16438
+      0.46622,
+      0.18382
      ]
     }
    }
@@ -1731,34 +1701,32 @@
     1,
     1
    ],
-   "notes": "fence through tile centre; rails reach edges: ne, se, sw, nw",
+   "notes": "fence through tile centre; rails reach edges: ne, se, sw, nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/fence_ne_se_sw_nw.png",
-     "w": 166,
-     "h": 146,
-     "shadow": "2x/fences/fence_ne_se_sw_nw_shadow.png",
+     "w": 147,
+     "h": 136,
      "anchor": [
-      74.0,
-      24.0
+      69.0,
+      25.0
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46939,
+      0.18382
      ]
     },
     "1x": {
      "file": "1x/fences/fence_ne_se_sw_nw.png",
-     "w": 83,
-     "h": 73,
-     "shadow": "1x/fences/fence_ne_se_sw_nw_shadow.png",
+     "w": 74,
+     "h": 68,
      "anchor": [
-      37.0,
-      12.0
+      34.5,
+      12.5
      ],
      "origin": [
-      0.44578,
-      0.16438
+      0.46622,
+      0.18382
      ]
     }
    }
@@ -1771,34 +1739,32 @@
     1,
     1
    ],
-   "notes": "gate in a fence running se_nw",
+   "notes": "gate in a fence running se_nw (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/fences/gate_se_nw_closed.png",
-     "w": 176,
-     "h": 174,
-     "shadow": "2x/fences/gate_se_nw_closed_shadow.png",
+     "w": 165,
+     "h": 158,
      "anchor": [
-      76.0,
-      46.0
+      78.0,
+      44.0
      ],
      "origin": [
-      0.43182,
-      0.26437
+      0.47273,
+      0.27848
      ]
     },
     "1x": {
      "file": "1x/fences/gate_se_nw_closed.png",
-     "w": 88,
-     "h": 87,
-     "shadow": "1x/fences/gate_se_nw_closed_shadow.png",
+     "w": 82,
+     "h": 79,
      "anchor": [
-      38.0,
-      23.0
+      39.0,
+      22.0
      ],
      "origin": [
-      0.43182,
-      0.26437
+      0.47561,
+      0.27848
      ]
     }
    }
@@ -4409,34 +4375,32 @@
     1,
     1
    ],
-   "notes": "bush",
+   "notes": "bush (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_shadow.png",
+     "w": 131,
+     "h": 99,
      "anchor": [
-      58.0,
-      6.0
+      64.0,
+      8.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.08081
      ]
     },
     "1x": {
      "file": "1x/props/bush.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_shadow.png",
+     "w": 66,
+     "h": 50,
      "anchor": [
-      29.0,
-      3.0
+      32.0,
+      4.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.08
      ]
     }
    }
@@ -4449,34 +4413,32 @@
     1,
     1
    ],
-   "notes": "berry bush",
+   "notes": "berry bush (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_berry.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_berry_shadow.png",
+     "w": 131,
+     "h": 98,
      "anchor": [
-      58.0,
+      64.0,
       6.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.06122
      ]
     },
     "1x": {
      "file": "1x/props/bush_berry.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_berry_shadow.png",
+     "w": 66,
+     "h": 49,
      "anchor": [
-      29.0,
+      32.0,
       3.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.06122
      ]
     }
    }
@@ -4885,32 +4847,32 @@
     1,
     1
    ],
-   "notes": "small decorative pond",
+   "notes": "small decorative pond (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/pond.png",
-     "w": 144,
-     "h": 108,
+     "w": 181,
+     "h": 100,
      "anchor": [
-      74.0,
-      2.0
+      90.0,
+      -14.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.49724,
+      -0.14
      ]
     },
     "1x": {
      "file": "1x/props/pond.png",
-     "w": 72,
-     "h": 54,
+     "w": 90,
+     "h": 50,
      "anchor": [
-      37.0,
-      1.0
+      45.0,
+      -7.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.5,
+      -0.14
      ]
     }
    }
@@ -5113,34 +5075,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile",
+   "notes": "iron vein tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_0.png",
-     "w": 174,
-     "h": 122,
-     "shadow": "2x/props/vein_0_shadow.png",
+     "w": 201,
+     "h": 124,
      "anchor": [
-      92.0,
-      -2.0
+      97.0,
+      18.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.48259,
+      0.14516
      ]
     },
     "1x": {
      "file": "1x/props/vein_0.png",
-     "w": 87,
-     "h": 61,
-     "shadow": "1x/props/vein_0_shadow.png",
+     "w": 100,
+     "h": 62,
      "anchor": [
-      46.0,
-      -1.0
+      48.5,
+      9.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.485,
+      0.14516
      ]
     }
    }
@@ -5153,34 +5113,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile",
+   "notes": "iron vein tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_1.png",
-     "w": 164,
-     "h": 116,
-     "shadow": "2x/props/vein_1_shadow.png",
+     "w": 203,
+     "h": 131,
      "anchor": [
-      68.0,
-      -6.0
+      98.0,
+      24.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48276,
+      0.18321
      ]
     },
     "1x": {
      "file": "1x/props/vein_1.png",
-     "w": 82,
-     "h": 58,
-     "shadow": "1x/props/vein_1_shadow.png",
+     "w": 102,
+     "h": 66,
      "anchor": [
-      34.0,
-      -3.0
+      49.0,
+      12.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48039,
+      0.18182
      ]
     }
    }
@@ -5193,34 +5151,32 @@
     1,
     1
    ],
-   "notes": "worked-out iron vein tile",
+   "notes": "worked-out iron vein tile (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_spent.png",
-     "w": 170,
-     "h": 96,
-     "shadow": "2x/props/vein_spent_shadow.png",
+     "w": 125,
+     "h": 75,
      "anchor": [
-      82.0,
-      -22.0
+      61.0,
+      -25.0
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.488,
+      -0.33333
      ]
     },
     "1x": {
      "file": "1x/props/vein_spent.png",
-     "w": 85,
-     "h": 48,
-     "shadow": "1x/props/vein_spent_shadow.png",
+     "w": 62,
+     "h": 38,
      "anchor": [
-      41.0,
-      -11.0
+      30.5,
+      -12.5
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.49194,
+      -0.32895
      ]
     }
    }
@@ -11187,34 +11143,32 @@
     1,
     1
    ],
-   "notes": "bush in spring",
+   "notes": "bush in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_spring.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_spring_shadow.png",
+     "w": 131,
+     "h": 99,
      "anchor": [
-      58.0,
-      6.0
+      64.0,
+      8.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.08081
      ]
     },
     "1x": {
      "file": "1x/props/bush_spring.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_spring_shadow.png",
+     "w": 66,
+     "h": 50,
      "anchor": [
-      29.0,
-      3.0
+      32.0,
+      4.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.08
      ]
     }
    }
@@ -11227,34 +11181,32 @@
     1,
     1
    ],
-   "notes": "berry bush in spring",
+   "notes": "berry bush in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_berry_spring.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_berry_spring_shadow.png",
+     "w": 131,
+     "h": 98,
      "anchor": [
-      58.0,
+      64.0,
       6.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.06122
      ]
     },
     "1x": {
      "file": "1x/props/bush_berry_spring.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_berry_spring_shadow.png",
+     "w": 66,
+     "h": 49,
      "anchor": [
-      29.0,
+      32.0,
       3.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.06122
      ]
     }
    }
@@ -11343,32 +11295,32 @@
     1,
     1
    ],
-   "notes": "small decorative pond in spring",
+   "notes": "small decorative pond in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/pond_spring.png",
-     "w": 144,
-     "h": 108,
+     "w": 181,
+     "h": 100,
      "anchor": [
-      74.0,
-      2.0
+      90.0,
+      -14.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.49724,
+      -0.14
      ]
     },
     "1x": {
      "file": "1x/props/pond_spring.png",
-     "w": 72,
-     "h": 54,
+     "w": 90,
+     "h": 50,
      "anchor": [
-      37.0,
-      1.0
+      45.0,
+      -7.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.5,
+      -0.14
      ]
     }
    }
@@ -11571,34 +11523,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in spring",
+   "notes": "iron vein tile in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_0_spring.png",
-     "w": 174,
-     "h": 122,
-     "shadow": "2x/props/vein_0_spring_shadow.png",
+     "w": 201,
+     "h": 124,
      "anchor": [
-      92.0,
-      -2.0
+      97.0,
+      18.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.48259,
+      0.14516
      ]
     },
     "1x": {
      "file": "1x/props/vein_0_spring.png",
-     "w": 87,
-     "h": 61,
-     "shadow": "1x/props/vein_0_spring_shadow.png",
+     "w": 100,
+     "h": 62,
      "anchor": [
-      46.0,
-      -1.0
+      48.5,
+      9.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.485,
+      0.14516
      ]
     }
    }
@@ -11611,34 +11561,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in spring",
+   "notes": "iron vein tile in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_1_spring.png",
-     "w": 164,
-     "h": 116,
-     "shadow": "2x/props/vein_1_spring_shadow.png",
+     "w": 203,
+     "h": 131,
      "anchor": [
-      68.0,
-      -6.0
+      98.0,
+      24.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48276,
+      0.18321
      ]
     },
     "1x": {
      "file": "1x/props/vein_1_spring.png",
-     "w": 82,
-     "h": 58,
-     "shadow": "1x/props/vein_1_spring_shadow.png",
+     "w": 102,
+     "h": 66,
      "anchor": [
-      34.0,
-      -3.0
+      49.0,
+      12.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48039,
+      0.18182
      ]
     }
    }
@@ -11651,34 +11599,32 @@
     1,
     1
    ],
-   "notes": "worked-out iron vein tile in spring",
+   "notes": "worked-out iron vein tile in spring (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_spent_spring.png",
-     "w": 170,
-     "h": 96,
-     "shadow": "2x/props/vein_spent_spring_shadow.png",
+     "w": 125,
+     "h": 75,
      "anchor": [
-      82.0,
-      -22.0
+      61.0,
+      -25.0
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.488,
+      -0.33333
      ]
     },
     "1x": {
      "file": "1x/props/vein_spent_spring.png",
-     "w": 85,
-     "h": 48,
-     "shadow": "1x/props/vein_spent_spring_shadow.png",
+     "w": 62,
+     "h": 38,
      "anchor": [
-      41.0,
-      -11.0
+      30.5,
+      -12.5
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.49194,
+      -0.32895
      ]
     }
    }
@@ -11805,34 +11751,32 @@
     1,
     1
    ],
-   "notes": "bush in summer",
+   "notes": "bush in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_summer.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_summer_shadow.png",
+     "w": 131,
+     "h": 99,
      "anchor": [
-      58.0,
-      6.0
+      64.0,
+      8.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.08081
      ]
     },
     "1x": {
      "file": "1x/props/bush_summer.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_summer_shadow.png",
+     "w": 66,
+     "h": 50,
      "anchor": [
-      29.0,
-      3.0
+      32.0,
+      4.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.08
      ]
     }
    }
@@ -11845,34 +11789,32 @@
     1,
     1
    ],
-   "notes": "berry bush in summer",
+   "notes": "berry bush in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_berry_summer.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_berry_summer_shadow.png",
+     "w": 131,
+     "h": 98,
      "anchor": [
-      58.0,
+      64.0,
       6.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.06122
      ]
     },
     "1x": {
      "file": "1x/props/bush_berry_summer.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_berry_summer_shadow.png",
+     "w": 66,
+     "h": 49,
      "anchor": [
-      29.0,
+      32.0,
       3.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.06122
      ]
     }
    }
@@ -11961,32 +11903,32 @@
     1,
     1
    ],
-   "notes": "small decorative pond in summer",
+   "notes": "small decorative pond in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/pond_summer.png",
-     "w": 144,
-     "h": 108,
+     "w": 181,
+     "h": 100,
      "anchor": [
-      74.0,
-      2.0
+      90.0,
+      -14.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.49724,
+      -0.14
      ]
     },
     "1x": {
      "file": "1x/props/pond_summer.png",
-     "w": 72,
-     "h": 54,
+     "w": 90,
+     "h": 50,
      "anchor": [
-      37.0,
-      1.0
+      45.0,
+      -7.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.5,
+      -0.14
      ]
     }
    }
@@ -12189,34 +12131,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in summer",
+   "notes": "iron vein tile in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_0_summer.png",
-     "w": 174,
-     "h": 122,
-     "shadow": "2x/props/vein_0_summer_shadow.png",
+     "w": 201,
+     "h": 124,
      "anchor": [
-      92.0,
-      -2.0
+      97.0,
+      18.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.48259,
+      0.14516
      ]
     },
     "1x": {
      "file": "1x/props/vein_0_summer.png",
-     "w": 87,
-     "h": 61,
-     "shadow": "1x/props/vein_0_summer_shadow.png",
+     "w": 100,
+     "h": 62,
      "anchor": [
-      46.0,
-      -1.0
+      48.5,
+      9.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.485,
+      0.14516
      ]
     }
    }
@@ -12229,34 +12169,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in summer",
+   "notes": "iron vein tile in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_1_summer.png",
-     "w": 164,
-     "h": 116,
-     "shadow": "2x/props/vein_1_summer_shadow.png",
+     "w": 203,
+     "h": 131,
      "anchor": [
-      68.0,
-      -6.0
+      98.0,
+      24.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48276,
+      0.18321
      ]
     },
     "1x": {
      "file": "1x/props/vein_1_summer.png",
-     "w": 82,
-     "h": 58,
-     "shadow": "1x/props/vein_1_summer_shadow.png",
+     "w": 102,
+     "h": 66,
      "anchor": [
-      34.0,
-      -3.0
+      49.0,
+      12.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48039,
+      0.18182
      ]
     }
    }
@@ -12269,34 +12207,32 @@
     1,
     1
    ],
-   "notes": "worked-out iron vein tile in summer",
+   "notes": "worked-out iron vein tile in summer (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_spent_summer.png",
-     "w": 170,
-     "h": 96,
-     "shadow": "2x/props/vein_spent_summer_shadow.png",
+     "w": 125,
+     "h": 75,
      "anchor": [
-      82.0,
-      -22.0
+      61.0,
+      -25.0
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.488,
+      -0.33333
      ]
     },
     "1x": {
      "file": "1x/props/vein_spent_summer.png",
-     "w": 85,
-     "h": 48,
-     "shadow": "1x/props/vein_spent_summer_shadow.png",
+     "w": 62,
+     "h": 38,
      "anchor": [
-      41.0,
-      -11.0
+      30.5,
+      -12.5
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.49194,
+      -0.32895
      ]
     }
    }
@@ -12423,34 +12359,32 @@
     1,
     1
    ],
-   "notes": "bush in autumn",
+   "notes": "bush in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_autumn.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_autumn_shadow.png",
+     "w": 131,
+     "h": 99,
      "anchor": [
-      58.0,
-      6.0
+      64.0,
+      8.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.08081
      ]
     },
     "1x": {
      "file": "1x/props/bush_autumn.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_autumn_shadow.png",
+     "w": 66,
+     "h": 50,
      "anchor": [
-      29.0,
-      3.0
+      32.0,
+      4.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.08
      ]
     }
    }
@@ -12463,34 +12397,32 @@
     1,
     1
    ],
-   "notes": "berry bush in autumn",
+   "notes": "berry bush in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_berry_autumn.png",
-     "w": 126,
-     "h": 112,
-     "shadow": "2x/props/bush_berry_autumn_shadow.png",
+     "w": 131,
+     "h": 98,
      "anchor": [
-      58.0,
+      64.0,
       6.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48855,
+      0.06122
      ]
     },
     "1x": {
      "file": "1x/props/bush_berry_autumn.png",
-     "w": 63,
-     "h": 56,
-     "shadow": "1x/props/bush_berry_autumn_shadow.png",
+     "w": 66,
+     "h": 49,
      "anchor": [
-      29.0,
+      32.0,
       3.0
      ],
      "origin": [
-      0.46032,
-      0.05357
+      0.48485,
+      0.06122
      ]
     }
    }
@@ -12579,32 +12511,32 @@
     1,
     1
    ],
-   "notes": "small decorative pond in autumn",
+   "notes": "small decorative pond in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/pond_autumn.png",
-     "w": 144,
-     "h": 108,
+     "w": 182,
+     "h": 100,
      "anchor": [
-      74.0,
-      2.0
+      91.0,
+      -14.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.5,
+      -0.14
      ]
     },
     "1x": {
      "file": "1x/props/pond_autumn.png",
-     "w": 72,
-     "h": 54,
+     "w": 91,
+     "h": 50,
      "anchor": [
-      37.0,
-      1.0
+      45.5,
+      -7.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.5,
+      -0.14
      ]
     }
    }
@@ -12807,34 +12739,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in autumn",
+   "notes": "iron vein tile in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_0_autumn.png",
-     "w": 174,
-     "h": 122,
-     "shadow": "2x/props/vein_0_autumn_shadow.png",
+     "w": 201,
+     "h": 124,
      "anchor": [
-      92.0,
-      -2.0
+      97.0,
+      18.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.48259,
+      0.14516
      ]
     },
     "1x": {
      "file": "1x/props/vein_0_autumn.png",
-     "w": 87,
-     "h": 61,
-     "shadow": "1x/props/vein_0_autumn_shadow.png",
+     "w": 100,
+     "h": 62,
      "anchor": [
-      46.0,
-      -1.0
+      48.5,
+      9.0
      ],
      "origin": [
-      0.52874,
-      -0.01639
+      0.485,
+      0.14516
      ]
     }
    }
@@ -12847,34 +12777,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in autumn",
+   "notes": "iron vein tile in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_1_autumn.png",
-     "w": 164,
-     "h": 116,
-     "shadow": "2x/props/vein_1_autumn_shadow.png",
+     "w": 203,
+     "h": 131,
      "anchor": [
-      68.0,
-      -6.0
+      98.0,
+      24.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48276,
+      0.18321
      ]
     },
     "1x": {
      "file": "1x/props/vein_1_autumn.png",
-     "w": 82,
-     "h": 58,
-     "shadow": "1x/props/vein_1_autumn_shadow.png",
+     "w": 102,
+     "h": 66,
      "anchor": [
-      34.0,
-      -3.0
+      49.0,
+      12.0
      ],
      "origin": [
-      0.41463,
-      -0.05172
+      0.48039,
+      0.18182
      ]
     }
    }
@@ -12887,34 +12815,32 @@
     1,
     1
    ],
-   "notes": "worked-out iron vein tile in autumn",
+   "notes": "worked-out iron vein tile in autumn (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_spent_autumn.png",
-     "w": 170,
-     "h": 96,
-     "shadow": "2x/props/vein_spent_autumn_shadow.png",
+     "w": 125,
+     "h": 75,
      "anchor": [
-      82.0,
-      -22.0
+      61.0,
+      -25.0
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.488,
+      -0.33333
      ]
     },
     "1x": {
      "file": "1x/props/vein_spent_autumn.png",
-     "w": 85,
-     "h": 48,
-     "shadow": "1x/props/vein_spent_autumn_shadow.png",
+     "w": 62,
+     "h": 38,
      "anchor": [
-      41.0,
-      -11.0
+      30.5,
+      -12.5
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.49194,
+      -0.32895
      ]
     }
    }
@@ -13041,34 +12967,32 @@
     1,
     1
    ],
-   "notes": "bush in winter",
+   "notes": "bush in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_winter.png",
-     "w": 98,
-     "h": 108,
-     "shadow": "2x/props/bush_winter_shadow.png",
+     "w": 131,
+     "h": 99,
      "anchor": [
-      44.0,
+      64.0,
       8.0
      ],
      "origin": [
-      0.44898,
-      0.07407
+      0.48855,
+      0.08081
      ]
     },
     "1x": {
      "file": "1x/props/bush_winter.png",
-     "w": 49,
-     "h": 54,
-     "shadow": "1x/props/bush_winter_shadow.png",
+     "w": 66,
+     "h": 50,
      "anchor": [
-      22.0,
+      32.0,
       4.0
      ],
      "origin": [
-      0.44898,
-      0.07407
+      0.48485,
+      0.08
      ]
     }
    }
@@ -13081,34 +13005,32 @@
     1,
     1
    ],
-   "notes": "berry bush in winter",
+   "notes": "berry bush in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/bush_berry_winter.png",
-     "w": 98,
-     "h": 110,
-     "shadow": "2x/props/bush_berry_winter_shadow.png",
+     "w": 131,
+     "h": 98,
      "anchor": [
-      44.0,
-      10.0
+      64.0,
+      6.0
      ],
      "origin": [
-      0.44898,
-      0.09091
+      0.48855,
+      0.06122
      ]
     },
     "1x": {
      "file": "1x/props/bush_berry_winter.png",
-     "w": 49,
-     "h": 55,
-     "shadow": "1x/props/bush_berry_winter_shadow.png",
+     "w": 66,
+     "h": 49,
      "anchor": [
-      22.0,
-      5.0
+      32.0,
+      3.0
      ],
      "origin": [
-      0.44898,
-      0.09091
+      0.48485,
+      0.06122
      ]
     }
    }
@@ -13197,32 +13119,32 @@
     1,
     1
    ],
-   "notes": "small decorative pond in winter",
+   "notes": "small decorative pond in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/pond_winter.png",
-     "w": 144,
-     "h": 108,
+     "w": 181,
+     "h": 103,
      "anchor": [
-      74.0,
-      2.0
+      91.0,
+      -11.0
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.50276,
+      -0.1068
      ]
     },
     "1x": {
      "file": "1x/props/pond_winter.png",
-     "w": 72,
-     "h": 54,
+     "w": 90,
+     "h": 52,
      "anchor": [
-      37.0,
-      1.0
+      45.5,
+      -5.5
      ],
      "origin": [
-      0.51389,
-      0.01852
+      0.50556,
+      -0.10577
      ]
     }
    }
@@ -13425,34 +13347,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in winter",
+   "notes": "iron vein tile in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_0_winter.png",
-     "w": 174,
-     "h": 130,
-     "shadow": "2x/props/vein_0_winter_shadow.png",
+     "w": 201,
+     "h": 123,
      "anchor": [
-      92.0,
-      6.0
+      97.0,
+      17.0
      ],
      "origin": [
-      0.52874,
-      0.04615
+      0.48259,
+      0.13821
      ]
     },
     "1x": {
      "file": "1x/props/vein_0_winter.png",
-     "w": 87,
-     "h": 65,
-     "shadow": "1x/props/vein_0_winter_shadow.png",
+     "w": 100,
+     "h": 62,
      "anchor": [
-      46.0,
-      3.0
+      48.5,
+      8.5
      ],
      "origin": [
-      0.52874,
-      0.04615
+      0.485,
+      0.1371
      ]
     }
    }
@@ -13465,34 +13385,32 @@
     1,
     1
    ],
-   "notes": "iron vein tile in winter",
+   "notes": "iron vein tile in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_1_winter.png",
-     "w": 164,
-     "h": 128,
-     "shadow": "2x/props/vein_1_winter_shadow.png",
+     "w": 204,
+     "h": 134,
      "anchor": [
-      68.0,
-      6.0
+      98.0,
+      19.0
      ],
      "origin": [
-      0.41463,
-      0.04688
+      0.48039,
+      0.14179
      ]
     },
     "1x": {
      "file": "1x/props/vein_1_winter.png",
-     "w": 82,
-     "h": 64,
-     "shadow": "1x/props/vein_1_winter_shadow.png",
+     "w": 102,
+     "h": 67,
      "anchor": [
-      34.0,
-      3.0
+      49.0,
+      9.5
      ],
      "origin": [
-      0.41463,
-      0.04688
+      0.48039,
+      0.14179
      ]
     }
    }
@@ -13505,34 +13423,32 @@
     1,
     1
    ],
-   "notes": "worked-out iron vein tile in winter",
+   "notes": "worked-out iron vein tile in winter (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/props/vein_spent_winter.png",
-     "w": 170,
-     "h": 96,
-     "shadow": "2x/props/vein_spent_winter_shadow.png",
+     "w": 125,
+     "h": 74,
      "anchor": [
-      82.0,
-      -22.0
+      61.0,
+      -26.0
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.488,
+      -0.35135
      ]
     },
     "1x": {
      "file": "1x/props/vein_spent_winter.png",
-     "w": 85,
-     "h": 48,
-     "shadow": "1x/props/vein_spent_winter_shadow.png",
+     "w": 62,
+     "h": 37,
      "anchor": [
-      41.0,
-      -11.0
+      30.5,
+      -13.0
      ],
      "origin": [
-      0.48235,
-      -0.22917
+      0.49194,
+      -0.35135
      ]
     }
    }
