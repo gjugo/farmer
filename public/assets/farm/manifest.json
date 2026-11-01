@@ -3171,34 +3171,32 @@
     3,
     3
    ],
-   "notes": "chicken coop with run, 3x3",
+   "notes": "chicken coop with run, 3x3 (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/chicken_coop.png",
-     "w": 752,
-     "h": 504,
-     "shadow": "2x/buildings/chicken_coop_shadow.png",
+     "w": 765,
+     "h": 537,
      "anchor": [
-      376.0,
-      120.0
+      382.0,
+      151.0
      ],
      "origin": [
-      0.5,
-      0.2381
+      0.49935,
+      0.28119
      ]
     },
     "1x": {
      "file": "1x/buildings/chicken_coop.png",
-     "w": 376,
-     "h": 252,
-     "shadow": "1x/buildings/chicken_coop_shadow.png",
+     "w": 382,
+     "h": 268,
      "anchor": [
-      188.0,
-      60.0
+      191.0,
+      75.5
      ],
      "origin": [
       0.5,
-      0.2381
+      0.28172
      ]
     }
    }
@@ -3699,34 +3697,32 @@
     2,
     2
    ],
-   "notes": "cottage, 2x2: a home for one family, chimney at the back left (smoke drawn by the game)",
+   "notes": "cottage, 2x2: a home for one family, chimney at the back left (smoke drawn by the game) (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/cottage.png",
-     "w": 496,
-     "h": 390,
-     "shadow": "2x/buildings/cottage_shadow.png",
+     "w": 507,
+     "h": 332,
      "anchor": [
-      248.0,
-      138.0
+      253.0,
+      74.0
      ],
      "origin": [
-      0.5,
-      0.35385
+      0.49901,
+      0.22289
      ]
     },
     "1x": {
      "file": "1x/buildings/cottage.png",
-     "w": 248,
-     "h": 195,
-     "shadow": "1x/buildings/cottage_shadow.png",
+     "w": 254,
+     "h": 166,
      "anchor": [
-      124.0,
-      69.0
+      126.5,
+      37.0
      ],
      "origin": [
-      0.5,
-      0.35385
+      0.49803,
+      0.22289
      ]
     }
    }
@@ -13637,34 +13633,32 @@
     3,
     3
    ],
-   "notes": "chicken_coop in winter: snow on the roof",
+   "notes": "chicken_coop in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/chicken_coop_winter.png",
-     "w": 752,
-     "h": 504,
-     "shadow": "2x/buildings/chicken_coop_winter_shadow.png",
+     "w": 765,
+     "h": 536,
      "anchor": [
-      376.0,
-      120.0
+      382.0,
+      149.0
      ],
      "origin": [
-      0.5,
-      0.2381
+      0.49935,
+      0.27799
      ]
     },
     "1x": {
      "file": "1x/buildings/chicken_coop_winter.png",
-     "w": 376,
-     "h": 252,
-     "shadow": "1x/buildings/chicken_coop_winter_shadow.png",
+     "w": 382,
+     "h": 268,
      "anchor": [
-      188.0,
-      60.0
+      191.0,
+      74.5
      ],
      "origin": [
       0.5,
-      0.2381
+      0.27799
      ]
     }
    }
@@ -14115,34 +14109,32 @@
     2,
     2
    ],
-   "notes": "cottage in winter: snow on the roof",
+   "notes": "cottage in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/cottage_winter.png",
-     "w": 496,
-     "h": 390,
-     "shadow": "2x/buildings/cottage_winter_shadow.png",
+     "w": 507,
+     "h": 334,
      "anchor": [
-      248.0,
-      138.0
+      253.0,
+      75.0
      ],
      "origin": [
-      0.5,
-      0.35385
+      0.49901,
+      0.22455
      ]
     },
     "1x": {
      "file": "1x/buildings/cottage_winter.png",
-     "w": 248,
-     "h": 195,
-     "shadow": "1x/buildings/cottage_winter_shadow.png",
+     "w": 254,
+     "h": 167,
      "anchor": [
-      124.0,
-      69.0
+      126.5,
+      37.5
      ],
      "origin": [
-      0.5,
-      0.35385
+      0.49803,
+      0.22455
      ]
     }
    }

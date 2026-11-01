@@ -175,8 +175,8 @@ onGameStart((ctx) => {
 
 // Cottages ---------------------------------------------------------------------------
 
-/** The chimney top in the cottage's 2x sprite (`COTTAGE_CHIMNEY` in `tools/art/buildings.py`). */
-const CHIMNEY_AT = { x: 236, y: 12 };
+/** The chimney top in the cottage's 2x sprite (the Ludo.ai cottage, `tools/ludo/source/cottage_raw.png`). */
+const CHIMNEY_AT = { x: 172, y: 18 };
 const PUFFS = 3;
 
 const puffsOf = new Map<string, Phaser.GameObjects.Image[]>();

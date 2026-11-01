@@ -12,6 +12,9 @@ git (or rerun the commands below) after running it.
 | Asset | Source | Seasons |
 | --- | --- | --- |
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
+| `cottage`, `cottage_winter` | `cottage_raw.png`, `cottage_winter_raw.png` | all |
+| `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
+| `farmer` (spritesheet) | see **Farmer** below | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
 | `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
@@ -45,9 +48,27 @@ $P $L/fit_building.py $L/source/farmhouse_raw.png /tmp farmhouse 2 2 45 485 754 
 $P $L/fit_building.py $L/source/farmhouse_winter_raw.png /tmp farmhouse_winter 2 2 57 609 967 609 512 834 --mirror --keep=-4
 ```
 
-Copy `/tmp/2x_<name>.png` and `/tmp/1x_<name>.png` to `public/assets/farm/{2x,1x}/buildings/<name>.png` and
-set the asset's `w`, `h`, `anchor` and `origin` (anchor / size) in `manifest.json`; drop its `shadow` (Ludo
-draws the shadow on the pad). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
+Later buildings came through the API: `generateWithStyle` with the farmhouse image as `style_image` and the
+farmhouse's own prompt reworded for the building (south corner to the viewer, 2:1 angle, straight-edged diamond
+pad of N×N tiles with no thickness), then `editImage` on the chosen one for winter ("keep the same ... exactly;
+add snow on the roof ..., cover the pad in snow"). The pad corners are the extreme opaque columns, with the
+bottom corner where the two 2:1 edges meet; check them on an overlay before fitting.
+
+```bash
+$P $L/fit_building.py $L/source/cottage_raw.png /tmp/props cottage 2 2 45 321 754 323 401.5 499.2
+$P $L/fit_building.py $L/source/cottage_winter_raw.png /tmp/props cottage_winter 2 2 53 309 739 310 397 481
+$P $L/fit_building.py $L/source/chicken_coop_raw.png /tmp/props chicken_coop 3 3 40 349 727 348 382.5 520.2
+$P $L/fit_building.py $L/source/chicken_coop_winter_raw.png /tmp/props chicken_coop_winter 3 3 40 348 726 347 382 519
+for n in cottage cottage_winter chicken_coop chicken_coop_winter; do $P $L/install_prop.py /tmp/props $n; done
+```
+
+Install with `install_prop.py` (it reads the `NAME.json` the fit writes), or copy `/tmp/2x_<name>.png` and
+`/tmp/1x_<name>.png` to `public/assets/farm/{2x,1x}/buildings/<name>.png` and set the asset's `w`, `h`, `anchor`
+and `origin` (anchor / size) in `manifest.json` by hand; either way the `shadow` goes (Ludo draws the shadow on
+the pad). Some code points into a building's 2x sprite and needs updating with it: the cottage's chimney
+(`CHIMNEY_AT` in `src/features/families/index.ts`), the coop's run (`WALK_AREA` in
+`src/features/animals/textures.ts`), and the bakery's, dairy's and weaving hut's smoke (`SMOKE_AT` in
+`src/features/processing/textures.ts`). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show.
 
 ## Props: `fit_prop.py`

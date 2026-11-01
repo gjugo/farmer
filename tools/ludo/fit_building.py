@@ -5,8 +5,10 @@ Usage: python fit_building.py RAW.png OUT_DIR NAME FOOT_W FOOT_H LEFT_X LEFT_Y R
 LEFT/RIGHT/BOTTOM are the pad's top-surface corners, measured on the raw image (before mirroring).
 FOOT_W/FOOT_H are the footprint in the game (tiles along x / along y) after any mirroring.
 Everything below the top surface's two lower edges (the soil block Ludo draws) is cut away.
-Writes 2x and 1x PNGs and prints the manifest anchor (the footprint's top corner) for each.
+Writes 2x and 1x PNGs and NAME.json (for install_prop.py), and prints the manifest anchor (the footprint's top
+corner) for each.
 """
+import json
 import sys
 import numpy as np
 from PIL import Image
@@ -51,5 +53,6 @@ ax, ay = round(anchor[0] - box[0]), round(anchor[1] - box[1])
 im2.save(f'{out_dir}/2x_{name}.png', optimize=True)
 im1 = im2.resize((round(im2.width / 2), round(im2.height / 2)), Image.Resampling.LANCZOS)
 im1.save(f'{out_dir}/1x_{name}.png', optimize=True)
+json.dump({'2x': [ax, ay], '1x': [ax / 2, ay / 2]}, open(f'{out_dir}/{name}.json', 'w'))
 print(f'2x {im2.width}x{im2.height} anchor {ax},{ay}')
 print(f'1x {im1.width}x{im1.height} anchor {ax / 2:g},{ay / 2:g}')

@@ -2,11 +2,12 @@ import { type PenType } from '../../data/animals';
 import { registerTexture } from '../../scenes/textures';
 
 /**
- * Where animals may walk, in grid units inside the pen. Chickens stay in the coop's run (its front-right
- * yard); cows and sheep stay inside the pasture fence, which runs through the centres of its border tiles.
+ * Where animals may walk, in grid units inside the pen. Chickens stay in the coop's run (the yard in front of
+ * the hen house, which fills the back corner); cows and sheep stay inside the pasture fence, which runs through
+ * the centres of its border tiles.
  */
 export const WALK_AREA: Record<PenType, { x0: number; x1: number; y0: number; y1: number }> = {
-  coop: { x0: 1.9, x1: 2.65, y0: 0.55, y1: 2.45 },
+  coop: { x0: 1.35, x1: 2.6, y0: 1.35, y1: 2.6 },
   pasture: { x0: 0.85, x1: 3.15, y0: 0.85, y1: 3.15 },
 };
 

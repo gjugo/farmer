@@ -186,7 +186,7 @@ describe('art pack', () => {
   });
 
   it('uses the shadow suffix of the pack’s files', () => {
-    expect(assets.get('chicken_coop')!.res['2x'].shadow).toBe(`2x/buildings/chicken_coop${SHADOW}.png`);
+    expect(assets.get('fence_post')!.res['2x'].shadow).toBe(`2x/fences/fence_post${SHADOW}.png`);
   });
 });
 
