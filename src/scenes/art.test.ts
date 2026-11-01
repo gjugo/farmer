@@ -186,7 +186,10 @@ describe('art pack', () => {
   });
 
   it('uses the shadow suffix of the pack’s files', () => {
-    expect(assets.get('fence_post')!.res['2x'].shadow).toBe(`2x/fences/fence_post${SHADOW}.png`);
+    // Ludo art bakes its shadow in, so check every asset that still has a separate shadow layer.
+    const shadowed = [...assets.values()].filter((a) => a.res['2x'].shadow);
+    expect(shadowed.length).toBeGreaterThan(0);
+    for (const a of shadowed) expect(a.res['2x'].shadow).toBe(a.res['2x'].file.replace(/\.png$/, `${SHADOW}.png`));
   });
 });
 
