@@ -29,6 +29,7 @@ git (or rerun the commands below) after running it.
 | `tree_pine` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_pine_raw.png`, `tree_pine_winter_raw.png` (spring and autumn recoloured from summer) | all |
 | `tree_stump` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_stump_raw.png`, `tree_stump_winter_raw.png` (spring and autumn are the summer image) | all |
 | `rock_small`, `rock_large` (not drawn by the game yet), `outcrop_0..2`, `outcrop_spent` (stone deposits) | `rock_small_raw.png`, `rock_large_raw.png` and their `_winter_raw.png` (outcrops: the large cluster, mirrored, the single boulder, and a small boulder for worked-out) | all |
+| `wheat`, `carrot`, `corn` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe, `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none (nothing grows in winter) |
 
 ## Generating in Ludo
 
@@ -196,6 +197,51 @@ under the base (Ludo draws none). `--leaves=HUE,SAT,VAL` recolours only the gree
 Ludo needn't draw (the pine's spring and autumn). `install_prop.py` copies a fitted prop over its pack files and sets `w`, `h`, `anchor` and `origin` in
 `manifest.json` (dropping `shadow`); extra names install the same image as other seasons. `--mirror` flips the
 image, for a second variant from one Ludo image.
+
+## Crops: `fit_crop.py`
+
+A crop stage is one tile's worth of plants, drawn over the field's own tilled soil (`cropArt` in
+`src/scenes/art.ts`), so the sprite is plants only. Each source is a **single plant** on a transparent background,
+and `fit_crop.py` plants it in rows along world x, on the furrows of `soil_tilled_x`, evenly spaced across the
+soil bed. The rows of neighbouring tiles and fields carry on at the same spacing, and nothing but the stems'
+height leaves the tile. One crop's stages share ROWS, PER_ROW and `--seed`, so each plant grows at the same spot.
+
+1. Ripe: `generateWithStyle` with a farmhouse-styled Ludo building (the feed mill) as `style_image`, `sprite`,
+   n=4: "a single small clump of ripe golden wheat ... / a single ripe carrot plant ... with the round orange
+   shoulder of the carrot root showing / a single ripe corn plant ... two yellow corn cobs in pale green husks ...
+   a golden tassel; only the plant: no soil, no ground, no mound, no pot, no shadow; cel-shaded with a dark brown
+   outline, top-left light".
+2. Growing and sprout: `editImage` on the ripe image, n=2 ("keep the same plant in the same place with its base at
+   the same point ... but make it young: half as tall, all green ..." / "replace the ... with a tiny young sprout at
+   the same base point ...").
+3. Seeded: `editImage` on the ripe wheat ("replace the whole plant with a tiny low mound of dark brown earth with
+   three golden grains"). All three crops use it: seeds look alike, and the crop shows from the sprout on.
+
+Ludo's edits come out paler than the ripe image, so `--color`/`--bright` lift them, and `--widen` thickens a thin
+young stalk so it reads at game zoom.
+
+```bash
+f() { $P $L/fit_crop.py "$@"; }
+f $L/source/seeded_raw.png /tmp/props wheat_0_seeded 14 4 4 --seed=1 --bright=1.15
+f $L/source/wheat_1_sprout_raw.png /tmp/props wheat_1_sprout 24 4 4 --seed=1 --shadow=5 --color=1.3 --widen=1.3
+f $L/source/wheat_2_growing_raw.png /tmp/props wheat_2_growing 42 4 4 --seed=1 --shadow=7 --color=1.3
+f $L/source/wheat_3_ripe_raw.png /tmp/props wheat_3_ripe 54 4 4 --seed=1 --shadow=8 --color=1.15 --bright=1.12
+f $L/source/seeded_raw.png /tmp/props carrot_0_seeded 14 4 4 --seed=2 --bright=1.15
+f $L/source/carrot_1_sprout_raw.png /tmp/props carrot_1_sprout 18 4 4 --seed=2 --shadow=5 --color=1.3
+f $L/source/carrot_2_growing_raw.png /tmp/props carrot_2_growing 28 4 4 --seed=2 --shadow=7 --color=1.4 --widen=1.15
+f $L/source/carrot_3_ripe_raw.png /tmp/props carrot_3_ripe 34 4 4 --seed=2 --shadow=9
+f $L/source/seeded_raw.png /tmp/props corn_0_seeded 14 3 3 --seed=3 --bright=1.15
+f $L/source/corn_1_sprout_raw.png /tmp/props corn_1_sprout 24 3 3 --seed=3 --shadow=6 --color=1.4
+f $L/source/corn_2_growing_raw.png /tmp/props corn_2_growing 62 3 3 --seed=3 --shadow=8 --color=1.5 --bright=1.1 --widen=1.5
+f $L/source/corn_3_ripe_raw.png /tmp/props corn_3_ripe 100 3 3 --seed=3 --shadow=8
+for c in wheat carrot corn; do for s in 0_seeded 1_sprout 2_growing 3_ripe; do
+  $P $L/install_prop.py /tmp/props ${c}_$s
+done; done
+```
+
+HEIGHT is the plant's height in 2x px (corn ripe stands about as tall as the pack's corn). The anchor is the
+tile's top corner, as for every crop sprite, so field depth and clicking are unchanged; `install_prop.py` drops
+the old `_shadow` layer (the fit bakes a small contact shadow under each plant).
 
 ## Farmer: `fit_character.py`
 
