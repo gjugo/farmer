@@ -11,6 +11,7 @@ import { HOUSE_PILES } from '../logic/stockpiles';
 import '../data/processing';
 import { SEASONS } from '../data/seasons';
 import { SOIL_QUALITY } from '../data/soil';
+import { JOBS, type JobKind } from '../data/workers';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from '../logic/constants';
 import {
   baseArt,
@@ -30,6 +31,7 @@ import {
   facing,
   FARMER_ART,
   type FarmerAnim,
+  WORK_ANIM,
   fencePiece,
   groundTint,
   RICH_GROUND_TINT,
@@ -165,10 +167,41 @@ describe('art pack', () => {
   });
 
   it('has the farmer walking, sitting and at every job, in every direction', () => {
-    const anims: FarmerAnim[] = ['idle', 'sit', 'walk', 'plough', 'plant', 'harvest', 'build', 'feed'];
+    const anims: FarmerAnim[] = ['idle', 'sit', 'walk', ...Object.values(WORK_ANIM)];
     const keys = assets.get(FARMER_ART)!.animations!.map((a) => a.key);
     for (const anim of anims) for (const dir of ['se', 'sw', 'ne', 'nw']) expect(keys).toContain(`${FARMER_ART}_${anim}_${dir}`);
     expect(usedArt()).toContain(FARMER_ART);
+  });
+
+  it('gives every job its own farmer animation, in every direction', () => {
+    const keys = new Set(assets.get(FARMER_ART)!.animations!.map((a) => a.key));
+    for (const kind of Object.keys(JOBS) as JobKind[]) {
+      expect(WORK_ANIM[kind], kind).toBe(kind);
+      for (const dir of ['se', 'sw', 'ne', 'nw']) expect(keys.has(`${FARMER_ART}_${WORK_ANIM[kind]}_${dir}`), `${kind} ${dir}`).toBe(true);
+    }
+  });
+
+  it('keeps every texture of the pack within 4096 px, the WebGL limit of many phones', () => {
+    for (const asset of manifest.assets) {
+      for (const res of ['1x', '2x'] as const) {
+        const file = resolve(PACK, asset.res[res].file);
+        if (!existsSync(file)) continue;
+        const png = readFileSync(file);
+        const [w, h] = [png.readUInt32BE(16), png.readUInt32BE(20)];
+        expect(Math.max(w, h), asset.res[res].file).toBeLessThanOrEqual(4096);
+      }
+    }
+  });
+
+  it('lays the farmer sheet out so every animation frame is inside it', () => {
+    const farmer = assets.get(FARMER_ART)!;
+    for (const res of ['1x', '2x'] as const) {
+      const r = farmer.res[res];
+      const png = readFileSync(resolve(PACK, r.file));
+      const [w, h] = [png.readUInt32BE(16), png.readUInt32BE(20)];
+      const frames = Math.floor(w / r.frameWidth!) * Math.floor(h / r.frameHeight!);
+      for (const an of farmer.animations!) expect(an.end, an.key).toBeLessThan(frames);
+    }
   });
 
   it('has an icon for every item, plus coins', () => {
