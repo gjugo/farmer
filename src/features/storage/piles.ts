@@ -18,12 +18,12 @@ import { addArt, addShadow } from '../../scenes/sprites';
 /**
  * Where each pile stands, in tiles from the building's top-left corner: on the open yard at the front of its own
  * 2×2 pad, clear of the walls, posts and bays of every level. Pile art is drawn around the middle of a tile (see
- * tools/art/piles.py). Listed back to front.
+ * "Stock piles" in tools/ludo/README.md). Listed back to front.
  */
 const SLOTS: Record<string, Record<string, { x: number; y: number }>> = {
   granary: { crops: { x: 0.45, y: 1.6 }, animal: { x: 1.0, y: 1.72 }, goods: { x: 1.75, y: 1.1 }, feed: { x: 1.6, y: 1.62 } },
   storehouse: { wood: { x: 0.52, y: 1.45 }, stone: { x: 1.0, y: 1.65 }, iron: { x: 1.6, y: 1.55 } },
-  farmhouse: { house_goods: { x: 1.84, y: 0.64 }, house_materials: { x: 1.85, y: 1.02 } },
+  farmhouse: { house_goods: { x: 1.84, y: 0.58 }, house_materials: { x: 1.85, y: 1.1 } },
 };
 
 interface Pile {

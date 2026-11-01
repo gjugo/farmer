@@ -37,6 +37,8 @@ git (or rerun the commands below) after running it.
 | `pond` (base, `_spring`, `_summer`, `_autumn`, `_winter`, frozen) | `pond_raw.png`, `pond_{autumn,winter}_raw.png` (spring and summer are the base image) | all |
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
 | `wheat`, `carrot`, `corn` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe, `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none (nothing grows in winter) |
+| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
 
 ## Generating in Ludo
 
@@ -321,6 +323,100 @@ done; done
 HEIGHT is the plant's height in 2x px (corn ripe stands about as tall as the pack's corn). The anchor is the
 tile's top corner, as for every crop sprite, so field depth and clicking are unchanged; `install_prop.py` drops
 the old `_shadow` layer (the fit bakes a small contact shadow under each plant).
+
+## Item icons: `fit_icon.py`
+
+The icons show in the HTML overlay at about 24 px (`iconUrl`, the 1x files) and in the canvas (the bubbles over
+workshops and resource buildings). Each source is `generateWithStyle` with the Ludo farmer (the Image Generator
+image `farmer_raw.png` came from) as `style_image`, `sprite`, n=2, one pick each: "A game item icon: a single
+large brown hen's egg ... / a small steel farm milk churn ... / a fluffy round bundle of raw cream-white sheep's
+wool ... / a plump burlap sack of animal feed ... / a round wheel of yellow cheese with a wedge cut out ... / a
+pale yellow block of butter ... on a small round wooden board / a golden-brown crusty loaf ... / a bolt of woven
+blue cloth ... / a sheaf of ripe golden wheat ... / a fat orange carrot with a bushy green top ... / a ripe ear of
+yellow corn with its husks peeled back / a small stack of three chopped logs ... / two chunky grey cut stone
+blocks ... / three dark blue-grey iron ingots ... / a small wooden bucket filled with dark brown manure ... / a
+small stack of shiny gold coins ...; front three-quarter view. Bold simple silhouette that reads at small size,
+chunky shapes, cozy cartoon style with soft cel shading and a thick dark brown outline, lit from the top left.
+Only the item, centered; no ground, no shadow, no text, no frame."
+
+`fit_icon.py` trims the item and centres it in the 256 px box with the same padding for every icon (14 px at
+2x), so each reads at the same size in the overlay's square `object-fit: contain` slot; the anchor is the box's
+centre. Check them at 24 px before installing.
+
+```bash
+for n in egg milk wool feed cheese butter bread cloth wheat carrot corn wood stone iron manure coins; do
+  $P $L/fit_icon.py $L/source/icon_${n}_raw.png /tmp/props $n && $P $L/install_prop.py /tmp/props $n
+done
+```
+
+## Stock piles
+
+The piles in the yards (`src/features/storage/piles.ts`) show the stock in four fill stages. Each kind is one
+Ludo pile drawn full, then made smaller:
+
+1. Stage 4: `generateWithStyle` with the Ludo feed mill (itself styled on the farmhouse) as `style_image`,
+   `sprite`, n=2: "A small farmyard stock pile seen in 2:1 isometric view from above, south corner toward the
+   viewer: three plump burlap grain sacks ..., a heap of orange carrots ... and a few yellow corn cobs ... / a
+   wicker basket full of brown eggs, two steel milk churns and a ... bale of raw sheep's wool / a stack of six
+   ... feed sacks / ... cheese wheels, ... bread loaves and two bolts of woven blue cloth / a neat stack of
+   chopped wooden logs / ... grey cut stone blocks / a ... criss-cross stack of ... iron ingot bars / two wooden
+   food crates, one holding carrots and one holding eggs, beside a burlap grain sack and a round cheese wheel /
+   three chopped wooden logs ... and three chunky grey cut stone blocks; ... Only the pile, standing directly on
+   nothing: no soil, no ground, no pad, no platform, no base, no shadow. Cel-shaded with a dark brown outline,
+   top-left light." The items match the icons.
+2. Stages 3, 2 and 1: `editImage` on stage 4 ("The same pile, but about three quarters / half / only about a
+   quarter as big: ..., keep the same art style, colours, outline, viewing angle and item size exactly").
+
+Ludo frames every edit to fill its canvas, so a one-sack pile comes back as big as the full one. Each stage is
+therefore fitted with its own SCALE, chosen so its items are the same size as stage 4's; BASE is the middle of
+the pile's footprint (the centre of its opaque box across, a quarter of its width above its lowest point), which
+lands on the tile's centre. `--shadow` bakes a soft contact shadow, so the old `_shadow` layers are gone.
+
+```bash
+while read n bx by s sh; do
+  $P $L/fit_prop.py $L/source/${n}_raw.png /tmp/props $n $bx $by $s $sh && $P $L/install_prop.py /tmp/props $n
+done <<'EOF'
+pile_crops_1 390 382 0.1316 --shadow=29
+pile_crops_2 388 350 0.1547 --shadow=39
+pile_crops_3 395 354 0.1782 --shadow=44
+pile_crops_4 384 362 0.1703 --shadow=49
+pile_animal_1 382 451 0.1339 --shadow=34
+pile_animal_2 380 544 0.1565 --shadow=42
+pile_animal_3 384 522 0.1746 --shadow=51
+pile_animal_4 384 522 0.1800 --shadow=52
+pile_feed_1 382 508 0.0887 --shadow=19
+pile_feed_2 387 414 0.1199 --shadow=31
+pile_feed_3 380 497 0.1513 --shadow=41
+pile_feed_4 384 509 0.1520 --shadow=44
+pile_goods_1 385 330 0.1319 --shadow=23
+pile_goods_2 380 272 0.1207 --shadow=33
+pile_goods_3 407 354 0.1829 --shadow=46
+pile_goods_4 384 347 0.1887 --shadow=55
+pile_wood_1 376 283 0.1426 --shadow=35
+pile_wood_2 406 288 0.1725 --shadow=50
+pile_wood_3 368 310 0.2016 --shadow=54
+pile_wood_4 384 329 0.2044 --shadow=59
+pile_stone_1 383 372 0.1152 --shadow=24
+pile_stone_2 362 368 0.1611 --shadow=40
+pile_stone_3 384 378 0.1639 --shadow=42
+pile_stone_4 384 442 0.1628 --shadow=47
+pile_iron_1 379 353 0.1225 --shadow=33
+pile_iron_2 374 416 0.1483 --shadow=40
+pile_iron_3 407 442 0.1605 --shadow=43
+pile_iron_4 394 443 0.1616 --shadow=47
+pile_house_goods_1 386 385 0.0784 --shadow=14
+pile_house_goods_2 391 366 0.1079 --shadow=26
+pile_house_goods_3 392 299 0.1178 --shadow=33
+pile_house_goods_4 390 378 0.1268 --shadow=36
+pile_house_materials_1 384 292 0.0888 --shadow=20
+pile_house_materials_2 378 318 0.1088 --shadow=28
+pile_house_materials_3 388 343 0.1235 --shadow=34
+pile_house_materials_4 384 332 0.1376 --shadow=39
+EOF
+```
+
+Full piles are about as big as the old ones (2x: `pile_wood_4` 156×107), so the granary and storehouse
+`SLOTS` stay; the farmhouse's two slots moved apart a little so its piles don't touch.
 
 ## Farmer: `fit_character.py`
 
