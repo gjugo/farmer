@@ -14,6 +14,8 @@ git (or rerun the commands below) after running it.
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
 | `cottage`, `cottage_winter` | `cottage_raw.png`, `cottage_winter_raw.png` | all |
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
+| `bakery`, `bakery_winter` | `bakery_raw.png`, `bakery_winter_raw.png` | all |
+| `dairy`, `dairy_winter` | `dairy_raw.png`, `dairy_winter_raw.png` | all |
 | `weaving_hut`, `weaving_hut_winter` (the loom) | `weaving_hut_raw.png`, `weaving_hut_winter_raw.png` | all |
 | `woodcutter_lodge`, `woodcutter_lodge_winter` | `woodcutter_lodge_raw.png`, `woodcutter_lodge_winter_raw.png` | all |
 | `quarry`, `quarry_winter` | `quarry_raw.png`, `quarry_winter_raw.png` | all |
@@ -29,6 +31,10 @@ git (or rerun the commands below) after running it.
 | `tree_pine` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_pine_raw.png`, `tree_pine_winter_raw.png` (spring and autumn recoloured from summer) | all |
 | `tree_stump` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_stump_raw.png`, `tree_stump_winter_raw.png` (spring and autumn are the summer image) | all |
 | `rock_small`, `rock_large` (not drawn by the game yet), `outcrop_0..2`, `outcrop_spent` (stone deposits) | `rock_small_raw.png`, `rock_large_raw.png` and their `_winter_raw.png` (outcrops: the large cluster, mirrored, the single boulder, and a small boulder for worked-out) | all |
+| `vein_0`, `vein_1`, `vein_spent` (iron deposits; base, `_spring`, `_summer`, `_autumn`, `_winter`) | `vein_raw.png`, `vein_b_raw.png`, `vein_spent_raw.png` and their `_winter_raw.png` (spring to autumn are the base image) | all |
+| `bush`, `bush_berry` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `bush_raw.png`, `bush_berry_raw.png`, each with `_{spring,autumn,winter}_raw.png` | all |
+| `pond` (base, `_spring`, `_summer`, `_autumn`, `_winter`, frozen) | `pond_raw.png`, `pond_{autumn,winter}_raw.png` (spring and summer are the base image) | all |
+| `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
 | `wheat`, `carrot`, `corn` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe, `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none (nothing grows in winter) |
 | item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
@@ -71,6 +77,11 @@ $P $L/fit_building.py $L/source/cottage_winter_raw.png /tmp/props cottage_winter
 $P $L/fit_building.py $L/source/chicken_coop_raw.png /tmp/props chicken_coop 3 3 40 349 727 348 382.5 520.2
 $P $L/fit_building.py $L/source/chicken_coop_winter_raw.png /tmp/props chicken_coop_winter 3 3 40 348 726 347 382 519
 for n in cottage cottage_winter chicken_coop chicken_coop_winter; do $P $L/install_prop.py /tmp/props $n; done
+$P $L/fit_building.py $L/source/bakery_raw.png /tmp/props bakery 3 2 43 268 725 354 470 481.5 --pad
+$P $L/fit_building.py $L/source/bakery_winter_raw.png /tmp/props bakery_winter 3 2 41 271 724 350 461.5 481.2 --pad
+$P $L/fit_building.py $L/source/dairy_raw.png /tmp/props dairy 3 2 43 258 720 285 408.5 440.8 --pad
+$P $L/fit_building.py $L/source/dairy_winter_raw.png /tmp/props dairy_winter 3 2 43 257 717 284 407 439 --pad
+for n in bakery bakery_winter dairy dairy_winter; do $P $L/install_prop.py /tmp/props $n; done
 $P $L/fit_building.py $L/source/weaving_hut_raw.png /tmp/props weaving_hut 2 2 45 396 737 394 389 568
 $P $L/fit_building.py $L/source/weaving_hut_winter_raw.png /tmp/props weaving_hut_winter 2 2 53 385 705 383 377 547
 $P $L/fit_building.py $L/source/woodcutter_lodge_raw.png /tmp/props woodcutter_lodge 2 2 41 286 773 298 419 475
@@ -87,15 +98,23 @@ for n in weaving_hut woodcutter_lodge quarry mine for_sale_sign; do
 done
 ```
 
-`corners.py RAW.png` prints a raw image's pad corners (L, R, B) for `fit_building.py` and writes `RAW_corners.png`, an
-overlay to check them by eye (don't commit it); measure a corner by hand if eaves or props stick out past it.
+`python tools/ludo/corners.py RAW.png` prints those corners (L and R from the extreme opaque columns, B where the
+two 2:1 edges meet) and writes `RAW_corners.png`, an overlay to check by eye (don't commit it); measure a corner
+by hand if eaves or props stick out past it.
+
+**Rectangular pads (3×2).** The x side runs from the left corner to the bottom corner, so for the bakery and dairy
+the front-left edge is the 3-tile one. Ludo draws square pads unless told otherwise; asking for "a long, narrow
+building, its long wall to the front-left, on a rectangular (not square) pad 3 tiles long by 2 deep, the front-left
+edge one and a half times the front-right edge" got rectangles, but never in exactly 3:2 (1.2 to 2.4).
+`--pad` re-proportions the pad: it keeps L and R, moves B to where the footprint puts it and stretches each
+face's columns to match (each half is an x-scale plus a y-shear, so walls stay vertical). Pick the image that
+needs the least of it: the bakery is 1.67:1, the dairy 1.17:1.
 
 The granary and storehouse have a sprite per level. Level 1 came from `generateWithStyle`, with the building on the
 back half of the pad and the front half left as an open yard for the stock piles (`SLOTS` in
 `src/features/storage/piles.ts`). Levels 2 and 3 are `editImage` on the level below ("keep the same ... exactly, but
-make it bigger: add a bay ..."), so each level is the same building grown. `python tools/ludo/corners.py RAW.png`
-prints the pad corners and writes `RAW_corners.png`, an overlay to check them by eye (don't commit it). A winter
-image on the same canvas size as its summer image is fitted with the summer corners, so the two line up exactly.
+make it bigger: add a bay ..."), so each level is the same building grown. A winter image on
+the same canvas size as its summer image is fitted with the summer corners, so the two line up exactly.
 
 ```bash
 $P $L/fit_building.py $L/source/granary_1_raw.png /tmp/props granary_1 2 2 44 397 771 387 397.5 573.8
@@ -199,6 +218,65 @@ under the base (Ludo draws none). `--leaves=HUE,SAT,VAL` recolours only the gree
 Ludo needn't draw (the pine's spring and autumn). `install_prop.py` copies a fitted prop over its pack files and sets `w`, `h`, `anchor` and `origin` in
 `manifest.json` (dropping `shadow`); extra names install the same image as other seasons. `--mirror` flips the
 image, for a second variant from one Ludo image.
+
+### Iron veins, bushes and the pond
+
+Generated with `generateWithStyle` (the Ludo boulder cluster behind `rock_large_raw.png` as `style_image`, `sprite`,
+n=4): "a low cluster of two or three dark charcoal-black rocks with bright rusty-orange iron ore streaks ... clearly
+darker and redder than grey stone", "a small round leafy green shrub bush ...", the same "... dotted with many bright
+red berries", and "a flat ground decal ... a small oval pond of calm blue water, twice as wide as it is tall, with a
+narrow rim of green grass ... no soil block, no thickness". `vein_0` and `vein_1` are two different results. The
+other images are `editImage` on the chosen one ("keep the same ... exactly, same shape, size, position and outlines;
+..."): snow for the veins' winter, "a low worked-out pile of small broken dark rock rubble" for `vein_spent` (then
+snow on that for its winter), blossom for the bushes' spring, turned leaves for autumn, snow for winter, and for the
+pond golden grass and floating leaves in autumn and frozen ice under snow in winter. Ludo drew
+`vein_b_winter_raw.png` 3% smaller on a narrower canvas, so its BASE and SCALE are the summer ones mapped by the
+rocks' bounds. The pond has no shadow: it is flat on the tile.
+
+```bash
+for s in "" _winter; do $P $L/fit_prop.py $L/source/vein${s}_raw.png /tmp/props vein_0$s 383 325 0.27 --shadow=70; done
+$P $L/fit_prop.py $L/source/vein_b_raw.png /tmp/props vein_1 392 350 0.27 --shadow=70
+$P $L/fit_prop.py $L/source/vein_b_winter_raw.png /tmp/props vein_1_winter 385.5 330.6 0.2784 --shadow=70
+for s in "" _winter; do $P $L/fit_prop.py $L/source/vein_spent${s}_raw.png /tmp/props vein_spent$s 394 300 0.17 --shadow=44; done
+for s in "" _spring _autumn _winter; do
+  $P $L/fit_prop.py $L/source/bush${s}_raw.png /tmp/props bush$s 383 422 0.175 --shadow=46
+  $P $L/fit_prop.py $L/source/bush_berry${s}_raw.png /tmp/props bush_berry$s 384 418 0.175 --shadow=46
+done
+for s in "" _autumn _winter; do $P $L/fit_prop.py $L/source/pond${s}_raw.png /tmp/props pond$s 384 224 0.25; done
+for n in vein_0 vein_1 vein_spent; do
+  $P $L/install_prop.py /tmp/props $n ${n}_spring ${n}_summer ${n}_autumn; $P $L/install_prop.py /tmp/props ${n}_winter
+done
+for n in bush bush_berry; do
+  $P $L/install_prop.py /tmp/props $n ${n}_summer
+  for s in _spring _autumn _winter; do $P $L/install_prop.py /tmp/props $n$s; done
+done
+$P $L/install_prop.py /tmp/props pond pond_spring pond_summer
+for s in _autumn _winter; do $P $L/install_prop.py /tmp/props pond$s; done
+```
+
+## Fences: `fences.py`
+
+The pasture fence is composed, not fitted: one Ludo post (`fence_post_raw.png`, `generateWithStyle` with the tree
+stump as `style_image`: "a single upright square wooden fence post ... corner facing the viewer"), one rail section
+(`fence_rail_raw.png`: "a straight section of rustic wooden pasture fence seen exactly from the side, perfectly
+horizontal ... two long parallel horizontal split-wood rails, no posts") and a gate (`fence_gate_raw.png`:
+`editImage` on the rails, "turn these two rails into a closed wooden farm gate of the same length ... a vertical board
+at each end and one diagonal brace"). `fences.py` shears the side-on rails onto the 2:1 grid (mirrored for the y
+direction) and builds each piece as a post on the tile centre with a half-rail to the middle of every edge it names.
+The rail texture wraps every tile length and is sampled by screen x, so neighbouring pieces join with no seam; rails
+going back (ne, nw) are drawn behind the post and rails coming forward (se, sw) in front. The gate spans the tile
+along x between posts on its nw and se edges. A soft ground shadow is baked under rails and posts. Heights (post,
+rails, gate) are constants at the top of the script.
+
+```bash
+$P $L/fences.py $L/source/fence_post_raw.png $L/source/fence_rail_raw.png $L/source/fence_gate_raw.png /tmp/props
+for n in post ne se ne_se sw ne_sw se_sw ne_se_sw nw ne_nw se_nw ne_se_nw sw_nw ne_sw_nw se_sw_nw ne_se_sw_nw; do
+  $P $L/install_prop.py /tmp/props fence_$n
+done
+$P $L/install_prop.py /tmp/props gate_se_nw_closed
+```
+
+The gate's other versions (`gate_se_nw_open`, `gate_ne_sw_*`) are not drawn by the game and stay as they were.
 
 ## Crops: `fit_crop.py`
 

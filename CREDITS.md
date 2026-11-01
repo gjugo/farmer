@@ -10,7 +10,7 @@ listed in the in-game Credits sheet. The game draws the 2x set at half size. The
 
 Generated for this game with **Ludo.ai** and fitted to the grid by `tools/ludo/` (sources in
 `tools/ludo/source/`): the farmhouse (all seasons) and the grass, path, tilled/watered soil and unowned-land
-tiles (every season), and the oak, apple and pine trees the tree stump, the rocks and the stone outcrops (every season), and the wheat, carrot and corn crops (every growth stage), the 16 item icons, and the stock piles at the
+tiles (every season), and the oak, apple and pine trees the tree stump, the rocks and the stone outcrops (every season), the iron veins, bushes, berry bushes and the pond (every season), the pasture fence and gate, and the wheat, carrot and corn crops (every growth stage), the 16 item icons, and the stock piles at the
 granary, storehouse and farmhouse (every fill stage). The rest of the pack's art is unchanged. Licence, as stated by Ludo.ai's
 in-app assistant (2026-11-01): the user owns the generated assets with full commercial rights, no royalties or
 licensing restrictions, while the account stays in good standing under Ludo.ai's Terms of Service. No
