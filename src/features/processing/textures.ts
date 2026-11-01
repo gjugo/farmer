@@ -2,16 +2,16 @@ import type { ProcessorType } from '../../data/processing';
 import { registerTexture } from '../../scenes/textures';
 
 /**
- * Where smoke rises while a building works, in pixels of its 2x pack sprite: the bakery's chimney, the dairy's
- * silo and the weaving hut's stovepipe. The feed mill turns its sails instead.
+ * Where smoke rises while a building works, in pixels of its 2x pack sprite: the bakery's oven chimney, the
+ * dairy's chimney and the weaving hut's stovepipe. The feed mill turns its sails instead.
  */
 export const SMOKE_AT: Partial<Record<ProcessorType, { x: number; y: number }>> = {
-  bakery: { x: 264, y: 76 },
-  dairy: { x: 256, y: 14 },
+  bakery: { x: 412, y: 73 },
+  dairy: { x: 343, y: 51 },
   loom: { x: 378, y: 160 },
 };
 
-/** Smoke puff (the pack has none; the bakery's sprite has two still ones baked in). */
+/** Smoke puff (the pack has none). */
 registerTexture('proc-smoke', {
   width: 24,
   height: 24,

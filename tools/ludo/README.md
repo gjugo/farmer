@@ -14,6 +14,8 @@ git (or rerun the commands below) after running it.
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
 | `cottage`, `cottage_winter` | `cottage_raw.png`, `cottage_winter_raw.png` | all |
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
+| `bakery`, `bakery_winter` | `bakery_raw.png`, `bakery_winter_raw.png` | all |
+| `dairy`, `dairy_winter` | `dairy_raw.png`, `dairy_winter_raw.png` | all |
 | `farmer` (spritesheet) | see **Farmer** below | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
@@ -60,7 +62,23 @@ $P $L/fit_building.py $L/source/cottage_winter_raw.png /tmp/props cottage_winter
 $P $L/fit_building.py $L/source/chicken_coop_raw.png /tmp/props chicken_coop 3 3 40 349 727 348 382.5 520.2
 $P $L/fit_building.py $L/source/chicken_coop_winter_raw.png /tmp/props chicken_coop_winter 3 3 40 348 726 347 382 519
 for n in cottage cottage_winter chicken_coop chicken_coop_winter; do $P $L/install_prop.py /tmp/props $n; done
+$P $L/fit_building.py $L/source/bakery_raw.png /tmp/props bakery 3 2 43 268 725 354 470 481.5 --pad
+$P $L/fit_building.py $L/source/bakery_winter_raw.png /tmp/props bakery_winter 3 2 41 271 724 350 461.5 481.2 --pad
+$P $L/fit_building.py $L/source/dairy_raw.png /tmp/props dairy 3 2 43 258 720 285 408.5 440.8 --pad
+$P $L/fit_building.py $L/source/dairy_winter_raw.png /tmp/props dairy_winter 3 2 43 257 717 284 407 439 --pad
+for n in bakery bakery_winter dairy dairy_winter; do $P $L/install_prop.py /tmp/props $n; done
 ```
+
+`python tools/ludo/corners.py RAW.png` prints those corners (L and R from the extreme opaque columns, B where the
+two 2:1 edges meet) and writes `RAW_corners.png`, an overlay to check by eye (don't commit it).
+
+**Rectangular pads (3×2).** The x side runs from the left corner to the bottom corner, so for the bakery and dairy
+the front-left edge is the 3-tile one. Ludo draws square pads unless told otherwise; asking for "a long, narrow
+building, its long wall to the front-left, on a rectangular (not square) pad 3 tiles long by 2 deep, the front-left
+edge one and a half times the front-right edge" got rectangles, but never in exactly 3:2 (1.2 to 2.4).
+`--pad` re-proportions the pad: it keeps L and R, moves B to where the footprint puts it and stretches each
+face's columns to match (each half is an x-scale plus a y-shear, so walls stay vertical). Pick the image that
+needs the least of it: the bakery is 1.67:1, the dairy 1.17:1.
 
 Install with `install_prop.py` (it reads the `NAME.json` the fit writes), or copy `/tmp/2x_<name>.png` and
 `/tmp/1x_<name>.png` to `public/assets/farm/{2x,1x}/buildings/<name>.png` and set the asset's `w`, `h`, `anchor`
