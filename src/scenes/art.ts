@@ -5,6 +5,7 @@
  */
 
 import { SEASONS, type Season } from '../data/seasons';
+import type { JobKind } from '../data/workers';
 import { soilBand } from '../logic/soil';
 
 /** Where the pack lives, relative to the page (vite `base: './'`). */
@@ -243,7 +244,22 @@ export function facing(dx: number, dy: number): Facing {
 
 /** The farmer's sprite sheet: `farmer_<anim>_<facing>` animations. */
 export const FARMER_ART = 'farmer';
-export type FarmerAnim = 'idle' | 'sit' | 'walk' | 'plough' | 'plant' | 'harvest' | 'build' | 'feed';
+export type FarmerAnim = 'idle' | 'sit' | 'walk' | JobKind;
+
+/** The animation for each job's work, with the tool he holds (`tools/ludo/README.md`, "Tools"). */
+export const WORK_ANIM: Record<JobKind, FarmerAnim> = {
+  plough: 'plough', // hoe
+  plant: 'plant', // seed bag
+  harvest: 'harvest', // sickle
+  collect: 'collect', // basket
+  feed: 'feed', // feed bucket
+  fertilise: 'fertilise', // pitchfork
+  load: 'load', // sack
+  build: 'build', // hammer
+  chop: 'chop', // axe
+  quarry: 'quarry', // pickaxe
+  mine: 'mine', // pickaxe
+};
 
 /** Feed mill body and its turning sails (same canvas and anchor). */
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;

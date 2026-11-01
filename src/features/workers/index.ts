@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { FARMHOUSE } from '../../data/farmhouse';
-import type { JobKind } from '../../data/workers';
 import type { FarmContext, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { farmerActivity, farmerName, placeName } from '../../game/workers';
@@ -20,7 +19,7 @@ import {
   workersOf,
   type Job,
 } from '../../logic/workers';
-import { facing, FARMER_ART, type Facing, type FarmerAnim } from '../../scenes/art';
+import { facing, FARMER_ART, WORK_ANIM, type Facing, type FarmerAnim } from '../../scenes/art';
 import { DEPTH, walkerDepth } from '../../scenes/depth';
 import { gridToWorld } from '../../scenes/iso';
 import { addArtSprite, addShadow } from '../../scenes/sprites';
@@ -203,23 +202,6 @@ function seatOf(i: number): (typeof SEATS)[number] {
   const k = i - SEATS.length;
   return { x: -0.35 - (k % 3) * 0.32, y: 0.4 + Math.floor(k / 3) * 0.45, anim: 'idle', facing: 'se' };
 }
-
-/** The animation for each job's work. */
-const WORK_ANIM: Record<JobKind, FarmerAnim> = {
-  build: 'build',
-  plough: 'plough',
-  plant: 'plant',
-  harvest: 'harvest',
-  // Forking manure out over the soil: the feeding toss.
-  fertilise: 'feed',
-  feed: 'feed',
-  collect: 'harvest',
-  load: 'feed',
-  // Swinging an axe or a pick: the building swing.
-  chop: 'build',
-  quarry: 'build',
-  mine: 'build',
-};
 
 const BAR_W = 40;
 /** The bar floats this far above the farmer's feet. */

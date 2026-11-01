@@ -5179,14 +5179,14 @@
    "name": "farmer",
    "category": "people",
    "type": "spritesheet",
-   "notes": "rows = anim x direction; anchor = ground point under the farmer; sit = cross-legged on the ground by the farmhouse (Ludo.ai Directional Sprites, cartoon style; shadow baked in)",
+   "notes": "rows = one anim each, the 4 directions (se, sw, ne, nw) side by side in 6-frame slots; mine plays the quarry frames; anchor = ground point under the farmer; work anims hold a tool, sit = cross-legged on the ground by the farmhouse (Ludo.ai Directional Sprites, cartoon style; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/people/farmer.png",
      "frameWidth": 164,
      "frameHeight": 156,
-     "columns": 6,
-     "rows": 32,
+     "columns": 24,
+     "rows": 13,
      "anchor": [
       82.0,
       126.0
@@ -5200,8 +5200,8 @@
      "file": "1x/people/farmer.png",
      "frameWidth": 82,
      "frameHeight": 78,
-     "columns": 6,
-     "rows": 32,
+     "columns": 24,
+     "rows": 13,
      "anchor": [
       41.0,
       63.0
@@ -5454,43 +5454,43 @@
      "repeat": -1
     },
     {
-     "key": "farmer_build_se",
-     "anim": "build",
+     "key": "farmer_collect_se",
+     "anim": "collect",
      "dir": "se",
      "start": 144,
      "end": 147,
      "frames": 4,
-     "fps": 6,
+     "fps": 4,
      "repeat": -1
     },
     {
-     "key": "farmer_build_sw",
-     "anim": "build",
+     "key": "farmer_collect_sw",
+     "anim": "collect",
      "dir": "sw",
      "start": 150,
      "end": 153,
      "frames": 4,
-     "fps": 6,
+     "fps": 4,
      "repeat": -1
     },
     {
-     "key": "farmer_build_ne",
-     "anim": "build",
+     "key": "farmer_collect_ne",
+     "anim": "collect",
      "dir": "ne",
      "start": 156,
      "end": 159,
      "frames": 4,
-     "fps": 6,
+     "fps": 4,
      "repeat": -1
     },
     {
-     "key": "farmer_build_nw",
-     "anim": "build",
+     "key": "farmer_collect_nw",
+     "anim": "collect",
      "dir": "nw",
      "start": 162,
      "end": 165,
      "frames": 4,
-     "fps": 6,
+     "fps": 4,
      "repeat": -1
     },
     {
@@ -5531,6 +5531,246 @@
      "end": 189,
      "frames": 4,
      "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_fertilise_se",
+     "anim": "fertilise",
+     "dir": "se",
+     "start": 192,
+     "end": 195,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_fertilise_sw",
+     "anim": "fertilise",
+     "dir": "sw",
+     "start": 198,
+     "end": 201,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_fertilise_ne",
+     "anim": "fertilise",
+     "dir": "ne",
+     "start": 204,
+     "end": 207,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_fertilise_nw",
+     "anim": "fertilise",
+     "dir": "nw",
+     "start": 210,
+     "end": 213,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_load_se",
+     "anim": "load",
+     "dir": "se",
+     "start": 216,
+     "end": 219,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_load_sw",
+     "anim": "load",
+     "dir": "sw",
+     "start": 222,
+     "end": 225,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_load_ne",
+     "anim": "load",
+     "dir": "ne",
+     "start": 228,
+     "end": 231,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_load_nw",
+     "anim": "load",
+     "dir": "nw",
+     "start": 234,
+     "end": 237,
+     "frames": 4,
+     "fps": 4,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_build_se",
+     "anim": "build",
+     "dir": "se",
+     "start": 240,
+     "end": 243,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_build_sw",
+     "anim": "build",
+     "dir": "sw",
+     "start": 246,
+     "end": 249,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_build_ne",
+     "anim": "build",
+     "dir": "ne",
+     "start": 252,
+     "end": 255,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_build_nw",
+     "anim": "build",
+     "dir": "nw",
+     "start": 258,
+     "end": 261,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_chop_se",
+     "anim": "chop",
+     "dir": "se",
+     "start": 264,
+     "end": 267,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_chop_sw",
+     "anim": "chop",
+     "dir": "sw",
+     "start": 270,
+     "end": 273,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_chop_ne",
+     "anim": "chop",
+     "dir": "ne",
+     "start": 276,
+     "end": 279,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_chop_nw",
+     "anim": "chop",
+     "dir": "nw",
+     "start": 282,
+     "end": 285,
+     "frames": 4,
+     "fps": 6,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_quarry_se",
+     "anim": "quarry",
+     "dir": "se",
+     "start": 288,
+     "end": 291,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_quarry_sw",
+     "anim": "quarry",
+     "dir": "sw",
+     "start": 294,
+     "end": 297,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_quarry_ne",
+     "anim": "quarry",
+     "dir": "ne",
+     "start": 300,
+     "end": 303,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_quarry_nw",
+     "anim": "quarry",
+     "dir": "nw",
+     "start": 306,
+     "end": 309,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_mine_se",
+     "anim": "mine",
+     "dir": "se",
+     "start": 288,
+     "end": 291,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_mine_sw",
+     "anim": "mine",
+     "dir": "sw",
+     "start": 294,
+     "end": 297,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_mine_ne",
+     "anim": "mine",
+     "dir": "ne",
+     "start": 300,
+     "end": 303,
+     "frames": 4,
+     "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_mine_nw",
+     "anim": "mine",
+     "dir": "nw",
+     "start": 306,
+     "end": 309,
+     "frames": 4,
+     "fps": 5,
      "repeat": -1
     }
    ]
