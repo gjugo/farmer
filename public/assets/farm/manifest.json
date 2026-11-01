@@ -2349,38 +2349,36 @@
    "name": "cow",
    "category": "animals",
    "type": "spritesheet",
-   "notes": "rows = anim x direction; anchor = ground point under the animal's centre",
+   "notes": "rows = anim x direction; anchor = ground point under the animal's centre (Ludo.ai Directional Sprites, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/animals/cow.png",
-     "frameWidth": 192,
-     "frameHeight": 206,
-     "columns": 6,
+     "frameWidth": 166,
+     "frameHeight": 128,
+     "columns": 12,
      "rows": 12,
-     "shadow": "2x/animals/cow_shadow.png",
      "anchor": [
-      96.0,
-      169.0
+      83.0,
+      106.0
      ],
      "origin": [
       0.5,
-      0.82039
+      0.82812
      ]
     },
     "1x": {
      "file": "1x/animals/cow.png",
-     "frameWidth": 98,
-     "frameHeight": 106,
-     "columns": 6,
+     "frameWidth": 83,
+     "frameHeight": 64,
+     "columns": 12,
      "rows": 12,
-     "shadow": "1x/animals/cow_shadow.png",
      "anchor": [
-      49.0,
-      85.5
+      41.5,
+      53.0
      ],
      "origin": [
       0.5,
-      0.8066
+      0.82812
      ]
     }
    },
@@ -2390,119 +2388,119 @@
      "anim": "idle",
      "dir": "se",
      "start": 0,
-     "end": 3,
-     "frames": 4,
-     "fps": 4,
+     "end": 11,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "cow_idle_sw",
      "anim": "idle",
      "dir": "sw",
-     "start": 6,
-     "end": 9,
-     "frames": 4,
-     "fps": 4,
+     "start": 12,
+     "end": 23,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "cow_idle_ne",
      "anim": "idle",
      "dir": "ne",
-     "start": 12,
-     "end": 15,
-     "frames": 4,
-     "fps": 4,
+     "start": 24,
+     "end": 35,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "cow_idle_nw",
      "anim": "idle",
      "dir": "nw",
-     "start": 18,
-     "end": 21,
-     "frames": 4,
-     "fps": 4,
+     "start": 36,
+     "end": 47,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "cow_walk_se",
      "anim": "walk",
      "dir": "se",
-     "start": 24,
-     "end": 29,
-     "frames": 6,
-     "fps": 9,
+     "start": 48,
+     "end": 57,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "cow_walk_sw",
      "anim": "walk",
      "dir": "sw",
-     "start": 30,
-     "end": 35,
-     "frames": 6,
-     "fps": 9,
+     "start": 60,
+     "end": 69,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "cow_walk_ne",
      "anim": "walk",
      "dir": "ne",
-     "start": 36,
-     "end": 41,
-     "frames": 6,
-     "fps": 9,
+     "start": 72,
+     "end": 81,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "cow_walk_nw",
      "anim": "walk",
      "dir": "nw",
-     "start": 42,
-     "end": 47,
-     "frames": 6,
-     "fps": 9,
+     "start": 84,
+     "end": 93,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "cow_eat_se",
      "anim": "eat",
      "dir": "se",
-     "start": 48,
-     "end": 51,
-     "frames": 4,
-     "fps": 5,
+     "start": 96,
+     "end": 107,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "cow_eat_sw",
      "anim": "eat",
      "dir": "sw",
-     "start": 54,
-     "end": 57,
-     "frames": 4,
-     "fps": 5,
+     "start": 108,
+     "end": 119,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "cow_eat_ne",
      "anim": "eat",
      "dir": "ne",
-     "start": 60,
-     "end": 63,
-     "frames": 4,
-     "fps": 5,
+     "start": 120,
+     "end": 131,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "cow_eat_nw",
      "anim": "eat",
      "dir": "nw",
-     "start": 66,
-     "end": 69,
-     "frames": 4,
-     "fps": 5,
+     "start": 132,
+     "end": 143,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     }
    ]
@@ -2511,38 +2509,36 @@
    "name": "sheep",
    "category": "animals",
    "type": "spritesheet",
-   "notes": "rows = anim x direction; anchor = ground point under the animal's centre",
+   "notes": "rows = anim x direction; anchor = ground point under the animal's centre (Ludo.ai Directional Sprites, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/animals/sheep.png",
-     "frameWidth": 140,
-     "frameHeight": 148,
-     "columns": 6,
+     "frameWidth": 112,
+     "frameHeight": 98,
+     "columns": 12,
      "rows": 12,
-     "shadow": "2x/animals/sheep_shadow.png",
      "anchor": [
-      70.0,
-      115.0
+      56.0,
+      80.0
      ],
      "origin": [
       0.5,
-      0.77703
+      0.81633
      ]
     },
     "1x": {
      "file": "1x/animals/sheep.png",
-     "frameWidth": 74,
-     "frameHeight": 76,
-     "columns": 6,
+     "frameWidth": 56,
+     "frameHeight": 49,
+     "columns": 12,
      "rows": 12,
-     "shadow": "1x/animals/sheep_shadow.png",
      "anchor": [
-      37.0,
-      58.5
+      28.0,
+      40.0
      ],
      "origin": [
       0.5,
-      0.76974
+      0.81633
      ]
     }
    },
@@ -2552,119 +2548,119 @@
      "anim": "idle",
      "dir": "se",
      "start": 0,
-     "end": 3,
-     "frames": 4,
-     "fps": 4,
+     "end": 11,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "sheep_idle_sw",
      "anim": "idle",
      "dir": "sw",
-     "start": 6,
-     "end": 9,
-     "frames": 4,
-     "fps": 4,
+     "start": 12,
+     "end": 23,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "sheep_idle_ne",
      "anim": "idle",
      "dir": "ne",
-     "start": 12,
-     "end": 15,
-     "frames": 4,
-     "fps": 4,
+     "start": 24,
+     "end": 35,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "sheep_idle_nw",
      "anim": "idle",
      "dir": "nw",
-     "start": 18,
-     "end": 21,
-     "frames": 4,
-     "fps": 4,
+     "start": 36,
+     "end": 47,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "sheep_walk_se",
      "anim": "walk",
      "dir": "se",
-     "start": 24,
-     "end": 29,
-     "frames": 6,
-     "fps": 9,
+     "start": 48,
+     "end": 57,
+     "frames": 10,
+     "fps": 9.0,
      "repeat": -1
     },
     {
      "key": "sheep_walk_sw",
      "anim": "walk",
      "dir": "sw",
-     "start": 30,
-     "end": 35,
-     "frames": 6,
-     "fps": 9,
+     "start": 60,
+     "end": 69,
+     "frames": 10,
+     "fps": 9.0,
      "repeat": -1
     },
     {
      "key": "sheep_walk_ne",
      "anim": "walk",
      "dir": "ne",
-     "start": 36,
-     "end": 41,
-     "frames": 6,
-     "fps": 9,
+     "start": 72,
+     "end": 81,
+     "frames": 10,
+     "fps": 9.0,
      "repeat": -1
     },
     {
      "key": "sheep_walk_nw",
      "anim": "walk",
      "dir": "nw",
-     "start": 42,
-     "end": 47,
-     "frames": 6,
-     "fps": 9,
+     "start": 84,
+     "end": 93,
+     "frames": 10,
+     "fps": 9.0,
      "repeat": -1
     },
     {
      "key": "sheep_eat_se",
      "anim": "eat",
      "dir": "se",
-     "start": 48,
-     "end": 51,
-     "frames": 4,
-     "fps": 5,
+     "start": 96,
+     "end": 107,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "sheep_eat_sw",
      "anim": "eat",
      "dir": "sw",
-     "start": 54,
-     "end": 57,
-     "frames": 4,
-     "fps": 5,
+     "start": 108,
+     "end": 119,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "sheep_eat_ne",
      "anim": "eat",
      "dir": "ne",
-     "start": 60,
-     "end": 63,
-     "frames": 4,
-     "fps": 5,
+     "start": 120,
+     "end": 131,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "sheep_eat_nw",
      "anim": "eat",
      "dir": "nw",
-     "start": 66,
-     "end": 69,
-     "frames": 4,
-     "fps": 5,
+     "start": 132,
+     "end": 143,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     }
    ]
@@ -2673,38 +2669,36 @@
    "name": "chicken",
    "category": "animals",
    "type": "spritesheet",
-   "notes": "rows = anim x direction; anchor = ground point under the animal's centre",
+   "notes": "rows = anim x direction; anchor = ground point under the animal's centre (Ludo.ai Directional Sprites, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/animals/chicken.png",
-     "frameWidth": 76,
-     "frameHeight": 94,
-     "columns": 6,
+     "frameWidth": 48,
+     "frameHeight": 52,
+     "columns": 12,
      "rows": 12,
-     "shadow": "2x/animals/chicken_shadow.png",
      "anchor": [
-      38.0,
-      73.0
+      24.0,
+      38.0
      ],
      "origin": [
       0.5,
-      0.7766
+      0.73077
      ]
     },
     "1x": {
      "file": "1x/animals/chicken.png",
-     "frameWidth": 40,
-     "frameHeight": 50,
-     "columns": 6,
+     "frameWidth": 24,
+     "frameHeight": 26,
+     "columns": 12,
      "rows": 12,
-     "shadow": "1x/animals/chicken_shadow.png",
      "anchor": [
-      20.0,
-      38.5
+      12.0,
+      19.0
      ],
      "origin": [
       0.5,
-      0.77
+      0.73077
      ]
     }
    },
@@ -2714,119 +2708,119 @@
      "anim": "idle",
      "dir": "se",
      "start": 0,
-     "end": 3,
-     "frames": 4,
-     "fps": 4,
+     "end": 11,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "chicken_idle_sw",
      "anim": "idle",
      "dir": "sw",
-     "start": 6,
-     "end": 9,
-     "frames": 4,
-     "fps": 4,
+     "start": 12,
+     "end": 23,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "chicken_idle_ne",
      "anim": "idle",
      "dir": "ne",
-     "start": 12,
-     "end": 15,
-     "frames": 4,
-     "fps": 4,
+     "start": 24,
+     "end": 35,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "chicken_idle_nw",
      "anim": "idle",
      "dir": "nw",
-     "start": 18,
-     "end": 21,
-     "frames": 4,
-     "fps": 4,
+     "start": 36,
+     "end": 47,
+     "frames": 12,
+     "fps": 5.0,
      "repeat": -1
     },
     {
      "key": "chicken_walk_se",
      "anim": "walk",
      "dir": "se",
-     "start": 24,
-     "end": 29,
-     "frames": 6,
-     "fps": 9,
+     "start": 48,
+     "end": 55,
+     "frames": 8,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "chicken_walk_sw",
      "anim": "walk",
      "dir": "sw",
-     "start": 30,
-     "end": 35,
-     "frames": 6,
-     "fps": 9,
+     "start": 60,
+     "end": 67,
+     "frames": 8,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "chicken_walk_ne",
      "anim": "walk",
      "dir": "ne",
-     "start": 36,
-     "end": 41,
-     "frames": 6,
-     "fps": 9,
+     "start": 72,
+     "end": 79,
+     "frames": 8,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "chicken_walk_nw",
      "anim": "walk",
      "dir": "nw",
-     "start": 42,
-     "end": 47,
-     "frames": 6,
-     "fps": 9,
+     "start": 84,
+     "end": 91,
+     "frames": 8,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "chicken_eat_se",
      "anim": "eat",
      "dir": "se",
-     "start": 48,
-     "end": 51,
-     "frames": 4,
-     "fps": 5,
+     "start": 96,
+     "end": 105,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "chicken_eat_sw",
      "anim": "eat",
      "dir": "sw",
-     "start": 54,
-     "end": 57,
-     "frames": 4,
-     "fps": 5,
+     "start": 108,
+     "end": 117,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "chicken_eat_ne",
      "anim": "eat",
      "dir": "ne",
-     "start": 60,
-     "end": 63,
-     "frames": 4,
-     "fps": 5,
+     "start": 120,
+     "end": 129,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     },
     {
      "key": "chicken_eat_nw",
      "anim": "eat",
      "dir": "nw",
-     "start": 66,
-     "end": 69,
-     "frames": 4,
-     "fps": 5,
+     "start": 132,
+     "end": 141,
+     "frames": 10,
+     "fps": 8.0,
      "repeat": -1
     }
    ]

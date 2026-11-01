@@ -25,6 +25,7 @@ git (or rerun the commands below) after running it.
 | `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
 | `feed_mill`, `feed_mill_winter`, `feed_mill_sails` (8 frames), `feed_mill_static`, `feed_mill_static_winter` | `feed_mill_raw.png`, `feed_mill_body_raw.png`, `feed_mill_sails_raw.png`, `feed_mill_winter_raw.png`; see **Feed mill** below | all |
 | `farmer` (spritesheet, with his tools) | see **Farmer** below | all |
+| `chicken`, `cow`, `sheep` (spritesheets: idle, walk, eat × SE/SW/NE/NW) | see **Animals** below | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
 | `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
@@ -497,6 +498,49 @@ the hat's width to match the pack. Copy `/tmp/props/{2x,1x}_farmer.png` to
 anchor 41,63 at 1x) with no `shadow`. The sheet is 24 columns: one row per animation, its four directions (se, sw,
 ne, nw) side by side in 6-frame slots, so it stays within the 4096 px texture limit of many phones (3936x2028 at 2x).
 The `farmer` asset's `animations` in `manifest.json` give each one's `start`; mine's point at quarry's frames.
+
+## Animals: `fit_animal.py`
+
+Each animal went through the API in five steps.
+
+1. **Image:** `generateWithStyle` with the farmer image as `style_image` (a full-body animal standing side-on, legs
+   apart, tail clear of the legs): `source/<animal>_raw.png`. The prop 3D model turned these flat drawings brown and
+   muddy, so each was redrawn as a 3D render with `create3DModelImage` first: `source/<animal>_3d_raw.png`.
+2. **Model:** `create3DModel` on the redraw, model `prop`, `rig: true`, `target_num_faces` 20000:
+   `source/<animal>_model.glb` (gzipped GLB). The sheep needed three tries (the server failed on one redraw).
+3. **Animation:** `animate3DModel` with short prompts, 4 candidates each, picked from the mp4 previews. The chosen
+   clips are in `source/animal_clips/` (gzipped, animation only). The general rig gave the chicken and the cow a
+   humanoid-like skeleton with no real neck, and no walk prompt moved the cow's legs, so some animations use the
+   fallback instead: `createDirectionalStills` (all four views of the rest pose) and then `animateSprite` per view
+   (model `forge`, 1.5 s, 16 frames, `frame_size` -9, `loop`).
+4. **Render:** `createDirectionalSprites` with the clip as `animation_url`: style `cel_cartoon` at its defaults,
+   `isometric`, SE/SW/NE/NW, `keep_horizontal_travel: false`, `num_frames` 16, `target_frame_size` 256.
+5. **Fit:** the sheets are in `source/<animal>_sheets/<anim>_<dir>.webp` (all 4×4 grids; the Forge ones scaled to a
+   third). Ludo's direction names are the game's facings.
+
+| animal | idle | walk | eat |
+|---|---|---|---|
+| chicken | clip "standing, breathing, looking around" | clip "walking forward" (`loop: false`) | Forge "pecking at the ground"; NE is NW mirrored (the NE take turned round) |
+| cow | clip "standing, breathing, tail swishing" | Forge "walking in place" (NW: "walking forward on the spot, keeping its pose and heading") | clip from the "walking forward" batch that lowers the head, played forward and back |
+| sheep | clip "standing, breathing, tail swishing" | Forge "walking forward on the spot, keeping its pose and heading" | clip "lowering its head to graze" |
+
+```bash
+O=/tmp/props
+C=(); for a in idle walk; do for d in se sw ne nw; do C+=("$a:$d=${a}_$d.webp"); done; done
+C+=(eat:se=eat_se.webp eat:sw=eat_sw.webp eat:ne=eat_nw.webp! eat:nw=eat_nw.webp)
+$P $L/fit_animal.py chicken $L/source/chicken_sheets $O 34 "${C[@]}" --frames=idle:12,walk:8,eat:10 --fps=idle:5,walk:8,eat:8 --shadow=13,6
+W=(); for d in se sw ne nw; do W+=("idle:$d=idle_$d.webp" "walk:$d=walk_$d.webp" "eat:$d=eat_$d.webp~"); done
+$P $L/fit_animal.py cow $L/source/cow_sheets $O 88 "${W[@]}" --frames=idle:12,walk:10,eat:12 --fps=idle:5,walk:8,eat:5 --shadow=32,14
+H=(); for d in se sw ne nw; do H+=("idle:$d=idle_$d.webp" "walk:$d=walk_$d.webp" "eat:$d=eat_$d.webp"); done
+$P $L/fit_animal.py sheep $L/source/sheep_sheets $O 58 "${H[@]}" --frames=idle:12,walk:10,eat:12 --fps=idle:5,walk:9,eat:5 --shadow=24,11
+for n in chicken cow sheep; do for r in 2x 1x; do cp $O/${r}_$n.png public/assets/farm/$r/animals/$n.png; done; done
+```
+
+The number after the output folder is the standing height in 2x px, next to the 100 px farmer: the chicken comes to his
+knee, the sheep to his waist, the cow's back to his chest. Each animation is scaled until its standing pose (the
+tallest SE frame) is that tall, and placed with the ground under the middle of its feet on the anchor. `!` mirrors a
+sheet, `~` plays it forward then back (for a one-way clip that has to loop). The script bakes in a soft shadow and
+writes the manifest entry itself (frame size, grid, anchor, origin, animations); the old `_shadow` sheets are gone.
 
 ## Ground tiles: `ground_tiles.py`
 
