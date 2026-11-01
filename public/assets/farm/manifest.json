@@ -5281,7 +5281,7 @@
    "name": "farmer",
    "category": "people",
    "type": "spritesheet",
-   "notes": "rows = anim x direction; anchor = ground point under the farmer; sit = on the farmhouse bench (seat 0.14 high) (Ludo.ai Directional Sprites, cartoon style; shadow baked in)",
+   "notes": "rows = anim x direction; anchor = ground point under the farmer; sit = cross-legged on the ground by the farmhouse (Ludo.ai Directional Sprites, cartoon style; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/people/farmer.png",

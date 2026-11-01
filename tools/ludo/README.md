@@ -101,15 +101,34 @@ Made in Directional Sprites: the Image Generator farmer (`farmer_raw.png`) as th
 NE/SE/SW/NW at Isometric height, horizontal travel off; exported as an Animation Pack of Individual Frames
 (`source/farmer_frames/`, one folder per sheet, numbered by Ludo; check each folder's direction by eye).
 
+The work and sit animations came later, through the API (`createDirectionalSprites`) from the same rigged model
+(`source/farmer_model.glb`, gzipped GLB): style `cel_cartoon` at its defaults, `isometric`, directions
+NE/SE/SW/NW, `target_frame_size` 512, `num_frames` 16. One 4x4 sheet per animation and direction is in
+`source/farmer_sheets/`; Ludo's direction names are the game's facings. Presets:
+
+| game anim | Ludo preset | sheets |
+|---|---|---|
+| plough | `mining_loop_quaternius` | `plough_*` |
+| plant | `farm_plantseed_quaternius` | `plant_*` |
+| harvest | `farm_harvest_quaternius` | `harvest_*` |
+| build (also chop, quarry, mine) | `treechopping_loop_quaternius` | `build_*` |
+| feed (also fertilise, load) | `farm_scatteringseeds_quaternius` | `feed_*` |
+| sit | `groundsit_idle_loop_quaternius` | `groundsit_*` |
+
+`chairsit_*` (`sitting_idle_loop_quaternius`) is unused: the Ludo farmhouse has no bench, so a chair pose floats.
+
 ```bash
+S=(); for a in plough plant harvest build feed; do for d in ne se sw nw; do S+=("$a:$d=../farmer_sheets/${a}_$d.webp"); done; done
+for d in ne se sw nw; do S+=("sit:$d=../farmer_sheets/groundsit_$d.webp"); done
 $P $L/fit_character.py $L/source/farmer_frames /tmp/props 100 \
   idle:se=Animation-1 idle:nw=Animation-2 idle:ne=Animation-3 idle:sw=Animation-6 \
-  walk:nw=Animation-4 walk:sw=Animation-5 walk:ne=Animation-7 walk:se=Animation-8
+  walk:nw=Animation-4 walk:sw=Animation-5 walk:ne=Animation-7 walk:se=Animation-8 "${S[@]}"
 ```
 
-`100` is his height in 2x px. Copy `/tmp/props/{2x,1x}_farmer.png` to `public/assets/farm/{2x,1x}/people/farmer.png`;
-the manifest keeps the old layout (frame 164x156, anchor 82,126 at 2x; 82x78, anchor 41,63 at 1x) with no
-`shadow`. Animations with no Ludo sheet yet (sit, plough, plant, harvest, build, feed) use the idle frames.
+`100` is his height in 2x px. Ludo frames each API render to its own motion, so the script scales each animation by
+the hat's width to match the pack. Copy `/tmp/props/{2x,1x}_farmer.png` to
+`public/assets/farm/{2x,1x}/people/farmer.png`; the manifest keeps the old layout (frame 164x156, anchor 82,126 at
+2x; 82x78, anchor 41,63 at 1x) with no `shadow`.
 
 ## Ground tiles: `ground_tiles.py`
 
