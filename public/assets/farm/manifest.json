@@ -1931,32 +1931,32 @@
     1,
     1
    ],
-   "notes": "wheat stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "wheat stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/wheat_0_seeded.png",
-     "w": 186,
-     "h": 94,
+     "w": 212,
+     "h": 98,
      "anchor": [
-      94.0,
-      -12.0
+      104.0,
+      -2.0
      ],
      "origin": [
-      0.50538,
-      -0.12766
+      0.49057,
+      -0.02041
      ]
     },
     "1x": {
      "file": "1x/crops/wheat_0_seeded.png",
-     "w": 93,
-     "h": 47,
+     "w": 106,
+     "h": 49,
      "anchor": [
-      47.0,
-      -6.0
+      52.0,
+      -1.0
      ],
      "origin": [
-      0.50538,
-      -0.12766
+      0.49057,
+      -0.02041
      ]
     }
    }
@@ -1969,34 +1969,32 @@
     1,
     1
    ],
-   "notes": "wheat stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "wheat stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/wheat_1_sprout.png",
      "w": 194,
-     "h": 124,
-     "shadow": "2x/crops/wheat_1_sprout_shadow.png",
+     "h": 114,
      "anchor": [
       98.0,
-      4.0
+      8.0
      ],
      "origin": [
       0.50515,
-      0.03226
+      0.07018
      ]
     },
     "1x": {
      "file": "1x/crops/wheat_1_sprout.png",
      "w": 97,
-     "h": 62,
-     "shadow": "1x/crops/wheat_1_sprout_shadow.png",
+     "h": 57,
      "anchor": [
       49.0,
-      2.0
+      4.0
      ],
      "origin": [
       0.50515,
-      0.03226
+      0.07018
      ]
     }
    }
@@ -2009,34 +2007,32 @@
     1,
     1
    ],
-   "notes": "wheat stage 2 (growing); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "wheat stage 2 (growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/wheat_2_growing.png",
-     "w": 226,
-     "h": 164,
-     "shadow": "2x/crops/wheat_2_growing_shadow.png",
+     "w": 198,
+     "h": 136,
      "anchor": [
-      110.0,
-      36.0
+      100.0,
+      28.0
      ],
      "origin": [
-      0.48673,
-      0.21951
+      0.50505,
+      0.20588
      ]
     },
     "1x": {
      "file": "1x/crops/wheat_2_growing.png",
-     "w": 113,
-     "h": 82,
-     "shadow": "1x/crops/wheat_2_growing_shadow.png",
+     "w": 99,
+     "h": 68,
      "anchor": [
-      55.0,
-      18.0
+      50.0,
+      14.0
      ],
      "origin": [
-      0.48673,
-      0.21951
+      0.50505,
+      0.20588
      ]
     }
    }
@@ -2049,34 +2045,32 @@
     1,
     1
    ],
-   "notes": "wheat stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "wheat stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/wheat_3_ripe.png",
-     "w": 246,
-     "h": 186,
-     "shadow": "2x/crops/wheat_3_ripe_shadow.png",
+     "w": 212,
+     "h": 148,
      "anchor": [
-      126.0,
-      58.0
+      106.0,
+      40.0
      ],
      "origin": [
-      0.5122,
-      0.31183
+      0.5,
+      0.27027
      ]
     },
     "1x": {
      "file": "1x/crops/wheat_3_ripe.png",
-     "w": 123,
-     "h": 93,
-     "shadow": "1x/crops/wheat_3_ripe_shadow.png",
+     "w": 106,
+     "h": 74,
      "anchor": [
-      63.0,
-      29.0
+      53.0,
+      20.0
      ],
      "origin": [
-      0.5122,
-      0.31183
+      0.5,
+      0.27027
      ]
     }
    }
@@ -2089,32 +2083,32 @@
     1,
     1
    ],
-   "notes": "carrot stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "carrot stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/carrot_0_seeded.png",
-     "w": 186,
-     "h": 94,
+     "w": 210,
+     "h": 96,
      "anchor": [
-      94.0,
-      -12.0
+      104.0,
+      -6.0
      ],
      "origin": [
-      0.50538,
-      -0.12766
+      0.49524,
+      -0.0625
      ]
     },
     "1x": {
      "file": "1x/crops/carrot_0_seeded.png",
-     "w": 93,
-     "h": 47,
+     "w": 105,
+     "h": 48,
      "anchor": [
-      47.0,
-      -6.0
+      52.0,
+      -3.0
      ],
      "origin": [
-      0.50538,
-      -0.12766
+      0.49524,
+      -0.0625
      ]
     }
    }
@@ -2127,34 +2121,32 @@
     1,
     1
    ],
-   "notes": "carrot stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "carrot stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/carrot_1_sprout.png",
-     "w": 202,
-     "h": 120,
-     "shadow": "2x/crops/carrot_1_sprout_shadow.png",
+     "w": 204,
+     "h": 104,
      "anchor": [
-      98.0,
-      2.0
+      102.0,
+      -2.0
      ],
      "origin": [
-      0.48515,
-      0.01667
+      0.5,
+      -0.01923
      ]
     },
     "1x": {
      "file": "1x/crops/carrot_1_sprout.png",
-     "w": 101,
-     "h": 60,
-     "shadow": "1x/crops/carrot_1_sprout_shadow.png",
+     "w": 102,
+     "h": 52,
      "anchor": [
-      49.0,
-      1.0
+      51.0,
+      -1.0
      ],
      "origin": [
-      0.48515,
-      0.01667
+      0.5,
+      -0.01923
      ]
     }
    }
@@ -2167,34 +2159,32 @@
     1,
     1
    ],
-   "notes": "carrot stage 2 (growing); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "carrot stage 2 (growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/carrot_2_growing.png",
-     "w": 214,
-     "h": 140,
-     "shadow": "2x/crops/carrot_2_growing_shadow.png",
+     "w": 202,
+     "h": 116,
      "anchor": [
       100.0,
-      14.0
+      8.0
      ],
      "origin": [
-      0.46729,
-      0.1
+      0.49505,
+      0.06897
      ]
     },
     "1x": {
      "file": "1x/crops/carrot_2_growing.png",
-     "w": 107,
-     "h": 70,
-     "shadow": "1x/crops/carrot_2_growing_shadow.png",
+     "w": 101,
+     "h": 58,
      "anchor": [
       50.0,
-      7.0
+      4.0
      ],
      "origin": [
-      0.46729,
-      0.1
+      0.49505,
+      0.06897
      ]
     }
    }
@@ -2207,34 +2197,32 @@
     1,
     1
    ],
-   "notes": "carrot stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "carrot stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/carrot_3_ripe.png",
-     "w": 220,
-     "h": 154,
-     "shadow": "2x/crops/carrot_3_ripe_shadow.png",
+     "w": 206,
+     "h": 124,
      "anchor": [
-      106.0,
-      28.0
+      104.0,
+      14.0
      ],
      "origin": [
-      0.48182,
-      0.18182
+      0.50485,
+      0.1129
      ]
     },
     "1x": {
      "file": "1x/crops/carrot_3_ripe.png",
-     "w": 110,
-     "h": 77,
-     "shadow": "1x/crops/carrot_3_ripe_shadow.png",
+     "w": 103,
+     "h": 62,
      "anchor": [
-      53.0,
-      14.0
+      52.0,
+      7.0
      ],
      "origin": [
-      0.48182,
-      0.18182
+      0.50485,
+      0.1129
      ]
     }
    }
@@ -2247,32 +2235,32 @@
     1,
     1
    ],
-   "notes": "corn stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "corn stage 0 (seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/corn_0_seeded.png",
-     "w": 186,
-     "h": 94,
+     "w": 184,
+     "h": 90,
      "anchor": [
-      94.0,
-      -12.0
+      92.0,
+      -8.0
      ],
      "origin": [
-      0.50538,
-      -0.12766
+      0.5,
+      -0.08889
      ]
     },
     "1x": {
      "file": "1x/crops/corn_0_seeded.png",
-     "w": 93,
-     "h": 47,
+     "w": 92,
+     "h": 45,
      "anchor": [
-      47.0,
-      -6.0
+      46.0,
+      -4.0
      ],
      "origin": [
-      0.50538,
-      -0.12766
+      0.5,
+      -0.08889
      ]
     }
    }
@@ -2285,34 +2273,32 @@
     1,
     1
    ],
-   "notes": "corn stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "corn stage 1 (sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/corn_1_sprout.png",
-     "w": 204,
-     "h": 128,
-     "shadow": "2x/crops/corn_1_sprout_shadow.png",
+     "w": 186,
+     "h": 108,
      "anchor": [
-      102.0,
-      4.0
+      92.0,
+      2.0
      ],
      "origin": [
-      0.5,
-      0.03125
+      0.49462,
+      0.01852
      ]
     },
     "1x": {
      "file": "1x/crops/corn_1_sprout.png",
-     "w": 102,
-     "h": 64,
-     "shadow": "1x/crops/corn_1_sprout_shadow.png",
+     "w": 93,
+     "h": 54,
      "anchor": [
-      51.0,
-      2.0
+      46.0,
+      1.0
      ],
      "origin": [
-      0.5,
-      0.03125
+      0.49462,
+      0.01852
      ]
     }
    }
@@ -2325,34 +2311,32 @@
     1,
     1
    ],
-   "notes": "corn stage 2 (growing); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "corn stage 2 (growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/corn_2_growing.png",
-     "w": 226,
-     "h": 186,
-     "shadow": "2x/crops/corn_2_growing_shadow.png",
+     "w": 200,
+     "h": 148,
      "anchor": [
-      114.0,
-      58.0
+      100.0,
+      40.0
      ],
      "origin": [
-      0.50442,
-      0.31183
+      0.5,
+      0.27027
      ]
     },
     "1x": {
      "file": "1x/crops/corn_2_growing.png",
-     "w": 113,
-     "h": 93,
-     "shadow": "1x/crops/corn_2_growing_shadow.png",
+     "w": 100,
+     "h": 74,
      "anchor": [
-      57.0,
-      29.0
+      50.0,
+      20.0
      ],
      "origin": [
-      0.50442,
-      0.31183
+      0.5,
+      0.27027
      ]
     }
    }
@@ -2365,34 +2349,32 @@
     1,
     1
    ],
-   "notes": "corn stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it",
+   "notes": "corn stage 3 (ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/crops/corn_3_ripe.png",
-     "w": 240,
-     "h": 242,
-     "shadow": "2x/crops/corn_3_ripe_shadow.png",
+     "w": 194,
+     "h": 186,
      "anchor": [
-      122.0,
-      114.0
+      94.0,
+      78.0
      ],
      "origin": [
-      0.50833,
-      0.47107
+      0.48454,
+      0.41935
      ]
     },
     "1x": {
      "file": "1x/crops/corn_3_ripe.png",
-     "w": 120,
-     "h": 121,
-     "shadow": "1x/crops/corn_3_ripe_shadow.png",
+     "w": 97,
+     "h": 93,
      "anchor": [
-      61.0,
-      57.0
+      47.0,
+      39.0
      ],
      "origin": [
-      0.50833,
-      0.47107
+      0.48454,
+      0.41935
      ]
     }
    }
@@ -3323,34 +3305,32 @@
     3,
     2
    ],
-   "notes": "dairy, 3x2 (3 tiles along x, 2 along y)",
+   "notes": "dairy, 3x2 (3 tiles along x, 2 along y) (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/dairy.png",
-     "w": 624,
-     "h": 470,
-     "shadow": "2x/buildings/dairy_shadow.png",
+     "w": 636,
+     "h": 387,
      "anchor": [
-      248.0,
-      146.0
+      255.0,
+      64.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40094,
+      0.16537
      ]
     },
     "1x": {
      "file": "1x/buildings/dairy.png",
-     "w": 312,
-     "h": 235,
-     "shadow": "1x/buildings/dairy_shadow.png",
+     "w": 318,
+     "h": 194,
      "anchor": [
-      124.0,
-      73.0
+      127.5,
+      32.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40094,
+      0.16495
      ]
     }
    }
@@ -3363,34 +3343,32 @@
     3,
     2
    ],
-   "notes": "bakery, 3x2 (3 tiles along x, 2 along y)",
+   "notes": "bakery, 3x2 (3 tiles along x, 2 along y) (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/bakery.png",
-     "w": 624,
-     "h": 566,
-     "shadow": "2x/buildings/bakery_shadow.png",
+     "w": 635,
+     "h": 410,
      "anchor": [
-      248.0,
-      242.0
+      255.0,
+      87.0
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40157,
+      0.2122
      ]
     },
     "1x": {
      "file": "1x/buildings/bakery.png",
-     "w": 312,
-     "h": 283,
-     "shadow": "1x/buildings/bakery_shadow.png",
+     "w": 318,
+     "h": 205,
      "anchor": [
-      124.0,
-      121.0
+      127.5,
+      43.5
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40094,
+      0.2122
      ]
     }
    }
@@ -13949,34 +13927,32 @@
     3,
     2
    ],
-   "notes": "dairy in winter: snow on the roof",
+   "notes": "dairy in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/dairy_winter.png",
-     "w": 624,
-     "h": 470,
-     "shadow": "2x/buildings/dairy_winter_shadow.png",
+     "w": 634,
+     "h": 385,
      "anchor": [
-      248.0,
-      146.0
+      254.0,
+      62.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40063,
+      0.16104
      ]
     },
     "1x": {
      "file": "1x/buildings/dairy_winter.png",
-     "w": 312,
-     "h": 235,
-     "shadow": "1x/buildings/dairy_winter_shadow.png",
+     "w": 317,
+     "h": 192,
      "anchor": [
-      124.0,
-      73.0
+      127.0,
+      31.0
      ],
      "origin": [
-      0.39744,
-      0.31064
+      0.40063,
+      0.16146
      ]
     }
    }
@@ -13989,34 +13965,32 @@
     3,
     2
    ],
-   "notes": "bakery in winter: snow on the roof",
+   "notes": "bakery in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/bakery_winter.png",
-     "w": 624,
-     "h": 566,
-     "shadow": "2x/buildings/bakery_winter_shadow.png",
+     "w": 634,
+     "h": 411,
      "anchor": [
-      248.0,
-      242.0
+      254.0,
+      89.0
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40063,
+      0.21655
      ]
     },
     "1x": {
      "file": "1x/buildings/bakery_winter.png",
-     "w": 312,
-     "h": 283,
-     "shadow": "1x/buildings/bakery_winter_shadow.png",
+     "w": 317,
+     "h": 206,
      "anchor": [
-      124.0,
-      121.0
+      127.0,
+      44.5
      ],
      "origin": [
-      0.39744,
-      0.42756
+      0.40063,
+      0.21602
      ]
     }
    }

@@ -1,11 +1,12 @@
 """Fit a Ludo-generated isometric building onto the game's grid.
 
-Usage: python fit_building.py RAW.png OUT_DIR NAME FOOT_W FOOT_H LEFT_X LEFT_Y RIGHT_X RIGHT_Y BOTTOM_X BOTTOM_Y [--mirror]
+Usage: python fit_building.py RAW.png OUT_DIR NAME FOOT_W FOOT_H LEFT_X LEFT_Y RIGHT_X RIGHT_Y BOTTOM_X BOTTOM_Y [--mirror] [--pad]
        [--keep=N] [--box=X0,Y0,X1,Y1]
 
 LEFT/RIGHT/BOTTOM are the pad's top-surface corners, measured on the raw image (before mirroring).
 FOOT_W/FOOT_H are the footprint in the game (tiles along x / along y) after any mirroring.
 Everything below the top surface's two lower edges (the soil block Ludo draws) is cut away.
+--pad re-proportions a rectangular pad that isn't drawn in exactly the footprint's proportions (see fit()).
 --box crops the scaled 2x image to that box instead of its own bounds, so several images fitted with the same
 corners share one canvas and anchor (mill_sails.py does this for the feed mill's body, sails and winter body).
 Writes 2x and 1x PNGs and NAME.json (for install_prop.py), and prints the manifest anchor (the footprint's top
@@ -20,7 +21,7 @@ TILE_W2 = 256  # 2x tile width
 INSET = 8      # 2x px the pad is pulled in from each side corner, like the pack's own pads
 
 
-def fit(im, fw, fh, corners, mirror=False, keep=2.0, cut=True):
+def fit(im, fw, fh, corners, mirror=False, keep=2.0, cut=True, pad=False):
     """Scales a raw image so its pad matches a fw x fh footprint at 2x. Returns the scaled (uncropped) image and
     the footprint's top corner on it. `cut` drops the soil block below the pad's lower edges (+keep px)."""
     lx, ly, rx, ry, bx, by = corners
@@ -28,6 +29,27 @@ def fit(im, fw, fh, corners, mirror=False, keep=2.0, cut=True):
     if mirror:
         im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
         lx, ly, rx, ry, bx = w - 1 - rx, ry, w - 1 - lx, ly, w - 1 - bx
+    if pad:
+        # Ludo rarely draws a rectangular pad in exactly the footprint's proportions. Re-proportion it: keep L and R's
+        # x, move B to where the footprint puts it, and stretch each face's columns to match. Each half is an x-scale
+        # plus a y-shear, so walls stay vertical and the pad edges stay 2:1.
+        unit = (rx - lx) / (fw + fh)
+        nbx, nby = lx + fw * unit, ly + fw * unit / 2
+        nry = nby - fh * unit / 2
+        mesh = []
+        for (x0, y0, x1, y1, nx0, ny0, nx1, ny1) in ((lx, ly, bx, by, lx, ly, nbx, nby),
+                                                     (bx, by, rx, ry, nbx, nby, rx, nry)):
+            # Output column X in [nx0, nx1] samples source column x0 + (X - nx0) * (x1 - x0) / (nx1 - nx0), shifted
+            # vertically by the change in edge height at that column.
+            def src(X, Y):
+                t = (X - nx0) / (nx1 - nx0)
+                return x0 + t * (x1 - x0), Y - (ny0 + t * (ny1 - ny0)) + (y0 + t * (y1 - y0))
+            a, b = (0 if nx0 == lx else round(nx0)), (w if nx1 == rx else round(nx1))
+            quad = (*src(a, 0), *src(a, h), *src(b, h), *src(b, 0))
+            mesh.append(((a, 0, b, h), quad))
+        im = im.transform((w, h), Image.Transform.MESH, mesh, Image.Resampling.BICUBIC)
+        print(f'pad: B {bx:g},{by:g} -> {nbx:.1f},{nby:.1f}; R {rx:g},{ry:g} -> {rx:g},{nry:.1f}')
+        bx, by, ry = nbx, nby, nry
     if cut:
         a = np.array(im)
         ys, xs = np.mgrid[0:h, 0:w]
@@ -68,6 +90,7 @@ if __name__ == '__main__':
     corners = tuple(map(float, sys.argv[6:12]))
     keep = float(next((x.split("=")[1] for x in sys.argv if x.startswith("--keep=")), 2))  # px kept below the edges (outline)
     box_arg = next((x.split("=")[1] for x in sys.argv if x.startswith("--box=")), None)
-    im2, anchor = fit(Image.open(raw).convert('RGBA'), fw, fh, corners, "--mirror" in sys.argv, keep)
+    im2, anchor = fit(Image.open(raw).convert('RGBA'), fw, fh, corners, "--mirror" in sys.argv, keep,
+                     pad="--pad" in sys.argv)
     box = tuple(map(int, box_arg.split(','))) if box_arg else own_box(im2)
     save(im2, anchor, box, out_dir, name)
