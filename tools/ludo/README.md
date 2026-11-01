@@ -16,6 +16,7 @@ git (or rerun the commands below) after running it.
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
 | `granary_1..3`, each with `_winter` | `granary_{1,2,3}_raw.png`, `granary_{1,2,3}_winter_raw.png` | all |
 | `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
+| `feed_mill`, `feed_mill_winter`, `feed_mill_sails` (8 frames), `feed_mill_static`, `feed_mill_static_winter` | `feed_mill_raw.png`, `feed_mill_body_raw.png`, `feed_mill_sails_raw.png`, `feed_mill_winter_raw.png`; see **Feed mill** below | all |
 | `farmer` (spritesheet) | see **Farmer** below | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
@@ -95,7 +96,38 @@ the pad). Some code points into a building's 2x sprite and needs updating with i
 (`CHIMNEY_AT` in `src/features/families/index.ts`), the coop's run (`WALK_AREA` in
 `src/features/animals/textures.ts`), and the bakery's, dairy's and weaving hut's smoke (`SMOKE_AT` in
 `src/features/processing/textures.ts`). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
-lower it if bits of the soil outline show.
+lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
+its own bounds, so pieces fitted with the same corners share one canvas and anchor.
+
+## Feed mill: `mill_sails.py`
+
+The placed mill is a body with an 8-frame sails spritesheet over it (`feed_mill_sails_spin`, 10 fps); the build
+preview is `feed_mill_static`, the same mill with the sails baked in. All of them come from one Ludo image:
+
+1. `feed_mill_raw.png`: `generateWithStyle` (farmhouse as `style_image`, `sprite`), a windmill on a 2×2 pad with
+   four sails flat on the front-right wall, clear of the door.
+2. `feed_mill_body_raw.png`: `editImage` with a mask over the sails and `mask_mode: "erase"` (a `"replace"` edit
+   drew the sails back in). Erasing also redrew the hub, so the frames carry the hub instead.
+3. `feed_mill_winter_raw.png`: `editImage` on the body ("keep the same mill exactly ...; add snow on the cap and
+   roof, cover the pad in snow"). Its pad corners match the body's within 1 px, so it is fitted with the same box.
+4. `mill_sails.py` writes `feed_mill_sails_raw.png` (the pixels inside the blade quads where the whole mill and the
+   body differ). It then takes the front-right blade (the one drawn over empty background), un-projects it from the
+   wall's 2:1 plane to face-on, turns it about the hub, and projects it back, four times 90° apart, for 8 steps of
+   11.25°. The four blades are identical, so the 8th step would be frame 0 again and the loop has no jump. The hub,
+   cut from the whole mill, goes on top of each frame. The body, the winter body and every frame are fitted with
+   the pad corners (`fit_building.fit`) and cropped to one shared box. `feed_mill_static(_winter)` is the body
+   (winter body) plus frame 0, so the preview and the stopped placed mill are the same picture.
+
+```bash
+$P $L/mill_sails.py /tmp/props
+for n in feed_mill feed_mill_winter feed_mill_static feed_mill_static_winter feed_mill_sails; do
+  $P $L/install_prop.py /tmp/props $n
+done
+```
+
+`install_prop.py` sets a spritesheet's `frameWidth`/`frameHeight` (its columns and rows stay) and keeps its
+animations. The corners (`CORNERS`), the hub and the blade quads are constants at the top of `mill_sails.py`. The
+sails have no seasonal versions.
 
 ## Props: `fit_prop.py`
 

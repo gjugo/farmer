@@ -3197,34 +3197,32 @@
     2,
     2
    ],
-   "notes": "windmill / feed mill body without sails, 2x2 \u2013 layer feed_mill_sails on top",
+   "notes": "windmill / feed mill body without sails, 2x2 \u2013 layer feed_mill_sails on top (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/feed_mill.png",
-     "w": 496,
-     "h": 456,
-     "shadow": "2x/buildings/feed_mill_shadow.png",
+     "w": 508,
+     "h": 478,
      "anchor": [
-      248.0,
-      202.0
+      253.0,
+      218.0
      ],
      "origin": [
-      0.5,
-      0.44298
+      0.49803,
+      0.45607
      ]
     },
     "1x": {
      "file": "1x/buildings/feed_mill.png",
-     "w": 248,
-     "h": 228,
-     "shadow": "1x/buildings/feed_mill_shadow.png",
+     "w": 254,
+     "h": 239,
      "anchor": [
-      124.0,
-      101.0
+      126.5,
+      109.0
      ],
      "origin": [
-      0.5,
-      0.44298
+      0.49803,
+      0.45607
      ]
     }
    }
@@ -3233,36 +3231,36 @@
    "name": "feed_mill_sails",
    "category": "buildings",
    "type": "spritesheet",
-   "notes": "looping sails; same canvas + anchor as feed_mill, draw directly above it",
+   "notes": "looping sails; same canvas + anchor as feed_mill, draw directly above it (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/feed_mill_sails.png",
-     "frameWidth": 460,
-     "frameHeight": 428,
+     "frameWidth": 508,
+     "frameHeight": 478,
      "columns": 8,
      "rows": 1,
      "anchor": [
-      230.0,
-      280.0
+      253.0,
+      218.0
      ],
      "origin": [
-      0.5,
-      0.65421
+      0.49803,
+      0.45607
      ]
     },
     "1x": {
      "file": "1x/buildings/feed_mill_sails.png",
-     "frameWidth": 234,
-     "frameHeight": 218,
+     "frameWidth": 254,
+     "frameHeight": 239,
      "columns": 8,
      "rows": 1,
      "anchor": [
-      117.0,
-      142.0
+      126.5,
+      109.0
      ],
      "origin": [
-      0.5,
-      0.65138
+      0.49803,
+      0.45607
      ]
     }
    },
@@ -3287,34 +3285,32 @@
     2,
     2
    ],
-   "notes": "feed mill with sails baked in (single image)",
+   "notes": "feed mill with sails baked in (single image) (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/feed_mill_static.png",
-     "w": 496,
-     "h": 522,
-     "shadow": "2x/buildings/feed_mill_static_shadow.png",
+     "w": 508,
+     "h": 478,
      "anchor": [
-      248.0,
-      268.0
+      253.0,
+      218.0
      ],
      "origin": [
-      0.5,
-      0.51341
+      0.49803,
+      0.45607
      ]
     },
     "1x": {
      "file": "1x/buildings/feed_mill_static.png",
-     "w": 248,
-     "h": 261,
-     "shadow": "1x/buildings/feed_mill_static_shadow.png",
+     "w": 254,
+     "h": 239,
      "anchor": [
-      124.0,
-      134.0
+      126.5,
+      109.0
      ],
      "origin": [
-      0.5,
-      0.51341
+      0.49803,
+      0.45607
      ]
     }
    }
@@ -13647,34 +13643,32 @@
     2,
     2
    ],
-   "notes": "feed_mill in winter: snow on the roof",
+   "notes": "feed_mill in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/feed_mill_winter.png",
-     "w": 496,
-     "h": 456,
-     "shadow": "2x/buildings/feed_mill_winter_shadow.png",
+     "w": 508,
+     "h": 478,
      "anchor": [
-      248.0,
-      202.0
+      253.0,
+      218.0
      ],
      "origin": [
-      0.5,
-      0.44298
+      0.49803,
+      0.45607
      ]
     },
     "1x": {
      "file": "1x/buildings/feed_mill_winter.png",
-     "w": 248,
-     "h": 228,
-     "shadow": "1x/buildings/feed_mill_winter_shadow.png",
+     "w": 254,
+     "h": 239,
      "anchor": [
-      124.0,
-      101.0
+      126.5,
+      109.0
      ],
      "origin": [
-      0.5,
-      0.44298
+      0.49803,
+      0.45607
      ]
     }
    }
@@ -13687,34 +13681,32 @@
     2,
     2
    ],
-   "notes": "feed_mill_static in winter: snow on the roof",
+   "notes": "feed_mill_static in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/buildings/feed_mill_static_winter.png",
-     "w": 496,
-     "h": 522,
-     "shadow": "2x/buildings/feed_mill_static_winter_shadow.png",
+     "w": 508,
+     "h": 478,
      "anchor": [
-      248.0,
-      268.0
+      253.0,
+      218.0
      ],
      "origin": [
-      0.5,
-      0.51341
+      0.49803,
+      0.45607
      ]
     },
     "1x": {
      "file": "1x/buildings/feed_mill_static_winter.png",
-     "w": 248,
-     "h": 261,
-     "shadow": "1x/buildings/feed_mill_static_winter_shadow.png",
+     "w": 254,
+     "h": 239,
      "anchor": [
-      124.0,
-      134.0
+      126.5,
+      109.0
      ],
      "origin": [
-      0.5,
-      0.51341
+      0.49803,
+      0.45607
      ]
     }
    }
