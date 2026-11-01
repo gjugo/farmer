@@ -21,7 +21,7 @@ git (or rerun the commands below) after running it.
 | `for_sale_sign`, `for_sale_sign_winter` | `for_sale_sign_raw.png`, `for_sale_sign_winter_raw.png` | all |
 | `granary_1..3`, each with `_winter` | `granary_{1,2,3}_raw.png`, `granary_{1,2,3}_winter_raw.png` | all |
 | `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
-| `farmer` (spritesheet) | see **Farmer** below | all |
+| `farmer` (spritesheet, with his tools) | see **Farmer** below | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
 | `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
@@ -174,22 +174,66 @@ NE/SE/SW/NW at Isometric height, horizontal travel off; exported as an Animation
 The work and sit animations came later, through the API (`createDirectionalSprites`) from the same rigged model
 (`source/farmer_model.glb`, gzipped GLB): style `cel_cartoon` at its defaults, `isometric`, directions
 NE/SE/SW/NW, `target_frame_size` 512, `num_frames` 16. One 4x4 sheet per animation and direction is in
-`source/farmer_sheets/`; Ludo's direction names are the game's facings. Presets:
+`source/farmer_sheets/`; Ludo's direction names are the game's facings. Sit is the bare model:
 
 | game anim | Ludo preset | sheets |
 |---|---|---|
-| plough | `mining_loop_quaternius` | `plough_*` |
-| plant | `farm_plantseed_quaternius` | `plant_*` |
-| harvest | `farm_harvest_quaternius` | `harvest_*` |
-| build (also chop, quarry, mine) | `treechopping_loop_quaternius` | `build_*` |
-| feed (also fertilise, load) | `farm_scatteringseeds_quaternius` | `feed_*` |
 | sit | `groundsit_idle_loop_quaternius` | `groundsit_*` |
 
 `chairsit_*` (`sitting_idle_loop_quaternius`) is unused: the Ludo farmhouse has no bench, so a chair pose floats.
 
+### Tools
+
+Every job has its own animation (`WORK_ANIM` in `src/scenes/art.ts`), and in each the farmer holds the tool for it.
+A tool is a Ludo 3D prop: `generateWithStyle` with `farmer_raw.png` as the style ("<the tool>, a single game prop
+seen from the side, the whole object, upright, centred, nothing else", image type `sprite`), then `create3DModel`
+with model `prop`, `target_num_faces` 6000, `texture_size` 1024 and no rig. The images are `source/tools/*_raw.webp`
+and the models `source/tools/*.glb` (gzipped). `attach_tool.py` binds a tool into the farmer's skinned mesh,
+weighted fully to a hand bone, so it follows the hand through any preset; the farmer himself is unchanged. (Ludo's
+renderer drops a node merely parented to the bone, so the tool has to be part of the skinned mesh.) Each grip was
+tuned with `previewDirectionalSprites` (free) before rendering.
+
+| game anim | tool | hand | Ludo preset | sheets |
+|---|---|---|---|---|
+| plough | hoe | right | `mining_loop_quaternius` | `plough_*` |
+| plant | seed bag | left | `farm_plantseed_quaternius` | `plant_*` |
+| harvest | sickle | right | `farm_harvest_quaternius` | `harvest_*` |
+| collect | basket | left | `pickup_kneeling_quaternius` | `collect_*` |
+| feed | feed bucket | left | `farm_scatteringseeds_quaternius` | `feed_*` |
+| fertilise | pitchfork | right | `mining_loop_quaternius` | `fertilise_*` |
+| load | sack, by its neck | right | `pick_up_waist` | `load_*` |
+| build | hammer | right | `treechopping_loop_quaternius` | `build_*` |
+| chop | axe | right | `treechopping_loop_quaternius` | `chop_*` |
+| quarry, mine | pickaxe | right | `mining_loop_quaternius` | `quarry_*` (mine plays the same frames) |
+
+Build uses the chop swing: Repair Kneeling (`fixing_kneeling_quaternius`) hides the hammer under the hat at game size.
+The sack hangs from one hand: shared between both hands (`--bone=L_Wrist+R_Wrist`) it sank into his belly.
+
 ```bash
-S=(); for a in plough plant harvest build feed; do for d in ne se sw nw; do S+=("$a:$d=../farmer_sheets/${a}_$d.webp"); done; done
-for d in ne se sw nw; do S+=("sit:$d=../farmer_sheets/groundsit_$d.webp"); done
+gunzip -c $L/source/farmer_model.glb > /tmp/farmer.glb; mkdir -p /tmp/rig
+T=$L/source/tools; A=($P $L/attach_tool.py /tmp/farmer.glb)
+"${A[@]}" /tmp/rig/plough.glb $T/hoe.glb --length=0.6 --grip=0.3 --thick=1.6 --spin=-90 --rot=90,0,0
+"${A[@]}" /tmp/rig/plant.glb $T/seed_bag.glb --bone=L_Wrist --up=y --length=0.24 --grip=0.9 --at=0,-0.02,0
+"${A[@]}" /tmp/rig/harvest.glb $T/sickle.glb --length=0.4 --grip=0.12 --thick=1.2 --rot=90,0,0
+"${A[@]}" /tmp/rig/collect.glb $T/basket.glb --bone=L_Wrist --up=y --length=0.28 --grip=1.0 --at=0,-0.03,0
+"${A[@]}" /tmp/rig/feed.glb $T/bucket.glb --bone=L_Wrist --up=y --length=0.22 --grip=1.0 --at=0,-0.03,0
+"${A[@]}" /tmp/rig/fertilise.glb $T/pitchfork.glb --length=0.75 --grip=0.35 --thick=2 --rot=90,0,0
+"${A[@]}" /tmp/rig/load.glb $T/sack.glb --up=y --length=0.34 --grip=0.95 --at=0,-0.02,0
+"${A[@]}" /tmp/rig/build.glb $T/hammer.glb --length=0.36 --grip=0.2 --thick=1.3 --rot=90,0,0
+"${A[@]}" /tmp/rig/chop.glb $T/axe.glb --length=0.5 --grip=0.25 --thick=1.3 --rot=90,0,0
+"${A[@]}" /tmp/rig/quarry.glb $T/pickaxe.glb --length=0.55 --grip=0.3 --thick=1.3 --rot=90,0,0
+```
+
+Then render each `/tmp/rig/<anim>.glb` with `createDirectionalSprites` (base64 `model`, the preset from the table,
+the settings above) and save each sheet as `source/farmer_sheets/<anim>_<dir>.webp`. A 10 MB GLB is too big to paste
+into an MCP call as base64; post the same `tools/call` to `https://mcp.ludo.ai/mcp` from a script instead.
+
+### The game's sheet
+
+```bash
+S=(); for a in plough plant harvest collect feed fertilise load build chop quarry; do
+  for d in ne se sw nw; do S+=("$a:$d=../farmer_sheets/${a}_$d.webp"); done; done
+for d in ne se sw nw; do S+=("mine:$d=../farmer_sheets/quarry_$d.webp" "sit:$d=../farmer_sheets/groundsit_$d.webp"); done
 $P $L/fit_character.py $L/source/farmer_frames /tmp/props 100 \
   idle:se=Animation-1 idle:nw=Animation-2 idle:ne=Animation-3 idle:sw=Animation-6 \
   walk:nw=Animation-4 walk:sw=Animation-5 walk:ne=Animation-7 walk:se=Animation-8 "${S[@]}"
@@ -197,8 +241,10 @@ $P $L/fit_character.py $L/source/farmer_frames /tmp/props 100 \
 
 `100` is his height in 2x px. Ludo frames each API render to its own motion, so the script scales each animation by
 the hat's width to match the pack. Copy `/tmp/props/{2x,1x}_farmer.png` to
-`public/assets/farm/{2x,1x}/people/farmer.png`; the manifest keeps the old layout (frame 164x156, anchor 82,126 at
-2x; 82x78, anchor 41,63 at 1x) with no `shadow`.
+`public/assets/farm/{2x,1x}/people/farmer.png`; the manifest keeps the frame (164x156, anchor 82,126 at 2x; 82x78,
+anchor 41,63 at 1x) with no `shadow`. The sheet is 24 columns: one row per animation, its four directions (se, sw,
+ne, nw) side by side in 6-frame slots, so it stays within the 4096 px texture limit of many phones (3936x2028 at 2x).
+The `farmer` asset's `animations` in `manifest.json` give each one's `start`; mine's point at quarry's frames.
 
 ## Ground tiles: `ground_tiles.py`
 
