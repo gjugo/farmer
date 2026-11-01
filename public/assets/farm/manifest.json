@@ -5281,7 +5281,7 @@
    "name": "farmer",
    "category": "people",
    "type": "spritesheet",
-   "notes": "rows = anim x direction; anchor = ground point under the farmer; sit = on the farmhouse bench (seat 0.14 high)",
+   "notes": "rows = anim x direction; anchor = ground point under the farmer; sit = on the farmhouse bench (seat 0.14 high) (Ludo.ai Directional Sprites, cartoon style; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/people/farmer.png",
@@ -5289,7 +5289,6 @@
      "frameHeight": 156,
      "columns": 6,
      "rows": 32,
-     "shadow": "2x/people/farmer_shadow.png",
      "anchor": [
       82.0,
       126.0
@@ -5301,18 +5300,17 @@
     },
     "1x": {
      "file": "1x/people/farmer.png",
-     "frameWidth": 84,
-     "frameHeight": 82,
+     "frameWidth": 82,
+     "frameHeight": 78,
      "columns": 6,
      "rows": 32,
-     "shadow": "1x/people/farmer_shadow.png",
      "anchor": [
-      42.0,
-      65.0
+      41.0,
+      63.0
      ],
      "origin": [
       0.5,
-      0.79268
+      0.80769
      ]
     }
    },

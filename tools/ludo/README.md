@@ -95,6 +95,22 @@ Ludo needn't draw (the pine's spring and autumn). `install_prop.py` copies a fit
 `manifest.json` (dropping `shadow`); extra names install the same image as other seasons. `--mirror` flips the
 image, for a second variant from one Ludo image.
 
+## Farmer: `fit_character.py`
+
+Made in Directional Sprites: the Image Generator farmer (`farmer_raw.png`) as the character, Cartoon style, views
+NE/SE/SW/NW at Isometric height, horizontal travel off; exported as an Animation Pack of Individual Frames
+(`source/farmer_frames/`, one folder per sheet, numbered by Ludo; check each folder's direction by eye).
+
+```bash
+$P $L/fit_character.py $L/source/farmer_frames /tmp/props 100 \
+  idle:se=Animation-1 idle:nw=Animation-2 idle:ne=Animation-3 idle:sw=Animation-6 \
+  walk:nw=Animation-4 walk:sw=Animation-5 walk:ne=Animation-7 walk:se=Animation-8
+```
+
+`100` is his height in 2x px. Copy `/tmp/props/{2x,1x}_farmer.png` to `public/assets/farm/{2x,1x}/people/farmer.png`;
+the manifest keeps the old layout (frame 164x156, anchor 82,126 at 2x; 82x78, anchor 41,63 at 1x) with no
+`shadow`. Animations with no Ludo sheet yet (sit, plough, plant, harvest, build, feed) use the idle frames.
+
 ## Ground tiles: `ground_tiles.py`
 
 ```bash
