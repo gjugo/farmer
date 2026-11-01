@@ -13,6 +13,11 @@ git (or rerun the commands below) after running it.
 | --- | --- | --- |
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
+| `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
+| `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
+| `tree_pine` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_pine_raw.png`, `tree_pine_winter_raw.png` (spring and autumn recoloured from summer) | all |
+| `tree_stump` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_stump_raw.png`, `tree_stump_winter_raw.png` (spring and autumn are the summer image) | all |
+| `rock_small`, `rock_large` (not drawn by the game yet), `outcrop_0..2`, `outcrop_spent` (stone deposits) | `rock_small_raw.png`, `rock_large_raw.png` and their `_winter_raw.png` (outcrops: the large cluster, mirrored, the single boulder, and a small boulder for worked-out) | all |
 
 ## Generating in Ludo
 
@@ -44,6 +49,51 @@ Copy `/tmp/2x_<name>.png` and `/tmp/1x_<name>.png` to `public/assets/farm/{2x,1x
 set the asset's `w`, `h`, `anchor` and `origin` (anchor / size) in `manifest.json`; drop its `shadow` (Ludo
 draws the shadow on the pad). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show.
+
+## Props: `fit_prop.py`
+
+```bash
+mkdir -p /tmp/props
+for s in "" _spring _autumn _winter; do
+  $P $L/fit_prop.py $L/source/tree_oak${s}_raw.png /tmp/props tree_oak$s 512 795 0.33 --shadow=44
+done
+for s in "" _spring _autumn _winter; do
+  $P $L/fit_prop.py $L/source/tree_apple${s}_raw.png /tmp/props tree_apple$s 516 722 0.36 --shadow=40
+done
+for s in "" _winter; do
+  $P $L/fit_prop.py $L/source/tree_pine${s}_raw.png /tmp/props tree_pine$s 513 868 0.36 --shadow=34
+done
+$P $L/fit_prop.py $L/source/tree_pine_raw.png /tmp/props tree_pine_spring 513 868 0.36 --shadow=34 --leaves=-5,1.05,1.1
+$P $L/fit_prop.py $L/source/tree_pine_raw.png /tmp/props tree_pine_autumn 513 868 0.36 --shadow=34 --leaves=-3,0.85,0.9
+for s in "" _winter; do
+  $P $L/fit_prop.py $L/source/tree_stump${s}_raw.png /tmp/props tree_stump$s 512 640 0.15 --shadow=50
+done
+for s in "" _winter; do
+  $P $L/fit_prop.py $L/source/rock_large${s}_raw.png /tmp/props rock_large$s 513 690 0.21 --shadow=60
+  $P $L/fit_prop.py $L/source/rock_small${s}_raw.png /tmp/props rock_small$s 512 650 0.19 --shadow=30
+  $P $L/fit_prop.py $L/source/rock_large${s}_raw.png /tmp/props outcrop_0$s 513 690 0.25 --shadow=72
+  $P $L/fit_prop.py $L/source/rock_large${s}_raw.png /tmp/props outcrop_1$s 513 690 0.25 --shadow=72 --mirror
+  $P $L/fit_prop.py $L/source/rock_small${s}_raw.png /tmp/props outcrop_2$s 512 650 0.38 --shadow=56
+  $P $L/fit_prop.py $L/source/rock_small${s}_raw.png /tmp/props outcrop_spent$s 512 650 0.16 --shadow=26 --mirror
+done
+# Install: the base image also goes in as every season Ludo didn't draw.
+for n in tree_oak tree_apple tree_pine; do
+  $P $L/install_prop.py /tmp/props $n ${n}_summer
+  for s in _spring _autumn _winter; do $P $L/install_prop.py /tmp/props $n$s; done
+done
+for n in tree_stump rock_large rock_small outcrop_0 outcrop_1 outcrop_2 outcrop_spent; do
+  $P $L/install_prop.py /tmp/props $n ${n}_spring ${n}_summer ${n}_autumn
+  $P $L/install_prop.py /tmp/props ${n}_winter
+done
+```
+
+BASE (`512 795` for the oak) is the point the prop stands on, measured on the raw image (the middle of the trunk's root flare);
+it lands on the tile's centre. SCALE is raw px to 2x px. Generate the other seasons with Edit Image so they line up
+with the summer image, and fit them all with the same BASE and SCALE. `--shadow=RX` bakes a soft oval shadow
+under the base (Ludo draws none). `--leaves=HUE,SAT,VAL` recolours only the green pixels, for a season
+Ludo needn't draw (the pine's spring and autumn). `install_prop.py` copies a fitted prop over its pack files and sets `w`, `h`, `anchor` and `origin` in
+`manifest.json` (dropping `shadow`); extra names install the same image as other seasons. `--mirror` flips the
+image, for a second variant from one Ludo image.
 
 ## Ground tiles: `ground_tiles.py`
 
