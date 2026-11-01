@@ -3691,32 +3691,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/egg.png",
-     "w": 172,
-     "h": 222,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      86.0,
-      106.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.47748
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/egg.png",
-     "w": 86,
-     "h": 111,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      43.0,
-      53.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.47748
+      0.5
      ]
     }
    }
@@ -3729,32 +3729,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/milk.png",
-     "w": 156,
-     "h": 214,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      78.0,
-      98.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.45794
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/milk.png",
-     "w": 78,
-     "h": 107,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      39.0,
-      49.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.45794
+      0.5
      ]
     }
    }
@@ -3767,32 +3767,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/wool.png",
-     "w": 206,
-     "h": 206,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      94.0,
-      90.0
+      128.0,
+      128.0
      ],
      "origin": [
-      0.45631,
-      0.43689
+      0.5,
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/wool.png",
-     "w": 103,
-     "h": 103,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      47.0,
-      45.0
+      64.0,
+      64.0
      ],
      "origin": [
-      0.45631,
-      0.43689
+      0.5,
+      0.5
      ]
     }
    }
@@ -3805,32 +3805,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/feed.png",
-     "w": 164,
-     "h": 226,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      82.0,
-      110.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.48673
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/feed.png",
-     "w": 82,
-     "h": 113,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      41.0,
-      55.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.48673
+      0.5
      ]
     }
    }
@@ -3843,32 +3843,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/cheese.png",
-     "w": 216,
-     "h": 170,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      106.0,
-      54.0
+      128.0,
+      128.0
      ],
      "origin": [
-      0.49074,
-      0.31765
+      0.5,
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/cheese.png",
-     "w": 108,
-     "h": 85,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      53.0,
-      27.0
+      64.0,
+      64.0
      ],
      "origin": [
-      0.49074,
-      0.31765
+      0.5,
+      0.5
      ]
     }
    }
@@ -3881,32 +3881,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/butter.png",
-     "w": 204,
-     "h": 160,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      102.0,
-      42.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.2625
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/butter.png",
-     "w": 102,
-     "h": 80,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      51.0,
-      21.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.2625
+      0.5
      ]
     }
    }
@@ -3919,32 +3919,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/bread.png",
-     "w": 216,
-     "h": 170,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      108.0,
-      54.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.31765
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/bread.png",
-     "w": 108,
-     "h": 85,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      54.0,
-      27.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.31765
+      0.5
      ]
     }
    }
@@ -3957,32 +3957,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/cloth.png",
-     "w": 196,
-     "h": 190,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      98.0,
-      74.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.38947
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/cloth.png",
-     "w": 98,
-     "h": 95,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      49.0,
-      37.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.38947
+      0.5
      ]
     }
    }
@@ -3995,32 +3995,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/wheat.png",
-     "w": 162,
-     "h": 218,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      88.0,
-      102.0
+      128.0,
+      128.0
      ],
      "origin": [
-      0.54321,
-      0.46789
+      0.5,
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/wheat.png",
-     "w": 81,
-     "h": 109,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      44.0,
-      51.0
+      64.0,
+      64.0
      ],
      "origin": [
-      0.54321,
-      0.46789
+      0.5,
+      0.5
      ]
     }
    }
@@ -4033,32 +4033,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/carrot.png",
-     "w": 170,
-     "h": 244,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      92.0,
+      128.0,
       128.0
      ],
      "origin": [
-      0.54118,
-      0.52459
+      0.5,
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/carrot.png",
-     "w": 85,
-     "h": 122,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      46.0,
+      64.0,
       64.0
      ],
      "origin": [
-      0.54118,
-      0.52459
+      0.5,
+      0.5
      ]
     }
    }
@@ -4071,32 +4071,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/corn.png",
-     "w": 180,
-     "h": 230,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      90.0,
-      114.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.49565
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/corn.png",
-     "w": 90,
-     "h": 115,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      45.0,
-      57.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.49565
+      0.5
      ]
     }
    }
@@ -4109,32 +4109,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/coins.png",
-     "w": 196,
-     "h": 206,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      98.0,
-      90.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.43689
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/coins.png",
-     "w": 98,
-     "h": 103,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      49.0,
-      45.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.43689
+      0.5
      ]
     }
    }
@@ -4147,32 +4147,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/wood.png",
-     "w": 200,
-     "h": 202,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      102.0,
-      86.0
+      128.0,
+      128.0
      ],
      "origin": [
-      0.51,
-      0.42574
+      0.5,
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/wood.png",
-     "w": 100,
-     "h": 101,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      51.0,
-      43.0
+      64.0,
+      64.0
      ],
      "origin": [
-      0.51,
-      0.42574
+      0.5,
+      0.5
      ]
     }
    }
@@ -4185,32 +4185,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/stone.png",
-     "w": 204,
-     "h": 142,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      98.0,
-      26.0
+      128.0,
+      128.0
      ],
      "origin": [
-      0.48039,
-      0.1831
+      0.5,
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/stone.png",
-     "w": 102,
-     "h": 71,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      49.0,
-      13.0
+      64.0,
+      64.0
      ],
      "origin": [
-      0.48039,
-      0.1831
+      0.5,
+      0.5
      ]
     }
    }
@@ -4223,32 +4223,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/iron.png",
-     "w": 228,
-     "h": 134,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      106.0,
-      18.0
+      128.0,
+      128.0
      ],
      "origin": [
-      0.46491,
-      0.13433
+      0.5,
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/iron.png",
-     "w": 114,
-     "h": 67,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      53.0,
-      9.0
+      64.0,
+      64.0
      ],
      "origin": [
-      0.46491,
-      0.13433
+      0.5,
+      0.5
      ]
     }
    }
@@ -4261,32 +4261,32 @@
     0,
     0
    ],
-   "notes": "item icon, 256px @2x / 128px @1x",
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
    "res": {
     "2x": {
      "file": "2x/icons/manure.png",
-     "w": 220,
-     "h": 230,
+     "w": 256,
+     "h": 256,
      "anchor": [
-      110.0,
-      114.0
+      128.0,
+      128.0
      ],
      "origin": [
       0.5,
-      0.49565
+      0.5
      ]
     },
     "1x": {
      "file": "1x/icons/manure.png",
-     "w": 110,
-     "h": 115,
+     "w": 128,
+     "h": 128,
      "anchor": [
-      55.0,
-      57.0
+      64.0,
+      64.0
      ],
      "origin": [
       0.5,
-      0.49565
+      0.5
      ]
     }
    }

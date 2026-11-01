@@ -33,9 +33,9 @@ for target in targets:
         else:
             entry.update(w=w, h=h)
         entry.update(anchor=[float(ax), float(ay)], origin=[round(ax / w, 5), round(ay / h, 5)])
-        entry.pop('shadow', None)
+        had_shadow = entry.pop('shadow', None) is not None
     if 'Ludo.ai' not in asset['notes']:
-        asset['notes'] += ' (Ludo.ai, cel-shaded; shadow baked in)'
+        asset['notes'] += ' (Ludo.ai, cel-shaded; shadow baked in)' if had_shadow else ' (Ludo.ai, cel-shaded)'
 # Same layout as the file had: indent 1, \u escapes, no trailing newline.
 open(path, 'w').write(json.dumps(manifest, indent=1) + ('\n' if text.endswith('\n') else ''))
 print('installed', ', '.join(targets))
