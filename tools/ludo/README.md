@@ -14,6 +14,11 @@ git (or rerun the commands below) after running it.
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
 | `cottage`, `cottage_winter` | `cottage_raw.png`, `cottage_winter_raw.png` | all |
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
+| `weaving_hut`, `weaving_hut_winter` (the loom) | `weaving_hut_raw.png`, `weaving_hut_winter_raw.png` | all |
+| `woodcutter_lodge`, `woodcutter_lodge_winter` | `woodcutter_lodge_raw.png`, `woodcutter_lodge_winter_raw.png` | all |
+| `quarry`, `quarry_winter` | `quarry_raw.png`, `quarry_winter_raw.png` | all |
+| `mine`, `mine_winter` | `mine_raw.png`, `mine_winter_raw.png` | all |
+| `for_sale_sign`, `for_sale_sign_winter` | `for_sale_sign_raw.png`, `for_sale_sign_winter_raw.png` | all |
 | `granary_1..3`, each with `_winter` | `granary_{1,2,3}_raw.png`, `granary_{1,2,3}_winter_raw.png` | all |
 | `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
 | `feed_mill`, `feed_mill_winter`, `feed_mill_sails` (8 frames), `feed_mill_static`, `feed_mill_static_winter` | `feed_mill_raw.png`, `feed_mill_body_raw.png`, `feed_mill_sails_raw.png`, `feed_mill_winter_raw.png`; see **Feed mill** below | all |
@@ -63,7 +68,24 @@ $P $L/fit_building.py $L/source/cottage_winter_raw.png /tmp/props cottage_winter
 $P $L/fit_building.py $L/source/chicken_coop_raw.png /tmp/props chicken_coop 3 3 40 349 727 348 382.5 520.2
 $P $L/fit_building.py $L/source/chicken_coop_winter_raw.png /tmp/props chicken_coop_winter 3 3 40 348 726 347 382 519
 for n in cottage cottage_winter chicken_coop chicken_coop_winter; do $P $L/install_prop.py /tmp/props $n; done
+$P $L/fit_building.py $L/source/weaving_hut_raw.png /tmp/props weaving_hut 2 2 45 396 737 394 389 568
+$P $L/fit_building.py $L/source/weaving_hut_winter_raw.png /tmp/props weaving_hut_winter 2 2 53 385 705 383 377 547
+$P $L/fit_building.py $L/source/woodcutter_lodge_raw.png /tmp/props woodcutter_lodge 2 2 41 286 773 298 419 475
+$P $L/fit_building.py $L/source/woodcutter_lodge_winter_raw.png /tmp/props woodcutter_lodge_winter 2 2 44 278 751 290 409.5 460.8
+$P $L/fit_building.py $L/source/quarry_raw.png /tmp/props quarry 2 2 45 286 754 285 398.5 462.8
+$P $L/fit_building.py $L/source/quarry_winter_raw.png /tmp/props quarry_winter 2 2 44 288 754 286 397 464.5
+$P $L/fit_building.py $L/source/mine_raw.png /tmp/props mine 2 2 39 260 743 258 389 435
+$P $L/fit_building.py $L/source/mine_winter_raw.png /tmp/props mine_winter 2 2 43 255 723 255 383 425
+# The sign has no pad: fitted as a prop, BASE at the foot of the post (Ludo drew the winter one 4% narrower).
+$P $L/fit_prop.py $L/source/for_sale_sign_raw.png /tmp/props for_sale_sign 207 712 0.22 --shadow=28
+$P $L/fit_prop.py $L/source/for_sale_sign_winter_raw.png /tmp/props for_sale_sign_winter 198 709 0.22 --shadow=28
+for n in weaving_hut woodcutter_lodge quarry mine for_sale_sign; do
+  $P $L/install_prop.py /tmp/props $n; $P $L/install_prop.py /tmp/props ${n}_winter
+done
 ```
+
+`corners.py RAW.png` prints a raw image's pad corners (L, R, B) for `fit_building.py` and writes `RAW_corners.png`, an
+overlay to check them by eye (don't commit it); measure a corner by hand if eaves or props stick out past it.
 
 The granary and storehouse have a sprite per level. Level 1 came from `generateWithStyle`, with the building on the
 back half of the pad and the front half left as an open yard for the stock piles (`SLOTS` in
@@ -94,8 +116,9 @@ Install with `install_prop.py` (it reads the `NAME.json` the fit writes), or cop
 and `origin` (anchor / size) in `manifest.json` by hand; either way the `shadow` goes (Ludo draws the shadow on
 the pad). Some code points into a building's 2x sprite and needs updating with it: the cottage's chimney
 (`CHIMNEY_AT` in `src/features/families/index.ts`), the coop's run (`WALK_AREA` in
-`src/features/animals/textures.ts`), and the bakery's, dairy's and weaving hut's smoke (`SMOKE_AT` in
-`src/features/processing/textures.ts`). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
+`src/features/animals/textures.ts`), the bakery's, dairy's and weaving hut's smoke (`SMOKE_AT` in
+`src/features/processing/textures.ts`), and the woodcutter's, quarry's and mine's chips and dust (`WORK_AT` in
+`src/features/resources/index.ts`, a grid point on the footprint). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
 its own bounds, so pieces fitted with the same corners share one canvas and anchor.
 
