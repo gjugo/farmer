@@ -87,7 +87,7 @@ for (const def of Object.values(GARDENS)) {
     materials: def.materials,
     footprint: def.footprint,
     texture: def.id,
-    category: 'housing',
+    category: 'homes',
     description: def.description,
     icon: def.icon,
     unlockLevel: def.unlockLevel,

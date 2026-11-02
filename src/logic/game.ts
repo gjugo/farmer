@@ -108,6 +108,8 @@ export class Game {
   private lastDay: number;
   /** While true (home screen, pause menu) the clock stands still: `tick` moves nothing. Not saved. */
   paused = false;
+  /** The player's own pause (⏸ in the HUD), apart from the menu's: closing the menu leaves it as it is. Not saved. */
+  playerPaused = false;
 
   constructor(state: GameState = createNewGame()) {
     this._state = state;
@@ -335,10 +337,10 @@ export class Game {
 
   /**
    * Advances the clock by a real-time delta (farmers work on the way, see `advance`); returns the game-time delta.
-   * Paused, it returns 0 and nothing moves.
+   * Paused (by the menu or the player), it returns 0 and nothing moves.
    */
   tick(realDeltaMs: number): number {
-    const dt = this.paused ? 0 : gameDelta(this._state.clock, realDeltaMs);
+    const dt = this.paused || this.playerPaused ? 0 : gameDelta(this._state.clock, realDeltaMs);
     this.advance(dt);
     const day = this.day;
     if (day !== this.lastDay) {

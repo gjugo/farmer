@@ -88,7 +88,7 @@ registerBuildable({
   materials: COTTAGE_DEF.materials,
   footprint: COTTAGE_DEF.footprint,
   texture: COTTAGE,
-  category: 'housing',
+  category: 'homes',
   description: 'A home for one more family: a new farmer moves in when your families are happy.',
   icon: '🛖',
   unlockLevel: 1,

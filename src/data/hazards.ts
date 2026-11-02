@@ -145,7 +145,7 @@ for (const d of Object.values(DEFENCES)) {
     materials: d.materials,
     footprint: d.footprint,
     texture: d.id,
-    category: 'defences',
+    category: 'farming',
     description: d.description,
     icon: d.icon,
     unlockLevel: d.unlockLevel,

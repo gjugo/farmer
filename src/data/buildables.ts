@@ -1,5 +1,16 @@
 import type { MaterialCost } from './materials';
 
+/** The construction menu's categories (left to right), like Manor Lords'. The path has none: it has its own 🛤️ tool. */
+export const BUILD_CATEGORIES = [
+  { id: 'resources', name: 'Resources', icon: '🪓' },
+  { id: 'storage', name: 'Storage', icon: '📦' },
+  { id: 'homes', name: 'Homes', icon: '🏠' },
+  { id: 'farming', name: 'Farming', icon: '🌾' },
+  { id: 'crafts', name: 'Crafts', icon: '⚒️' },
+] as const;
+
+export type BuildCategory = (typeof BUILD_CATEGORIES)[number]['id'];
+
 export interface BuildableDef {
   id: string;
   name: string;
@@ -11,8 +22,8 @@ export interface BuildableDef {
   footprint: { w: number; h: number };
   /** Texture key: an art pack sprite, or a game key mapped to one in `TEXTURE_ART` (`src/scenes/art.ts`). */
   texture: string;
-  /** Groups the build menu, e.g. `decor`, `crops`, `animals`, `processing`. */
-  category?: string;
+  /** Its tab in the construction menu (`BUILD_CATEGORIES`); only the path, built with its own tool, has none. */
+  category?: BuildCategory;
   /** Short line shown in the build menu. */
   description?: string;
   /** Emoji shown in the level-up popup. */
@@ -53,6 +64,13 @@ export function listBuildMenu(): BuildableDef[] {
   return listBuildables().filter((b) => !b.fixed);
 }
 
+/** A construction menu category's buildables, in unlock order (registration order within a level). */
+export function listBuildCategory(category: BuildCategory): BuildableDef[] {
+  return listBuildMenu()
+    .filter((b) => b.category === category)
+    .sort((a, b) => (a.unlockLevel ?? 1) - (b.unlockLevel ?? 1));
+}
+
 // Core buildables -------------------------------------------------------------
 
 registerBuildable({
@@ -61,7 +79,6 @@ registerBuildable({
   cost: 5,
   footprint: { w: 1, h: 1 },
   texture: 'path',
-  category: 'decor',
   description: 'A dirt path. Farmers walk along paths to get to their work.',
   unlockLevel: 1,
 });

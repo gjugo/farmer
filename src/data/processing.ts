@@ -173,7 +173,7 @@ for (const p of Object.values(PROCESSORS)) {
     materials: p.materials,
     footprint: p.footprint,
     texture: p.id,
-    category: 'processing',
+    category: 'crafts',
     description: p.description,
     icon: p.icon,
     unlockLevel: p.unlockLevel,

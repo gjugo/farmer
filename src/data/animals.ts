@@ -86,7 +86,7 @@ for (const pen of Object.values(PENS)) {
     materials: pen.materials,
     footprint: pen.footprint,
     texture: pen.id,
-    category: 'animals',
+    category: 'farming',
     description: pen.description,
     icon: pen.icon,
     unlockLevel: pen.unlockLevel,

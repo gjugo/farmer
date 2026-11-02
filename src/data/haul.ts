@@ -31,7 +31,7 @@ registerBuildable({
   materials: { wood: 30, stone: 15 },
   footprint: { w: 3, h: 2 },
   texture: OX_BARN,
-  category: 'resources',
+  category: 'storage',
   description: 'Buy an ox and give it a carter: the oxcart hauls goods from the yards to the stores along the paths.',
   icon: '🐂',
   unlockLevel: 3,
