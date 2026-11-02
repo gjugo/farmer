@@ -173,7 +173,7 @@ registerHudButton({
       const homes = homeRoom(state);
       const building = homesBuilding(state);
       return [
-        `Room for ${homes} ${homes === 1 ? 'family' : 'families'} (the tent’s starting families, every cottage, a level 2 cottage houses 2, and the farmhouse once built), ${familiesCount(state)} living here`,
+        `Room for ${homes} ${homes === 1 ? 'family' : 'families'} (the tent’s starting families, every cottage, a level 2 cottage houses 2, and the farmhouse once built, more at its later levels), ${familiesCount(state)} living here`,
         building ? `${building} ${building === 1 ? 'cottage' : 'cottages'} being built` : 'Build a 🛖 cottage, or upgrade one, for one more family',
         arrivalHint(ctx.game),
       ];

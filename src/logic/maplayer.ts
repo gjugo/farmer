@@ -646,7 +646,9 @@ export function migrateMapLayer(raw: Record<string, unknown>): MapLayer {
   );
   const clock = isPlainObject(raw.clock) ? raw.clock : {};
   const seed = (typeof clock.elapsed === 'number' && Number.isFinite(clock.elapsed) ? Math.floor(clock.elapsed) : 0) ^ 0x5eed;
-  return generateMapLayer(home, occupantsOf(objects), seed);
+  // The farmhouse was 2×2 then (it grows to 3×3 once the save has loaded): the map is laid out as it always was.
+  const occupants = occupantsOf(objects).map((o) => (o.type === 'farmhouse' ? { ...o, w: 2, h: 2 } : o));
+  return generateMapLayer(home, occupants, seed);
 }
 
 /** Counts for `window.farm.map` and tests. */

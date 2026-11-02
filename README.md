@@ -4,8 +4,8 @@ A cheerful 2D farming game for the browser, built with **Phaser 4**, **Vite** an
 Grow the farm, build fields and pastures, raise animals, turn crops and animal products into
 milk, cheese, eggs and more, and sell them to expand.
 A new farm starts like Manor Lords: only a ⛺ camp, with two families living in its tent and the supplies they
-brought. Build fields, a granary and cottages around it; the 🏠 farmhouse comes later (level 4), as a big building of
-its own, like the manor.
+brought. Build fields, a granary and cottages around it; the 🏠 farmhouse comes later (level 4), as a big 3×3 building
+of its own, like the manor, and grows into a manor house and a manor hall.
 
 ## Running it
 
@@ -99,8 +99,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   falls into one by its `category`, so new items need no change there.
 - **Stock in the world:** what the farm holds is stacked in the yards: logs, stone blocks and iron bars in front of a
   storehouse; sacks and baskets of crops, egg baskets, milk churns and wool bales, feed sacks and crates of cheese,
-  bread and cloth in front of a granary; a small pile of goods and one of materials beside the farmhouse (once it is
-  built); logs, stone,
+  bread and cloth in front of a granary; a small pile of goods and one of materials on the front-right of the
+  farmhouse's pad (once it is built; at each level where that level has room); logs, stone,
   crop sacks and bread crates around the camp's tent, each shrinking from full as that supply is used. Each pile has
   4 fill stages (a quarter … full) and none when empty. Stock is one pool per kind, so the display splits it: the
   camp shows what is left of its supplies, the settlers' yard keeps its share (drawn nowhere) until the farmhouse is
@@ -305,7 +305,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
     forged and worn out.
 - **Families:** every farmer is a family living in a home. A new farm's two families live in the camp's ⛺ tent (it
   never takes newcomers); each **🛖 Cottage** (2×2, $80 + 8 wood, level 1, built by a farmer like any site) houses one
-  more, and the 🏠 farmhouse one once it is built. There is no hiring for cash. When a house (cottage or farmhouse) has
+  more, and the 🏠 farmhouse one once it is built (2 as the manor house, 3 as the manor hall). There is no hiring for cash. When a house (cottage or farmhouse) has
   free room and approval is at least 50%, a family moves in half a day after the room became free (at most one a day);
   its farmer starts free, without a workplace, and sets out from the village centre like everyone. Once the camp's
   supplies are used up its families come first: newcomers wait until they have moved out of the tent. When approval
@@ -320,7 +320,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   food, −50 with nothing to eat, up to +10 when every family is clothed in cloth (+15 in clothes; mixed, by share), up to
   +10 when every family had ale (by share), and in winter +10 when every home is warm or up
   to −60 when homes are cold (by the share of cold homes); from level 2, up to +5 when every home has a house garden
-  (a share of it when some do), and +10 once the farmhouse stands ("A farmhouse oversees the farm"). A new farm's two
+  (a share of it when some do), and +10 once the farmhouse stands ("A farmhouse oversees the farm"; +15 for the manor
+  house, +20 for the manor hall). A new farm's two
   families eat the bread and carrots of the starting camp (about 7 days), so nobody goes hungry before the first harvest; there is no other grace. The overview chip (😊 62%) opens
   **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood, ale and clothes, and when the
   next family comes ("Build a 🛖 cottage, or upgrade one, to house another family"); the 👨‍🌾 Farmers sheet shows the
@@ -333,7 +334,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   (the cost is paid as the farmer is sent, as for a granary). A level 2 cottage is drawn bigger (its own art in every
   season, with an "Lv 2" badge and a second chimney) and houses **2 families**: the 🏠 chip shows one more room and a
   second family moves in at approval ≥ 50%. Clothes aren't asked for (a later level 3 could ask for more foods and
-  clothes). A cottage never goes down a level when needs lapse later. **House room** (the built farmhouse 1 + each
+  clothes). A cottage never goes down a level when needs lapse later. The checklist and upgrade are shared with the
+  farmhouse's (`src/logic/upgrades.ts`). **House room** (the built farmhouse's room + each
   finished cottage's room) drives arrivals; **room** (house room plus the families in the tent) the 🏠 chip, supplies
   and firewood; **home buildings** (the built farmhouse and every cottage, whatever its level) count for gardens, so a
   2-family cottage with a garden counts as gardened. The tent's families live in the tent; the others fill the houses
@@ -359,7 +361,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Village centre and roads:** farmers set out from and rest at the **village centre**: the tile in front of the camp's
   tent on a new farm, the farmhouse's door once it is built, and in between (camp packed away, no farmhouse yet) the
   oldest finished cottage's door (`villageCentre` in `src/logic/roads.ts`). Idle farmers stand about in front of the
-  tent (or the cottage), and sit on the farmhouse's bench once it stands. For a job a farmer steps out of the centre
+  tent (or the cottage), and sit on the farmhouse's bench (left of its door, at every level) once it stands. For a job a farmer steps out of the centre
   building onto a path along its edges and walks **along paths** to the work (0.4 game-s per tile), works there (hoeing,
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. On the way they carry what the job moves:
   a sack home from a harvest or a workshop and out to feed, spread manure or load a batch, a basket of eggs, a bucket
@@ -372,14 +374,31 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   old centre to the new one, over the old building's freed tiles where it is gone, so nothing is cut off. The
   travelling trader parks by the centre; the game opens on it.
 - **The farmhouse, built later** (like Manor Lords' manor): **🏠 Farmhouse** in 🔨 → 🏠 Homes from **level 4**, **$400 +
-  30 🪵 + 20 🪨 + 4 🔩**, 2×2, a construction site that takes twice a cottage's work (2 game-minutes). One per farm: once
+  30 🪵 + 20 🪨 + 4 🔩**, **3×3** (bigger than every other building; the ghost is 3×3 and the card shows the level 1
+  sprite), its door in the middle of its front-left face, a construction site that takes twice a cottage's work (2 game-minutes). One per farm: once
   placed (even as a site) its card says **Built** and a second one is refused ("Already built: a farm has only one").
   Its site can be cancelled; the finished farmhouse can't be demolished. Once finished it is the village centre, houses
   1 family, stores **50 goods + 50 materials** (its piles show beside it; it replaces the settlers' yard) and adds
   **+10 approval** ("A farmhouse oversees the farm", in the 👪 breakdown). Gardens can touch it. Goal: "Build the
-  farmhouse", last. Saves from before this change keep their farmhouse, fields and roads (save version 17); a save of
+  farmhouse". Saves from before this change keep their farmhouse, fields and roads (save version 17); a save of
   that age that somehow has no farmhouse gets one with roads to what it built, as before. A newer save without a
   farmhouse is normal and stays that way.
+- **Farmhouse levels** (like the cottage's, `FARMHOUSE_DEF.levels` in `src/data/farmhouse.ts`): the same 3×3 plot grows
+  taller and grander, each level its own art in every season, with chimney smoke on winter days and an "Lv 2"/"Lv 3"
+  badge. **Level 1, Farmhouse**: room 1, stores 50 + 50, +10 approval. **Level 2, Manor house** (a stone wing, a porch,
+  more chimneys, another storey): needs **farm level 6**, **at least 6 families**, **approval ≥ 50%** and **Fuel** (a
+  winter's firewood left after the upgrade's wood, as for the cottage); costs **$700 + 40 🪵 + 30 🪨 + 8 🔩**; room 2,
+  stores 100 + 100, +15 approval. **Level 3, Manor hall** (a stone hall with a bell tower and a walled forecourt, the
+  tallest building on the farm): **farm level 8**, **10 families**, **approval ≥ 60%**, Fuel; **$1200 + 60 🪵 + 50 🪨 +
+  15 🔩**; room 3, stores 150 + 150, +20 approval. The farmhouse panel shows the ✅/❌ checklist and **⬆️ Upgrade to the
+  manor house** (`farmhouse-upgrade`); Thrifty takes 20% fewer materials; a free farmer does the work once it is paid,
+  like the cottage's; a toast and an `upgraded` activity follow. It never goes down a level. Goals "Upgrade the
+  farmhouse to a manor house" and "Raise the manor hall" (they look at the farmhouse's level) come last.
+  Saves from before version 18 had a 2×2 farmhouse: on loading it grows into the 3×3 at level 1 (same id, store and
+  families), one row further back so its door tile stays where it was, or another way over its old footprint; paths,
+  trees and stumps on the new tiles are cleared and the paths that reached it are joined to its door again. Boxed in by
+  buildings, it moves to the nearest free 3×3 whose door is by a path, joined up, with a one-time toast. Farmers on
+  their way to it go back to idle.
 - **Starting camp:** a new game starts like Manor Lords: **only the camp**, no farmhouse, fields or roads. The
   settlers arrive with supplies, shown as a ⛺ **camp** (3×3: a patched tent with a campfire on the back tiles, the
   supply piles scattered in front) in the middle of the starting land, with one path on the tile in front of the tent,
@@ -507,7 +526,8 @@ game keeps running, nothing is dimmed and nothing is blocked.
 Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60 / ×300**
 (at ×60 a season passes in 32 real seconds, at ×300 in under 7 and a whole year in under half a minute),
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary),
-**+1 family** (fills an empty home at once), **Next day** (jumps to the next day boundary, where the families settle
+**+1 family** (fills an empty home at once), **Farmhouse +1 level** (`debug-farmhouse-level`: the farmhouse, built or a
+site, goes up a level at once, skipping the checklist and cost), **Next day** (jumps to the next day boundary, where the families settle
 their needs), **Drought now** (a drought until the end of the current season), **Crows now** (a flock lands on a
 growing field now), **Fox now** (a fox comes to a coop now), **Harsh winter next** (the coming winter, or this one, is
 harsh, with its warning), **Refresh orders** (fills every order slot now), **Regrow all trees** (every stump grows back
@@ -551,6 +571,11 @@ housed any) and how many of them wait for homes (only once the supplies are used
 `cottage` or `farmhouse`, the building's id and the tile farmers set out from: in front of the tent or the door; null
 on a farm with none of them) and the farmhouse's id once it is built (null while there is none or it is a site). The
 🏠 Farmhouse card in 🔨 → 🏠 Homes is `build-farmhouse`, with `data-built="true"` once one is placed.
+`window.farm.farmhouse` is null without a farmhouse, else `{ id, site, level, name, room, store: { goods, materials },
+approval, upgrade }`: `upgrade` is its checklist `{ next, level, families, approval, fuel, cost, lines, blocked, ok }`
+(each line `{ ok, text }`, `lines` in panel order with their `id`). Its level is also `state.level` in
+`window.farm.objects`; the roof badge is a container named `farmhouse-level-2` / `-3`. In its panel the checklist rows
+are `panel-check-farmhouse-level`, `-families`, `-approval`, `-fuel` and `-cost`, and the button is `farmhouse-upgrade`.
 `window.farm.storage` is `{ goods: { used, capacity }, materials: { used, capacity } }`; each storage building's
 level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`). A `woodcutter`, `quarry`
 or `mine` entry has `state: { cycle, waiting, day, today }`: the cycle being worked (`{ start, duration }` or null),
@@ -681,7 +706,10 @@ src/
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
     families.ts        families: daily meals / firewood / ale / clothes, approval, arrivals and departures (slice `families`)
     homes.ts           homes: the tent, the built farmhouse and cottages; house room vs room vs home buildings, who lives where
+    upgrades.ts        home upgrades shared by the cottage and the farmhouse: the checklist lines and paying for a level
     cottages.ts        cottage upgrades: the requirements checklist (farm level, fuel, food, cost) and the upgrade
+    farmhouse.ts       farmhouse levels: the checklist (farm level, families, approval, fuel, cost), the upgrade,
+                       `window.farm.farmhouse`; growing an old save's 2×2 farmhouse to 3×3
     perks.ts           perks: perkFactor, seeded offers, choices and the slice `perks`; the Perks class on Game
     workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes, tool slots (state slice `workers`)
     tools.ts           farmers' tools: taking a set at job start, the speed-up (`toolFactor`), wear and breaking, the blacksmith's stop
@@ -762,6 +790,8 @@ src/
                        (data: src/data/camp.ts, logic: src/logic/camp.ts; its piles are drawn by storage/piles.ts)
     families/          🏠 home room, 😊 approval and 🧺 supplies chips, the 👪 Families tab, cottage smoke and panel, arrival/departure toasts,
                        `window.farm.families` (data: src/data/families.ts, logic: src/logic/families.ts)
+    farmhouse/         the farmhouse's sprite per level, its badge, chimney smoke and panel (checklist, upgrade),
+                       `window.farm.farmhouse`, the moved-farmhouse toast (data: src/data/farmhouse.ts, logic: src/logic/farmhouse.ts)
     gardens/           vegetable patch, hen run (two hens) and orchard (two apple trees): panel, the free homes
                        outlined on the build ghost, the garden line of home panels, `window.farm.gardens`
                        (data: src/data/gardens.ts, logic: src/logic/gardens.ts)
@@ -938,6 +968,9 @@ says trade now needs a trading post linked to the main road (`ext.trade.pendingN
 Version 17 made the farmhouse a later building: nothing in a save changes (a guide in progress keeps its step in the
 reordered list), but only saves from before version 17 that lack a farmhouse get one (with roads to what they built)
 when they load; from version 17 on a farm without a farmhouse is normal.
+Version 18 made the farmhouse 3×3 with levels: an older save's 2×2 farmhouse grows into the 3×3 at level 1 when it
+loads (`growFarmhouse` in `src/logic/farmhouse.ts`: in place, keeping its door tile when it can, else moved nearby
+with a toast, `ext.farmhouse.movedNotice`). Saves without a farmhouse are untouched.
 
 - **Home screen:** the page opens on a "Farmer" title over the dimmed, paused farm (its seasonal look, or a fresh
   farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the

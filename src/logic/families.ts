@@ -10,7 +10,7 @@ import {
   LEAVE_APPROVAL,
   MEAL_PER_FAMILY,
 } from '../data/families';
-import { FARMHOUSE_APPROVAL } from '../data/farmhouse';
+import { FARMHOUSE_DEF, MAX_FARMHOUSE_LEVEL } from '../data/farmhouse';
 import { GARDEN_APPROVAL, GARDENS } from '../data/gardens';
 import { PROCESSORS } from '../data/processing';
 import { SEASONS } from '../data/seasons';
@@ -20,7 +20,7 @@ import type { Game } from './game';
 import { familyLeftCamp, settleCamp, tentClaims, tentFamilies } from './camp';
 import { firewoodPerHome } from './hazards';
 import { gardenedHomes } from './gardens';
-import { builtFarmhouse, homeBuildings, homeRoom, houseRoom } from './homes';
+import { builtFarmhouse, farmhouseLevel, homeBuildings, homeRoom, houseRoom } from './homes';
 import * as inventory from './inventory';
 import { perkFactor } from './perks';
 import { seasonAt, SEASON_MS } from './seasons';
@@ -70,8 +70,11 @@ export interface DayNeeds {
    * until gardens are unlocked. Missing in saves from before gardens.
    */
   gardens?: { homes: number; gardened: number } | null;
-  /** The farmhouse stood that day. Missing in saves from before it was a building of its own. */
-  farmhouse?: boolean;
+  /**
+   * The farmhouse's level that day, 0 when there was none (true in saves from before its levels: level 1). Missing in
+   * saves from before it was a building of its own.
+   */
+  farmhouse?: number | boolean;
 }
 
 export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'ale' | 'firewood' | 'gardens' | 'farmhouse' | 'neighbours';
@@ -222,7 +225,11 @@ export function approvalOf(day: DayNeeds, neighbours = 0): Approval {
       points: Math.round((GARDEN_APPROVAL * n) / homes),
     });
   }
-  if (day.farmhouse) parts.push({ id: 'farmhouse', label: 'A farmhouse oversees the farm', points: FARMHOUSE_APPROVAL });
+  if (day.farmhouse) {
+    const level = day.farmhouse === true ? 1 : Math.max(1, Math.min(MAX_FARMHOUSE_LEVEL, Math.floor(Number(day.farmhouse)) || 1));
+    const at = FARMHOUSE_DEF.levels[level - 1];
+    parts.push({ id: 'farmhouse', label: level === 1 ? 'A farmhouse oversees the farm' : `The ${at.name.toLowerCase()} oversees the farm`, points: at.approval });
+  }
   if (neighbours) parts.push({ id: 'neighbours', label: 'Good neighbours', points: neighbours });
   const total = parts.reduce((sum, p) => sum + p.points, 0);
   return { approval: Math.max(0, Math.min(100, total)), breakdown: parts };
@@ -343,7 +350,7 @@ function settleDay(game: Game, day: number): void {
     ale,
     aleDrunk,
     gardens,
-    farmhouse: !!builtFarmhouse(state),
+    farmhouse: builtFarmhouse(state) ? farmhouseLevel(builtFarmhouse(state)!) : 0,
   };
   const { approval, breakdown } = approvalOf(needs, perkFactor(state, 'good-neighbours'));
   Object.assign(s, { settledDay: day, approval, breakdown, lastDay: needs });

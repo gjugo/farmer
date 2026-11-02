@@ -11,7 +11,7 @@ git (or rerun the commands below) after running it.
 
 | Asset | Source | Seasons |
 | --- | --- | --- |
-| `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
+| `farmhouse` (level 1 and the build card), `farmhouse_2` (manor house), `farmhouse_3` (manor hall), each with `_winter` (3×3) | `farmhouse_{1,2,3}_raw.png`, `farmhouse_{1,2,3}_winter_raw.png`; see **Farmhouse levels** below (`farmhouse_raw.png` and `farmhouse_winter_raw.png`, the old 2×2 farmhouse, stay as the style source) | all |
 | `cottage`, `cottage_winter` | `cottage_raw.png`, `cottage_winter_raw.png` | all |
 | `cottage_2`, `cottage_2_winter` (the cottage at level 2) | `cottage_2_raw.png`, `cottage_2_winter_raw.png`; see **Cottage level 2** below | all |
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
@@ -82,6 +82,7 @@ Cuts the soil block below the pad's top surface, optionally mirrors, scales the 
 inset per side at 2x), and prints the anchor for `manifest.json`. Corners are the pad's top-surface left,
 right and bottom corners, measured on the raw image (the extreme opaque columns give left and right).
 Mirror when the door is on the wrong face: the farmhouse door must face +y (front-left), see `FARMHOUSE_DOOR`.
+These two commands fitted the old 2×2 farmhouse; the 3×3 farmhouse is in **Farmhouse levels** below.
 
 ```bash
 P=/tmp/ludo-venv/bin/python; L=tools/ludo
@@ -187,6 +188,69 @@ for n in cottage_2 cottage_2_winter; do
   $P $L/fit_building.py $L/source/${n}_raw.png /tmp/props $n 2 2 58 311 732 312 396 480 && $P $L/install_prop.py /tmp/props $n
 done
 ```
+
+### Farmhouse levels
+
+The farmhouse is 3×3 with a sprite per level: `farmhouse` is level 1 (and the build card), `farmhouse_2` the manor
+house, `farmhouse_3` the manor hall. They replace the old 2×2 farmhouse, whose `farmhouse_raw.png` stays in `source/`
+as the style image. Images that live only in the repo went to Ludo as base64 from a small script that posts the MCP
+`tools/call` to `https://mcp.ludo.ai/mcp` (as for the farmer's GLBs); the edits then used each chosen image's Ludo URL.
+9.5 credits in all.
+
+1. **Level 1** (`farmhouse_1_raw.png`): `generateWithStyle` (`sprite`, n=4) with `farmhouse_raw.png` as `style_image`:
+   "A complete, uncropped isometric view of a farming-game farmhouse in exactly the same style as the reference: the
+   same half-timbered cream plaster walls with dark brown timber beams, the same orange-red clay tile roof with wooden
+   ridge beams, the same red brick chimney, the same small wooden-framed windows with flower boxes and the same plank
+   wooden door with a little wooden doorstep. But a bigger, two-storey farmhouse, wider and longer, standing on a flat
+   square grass pad of 3-by-3 tiles (nine cells). The doors and windows are the same small size as in the reference, so
+   the house reads as bigger, not zoomed in. The front door is in the middle of the front-left wall. The house stands
+   on the back part of the pad; the front third of the pad along the front-left and front-right edges is open grass,
+   empty. Isometric 2:1 view, south corner of the pad toward the viewer, a straight-edged diamond pad with no
+   thickness. Bright saturated colours, dark-brown outlines, flat cel shading, two-tone shadows from the upper left, no
+   smoke, no people." The second kept the farmhouse's crossed roof with its wooden ridge beams and is the tallest, so it
+   comes out bigger than every other building in use (the coop was the biggest); its door is already on the front-left.
+2. **Level 2** (`farmhouse_2_raw.png`): two `editImage` rounds (n=3 each). On level 1: "Keep the same farmhouse
+   exactly, same pad, same angle, lighting, colours and dark outlines, same cel-shaded style, the same 3-by-3 grass pad
+   corners, but make it bigger: a grander manor house grown from it. Add a rough grey stone wing on the right with its
+   own tiled roof, a covered wooden porch with posts over the front door on the front-left wall, a second red brick
+   chimney on the other end of the roof, and a taller, steeper orange-red tile roof with the same wooden ridge beams
+   ... It must read as the same farmhouse grown, clearly bigger and taller, standing on the same pad." That added the
+   wing, porch and chimney but barely any height, so the first result went through a second edit: "Keep the same
+   farmhouse exactly, ... the same stone wing, porch and two brick chimneys, but make the main house much taller: add a
+   whole extra half-timbered storey under the roof, with a row of small windows and two small dormer windows in a
+   taller, steeper orange-red tile roof with the same wooden ridge beams. The roof ridge and both chimneys rise far
+   higher than before. ... Do not move or resize the pad." The third (three storeys, three chimneys) was picked.
+3. **Level 3** (`farmhouse_3_raw.png`): `editImage` on level 2 (n=3): "Keep the same house, ... but grow it into a
+   grand stone manor hall: the ground floor becomes rough grey stone, the upper floors keep the half-timbering, the
+   orange-red tile roof and the wooden ridge beams. Add a tall square stone tower with a pointed orange-red tile spire
+   and a little bell turret at the back right corner, rising high above the roof, clearly the tallest part. Keep the
+   brick chimneys. The front door stays on the front-left wall under the porch ... Add a low grey stone wall around a
+   small forecourt along the front-left and front-right edges of the pad, with a gap in the wall in front of the door;
+   the forecourt inside is open grass. ..." The third (tower and bell turret, a gap in the front-left wall) was picked.
+   Ludo walled all four edges, so the pad has no visible edge: its corners are the wall's outer base (the extreme
+   columns, and the bottom outline's two edges, fitted as lines, for B), not `corners.py`'s, which lands on the wall top.
+4. **Winter**: `editImage` on each level (n=2): "Keep the same farmhouse (manor house, manor hall) exactly, same size,
+   position, pad, angle, lighting, colours and dark outlines, same cel-shaded style; make it winter: thick white snow
+   on the roof slopes (the dormers, the porch roof, the stone wing's roof; the tower spire and the bell turret), the
+   wooden ridge beams and the chimney tops, small icicles along the eaves, a little snow on the window boxes and sills,
+   and cover the whole grass pad in white snow. Do not move or resize anything." (the first each time). Levels 2 and
+   3 came back on their summer canvas and are fitted with the summer corners; level 1's came back smaller and has its own.
+
+```bash
+$P $L/add_asset.py farmhouse farmhouse_2 farmhouse_3   # then each entry's footprint [3, 3] and notes set by hand
+$P $L/add_asset.py farmhouse_winter farmhouse_2_winter farmhouse_3_winter
+$P $L/fit_building.py $L/source/farmhouse_1_raw.png /tmp/props farmhouse 3 3 41 409 741 408 390 583.5
+$P $L/fit_building.py $L/source/farmhouse_1_winter_raw.png /tmp/props farmhouse_winter 3 3 47 397 708 396 376.5 561.8
+for n in farmhouse_2 farmhouse_2_winter; do $P $L/fit_building.py $L/source/${n}_raw.png /tmp/props $n 3 3 44 421 710 420 376 587; done
+for n in farmhouse_3 farmhouse_3_winter; do $P $L/fit_building.py $L/source/${n}_raw.png /tmp/props $n 3 3 54 443 707 443 374.3 619.5; done
+for n in farmhouse farmhouse_2 farmhouse_3; do $P $L/install_prop.py /tmp/props $n; $P $L/install_prop.py /tmp/props ${n}_winter; done
+```
+
+At 2x the three are 762×594 (anchor 381,207), 762×659 (381,271) and 764×707 (382,305), each taller than the one
+below. The chimney tops in the 2x sprites (level 1: 353,23; level 2: 343,33, 385,19 and the wing's 530,98; level 3:
+367,123, 390,97 and a capped stub on the tower at 510,205) are for the game's smoke, and the door is at grid point
+(1.1–1.25, 1.9–2.0) of the footprint on every level (under the porch from level 2), with open pad in front of it for the
+bench and the stock piles.
 
 ### Well, kennel, scarecrow and crow
 

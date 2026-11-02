@@ -19,13 +19,13 @@ describe('farmhouse and roads', () => {
     const state = createNewGame();
     const house = farmhouseOf(state)!;
     expect(house).toMatchObject({ type: FARMHOUSE, ...STARTING_FARMHOUSE });
-    const along = { x: house.x - 1, y: house.y - 1, w: 4, h: 4 };
+    const along = { x: house.x - 1, y: house.y - 1, w: 5, h: 5 };
     const inside = (t: Tile, a: { x: number; y: number; w: number; h: number }) => t.x >= a.x && t.y >= a.y && t.x < a.x + a.w && t.y < a.y + a.h;
     expect(paths(state).some((p) => p.x === doorOf(house).x && p.y === doorOf(house).y)).toBe(true);
     for (const f of STARTING_FIELDS) {
       const route = findRoute(state, field(f))!;
       // Farmers step out of the house onto the road: the door's tile or another one along its edges.
-      expect(inside(route.tiles[0], along) && !inside(route.tiles[0], { ...house, w: 2, h: 2 })).toBe(true);
+      expect(inside(route.tiles[0], along) && !inside(route.tiles[0], { ...house, w: 3, h: 3 })).toBe(true);
       route.tiles.slice(1).forEach((t, i) => expect(isNeighbour(t, route.tiles[i])).toBe(true));
       // The farmer works on the field tile next to the last path tile.
       const last = route.tiles[route.tiles.length - 1];
@@ -78,7 +78,7 @@ describe('farmhouse and roads', () => {
     const game = new Game();
     const house = farmhouseOf(game.state)!;
     for (const p of paths(game.state)) {
-      const along = p.x >= house.x - 1 && p.x <= house.x + 2 && p.y >= house.y - 1 && p.y <= house.y + 2;
+      const along = p.x >= house.x - 1 && p.x <= house.x + 3 && p.y >= house.y - 1 && p.y <= house.y + 3;
       if (along) game.demolish(p.id);
     }
     for (const f of STARTING_FIELDS) expect(findRoute(game.state, field(f))).toBeNull();

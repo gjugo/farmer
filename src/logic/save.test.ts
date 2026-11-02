@@ -148,7 +148,7 @@ describe('save / load', () => {
     b.state = { crop: 'wheat', timer: { start: 0, duration: 480_000 }, ploughedAt: 0 };
     const loaded = parseSave(JSON.stringify({ version: 9, savedAt: 1, state })).state;
     const fields = loaded.objects.filter((o) => o.type === FIELD);
-    expect(SAVE_VERSION).toBe(17);
+    expect(SAVE_VERSION).toBe(18);
     expect(fields[0].state).toEqual({ crop: null, timer: null, ploughedAt: 0, fertility: SOIL_QUALITY.rich, restingSince: 5000, lastCrop: null });
     expect(fields[1].state).toMatchObject({ crop: 'wheat', fertility: SOIL_QUALITY.rich, restingSince: null, lastCrop: null });
     expect(fields.map((f) => f.state.fertility)).toEqual(fields.map((f) => areaSoil({ x: f.x, y: f.y, w: 2, h: 2 })));

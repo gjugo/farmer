@@ -92,11 +92,11 @@ describe('gardens: placement', () => {
     const game = farm();
     const h = house(game);
     // Corner to corner is not along an edge.
-    expect(game.checkPlacement('veg-patch', h.x + 2, h.y - 2)).toEqual({ ok: false, reason: 'needs-home' });
+    expect(game.checkPlacement('veg-patch', h.x + 3, h.y - 2)).toEqual({ ok: false, reason: 'needs-home' });
     // A tile away is not touching.
-    expect(game.checkPlacement('veg-patch', h.x + 3, h.y)).toEqual({ ok: false, reason: 'needs-home' });
+    expect(game.checkPlacement('veg-patch', h.x + 4, h.y)).toEqual({ ok: false, reason: 'needs-home' });
     // Against the farmhouse's right side, half beside it, is fine.
-    expect(game.checkPlacement('veg-patch', h.x + 2, h.y + 1)).toEqual({ ok: true });
+    expect(game.checkPlacement('veg-patch', h.x + 3, h.y + 1)).toEqual({ ok: true });
     // Beside a cottage too.
     const c = cottage(game);
     expect(game.checkPlacement('hen-run', c.x + 2, c.y)).toEqual({ ok: true });
@@ -212,7 +212,7 @@ describe('gardens: ×60 and offline catch-up agree', () => {
     const game = farm();
     game.state.clock.elapsed = SUMMER + 12_345;
     const h = house(game);
-    put(game, 'veg-patch', h.x + 2, h.y);
+    put(game, 'veg-patch', h.x + 3, h.y);
     const c = cottage(game);
     put(game, 'hen-run', c.x + 2, c.y);
     const c2 = cottage(game, c.x + 6, c.y);
@@ -259,7 +259,7 @@ describe('gardens: approval', () => {
   it('the families count the homes with a garden at the next day', () => {
     const game = farm();
     const h = house(game);
-    put(game, 'hen-run', h.x + 2, h.y);
+    put(game, 'hen-run', h.x + 3, h.y);
     cottage(game);
     runTo(game, DAY_MS + 1);
     expect(familiesOf(game.state).breakdown.find((p) => p.id === 'gardens')).toMatchObject({ label: 'Gardens at 1 of 2 homes', points: 3 });

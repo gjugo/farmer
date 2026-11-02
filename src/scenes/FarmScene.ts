@@ -16,6 +16,7 @@ import { START_LAND } from '../logic/constants';
 import { inBounds } from '../logic/land';
 import { isRoadTile } from '../logic/mainroad';
 import { mapOf, treeAt } from '../logic/maplayer';
+import { FARMHOUSE } from '../data/farmhouse';
 import { villageCentre } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
@@ -572,7 +573,9 @@ export class FarmScene extends Phaser.Scene {
   private focusFarm(): void {
     const area = farmArea(this.farm.state.objects);
     const centre = villageCentre(this.farm.state);
-    const focus = centre ? { x: centre.x + 0.5, y: centre.y - 0.5 } : { x: area.x + area.w / 2, y: area.y + area.h / 2 };
+    // Just behind the centre's door: the middle of the 3×3 farmhouse, the tent's or a cottage's front tile.
+    const back = centre?.type === FARMHOUSE ? 1.5 : 0.5;
+    const focus = centre ? { x: centre.x + 0.5, y: centre.y - back } : { x: area.x + area.w / 2, y: area.y + area.h / 2 };
     const cam = this.cameras.main;
     const view = openingView(area, cam.width, cam.height, focus);
     cam.setZoom(Phaser.Math.Clamp(view.zoom, this.minZoom, MAX_ZOOM));

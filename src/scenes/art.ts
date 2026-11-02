@@ -197,6 +197,14 @@ export const STORAGE_ART = { granary: 3, storehouse: 3 } as const;
 /** Cottages have a sprite per level: `cottage` (level 1, also the build preview), then `cottage_2`. */
 export const COTTAGE_ART = ['cottage', 'cottage_2'] as const;
 
+/** The farmhouse has a sprite per level: `farmhouse` (level 1, also the build preview), the manor house, the manor hall. */
+export const FARMHOUSE_ART = ['farmhouse', 'farmhouse_2', 'farmhouse_3'] as const;
+
+/** The sprite of the farmhouse at `level` (clamped to the levels drawn). */
+export function farmhouseArt(level: number): string {
+  return FARMHOUSE_ART[Math.max(1, Math.min(FARMHOUSE_ART.length, Math.floor(level) || 1)) - 1];
+}
+
 /** The sprite of a cottage at `level` (clamped to the levels drawn). */
 export function cottageArt(level: number): string {
   return COTTAGE_ART[Math.max(1, Math.min(COTTAGE_ART.length, Math.floor(level) || 1)) - 1];
@@ -638,6 +646,7 @@ export function usedArt(): string[] {
     MILL.sails,
     ...(Object.keys(STORAGE_ART) as (keyof typeof STORAGE_ART)[]).flatMap((t) => Array.from({ length: STORAGE_ART[t] }, (_, i) => storageArt(t, i + 1))),
     ...COTTAGE_ART,
+    ...FARMHOUSE_ART,
     ...CROP_ART_IDS.flatMap((c) => Object.keys(CROP_STAGES).map((s) => cropArt(c, s)!)),
     ...ANIMAL_ART,
     OX_ART,

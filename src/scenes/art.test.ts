@@ -23,6 +23,8 @@ import {
   seasonalComposed,
   STORAGE_ART,
   cottageArt,
+  farmhouseArt,
+  FARMHOUSE_ART,
   storageArt,
   ART_RES,
   artFor,
@@ -346,6 +348,34 @@ describe('seasonal art', () => {
       expect(assets.get(name)?.footprint, name).toEqual([2, 2]);
       expect(usedArt()).toContain(name);
     }
+  });
+
+  it('draws a 3×3 farmhouse per level, bigger than every other building, each level taller than the one before', () => {
+    expect(FARMHOUSE_ART).toEqual(['farmhouse', 'farmhouse_2', 'farmhouse_3']);
+    expect(farmhouseArt(1)).toBe('farmhouse');
+    expect(farmhouseArt(3)).toBe('farmhouse_3');
+    expect(farmhouseArt(9)).toBe('farmhouse_3');
+    expect(artFor('farmhouse')).toBe('farmhouse');
+    const size = (name: string) => {
+      const r = assets.get(name)!.res['2x']!;
+      return { w: r.w ?? 0, h: r.h ?? 0 };
+    };
+    for (const name of FARMHOUSE_ART.flatMap((n) => [n, `${n}_winter`])) {
+      expect(assets.get(name)?.footprint, name).toEqual([3, 3]);
+      expect(usedArt()).toContain(name);
+      for (const res of ['1x', '2x'] as const) {
+        const r = assets.get(name)!.res[res]!;
+        expect(r.w, `${name} ${res}`).toBeGreaterThan(0);
+        expect(Math.max(r.w ?? 0, r.h ?? 0), `${name} ${res}`).toBeLessThanOrEqual(4096);
+      }
+    }
+    // Level 1 (the build card) is bigger (2x w × h) than every other building the game draws.
+    const area = (name: string) => size(name).w * size(name).h;
+    const others = manifest.assets.filter((a) => a.category === 'buildings' && a.type === 'image' && !a.name.startsWith('farmhouse') && usedArt().includes(a.name));
+    expect(others.length).toBeGreaterThan(10);
+    for (const o of others) expect(area('farmhouse'), o.name).toBeGreaterThan(area(o.name));
+    expect(size('farmhouse_2').h).toBeGreaterThan(size('farmhouse').h);
+    expect(size('farmhouse_3').h).toBeGreaterThan(size('farmhouse_2').h);
   });
 
   it('every building sprite has a winter version, so every building gets snow on its roof', () => {

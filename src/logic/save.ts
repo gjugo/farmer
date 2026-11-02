@@ -1,5 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
+import { FARMHOUSE } from '../data/farmhouse';
 import { isResourceType } from '../data/resourceBuildings';
 import { PLOUGH_SEASONS } from '../data/seasons';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
@@ -11,6 +12,7 @@ import { areaSoil } from './soil';
 import { STORAGE_SLICE } from './storage';
 import { migrateOrdersSlice } from './orders';
 import { GUIDE_STEPS } from '../data/guide';
+import { FARMHOUSE_GROWN_IN, growFarmhouse } from './farmhouse';
 import { ensureFarmhouse } from './roads';
 import { ensureMainRoad, ROAD_SLICE } from './mainroad';
 import { TRADE_SLICE } from './tradepost';
@@ -28,7 +30,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 17;
+export const SAVE_VERSION = 18;
 
 export interface SaveFile {
   version: number;
@@ -223,6 +225,9 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     if (!isPlainObject(guide) || typeof guide.step !== 'number') return { ...raw, version: 17 };
     return { ...raw, version: 17, state: { ...state, ext: { ...ext, guide: { ...guide, step: guideStepV17(guide.step) } } } };
   },
+  // The farmhouse became 3×3 with levels: an old 2×2 one grows into the 3×3 at level 1 when the save loads, over its
+  // old footprint or nearby (`growFarmhouse`, `FARMHOUSE_GROWN_IN`), since that needs the whole farm. Nothing to do here.
+  17: (raw) => ({ ...raw, version: 18 }),
 };
 
 /** Version 16's guide steps, in order. */
@@ -232,6 +237,13 @@ const GUIDE_V16 = ['look', 'assign', 'speed', 'sow', 'develop', 'field', 'harves
 function guideStepV17(step: number): number {
   const at = GUIDE_STEPS.findIndex((s) => s.id === GUIDE_V16[step]);
   return at >= 0 ? at : 0;
+}
+
+/** Does the raw save's farmhouse have a level (so it is 3×3 already)? */
+function savedWithLevel(file: RawSave): boolean {
+  const state = isPlainObject(file.state) ? file.state : {};
+  const objects = Array.isArray(state.objects) ? state.objects : [];
+  return objects.some((o: unknown) => isPlainObject(o) && o.type === FARMHOUSE && isPlainObject(o.state) && typeof o.state.level === 'number');
 }
 
 /** Saves older than this that lack a farmhouse get one on loading; from this version on a farm without one is normal. */
@@ -331,6 +343,8 @@ export function parseSave(json: string | null | undefined): LoadedSave {
   let file: RawSave = raw;
   let version = typeof file.version === 'number' ? file.version : 0;
   const repairFarmhouse = version < FARMHOUSE_REPAIR_BEFORE;
+  // A farmhouse saved with a level is the 3×3 one already (one laid out by today's code, then saved as older).
+  const growHouse = version < FARMHOUSE_GROWN_IN && !savedWithLevel(file);
   while (version < SAVE_VERSION) {
     const migrate = migrations[version];
     if (!migrate) return fresh();
@@ -338,14 +352,15 @@ export function parseSave(json: string | null | undefined): LoadedSave {
     version++;
   }
   const savedAt = isNonNegNumber(file.savedAt) ? file.savedAt : null;
-  return { state: normalize(file.state, { repairFarmhouse }), savedAt };
+  return { state: normalize(file.state, { repairFarmhouse, growHouse }), savedAt };
 }
 
 /**
  * Builds a valid GameState from untrusted data, falling back to new-game defaults field by field. `repairFarmhouse`:
- * a save from before the farmhouse was built later, which gets one (with paths) if it has none.
+ * a save from before the farmhouse was built later, which gets one (with paths) if it has none. `growHouse`: a save
+ * from before the farmhouse was 3×3, whose 2×2 one grows.
  */
-export function normalize(input: unknown, { repairFarmhouse = false }: { repairFarmhouse?: boolean } = {}): GameState {
+export function normalize(input: unknown, { repairFarmhouse = false, growHouse = false }: { repairFarmhouse?: boolean; growHouse?: boolean } = {}): GameState {
   const base = createNewGame();
   if (!isPlainObject(input)) return base;
 
@@ -362,6 +377,8 @@ export function normalize(input: unknown, { repairFarmhouse = false }: { repairF
   applySliceDefaults(ext);
 
   const state: GameState = { money, inventory, land, objects, nextObjectId, clock, ext };
+  // A 2×2 farmhouse from before levels grows into the 3×3 one (before anything else is laid round it).
+  if (growHouse) growFarmhouse(state);
   // Farms from before farmhouses get one, with paths to what they have built. Newer farms build theirs later.
   if (repairFarmhouse) ensureFarmhouse(state);
   // Farms from before the main road get one (from their seed, round what they have built).
