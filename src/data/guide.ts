@@ -132,7 +132,7 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
   {
     id: 'done',
     title: 'You’re set!',
-    text: 'At level 4 you can build the 🏠 Farmhouse, the heart of the farm: more storage, a home and approval. 📖 Almanac (H) warns of hazards, every level-up offers a perk, and ⚙️ Menu → Settings restarts this guide.',
+    text: 'At level 4 you can build the 🏠 Farmhouse, the heart of the farm: more storage, a home and approval, growing into a manor house and a manor hall. 📖 Almanac (H) warns of hazards, every level-up offers a perk, and ⚙️ Menu → Settings restarts this guide.',
     ring: ['btn-almanac'],
   },
 ];

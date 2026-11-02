@@ -1,14 +1,14 @@
 import Phaser from 'phaser';
-import { FARMHOUSE, FARMHOUSE_APPROVAL } from '../../data/farmhouse';
-import { FARMHOUSE_STORE } from '../../data/storage';
+import { FARMHOUSE } from '../../data/farmhouse';
 import { TOOL_SPEED, TOOL_USES } from '../../data/tools';
 import type { FarmContext, PlacedObject, SheetSpec } from '../../game/context';
-import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
+import { onGameStart, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { farmerActivity, farmerLoad, farmerName, placeName } from '../../game/workers';
 import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
 import type { Game } from '../../logic/game';
 import { cartPose } from '../../logic/haul';
+import { farmhouseLevel } from '../../logic/homes';
 import { villageCentre, villageInfo } from '../../logic/roads';
 import { onToolsWornOut, toolOf, toolsSummary } from '../../logic/tools';
 import { siteProgress, sitesOf } from '../../logic/work';
@@ -31,7 +31,6 @@ import { addArtSprite, addShadow } from '../../scenes/sprites';
 import { h } from '../../ui/dom';
 import { withIcons } from '../../ui/icons';
 import { familiesBlock, familiesSignature } from '../families';
-import { homeGardenLine } from '../gardens';
 
 /**
  * Farmers: every job sends a farmer from the village centre (the camp's tent, later the farmhouse) along the paths to
@@ -254,17 +253,45 @@ registerDebugInfo('tools', () => {
 /** A tool broke and none are left in store: say so, at most once a game day. */
 export const TOOLS_WORN_MESSAGE = 'Tools are wearing out: forge more at the blacksmith';
 
-/** Where idle farmers wait, in grid units from the farmhouse's top-left tile: two on the bench, the rest standing about (see `seatOf`). */
-const SEATS: { x: number; y: number; anim: FarmerAnim; facing: Facing }[] = [
-  { x: 0.45, y: 1.69, anim: 'sit', facing: 'sw' },
-  { x: 0.8, y: 1.69, anim: 'sit', facing: 'sw' },
-  // Clear of the stock piles at the farmhouse's right side (src/features/storage/piles.ts).
-  { x: 1.92, y: 1.3, anim: 'idle', facing: 'se' },
-  { x: 0.12, y: 1.12, anim: 'idle', facing: 'sw' },
-  { x: 1.75, y: 1.93, anim: 'idle', facing: 'sw' },
-  { x: 0.1, y: 1.45, anim: 'idle', facing: 'sw' },
-  { x: 1.02, y: 1.95, anim: 'idle', facing: 'sw' },
-  { x: 1.92, y: 1.58, anim: 'idle', facing: 'se' },
+type Seat = { x: number; y: number; anim: FarmerAnim; facing: Facing };
+
+/**
+ * Where idle farmers wait at each farmhouse level, in grid units from its top-left tile: two on the bench on the open
+ * pad left of the door (in front of the porch from level 2, inside the forecourt wall at level 3), the rest standing
+ * about the front of the pad, clear of the door's way out and of the stock piles at its front-right corner
+ * (src/features/storage/piles.ts). See `seatOf`.
+ */
+const SEATS: readonly (readonly Seat[])[] = [
+  [
+    { x: 0.5, y: 2.45, anim: 'sit', facing: 'sw' },
+    { x: 0.85, y: 2.45, anim: 'sit', facing: 'sw' },
+    { x: 2.45, y: 1.0, anim: 'idle', facing: 'se' },
+    { x: 0.2, y: 2.7, anim: 'idle', facing: 'sw' },
+    { x: 2.0, y: 2.65, anim: 'idle', facing: 'sw' },
+    { x: 0.55, y: 2.8, anim: 'idle', facing: 'sw' },
+    { x: 2.7, y: 1.9, anim: 'idle', facing: 'se' },
+    { x: 2.35, y: 2.8, anim: 'idle', facing: 'sw' },
+  ],
+  [
+    { x: 0.5, y: 2.5, anim: 'sit', facing: 'sw' },
+    { x: 0.85, y: 2.5, anim: 'sit', facing: 'sw' },
+    { x: 2.5, y: 1.0, anim: 'idle', facing: 'se' },
+    { x: 0.2, y: 2.75, anim: 'idle', facing: 'sw' },
+    { x: 2.0, y: 2.65, anim: 'idle', facing: 'sw' },
+    { x: 0.55, y: 2.82, anim: 'idle', facing: 'sw' },
+    { x: 2.7, y: 1.9, anim: 'idle', facing: 'se' },
+    { x: 2.35, y: 2.8, anim: 'idle', facing: 'sw' },
+  ],
+  [
+    { x: 0.5, y: 2.5, anim: 'sit', facing: 'sw' },
+    { x: 0.85, y: 2.5, anim: 'sit', facing: 'sw' },
+    { x: 2.5, y: 1.0, anim: 'idle', facing: 'se' },
+    { x: 0.25, y: 2.7, anim: 'idle', facing: 'sw' },
+    { x: 2.0, y: 2.6, anim: 'idle', facing: 'sw' },
+    { x: 0.55, y: 2.75, anim: 'idle', facing: 'sw' },
+    { x: 2.65, y: 1.9, anim: 'idle', facing: 'se' },
+    { x: 2.3, y: 2.75, anim: 'idle', facing: 'sw' },
+  ],
 ];
 
 /** A farmer on the map: the animated sprite, its shadow, and a progress bar while working. */
@@ -275,10 +302,11 @@ interface FarmerSprite {
   fill: Phaser.GameObjects.Rectangle;
 }
 
-/** Farmer `i`'s spot at the farmhouse: a seat, or past them a crowd in front of the house. */
-function seatOf(i: number): (typeof SEATS)[number] {
-  if (i < SEATS.length) return SEATS[i];
-  const k = i - SEATS.length;
+/** Farmer `i`'s spot at a farmhouse of `level`: a seat, or past them a crowd beside the house. */
+function seatOf(i: number, level: number): Seat {
+  const seats = SEATS[level - 1] ?? SEATS[0];
+  if (i < seats.length) return seats[i];
+  const k = i - seats.length;
   return { x: -0.35 - (k % 3) * 0.32, y: 0.4 + Math.floor(k / 3) * 0.45, anim: 'idle', facing: 'se' };
 }
 
@@ -286,12 +314,12 @@ function seatOf(i: number): (typeof SEATS)[number] {
  * Where idle farmer `i` waits: on the farmhouse bench (see `seatOf`) once it is built, else standing about the tile in
  * front of the tent (or the oldest cottage's door). Null on a farm without a centre.
  */
-function restSpot(game: Game, i: number): (typeof SEATS)[number] | null {
+function restSpot(game: Game, i: number): Seat | null {
   const centre = villageCentre(game.state);
   if (!centre) return null;
   const house = centre.type === FARMHOUSE ? game.getObject(centre.id) : undefined;
   if (house) {
-    const seat = seatOf(i);
+    const seat = seatOf(i, farmhouseLevel(house));
     return { ...seat, x: house.x + seat.x, y: house.y + seat.y };
   }
   return { x: centre.x + 0.2 + (i % 3) * 0.3, y: centre.y + 0.2 + Math.floor(i / 3) * 0.3, anim: 'idle', facing: i % 2 ? 'sw' : 'se' };
@@ -401,22 +429,4 @@ onGameStart((ctx) => {
     scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
     sprites.forEach(destroyFarmer);
   });
-});
-
-registerBehavior<Record<string, unknown>>(FARMHOUSE, {
-  panel: (ctx, obj) => {
-    const { farmers } = workersOf(ctx.game.state);
-    const free = freeFarmers(ctx.game.state);
-    return {
-      title: 'Farmhouse',
-      icon: '🏠',
-      lines: [
-        `The heart of the farm: home of a family, and your ${farmers === 1 ? 'farmer rests' : `${farmers} farmers rest`} on the bench out front (${free} now).`,
-        'Farmers walk out of the door along paths. Lay a path from the door to every field, pen and building you want worked.',
-        `+${FARMHOUSE_APPROVAL}% approval: it oversees the farm. It stores ${FARMHOUSE_STORE.goods} goods and ${FARMHOUSE_STORE.materials} materials.`,
-        'Give farmers a workplace in 👪 Farm → 👨‍🌾 Farmers or from the workplace itself.',
-      ],
-      hint: homeGardenLine(ctx.game, obj),
-    };
-  },
 });

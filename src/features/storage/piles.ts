@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import type { ObjectView } from '../../game/context';
+import { FARMHOUSE } from '../../data/farmhouse';
 import { onGameStart, registerDebugInfo } from '../../game/hooks';
+import { farmhouseLevel } from '../../logic/homes';
 import { stockDisplay, type StockShown } from '../../logic/stockpiles';
 import { pileArt } from '../../scenes/art';
 import type { FarmScene } from '../../scenes/FarmScene';
@@ -23,10 +25,25 @@ import { addArt, addShadow } from '../../scenes/sprites';
 const SLOTS: Record<string, Record<string, { x: number; y: number }>> = {
   granary: { crops: { x: 0.45, y: 1.6 }, animal: { x: 1.0, y: 1.72 }, goods: { x: 1.75, y: 1.1 }, feed: { x: 1.6, y: 1.62 } },
   storehouse: { wood: { x: 0.52, y: 1.45 }, stone: { x: 1.0, y: 1.65 }, iron: { x: 1.6, y: 1.55 } },
-  farmhouse: { house_goods: { x: 1.84, y: 0.58 }, house_materials: { x: 1.85, y: 1.1 } },
   // The camp's supplies, scattered around the front of its 3×3 footprint, the tent on the back tiles (src/features/camp).
   camp: { wood: { x: 2.6, y: 0.6 }, crops: { x: 0.6, y: 2.55 }, goods: { x: 1.6, y: 2.65 }, stone: { x: 2.6, y: 2.4 } },
 };
+
+/**
+ * The farmhouse's two piles at each level, on the open front-right side of its 3×3 pad (inside the forecourt wall at
+ * level 3), clear of the bench left of the door.
+ */
+const FARMHOUSE_SLOTS: readonly Record<string, { x: number; y: number }>[] = [
+  { house_materials: { x: 2.55, y: 1.45 }, house_goods: { x: 2.5, y: 2.45 } },
+  { house_materials: { x: 2.55, y: 1.5 }, house_goods: { x: 2.5, y: 2.45 } },
+  { house_materials: { x: 2.5, y: 1.5 }, house_goods: { x: 2.45, y: 2.4 } },
+];
+
+/** The pile slots of a building of `type` at `level` (only the farmhouse's change with its level). */
+function slotsFor(type: string, level: number): Record<string, { x: number; y: number }> | undefined {
+  if (type === FARMHOUSE) return FARMHOUSE_SLOTS[level - 1] ?? FARMHOUSE_SLOTS[0];
+  return SLOTS[type];
+}
 
 interface Pile {
   img: Phaser.GameObjects.Image;
@@ -37,12 +54,14 @@ interface Pile {
 interface Yard {
   container: Phaser.GameObjects.Container;
   piles: Map<string, Pile>;
+  /** The building's level the slots were laid out for. */
+  level: number;
 }
 
 /** One hidden image per pile slot, in front of the building's sprite and behind anything added after it. */
-function createYard(scene: Phaser.Scene, view: ObjectView, type: string): Yard {
+function createYard(scene: Phaser.Scene, view: ObjectView, type: string, level: number): Yard {
   const piles = new Map<string, Pile>();
-  const slots = SLOTS[type] ?? {};
+  const slots = slotsFor(type, level) ?? {};
   // The footprint's depth in tiles, from where its top corner sits in the box (see `footprintLocal`).
   const h = Math.round(view.top.x / (ISO_W / 2));
   let index = view.container.getIndex(view.sprite) + 1;
@@ -55,7 +74,7 @@ function createYard(scene: Phaser.Scene, view: ObjectView, type: string): Yard {
     if (shadow) view.shadows.add(shadow);
     piles.set(kind, { img, shadow, art: null });
   }
-  return { container: view.container, piles };
+  return { container: view.container, piles, level };
 }
 
 function showPile(scene: Phaser.Scene, pile: Pile, art: string | null): void {
@@ -89,11 +108,15 @@ onGameStart((ctx) => {
     const seen = new Set<string>();
     for (const s of shown) {
       const view = scene.viewOf(s.id);
-      if (!view || !SLOTS[s.type]) continue;
+      const obj = game.getObject(s.id);
+      const level = obj?.type === FARMHOUSE ? farmhouseLevel(obj) : 1;
+      if (!view || !slotsFor(s.type, level)) continue;
       let yard = yards.get(s.id);
-      // A redrawn object (new game, a new view) gets a fresh yard; the old images went with the old view.
-      if (!yard || yard.container !== view.container || !yard.container.active) {
-        yard = createYard(scene, view, s.type);
+      // A redrawn object (new game, a new view) gets a fresh yard; the old images went with the old view. So does an
+      // upgraded farmhouse, its piles where the new level has room.
+      if (!yard || yard.container !== view.container || !yard.container.active || yard.level !== level) {
+        if (yard && yard.container === view.container) destroyYard(yard);
+        yard = createYard(scene, view, s.type, level);
         yards.set(s.id, yard);
       }
       seen.add(s.id);

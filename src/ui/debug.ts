@@ -4,6 +4,7 @@ import type { FarmContext } from '../game/context';
 import { DAY_MS } from '../logic/constants';
 import type { HazardKind } from '../data/hazards';
 import { addFamily } from '../logic/families';
+import { raiseFarmhouse } from '../logic/farmhouse';
 import { triggerHazard } from '../logic/hazards';
 import { mapOf, regrowAll } from '../logic/maplayer';
 import { catchUpGame } from '../logic/offline';
@@ -142,6 +143,19 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
           },
         },
         '+1 family',
+      ),
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'btn',
+          'data-testid': 'debug-farmhouse-level',
+          // Skips the checklist and the cost: the farmhouse (built or a site) goes up a level at once.
+          onclick: () => {
+            if (!raiseFarmhouse(game)) ctx.ui.toast('No farmhouse, or it is the manor hall already', 'error');
+          },
+        },
+        'Farmhouse +1 level',
       ),
       h(
         'button',
