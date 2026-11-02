@@ -303,12 +303,14 @@ describe('goals', () => {
     expect(game.progression.allDone).toBe(true);
   });
 
-  it('new goals are appended, after the goals saves already know by index', () => {
-    const weave = GOALS.findIndex((g) => g.id === 'weave-cloth');
-    expect(GOALS.slice(weave + 1).map((g) => g.id)).toEqual([
-      'harvest-potatoes', 'winter-cabbage', 'grow-pumpkins',
-      'build-veg-patch', 'gather-apples',
-    ]);
+  it('the new crop goals come last, after the goals saves already know by index', () => {
+    const cloth = GOALS.findIndex((g) => g.id === 'weave-cloth');
+    expect(GOALS.slice(cloth + 1, cloth + 4).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
+  });
+
+  it('new goals are appended, after every goal saves already know by index', () => {
+    const pumpkins = GOALS.findIndex((g) => g.id === 'grow-pumpkins');
+    expect(GOALS.slice(pumpkins + 1).map((g) => g.id)).toEqual(['trade-trader', 'build-veg-patch', 'gather-apples']);
   });
 
   it('harvest cabbage in winter counts only a winter harvest', () => {

@@ -15242,6 +15242,82 @@
    }
   },
   {
+   "name": "trader_wagon",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "travelling trader's covered wagon with the trader beside it, 1x1 (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/trader_wagon.png",
+     "w": 294,
+     "h": 322,
+     "anchor": [
+      155.0,
+      163.0
+     ],
+     "origin": [
+      0.52721,
+      0.50621
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/trader_wagon.png",
+     "w": 147,
+     "h": 161,
+     "anchor": [
+      77.5,
+      81.5
+     ],
+     "origin": [
+      0.52721,
+      0.50621
+     ]
+    }
+   }
+  },
+  {
+   "name": "trader_wagon_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "trader_wagon in winter: snow on the cover and the load, a scarf for the trader (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/trader_wagon_winter.png",
+     "w": 294,
+     "h": 323,
+     "anchor": [
+      155.0,
+      164.0
+     ],
+     "origin": [
+      0.52721,
+      0.50774
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/trader_wagon_winter.png",
+     "w": 147,
+     "h": 162,
+     "anchor": [
+      77.5,
+      82.0
+     ],
+     "origin": [
+      0.52721,
+      0.50617
+     ]
+    }
+   }
+  },
+  {
    "name": "veg_patch",
    "category": "buildings",
    "type": "image",
