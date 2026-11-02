@@ -1952,6 +1952,7 @@ body[data-menu] .tool-banner {
   font-size: 17px;
   font-variant-numeric: tabular-nums;
   pointer-events: auto;
+  z-index: 6; /* its "-$8" float drifts down over the sheet's top edge (5) */
 }
 
 /* F: season, day and speed. */
@@ -2105,14 +2106,16 @@ body[data-menu] .tool-banner {
   color: #e6d4ac;
 }
 
-/* Windows and the action panel: the right-hand sheet. */
+/* Windows and the action panel: the right-hand sheet, under the top row and the money (which wraps under the resource
+   bar on narrower screens; `--de-bottom` is set by the HUD). */
 .sheet {
-  top: calc(var(--top-h) + var(--safe-top));
+  --sheet-top: max(calc(var(--top-h) + var(--safe-top)), calc(var(--de-bottom, 0px) + 8px));
+  top: var(--sheet-top);
   right: calc(10px + var(--safe-right));
   bottom: auto;
   left: auto;
   width: min(380px, calc(100% - 20px));
-  max-height: calc(100% - var(--top-h) - var(--safe-top) - 120px - var(--safe-bottom));
+  max-height: calc(100% - var(--sheet-top) - 120px - var(--safe-bottom));
 }
 
 .sheet-tabs {
