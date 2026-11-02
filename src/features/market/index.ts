@@ -70,7 +70,7 @@ async function sellAllOf(ctx: FarmContext, id: string, name: string): Promise<vo
   if (quote.floods) {
     const ok = await ctx.ui.confirm(
       `Sell ${qty} ${name} for ${formatMoney(quote.total)}?`,
-      `The Market takes about ${allowance(id)} ${name} a day. Past that the price falls with every one sold: from ${formatMoney(quote.priceNow)} to ${formatMoney(quote.priceAfter)} (${dropText(quote.dropAfter / 10_000)}). It recovers a quarter of the drop each day.`,
+      `The Market takes about ${allowance(id)} ${name} a day. Past that the price falls with every one sold${quote.priceAfter < quote.priceNow ? `: from ${formatMoney(quote.priceNow)} to ${formatMoney(quote.priceAfter)}` : `, and it is already down to ${formatMoney(quote.priceNow)}`} (${dropText(quote.dropAfter / 10_000)}). It recovers a quarter of the drop each day.`,
       { confirmLabel: `Sell for ${formatMoney(quote.total)}`, variant: 'primary' },
     );
     if (!ok) return;

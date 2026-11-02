@@ -146,7 +146,10 @@ describe('trader schedule', () => {
     const day = nextTraderDay(SEED, 3);
     const game = farm(3, day - 1);
     updateTrader(game);
-    catchUp(game, dayStart(day) + 10 - game.now, { away: false });
+    const r = catchUp(game, dayStart(day) + 10 - game.now, { away: false });
+    expect(r.traders.missed).toBe(0);
+    // The next frame brings him, announced as in play.
+    expect(updateTrader(game).arrived?.day).toBe(day);
     expect(traderHere(game.state)?.day).toBe(day);
   });
 });

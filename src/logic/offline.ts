@@ -130,10 +130,11 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     result.jobsFinished += finished;
     changed.add(obj.id);
   };
-  // The trader is brought up to the moment the player left, then every arrival on the way counts as missed.
-  updateTrader(game);
+  // Away, the trader is brought up to the moment the player left, then every arrival on the way counts as missed.
+  // A debug jump leaves him to the next frame, as in play (so his arrival and departure are announced).
+  if (away) updateTrader(game);
   runWork(game, from + appliedMs, { onSettled: settled });
-  result.traders.missed = updateTrader(game, { away }).missed;
+  if (away) result.traders.missed = updateTrader(game, { away }).missed;
   listening.forEach((off) => off());
   const to = clock.elapsed;
   const endedAway = (timer: Timer | null) => !!timer && endOf(timer) > from && endOf(timer) <= to;

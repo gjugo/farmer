@@ -39,6 +39,7 @@ git (or rerun the commands below) after running it.
 | `wheat`, `carrot`, `corn` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe, `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none (nothing grows in winter) |
 | item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
+| `trader_wagon`, `trader_wagon_winter` (the travelling trader with his wagon) | `trader_wagon_raw.png`, `trader_wagon_winter_raw.png`; see **Trader's wagon** below | all |
 
 ## Generating in Ludo
 
@@ -560,3 +561,20 @@ and anchors match the pack, so `manifest.json` needs no change. It writes every 
 Seasons: spring and summer are the Ludo grass as is. Autumn is it recoloured gold with fallen leaves drawn on
 (wrapped, so it still tiles). Winter uses the snow tile for grass (three variants: as is, turned, transposed),
 the trampled-snow tile for paths, and frozen soil: the tilled soil greyed with snow in the furrows.
+
+## Trader's wagon
+
+`createImage` (Cel-Shaded, Isometric, sprite, square): a covered wagon with two spoked wheels, a cream canvas cover
+with a red stripe, crates, sacks and a barrel, and the bearded trader in a green coat waving beside it; no horse,
+ground or shadow. Winter is `editImage` on it ("keep the same ... exactly; add fresh snow on the cover, the load and
+the wagon's edges, and give the trader a red scarf"). The raw images are padded with 112 px of transparency at the
+bottom so the baked shadow isn't clipped. It is fitted as a one-tile prop standing between the wheels (it overhangs
+its tile like a tree), with `buildings` entries in `manifest.json` added by hand first (`install_prop.py` only updates
+existing entries); the game draws `trader_wagon_winter` in winter.
+
+```bash
+for n in trader_wagon trader_wagon_winter; do
+  $P $L/fit_prop.py $L/source/${n}_raw.png /tmp/props $n 420 600 0.4 --shadow=100
+  $P $L/install_prop.py /tmp/props $n
+done
+```
