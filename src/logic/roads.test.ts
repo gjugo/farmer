@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FIELD } from '../data/crops';
 import { FARMHOUSE, PATH } from '../data/farmhouse';
 import { START_LAYOUT } from './constants';
@@ -32,6 +32,16 @@ describe('farmhouse and roads', () => {
       expect(work.x - f.x).toBeLessThan(2);
       expect(work.y - f.y).toBeLessThan(2);
     }
+  });
+
+  it('the roads reach the starting fields whichever module loads first (the browser loads src/game/workers first)', async () => {
+    vi.resetModules();
+    await import('../game/workers');
+    const roads = await import('./roads');
+    const crops = await import('./crops');
+    const { createNewGame: fresh } = await import('./state');
+    const state = fresh();
+    for (const f of crops.STARTING_FIELDS) expect(roads.findRoute(state, field(f))).not.toBeNull();
   });
 
   it('there is no route to a site no path touches, until one is built', () => {
