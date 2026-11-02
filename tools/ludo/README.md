@@ -20,6 +20,7 @@ git (or rerun the commands below) after running it.
 | `weaving_hut`, `weaving_hut_winter` (the loom) | `weaving_hut_raw.png`, `weaving_hut_winter_raw.png` | all |
 | `malthouse`, `brewery`, `tailor`, each with `_winter` | `<name>_raw.png`, `<name>_winter_raw.png`; see **Malthouse, brewery and tailor** below | all |
 | `blacksmith`, `blacksmith_winter` | `blacksmith_raw.png`, `blacksmith_winter_raw.png`; see **Blacksmith** below | all |
+| `feed_barn`, `feed_barn_winter` | `feed_barn_raw.png`, `feed_barn_winter_raw.png`; see **Feed barn** below | all |
 | `woodcutter_lodge`, `woodcutter_lodge_winter` | `woodcutter_lodge_raw.png`, `woodcutter_lodge_winter_raw.png` | all |
 | `quarry`, `quarry_winter` | `quarry_raw.png`, `quarry_winter_raw.png` | all |
 | `mine`, `mine_winter` | `mine_raw.png`, `mine_winter_raw.png` | all |
@@ -409,6 +410,30 @@ $P $L/fit_building.py $L/source/blacksmith_raw.png /tmp/props blacksmith 2 2 43 
 $P $L/fit_building.py $L/source/blacksmith_winter_raw.png /tmp/props blacksmith_winter 2 2 43 405 755 405 399 583
 $P $L/fit_icon.py $L/source/icon_tools_raw.png /tmp/props tools
 for n in blacksmith blacksmith_winter tools; do $P $L/install_prop.py /tmp/props $n; done
+```
+
+### Feed barn
+
+`generateWithStyle` (n=4, `sprite`) with `farmhouse_raw.png` as `style_image`, sent as base64 by a small script posting
+the MCP `tools/call` (as for the farmhouse levels): "A complete, uncropped isometric view of a small farming-game timber
+feed barn, south corner of the pad facing the viewer, 2:1 isometric angle, standing on the entire straight-edged diamond
+pad of packed dirt with a narrow grass edge, no thickness, a four-cell (2-by-2 tile) footprint. A small barn of warm
+brown timber planks with dark timber framing and a pitched wooden-shingle roof, no chimney. The front-left wall is wide
+open (an open-fronted barn) showing golden hay bales stacked inside; on the pad in front stand a few burlap grain sacks
+and a long wooden feeding trough filled with grain feed, with a little loose straw. Bright saturated colours, dark-brown
+outlines, flat cel shading, firm two-tone shadows from the upper left, plain white background." The first was picked.
+Winter: `editImage` on its Ludo URL. A plain "keep the same ... add snow" edit came back painterly (no outlines), so the
+second try passed the summer image as `reference_image` too and asked to keep "thick dark-brown outlines, flat cel
+shading and bright cartoon colours ... smooth flat white snow with light blue cel shadows ... Hand-drawn cartoon style,
+no realistic texture"; the first of those was picked. It has no chimney: the building shows no work animation
+(`anim: 'none'`). 4 credits in all.
+
+```bash
+$P $L/add_asset.py blacksmith feed_barn "--notes=feed_barn (Ludo.ai, cel-shaded; shadow baked in)"
+$P $L/add_asset.py blacksmith_winter feed_barn_winter "--notes=feed_barn_winter (Ludo.ai, cel-shaded; shadow baked in)"
+$P $L/fit_building.py $L/source/feed_barn_raw.png /tmp/props feed_barn 2 2 40 354 743 353 390.5 529.2
+$P $L/fit_building.py $L/source/feed_barn_winter_raw.png /tmp/props feed_barn_winter 2 2 38 351 726 351 382 523
+for n in feed_barn feed_barn_winter; do $P $L/install_prop.py /tmp/props $n; done
 ```
 
 ## Feed mill: `mill_sails.py`

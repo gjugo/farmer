@@ -162,6 +162,7 @@ export const TEXTURE_ART: Record<string, string> = {
   path: 'path_single',
   coop: 'chicken_coop',
   'feed-mill': 'feed_mill_static',
+  'feed-barn': 'feed_barn',
   dairy: 'dairy',
   bakery: 'bakery',
   loom: 'weaving_hut',
