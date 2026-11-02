@@ -162,6 +162,18 @@ describe('work scheduler', () => {
     expect(field.state.crop).toBe('corn');
   });
 
+  it('an unploughed field is ploughed for free, even with no money', () => {
+    const game = farm();
+    const [field] = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
+    field.state.ploughedAt = null;
+    game.spend(game.money);
+    assignFarmer(game, field.id);
+    expect(workplaceNext(game, field)).toMatchObject({ task: { kind: 'plough' } });
+    play(game, 10_000);
+    expect(isPloughed(game.state.clock, field.state)).toBe(true);
+    expect(game.money).toBe(0);
+  });
+
   it('pens get fed and collected', () => {
     const game = farm();
     const coop = build<PenState>(game, 'coop', X + 1, Y + 5);

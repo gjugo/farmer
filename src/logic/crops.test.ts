@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { CROPS, FIELD } from '../data/crops';
-import { PLOUGH_COST } from '../data/seasons';
 import { SOIL_QUALITY } from '../data/soil';
 import { START_LAND } from './constants';
 import {
@@ -214,7 +213,7 @@ describe('seasons and ploughing', () => {
     return r.object as PlacedObject<FieldState>;
   }
 
-  it('a built field must be ploughed ($5) before sowing', () => {
+  it('a built field must be ploughed (free) before sowing', () => {
     const game = new Game(maxLevelState());
     const field = newField(game);
     const money = game.money;
@@ -223,20 +222,21 @@ describe('seasons and ploughing', () => {
     expect(game.money).toBe(money);
 
     expect(plough(game, field)).toEqual({ ok: true });
-    expect(game.money).toBe(money - PLOUGH_COST);
+    expect(game.money).toBe(money);
     expect(isPloughed(game.state.clock, field.state)).toBe(true);
     expect(plough(game, field)).toEqual({ ok: false, reason: 'ploughed' });
     expect(plant(game, field, 'wheat')).toEqual({ ok: true });
     expect(plough(game, field)).toEqual({ ok: false, reason: 'occupied' });
-    expect(game.money).toBe(money - PLOUGH_COST - CROPS.wheat.plantCost);
+    expect(game.money).toBe(money - CROPS.wheat.plantCost);
   });
 
-  it('refuses to plough without the money', () => {
+  it('ploughs with no money at all', () => {
     const game = new Game(maxLevelState());
     const field = newField(game);
-    game.state.money = PLOUGH_COST - 1;
-    expect(plough(game, field)).toEqual({ ok: false, reason: 'money' });
-    expect(field.state.ploughedAt).toBeNull();
+    game.state.money = 0;
+    expect(plough(game, field)).toEqual({ ok: true });
+    expect(game.money).toBe(0);
+    expect(isPloughed(game.state.clock, field.state)).toBe(true);
   });
 
   it('ploughed soil lasts through harvests until the winter frost; winter ground cannot be ploughed', () => {

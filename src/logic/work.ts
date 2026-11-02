@@ -4,7 +4,6 @@ import { CROP_LIST, FIELD, getCrop, type CropDef } from '../data/crops';
 import { findRecipe, isProcessorType } from '../data/processing';
 import { TOOLS_ITEM } from '../data/tools';
 import { isResourceType } from '../data/resourceBuildings';
-import { PLOUGH_COST } from '../data/seasons';
 import { COLLECT_WORK_MS, FEED_WORK_MS, FERTILISE_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
 import * as animals from './animals';
 import { isBarn, nextHaulEvent, planHaul, settleHauls, startTrip, type HaulTrip } from './haul';
@@ -54,7 +53,7 @@ export type WaitReason =
   | 'growing' // a crop is growing
   | 'no-plan' // the crop plan is "Fallow"
   | 'season' // nothing on the plan can be sown now
-  | 'money' // ploughing or seed costs more than the farm has
+  | 'money' // seed costs more than the farm has
   | 'empty' // a pen without animals
   | 'fed' // every animal is eating
   | 'feed' // hungry animals, but no feed in stock
@@ -115,7 +114,6 @@ function fieldNext(game: Game, obj: PlacedObject<FieldState>): WorkplaceNext {
   if (!crop) return { wait: 'season' };
   if (!isPloughed(clock, obj.state)) {
     if (!canPloughNow(clock)) return { wait: 'season' };
-    if (!game.canAfford(PLOUGH_COST)) return { wait: 'money', cost: PLOUGH_COST };
     return task('plough', PLOUGH_WORK_MS, () => plough(game, obj).ok);
   }
   if (!game.canAfford(crop.plantCost)) return { wait: 'money', cost: crop.plantCost };

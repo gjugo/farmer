@@ -23,9 +23,6 @@ export const SEASON_INFO: Record<Season, SeasonDef> = {
 /** Seasons in which fields can be ploughed. Ploughed soil stays ploughed until the first season outside these (the winter frost). */
 export const PLOUGH_SEASONS: readonly Season[] = ['spring', 'summer', 'autumn'];
 
-/** Money charged to plough a field. */
-export const PLOUGH_COST = 5;
-
 /** "Spring, Autumn" */
 export function seasonNames(seasons: readonly Season[]): string {
   return seasons.map((s) => SEASON_INFO[s].name).join(', ');

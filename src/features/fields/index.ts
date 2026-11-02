@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { CROP_LIST, FIELD } from '../../data/crops';
 import { getItem } from '../../data/items';
-import { PLOUGH_COST, PLOUGH_SEASONS, SEASON_INFO, seasonNames } from '../../data/seasons';
+import { PLOUGH_SEASONS, SEASON_INFO, seasonNames } from '../../data/seasons';
 import { HARVEST_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS } from '../../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
@@ -201,14 +201,9 @@ function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Panel
       lines: [seasonLine(ctx), 'Unploughed soil. Plough it before sowing; it stays ploughed until the winter frost.'],
       actions: [
         {
-          label: `🚜 Plough · $${PLOUGH_COST}`,
-          disabled: !game.canAfford(PLOUGH_COST),
+          label: '🚜 Plough',
           onClick: () => {
-            withFarmer(ctx, 'plough', obj, PLOUGH_WORK_MS, () => {
-              if (!plough(game, obj).ok) return false;
-              ctx.ui.floatText(obj.x + 0.5, obj.y, `-$${PLOUGH_COST}`, '#ffd6a0');
-              return true;
-            });
+            withFarmer(ctx, 'plough', obj, PLOUGH_WORK_MS, () => plough(game, obj).ok);
           },
         },
       ],
