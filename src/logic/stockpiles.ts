@@ -1,12 +1,15 @@
+import { CAMP_SUPPLIES } from '../data/camp';
 import { FARMHOUSE } from '../data/farmhouse';
 import { GRANARY_PILES, PILE_STAGES, pileOf, STOREHOUSE_PILES, type PileStage } from '../data/resources';
 import { FARMHOUSE_STORE, isStorageType, STORAGE, STORAGE_POOLS, type StoragePool } from '../data/storage';
+import { campLeft, campOf } from './camp';
 import { capacityOfObject, poolOf, used } from './storage';
 import type { GameState } from './types';
 
 /**
  * Which stock piles each building shows. Stock is one shared pool per kind, so the display splits it: the
- * farmhouse store fills first, then each finished granary (goods) or storehouse (materials) in placement
+ * starting camp shows what is left of its supplies (one pile per item, shrinking from full as it goes), the
+ * farmhouse store fills first with the rest, then each finished granary (goods) or storehouse (materials) in placement
  * order, up to its room. Purely visual: no rule reads this.
  */
 
@@ -43,11 +46,26 @@ function pileTotals(state: GameState, pool: StoragePool, kinds: readonly string[
  */
 export function stockDisplay(state: GameState): StockShown[] {
   const shown = new Map<string, StockShown>();
+  const camp = campOf(state);
+  const campHeld: Record<StoragePool, number> = { goods: 0, materials: 0 };
+  if (camp) {
+    const entry: StockShown = { id: camp.id, type: camp.type, pools: {}, piles: {} };
+    const left = campLeft(camp);
+    for (const [id, full] of Object.entries(CAMP_SUPPLIES)) {
+      const n = left[id] ?? 0;
+      entry.piles[pileOf(id)] = Math.max(entry.piles[pileOf(id)] ?? 0, pileStage(n / (full || 1))) as PileStage;
+      campHeld[poolOf(id)] += n;
+    }
+    for (const pool of STORAGE_POOLS) entry.pools[pool] = { held: campHeld[pool], capacity: campHeld[pool] };
+    shown.set(camp.id, entry);
+  }
   for (const pool of STORAGE_POOLS) {
     const kinds = pool === 'goods' ? GRANARY_PILES : STOREHOUSE_PILES;
     const totals = pileTotals(state, pool, kinds);
+    if (camp) for (const [id, n] of Object.entries(campLeft(camp))) if (poolOf(id) === pool) totals[pileOf(id)] = Math.max(0, (totals[pileOf(id)] ?? 0) - n);
     const biggest = Math.max(0, ...Object.values(totals));
-    let left = used(state, pool);
+    // The camp's supplies are drawn at the camp; the rest is shared out from the farmhouse on.
+    let left = used(state, pool) - campHeld[pool];
     const take = (room: number) => {
       const held = Math.min(left, room);
       left -= held;

@@ -3,6 +3,7 @@ import { COTTAGE, COTTAGE_DEF } from '../data/families';
 import { materialEntries, type MaterialCost, type MaterialId } from '../data/materials';
 import { isStorageType, STORAGE } from '../data/storage';
 import type { ActivityEvents } from './activity';
+import { settleCamp } from './camp';
 import { dayOf, gameDelta } from './clock';
 import { DEMOLISH_REFUND } from './constants';
 import * as economy from './economy';
@@ -229,6 +230,8 @@ export class Game {
   removeItem(itemId: ItemId, qty = 1): boolean {
     if (!inventory.remove(this._state.inventory, itemId, qty)) return false;
     if (qty > 0) this.events.emit('inventory', { itemId, count: this.count(itemId), delta: -qty });
+    // What is spent, sold or eaten comes out of the starting camp's supplies first (src/logic/camp.ts).
+    if (qty > 0) settleCamp(this);
     return true;
   }
 

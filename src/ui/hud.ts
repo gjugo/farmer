@@ -741,7 +741,7 @@ export class Hud implements UiApi {
         if (!spec) return;
         const current = spec;
         if (current.lines?.length) {
-          body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => h('li', {}, withIcons(l)))));
+          body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => (typeof l === 'string' ? h('li', {}, withIcons(l)) : h('li', l.testId ? { 'data-testid': l.testId } : {}, withIcons(l.text))))));
         }
         if (current.checklist?.length) {
           body.append(

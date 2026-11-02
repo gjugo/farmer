@@ -68,7 +68,9 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   materials only as far as the storehouses have room: the confirm says what would be lost (demolish mode asks first too when something would be lost).
   A granary or storehouse can't be demolished while its stock wouldn't fit without it ("Sell or use 40 goods first").
 - **Storage:** everything the farm holds needs room. **Goods** (crops, eggs, milk, wool, feed, cheese, bread, …) go
-  in **granaries**, **materials** (wood, stone, iron) in **storehouses**; the farmhouse holds 30 of each on top. A
+  in **granaries**, **materials** (wood, stone, iron) in **storehouses**; the farmhouse holds 30 of each on top, and a
+  new farm's ⛺ **camp** adds room for what is left of its starting supplies (see **Starting camp**), so they fit from
+  the start and that room shrinks as they are used (nothing new is ever stored there). A
   granary holds 100 / 250 / 500 goods at level 1 / 2 / 3 ($30 + 5 🪵 to build), a storehouse 60 / 150 / 300 materials
   ($60 + 8 🪵 + 8 🪨). Click one for its panel: level, the pool's used/capacity, what is stored, and **Upgrade** with its
   cost (level 3 needs 🔩 iron) or why it can't be done yet. An upgrade keeps a farmer busy like building. The level
@@ -92,9 +94,10 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   falls into one by its `category`, so new items need no change there.
 - **Stock in the world:** what the farm holds is stacked in the yards: logs, stone blocks and iron bars in front of a
   storehouse; sacks and baskets of crops, egg baskets, milk churns and wool bales, feed sacks and crates of cheese,
-  bread and cloth in front of a granary; a small pile of goods and one of materials beside the farmhouse. Each pile has
+  bread and cloth in front of a granary; a small pile of goods and one of materials beside the farmhouse; logs, stone,
+  crop sacks and bread crates around the camp's tent, each shrinking from full as that supply is used. Each pile has
   4 fill stages (a quarter … full) and none when empty. Stock is one pool per kind, so the display splits it: the
-  farmhouse store fills first, then each finished granary or storehouse in placement order, up to its room (purely
+  camp shows what is left of its supplies, the farmhouse store fills first with the rest, then each finished granary or storehouse in placement order, up to its room (purely
   visual, `stockDisplay` in `src/logic/stockpiles.ts`). In a building the biggest pile shows how full it is and the
   others are scaled to it, so a full building looks full. Construction sites show none.
 - **Market:** 🏪 Market sells anything in the inventory at today's price (**Sell everything** keeps building
@@ -102,7 +105,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   pick any amount with the − / + stepper. It shows the storehouse room left; a purchase is capped at that room
   ("Bought only 5 …") and refused when there is none. Buy prices change daily like sell prices and are always above anything the
   Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
-  purchase is refused with a toast. New farms start without materials; the goal "Buy 10 wood" comes just before
+  purchase is refused with a toast. New farms start with the camp's 40 wood and 20 stone; the goal "Buy 10 wood" comes just before
   "Build a cottage" and "Build a chicken coop". "House 4 families" follows "Reach level 3".
 - **Market rules (saturation):** the Market takes each item's daily allowance, worth about $150 at its base price
   (`floor(150 / base)`: 37 wheat, 15 eggs, 3 cheese), at the day's price. Every unit sold past it lowers that item's
@@ -285,8 +288,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   food, −50 with nothing to eat, up to +10 when every family is clothed in cloth (+15 in clothes; mixed, by share), up to
   +10 when every family had ale (by share), and in winter +10 when every home is warm or up
   to −60 when homes are cold (by the share of cold homes); from level 2, up to +5 when every home has a house garden
-  (a share of it when some do). A new farm's families live on their provisions for the
-  first 2 days (no hunger penalty), so nobody leaves before the first harvest. The overview chip (😊 62%) opens
+  (a share of it when some do). A new farm's families eat the bread and carrots of the starting camp (about 5 days
+  for the first three families), so nobody goes hungry before the first harvest; there is no other grace. The overview chip (😊 62%) opens
   **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood, ale and clothes, and when the
   next family comes ("Build a 🛖 cottage, or upgrade one, to house another family"); the 👨‍🌾 Farmers sheet shows the
   same block. A cottage puffs chimney smoke on winter days while it has firewood (one chimney per family living there).
@@ -329,6 +332,18 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   (`CARRY` in `src/scenes/art.ts`). Work on a field, pen or building is refused
   until a path joins it to the door ("No path leads there"), and the build ghost turns red where no path reaches.
   New farms start with a road from the door to both fields; older saves get a farmhouse and roads to what they built.
+- **Starting camp:** a new game starts like Manor Lords: the settlers arrive with supplies, shown as a ⛺ **camp**
+  (3×3: a patched tent with a campfire on the back tiles, the supply piles scattered in front) beside the farmhouse,
+  next to the path, on the side away from the fields. It holds **40 🪵 wood, 20 🪨 stone, 15 🍞 bread and 15 🥕 carrots**
+  (`CAMP_SUPPLIES` in `src/data/camp.ts`): enough for a granary, a cottage and a storehouse or coop, and about 5 days
+  of food for the first families. They are ordinary stock: the resource bar shows them and building, meals, selling
+  and orders use them as any other. The camp records what is `left` of each; after every change to the stock
+  `left = min(left, stock)`, so whatever is spent, sold or eaten comes out of the camp first and new harvests,
+  purchases or lodge wood never refill it (`src/logic/camp.ts`). Orders don't learn goods from the camp's supplies.
+  Tapping the camp shows "Starting supplies: 32 🪵 · 20 🪨 · 12 🍞 · 15 🥕 left". It isn't in the build menu and
+  can't be demolished or built over. Once every supply is used up the tent fades away, a toast says "Your camp is
+  packed away: the starting supplies are used up", and its tiles are free to build on. Campfire smoke rises on winter
+  days. Saves from before the camp have none and keep their stock.
 - **Seasons:** a game day lasts 8 real minutes at ×1 and each season 4 days, about 30 minutes (days 1–4 spring,
   5–8 summer, 9–12 autumn, 13–16 winter, then round again), so a year takes about 2 hours. The pace is slow on
   purpose: a new player reaches level 2 in 10–15 minutes and level 5 in 2–3 hours (level 5 asks for 5,000 XP: families eat
@@ -417,11 +432,11 @@ game keeps running, nothing is dimmed and nothing is blocked.
   1. Look around → the camera moved or zoomed. 2. Assign a farmer to a starting field → a field has a farmer.
   3. Speed (⏩ ⏭, keys 1–3, ⏸/Space) → the speed or pause changed. 4. Sow the other field by hand (🌾 Wheat) → a field
   without a farmer has a crop. 5. ⭐ the level → the Development window opened. 6. Build a field → a field placed.
-  7. Harvest → `harvested`. 8. Sell at the Market → `sold`. 9. Wood: buy it, or build a woodcutter's lodge → wood
-  bought or a lodge placed. 10. A granary → placed. 11. A cottage → placed. 12. You're set (Almanac, perks, Settings)
+  7. Harvest → `harvested`. 8. Sell at the Market → `sold`. 9. Wood: the camp's supplies come first; then buy it, or build a
+  woodcutter's lodge → wood bought or a lodge placed. 10. A granary → placed. 11. A cottage → placed. 12. You're set (Almanac, perks, Settings)
   → **Finish**.
   Each step finishes on its event or with Next. One whose event came earlier, or whose result is already on the farm
-  (a farmer on a field, a granary, a cottage, a lodge, crops in store, a third field), is skipped when it comes up, so
+  (a farmer on a field, a granary, a cottage, a lodge, crops in store beyond the camp's carrots, a third field), is skipped when it comes up, so
   steps can be done in any order.
 - **State:** saved per farm in `ext.guide` (`{ started, step, finished, skipped, done }`, `done` = steps whose event
   came early); a reload resumes the step. Purely additive: no `SAVE_VERSION` bump; a save without it has the guide off.
@@ -460,6 +475,10 @@ state is `window.farm.ext.trader` (with `visit.tile`, where the wagon stands) an
 `window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
+`window.farm.camp` is `{ id, left, room, packed }`: the camp's object id, what is left of each supply, the room it adds
+to each pool (`{ goods, materials }`) and whether it is packed away (then `left` is empty and the object is gone); null
+on saves from before the camp. Its object is type `camp` in `window.farm.objects`, its slice `window.farm.ext.camp`
+(`{ id, packed }`). The camp panel's lines have test ids `camp-supplies` and `camp-note`.
 `window.farm.storage` is `{ goods: { used, capacity }, materials: { used, capacity } }`; each storage building's
 level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`). A `woodcutter`, `quarry`
 or `mine` entry has `state: { cycle, waiting, day, today }`: the cycle being worked (`{ start, duration }` or null),
@@ -597,6 +616,7 @@ src/
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
     storage.ts         goods/materials pools: capacity, used, spaceFor (Game.addItem takes only what fits), upgrades
+    camp.ts            the starting camp: where it goes, what is left (trimmed after every removeItem), its room, packing away (slice `camp`)
     resources.ts       woodcutter, quarry, mine: production cycles, the yard (3 cycles' yield), idle reasons
     haul.ts            ox barns and oxcarts: buying the ox, planning a trip (fullest pickup, nearest store), the legs
                        and their timing, loading / unloading / parking as scheduler events, `cartsOf`
@@ -607,6 +627,7 @@ src/
     items.ts           item catalogue (ids shared by every feature)
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
+    camp.ts            the starting camp buildable (3×3, fixed) and its supplies
     families.ts        the Cottage buildable and its levels, foods, needs per family, approval points, arrival and leaving thresholds
     perks.ts           the perk pool: name, what it does, its factor and what it is about
     tools.ts           tools: jobs a set lasts, the speed-up, the jobs they work on
@@ -659,6 +680,8 @@ src/
                        map; the lodge's reach on the build ghost; `window.farm.map`
                        (data: src/data/resourceBuildings.ts, logic: src/logic/resources.ts)
     orders/            📋 Orders tab (⚖️ Trade, with badge) and orders panel
+    camp/              ⛺ the starting camp: tent panel, winter campfire smoke, fade and toast when packed away, `window.farm.camp`
+                       (data: src/data/camp.ts, logic: src/logic/camp.ts; its piles are drawn by storage/piles.ts)
     families/          🏠 home room, 😊 approval and 🧺 supplies chips, the 👪 Families tab, cottage smoke and panel, arrival/departure toasts,
                        `window.farm.families` (data: src/data/families.ts, logic: src/logic/families.ts)
     gardens/           vegetable patch, hen run (two hens) and orchard (two apple trees): panel, the free homes
@@ -821,6 +844,8 @@ with a full deposit under every quarry and mine and a grove of about 8 trees in 
 Version 13 added oxcart hauling: a resource building's `waiting` output (from older saves: what waited for storehouse
 room) stays, now as its yard, so nothing is lost; jobs gain an optional `haul` trip and ox barns their own state.
 Version 14 added tools: every farmer of an older save gets an empty tool slot (`workers.tools`).
+The starting camp needed no version bump either: it is an object (type `camp`, its `left` in `state`) plus the
+additive `camp` slice (`{ id, packed }`); a save without them simply has no camp.
 
 - **Home screen:** the page opens on a "Farmer" title over the dimmed, paused farm (its seasonal look, or a fresh
   farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the

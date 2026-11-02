@@ -34,7 +34,7 @@ import { connectToFarmhouse } from './roads';
 import { deserialize, serialize } from './save';
 import { SEASON_MS } from './seasons';
 import { createNewGame } from './state';
-import { bareMap, maxLevelState } from './test-utils';
+import { bareMap, maxLevelState, noCamp } from './test-utils';
 import type { GameState, PlacedObject } from './types';
 import { nextWorkEvent, workplaceNext } from './work';
 import { assignFarmer, addFarmer } from './workers';
@@ -51,7 +51,8 @@ const near = (a: { x: number; y: number; w: number; h: number }, x: number, y: n
   x >= a.x - margin && y >= a.y - margin && x < a.x + a.w + margin && y < a.y + a.h + margin;
 
 function newGameWith(seed: number): GameState {
-  const state = createNewGame();
+  // A new game lays out its map before the camp goes up beside the farmhouse.
+  const state = noCamp(createNewGame());
   state.ext[MAP_SLICE] = newMapLayer(state, seed);
   return state;
 }
@@ -154,7 +155,7 @@ describe('map generation', () => {
       20261031: { map: '2386ca00f59e', scenery: '9d0ebe6cf900' },
     };
     for (const [seed, want] of Object.entries(expected)) {
-      const layer = newMapLayer(createNewGame(), Number(seed));
+      const layer = newMapLayer(noCamp(createNewGame()), Number(seed));
       const scenery: string[] = [];
       for (let y = 0; y < MAP_HEIGHT; y++) {
         for (let x = 0; x < MAP_WIDTH; x++) {

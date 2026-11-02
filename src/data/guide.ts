@@ -99,7 +99,7 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
   {
     id: 'materials',
     title: 'Wood and stone',
-    text: 'Buildings need 🪵 wood and 🪨 stone. Buy wood at the Market, or build a 🪓 Woodcutter’s Lodge near trees and assign a farmer.',
+    text: 'Buildings need 🪵 wood and 🪨 stone. Your ⛺ camp’s supplies come first (tap it to see what is left); for more, buy wood at the Market or build a 🪓 Woodcutter’s Lodge near trees and assign a farmer.',
     ring: ['buy-5-wood', 'build-woodcutter', 'btn-trade'],
   },
   {

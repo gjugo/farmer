@@ -22,12 +22,6 @@ export const FOODS: readonly KnownItemId[] = ['wheat', 'carrot', 'corn', 'potato
 /** Food each family eats a day. */
 export const MEAL_PER_FAMILY = 2;
 
-/**
- * A new farm's families live on the provisions they brought for this many days: going short then costs no approval,
- * so the first newcomers don't leave before the first harvest is in.
- */
-export const PROVISION_DAYS = 2;
-
 /** Wood each family burns at its own hearth on a winter day (a full level 2 cottage burns two). */
 export const FIREWOOD_PER_HOME = 1;
 

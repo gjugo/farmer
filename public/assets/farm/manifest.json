@@ -23084,6 +23084,82 @@
      ]
     }
    }
+  },
+  {
+   "name": "camp",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "the settlers' starting camp: a patched ridge tent with a campfire and cooking pot on the back of a 3x3 footprint, the supply piles in front drawn by the game (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/camp.png",
+     "w": 568,
+     "h": 425,
+     "anchor": [
+      265.0,
+      148.0
+     ],
+     "origin": [
+      0.46655,
+      0.34824
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/camp.png",
+     "w": 284,
+     "h": 212,
+     "anchor": [
+      132.5,
+      74.0
+     ],
+     "origin": [
+      0.46655,
+      0.34906
+     ]
+    }
+   }
+  },
+  {
+   "name": "camp_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "camp in winter: snow on the tent and the fire ring (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/camp_winter.png",
+     "w": 568,
+     "h": 425,
+     "anchor": [
+      265.0,
+      148.0
+     ],
+     "origin": [
+      0.46655,
+      0.34824
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/camp_winter.png",
+     "w": 284,
+     "h": 212,
+     "anchor": [
+      132.5,
+      74.0
+     ],
+     "origin": [
+      0.46655,
+      0.34906
+     ]
+    }
+   }
   }
  ]
 }

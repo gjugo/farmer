@@ -1,6 +1,7 @@
 import { CROP_LIST, FIELD } from '../data/crops';
 import { COTTAGE } from '../data/families';
 import { GUIDE_STEPS, type GuideStepDef, type GuideStepId } from '../data/guide';
+import { campInfo } from './camp';
 import type { ActivityEvents } from './activity';
 import type { PlacedObject } from './types';
 import type { Game } from './game';
@@ -81,7 +82,8 @@ const RULES: Record<GuideStepId, StepRule> = {
   field: { on: placed(FIELD), met: (game) => fields(game).length > STARTING_FIELDS.length },
   harvest: {
     on: (s) => s.kind === 'activity' && s.name === 'harvested',
-    met: (game) => Object.entries(game.state.inventory).some(([id, n]) => CROP_ITEMS.has(id) && n > 0),
+    // Crops beyond the camp's starting carrots: those came with the settlers, not from a field.
+    met: (game) => Object.entries(game.state.inventory).some(([id, n]) => CROP_ITEMS.has(id) && n > (campInfo(game.state)?.left[id] ?? 0)),
   },
   sell: { on: (s) => s.kind === 'activity' && s.name === 'sold' },
   materials: {
