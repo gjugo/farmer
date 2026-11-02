@@ -174,6 +174,3046 @@
    }
   },
   {
+   "name": "road_ne",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_se_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_se_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_se_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_ne_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_ne_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_ne_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_se_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_se_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_se_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_single",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_single.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_single.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_single_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_single_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_single_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_single_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_single_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_single_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_single_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_single_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_single_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_single_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_single_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_single_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_nw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "road_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/road_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/road_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
    "name": "fringe_path_ne",
    "category": "tiles",
    "type": "image",
@@ -198,6 +3238,766 @@
     },
     "1x": {
      "file": "1x/tiles/fringe_path_ne.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_ne",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_ne.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_ne.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_ne_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_ne_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_ne_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_ne_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_ne_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_ne_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_ne_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_ne_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_ne_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_ne_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_ne_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_ne_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_se",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_se.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_se.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_se_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_se_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_se_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_se_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_se_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_se_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_se_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_se_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_se_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_se_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_se_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_se_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_sw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_sw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_sw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_sw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_sw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_sw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_sw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_sw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_sw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_sw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_sw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_sw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_sw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_sw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_sw_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_nw",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_nw.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_nw.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_nw_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_nw_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_nw_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_nw_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_nw_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_nw_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_nw_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_nw_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_nw_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "fringe_road_nw_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "grass fringe strip over a main-road edge",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/fringe_road_nw_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/fringe_road_nw_winter.png",
      "w": 128,
      "h": 64,
      "anchor": [
@@ -6377,6 +10177,44 @@
      "origin": [
       0.49803,
       0.22289
+     ]
+    }
+   }
+  },
+  {
+   "name": "trading_post",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "trading post, 2x2: an open-fronted timber stall with an awning, crates, barrels, sacks and a hitching rail (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/trading_post.png",
+     "w": 506,
+     "h": 318,
+     "anchor": [
+      252.0,
+      57.0
+     ],
+     "origin": [
+      0.49802,
+      0.17925
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/trading_post.png",
+     "w": 253,
+     "h": 159,
+     "anchor": [
+      126.0,
+      28.5
+     ],
+     "origin": [
+      0.49802,
+      0.17925
      ]
     }
    }
@@ -22283,6 +26121,44 @@
      "origin": [
       0.49803,
       0.22455
+     ]
+    }
+   }
+  },
+  {
+   "name": "trading_post_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "trading post in winter: snow on the awning (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/trading_post_winter.png",
+     "w": 506,
+     "h": 319,
+     "anchor": [
+      253.0,
+      63.0
+     ],
+     "origin": [
+      0.5,
+      0.19749
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/trading_post_winter.png",
+     "w": 253,
+     "h": 160,
+     "anchor": [
+      126.5,
+      31.5
+     ],
+     "origin": [
+      0.5,
+      0.19687
      ]
     }
    }
