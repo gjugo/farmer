@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { ANIMALS, PENS, type AnimalKind, type PenType } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
@@ -27,11 +27,12 @@ import { DEFENCES, type DefenceType } from '../data/hazards';
 import { guardedBy, harshWinterAt, harshWinterWood, hazardsOf, isProtected, setHazardsEnabled } from './hazards';
 import { dayOfSeason, nextSeasonAt, seasonAt } from './seasons';
 import { workplaceNext } from './work';
-import { depositsUnder, MAP_SLICE, mapOf, newMapLayer, treesInRange } from './maplayer';
+import { addDeposit, depositsUnder, MAP_SLICE, mapOf, newMapLayer, treesInRange } from './maplayer';
 import { ruleBlock } from './placement';
 import { createNewGame } from './state';
 import { RESOURCES } from '../data/resourceBuildings';
-import { assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, workerAt, workersOf } from './workers';
+import { addFarmer, assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, setKeepMaking, workerAt, workersOf } from './workers';
+import { maxLevelState } from './test-utils';
 
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
@@ -281,7 +282,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
       if (f.site || workerAt(game.state, f.id) !== null || freeFarmers(game.state) === 0) continue;
       if (cropPlanOf(game.state, f.id) === PLAN_FALLOW) setCropPlan(game, f.id, PLAN_BEST);
       const next = workplaceNext(game, f);
-      if ('task' in next) withFarmer(tapCtx, next.task.kind, f, next.task.workMs, () => next.task.run(0));
+      if ('task' in next) withFarmer(tapCtx, next.task.kind, f, next.task.workMs, () => next.task.run(0, 1));
     }
     // Grow: four fields, then a coop with chickens, then more fields and the rest.
     const stock = (type: PenType, kind: AnimalKind, reserve: number) => {
@@ -470,5 +471,93 @@ describe('level curve balance', () => {
     expect(sim.storage.built).toBeGreaterThanOrEqual(1);
     expect(sim.granaries.length).toBeGreaterThanOrEqual(1);
     for (const pool of ['goods', 'materials'] as const) expect(used(sim.game.state, pool)).toBeLessThanOrEqual(capacity(sim.game.state, pool));
+  });
+});
+
+/**
+ * Tools: an equipped farm of 8 farmers on its own iron. Two fields, two coops, a quarry, a mine and a builder, with the
+ * eighth farmer at the blacksmith keeping one set of tools in store per farmer (so everyone stays equipped). Run for
+ * a year to fill the stores, then a year measured: the iron the forge burns against what the mine digs.
+ */
+describe('tools balance', () => {
+  const FARMERS = 8;
+
+  function equippedFarm() {
+    const game = new Game(maxLevelState());
+    game.earn(1_000_000);
+    setHazardsEnabled(false);
+    const land = game.state.land;
+    for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) land.owned[y * land.width + x] = 1;
+    while (workersOf(game.state).farmers < FARMERS) addFarmer(game);
+    // Each building at the first free spot (scanning rows below the starting layout) a path can reach.
+    const place = (type: string, site = false) => {
+      const fp = getBuildable(type)!.footprint;
+      // A quarry or mine stands on its deposit: lay a deep one under each spot tried.
+      const deposit = (RESOURCES as Record<string, { deposit?: 'stone' | 'iron' }>)[type]?.deposit;
+      for (let y = START_LAND.y + 8; y < land.height - fp.h; y += 1) {
+        for (let x = 1; x < land.width - fp.w; x += 1) {
+          if (deposit) addDeposit(mapOf(game.state), deposit, { x, y, ...fp }, 100_000);
+          if (!game.checkPlacement(type, x, y).ok) continue;
+          const r = game.place(type, x, y, { site });
+          if (!r.ok) continue;
+          if (connectToFarmhouse(game.state, { x, y, ...fp })) return r.object;
+          game.demolish(r.object.id);
+        }
+      }
+      throw new Error(`no room for ${type}`);
+    };
+    for (let i = 0; i < 3; i++) place(GRANARY).state.level = 3;
+    place('storehouse').state.level = 3;
+    const mine = place('mine');
+    const quarry = place('quarry');
+    const coops = [place('coop'), place('coop')];
+    for (const c of coops) for (let i = 0; i < 4; i++) buyAnimal(game, c as unknown as PlacedObject<PenState>, 'chicken');
+    const smith = place('blacksmith');
+    setKeepMaking(game, smith.id, 'tools');
+    // The test farm's 1000 of each material would fill every store: start from a working stock instead.
+    Object.assign(game.state.inventory, { wood: 40, stone: 40, iron: 10 });
+    const fields = game.objectsOfType(FIELD);
+    const workplaces = [...fields.slice(0, 2), ...coops, quarry, mine, smith].map((o) => o.id);
+    workplaces.forEach((id, i) => assignFarmer(game, id, i));
+    return { game, place, workplaces };
+  }
+
+  afterEach(() => setHazardsEnabled(true));
+
+  it('an 8-farmer farm keeping everyone equipped needs no more iron than one mine digs', () => {
+    const { game, place, workplaces } = equippedFarm();
+    let iron = 0;
+    let forged = 0;
+    let taken = 0;
+    let jobs = 0;
+    game.activity.on('produced', ({ item, qty }) => item === 'iron' && (iron += qty));
+    game.activity.on('jobStarted', ({ recipe }) => recipe === 'tools' && forged++);
+    game.activity.on('toolTaken', () => taken++);
+    game.activity.on('workStarted', () => jobs++);
+    let site = 0;
+    const year = 4 * SEASON_DAYS;
+    for (let day = 0; day < 2 * year; day++) {
+      if (day === year) [iron, forged, taken, jobs] = [0, 0, 0, 0];
+      // Keep the farm as it is: food, feed and wood for the families and coops, farmers who left back, and a new site
+      // for the builder every other day (a well).
+      for (const food of ['wheat', 'carrot', 'potato', 'cabbage', 'bread', 'cheese', 'cloth']) game.state.inventory[food] = 40;
+      game.state.inventory.feed = 100;
+      // Wood for the forge, the firewood and the wells; the quarry's stone is sold off.
+      game.state.inventory.wood = 40;
+      game.state.inventory.stone = 40;
+      while (workersOf(game.state).farmers < FARMERS) addFarmer(game);
+      workplaces.forEach((id, i) => workerAt(game.state, id) === null && assignFarmer(game, id, i));
+      if (day % 2 === 0 && site++ < 2 * year) place('well', true);
+      game.advance(DAY_MS);
+    }
+    const seasons = 4;
+    // Measured: 1.5 tools forged (and taken) a season, from some 60 jobs a season over the 8 farmers (fields, coops and
+    // the builder wait on crops, eggs and sites most of the time), against 3.0 iron a season from the mine (slower in
+    // winter, and its farmer walks). The issue guessed 5-7 tools a season; at 30 jobs a tool it is half a mine.
+    expect(forged / seasons).toBeGreaterThanOrEqual(1);
+    expect(taken).toBeGreaterThan(0);
+    // Every tool forged took one iron: the forge burns no more than one mine digs, and leaves some for buildings.
+    expect(forged).toBeLessThan(iron);
+    expect(jobs).toBeGreaterThan(0);
   });
 });

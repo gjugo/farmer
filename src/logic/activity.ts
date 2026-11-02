@@ -54,6 +54,10 @@ export interface ActivityEvents {
   goalClaimed: { id: string };
   /** A farmer was put to work (building, ploughing, planting, harvesting, feeding, collecting, starting a batch, cutting wood, ...). */
   workStarted: { kind: string };
+  /** Farmer `farmer` took tools from the store on the way to a job (`src/logic/tools.ts`). */
+  toolTaken: { farmer: number };
+  /** Farmer `farmer`'s tools wore out and broke as their job ended; `inStore` tools are left in the store. */
+  toolBroke: { farmer: number; inStore: number };
   /** A family moved into a free home, bringing a farmer; `families` is the new total. */
   familyArrived: { families: number };
   /** A family left the farm (approval stayed too low); their farmer's workplace (if any) is free. */

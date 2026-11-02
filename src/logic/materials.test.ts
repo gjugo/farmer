@@ -162,8 +162,10 @@ describe('buying at the Market', () => {
     }
   });
 
-  it('only building materials are for sale (not manure, which pens make)', () => {
-    for (const item of ITEM_LIST) expect(buyPrice(1, item.id) !== null, item.id).toBe(item.category === 'material' && item.id !== 'manure');
+  it('only building materials are for sale (not manure, which pens make, nor the blacksmith’s tools)', () => {
+    for (const item of ITEM_LIST) {
+      expect(buyPrice(1, item.id) !== null, item.id).toBe(item.category === 'material' && item.id !== 'manure' && item.id !== 'tools');
+    }
     expect(buyPrice(1, 'nope')).toBeNull();
   });
 

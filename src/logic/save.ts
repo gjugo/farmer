@@ -26,7 +26,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 
 export interface SaveFile {
   version: number;
@@ -165,6 +165,16 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
         })
       : state.objects;
     return { ...raw, version: 13, state: { ...state, objects } };
+  },
+  // Tools (the blacksmith): every farmer gets a tool slot, empty.
+  13: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const workers = ext.workers;
+    if (!isPlainObject(workers)) return { ...raw, version: 14 };
+    const farmers = Number.isInteger(workers.farmers) && (workers.farmers as number) > 0 ? (workers.farmers as number) : 1;
+    const tools = Array.from({ length: farmers }, () => null);
+    return { ...raw, version: 14, state: { ...state, ext: { ...ext, workers: { ...workers, tools } } } };
   },
 };
 

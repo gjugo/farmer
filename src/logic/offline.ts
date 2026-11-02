@@ -3,6 +3,7 @@ import { FIELD, getCrop } from '../data/crops';
 import { MAX_OFFLINE_MS, SUMMARY_MIN_AWAY_MS } from '../data/offline';
 import { isProcessorType } from '../data/processing';
 import { isResourceType } from '../data/resourceBuildings';
+import { TOOLS_ITEM } from '../data/tools';
 import { animalsOf, isPenType, type PenState } from './animals';
 import { dayOf, type Timer } from './clock';
 import { Game } from './game';
@@ -51,6 +52,8 @@ export interface CatchUpResult {
   work: FarmerWork;
   /** Families that moved in and moved away. */
   families: { arrived: number; left: number };
+  /** Tools forged at the blacksmith (collected, or waiting there) and farmers' tools that wore out and broke. */
+  tools: { forged: number; wornOut: number };
   /** Hazards announced, begun, suffered or kept off while away, oldest first (see `src/logic/hazards.ts`). */
   hazards: HazardNote[];
   /** Travelling traders that came while the player was away (they left, or stay today, without trading). */
@@ -97,6 +100,7 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     jobsFinished: 0,
     work: { harvested: {}, sown: {}, collected: {}, made: {}, built: {}, materials: {} },
     families: { arrived: 0, left: 0 },
+    tools: { forged: 0, wornOut: 0 },
     hazards: [],
     traders: { missed: 0 },
     dayBefore: dayOf(clock),
@@ -127,6 +131,7 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     activity.on('produced', ({ item, qty }) => inventory.add(work.materials, item, qty)),
     activity.on('familyArrived', () => result.families.arrived++),
     activity.on('familyLeft', () => result.families.left++),
+    activity.on('toolBroke', () => result.tools.wornOut++),
     activity.on('hazard', (n) => result.hazards.push(n)),
   ];
   const changed = new Set<string>();
@@ -173,6 +178,7 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     changed.add(obj.id);
   }
 
+  result.tools.forged = (work.made[TOOLS_ITEM] ?? 0) + (result.produced[TOOLS_ITEM] ?? 0);
   result.dayAfter = dayOf(clock);
   result.changed = [...changed];
   return result;
