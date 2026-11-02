@@ -123,7 +123,7 @@ describe('offline catch-up', () => {
     const played = build();
     for (let t = 0; t < away; t += 250) {
       played.game.tick(250);
-      settle(played.game.state.clock, played.dairy);
+      settle(played.game.state, played.dairy);
     }
     const caught = build();
     catchUp(caught.game, away);

@@ -142,7 +142,7 @@ describe('drought', () => {
     place(game, WELL, X + 13, Y);
     expect(isProtected(game.state, watered, 'drought')).toBe(true);
     expect(isProtected(game.state, dry, 'drought')).toBe(false);
-    const full = harvestYield({ elapsed: dry.state.timer!.start + dry.state.timer!.duration, speed: 1 }, dry);
+    const full = harvestYield(game.state, dry);
     const ends = { dry: dry.state.timer!.start + dry.state.timer!.duration, watered: watered.state.timer!.start + watered.state.timer!.duration };
 
     game.advance(CROPS.wheat.growMs / 2);
@@ -155,8 +155,8 @@ describe('drought', () => {
     expect(watered.state.parched).toBeUndefined();
 
     game.advance(CROPS.wheat.growMs);
-    expect(harvestYield(game.state.clock, watered)).toBe(full);
-    expect(harvestYield(game.state.clock, dry)).toBe(Math.round(full * DROUGHT.yield));
+    expect(harvestYield(game.state, watered)).toBe(full);
+    expect(harvestYield(game.state, dry)).toBe(Math.round(full * DROUGHT.yield));
     const before = game.count('wheat');
     expect(harvest(game, dry).ok).toBe(true);
     expect(game.count('wheat') - before).toBe(Math.round(full * DROUGHT.yield));
@@ -194,7 +194,7 @@ describe('crows', () => {
   it('eat 30% of an unprotected growing field\'s harvest, and stay a while', () => {
     const game = farm();
     const f = sownField(game);
-    const full = harvestYield({ elapsed: f.state.timer!.start + f.state.timer!.duration, speed: 1 }, f);
+    const full = harvestYield(game.state, f);
     expect(triggerHazard(game, 'crows').ok).toBe(true);
     expect(f.state.pecked).toBe(true);
     const s = hazardsOf(game.state);
@@ -203,7 +203,7 @@ describe('crows', () => {
     game.advance(CROWS.eatMs);
     expect(s.current).toEqual([]);
     game.advance(CROPS.wheat.growMs);
-    expect(harvestYield(game.state.clock, f)).toBe(Math.round(full * (1 - CROWS.take)));
+    expect(harvestYield(game.state, f)).toBe(Math.round(full * (1 - CROWS.take)));
     // The same field is not picked twice for one crop.
     expect(triggerHazard(game, 'crows').ok).toBe(false);
   });
@@ -222,11 +222,11 @@ describe('crows', () => {
     const game = farm();
     toSummer(game);
     const f = sownField(game);
-    const full = harvestYield({ elapsed: f.state.timer!.start + f.state.timer!.duration, speed: 1 }, f);
+    const full = harvestYield(game.state, f);
     triggerHazard(game, 'drought');
     triggerHazard(game, 'crows');
     game.advance(2 * CROPS.wheat.growMs);
-    expect(harvestYield(game.state.clock, f)).toBe(Math.round(full * DROUGHT.yield * (1 - CROWS.take)));
+    expect(harvestYield(game.state, f)).toBe(Math.round(full * DROUGHT.yield * (1 - CROWS.take)));
   });
 });
 
@@ -286,8 +286,10 @@ describe('harsh winter', () => {
     game.removeItem('wood', game.count('wood') - 3);
     game.advance(winter - game.now);
     const day = familiesOf(game.state).lastDay!;
-    expect(day.firewoodNeeded).toBe(4);
-    expect(day.firewood).toBe(3);
+    // 3 wood keeps one home warm for a harsh day (2 each); the other goes cold.
+    expect(day.firewoodNeeded).toBe(2);
+    expect(day.firewood).toBe(1);
+    expect(game.count('wood')).toBe(0);
     expect(familiesOf(game.state).breakdown.find((p) => p.id === 'firewood')!.points).toBeLessThan(0);
     expect(hazardsOf(game.state).current.map((e) => e.kind)).toEqual(['harsh-winter']);
   });
@@ -299,7 +301,7 @@ describe('harsh winter', () => {
     game.addItem('wheat', 50);
     game.addItem('wood', 20);
     game.advance(3 * SEASON_MS - game.now);
-    expect(familiesOf(game.state).lastDay!.firewood).toBe(2);
+    expect(familiesOf(game.state).lastDay!.firewood).toBe(1);
     expect(familiesOf(game.state).breakdown.find((p) => p.id === 'firewood')!.points).toBeGreaterThan(0);
   });
 });

@@ -96,8 +96,8 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
   const processors = state.objects.filter((o) => isProcessorType(o.type)) as unknown as PlacedObject<ProcessorState>[];
   // Bring buildings up to date before the jump, so only jobs that end while away are counted.
   for (const obj of processors) {
-    sanitize(obj, clock);
-    settle(clock, obj);
+    sanitize(obj, state);
+    settle(state, obj);
   }
   const readyBefore = new Map(processors.map((o) => [o.id, { ...o.state.ready }]));
   const mines = state.objects.filter((o) => isResourceType(o.type)) as unknown as PlacedObject<resources.ResourceState>[];
@@ -146,7 +146,7 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
 
   for (const obj of processors) {
     const before = readyBefore.get(obj.id) ?? {};
-    settled(obj, settle(clock, obj));
+    settled(obj, settle(state, obj));
     // Goods a farmer collected meanwhile are in `work.made`: count only what waits now and did not before.
     for (const [item, qty] of Object.entries(obj.state.ready)) inventory.add(result.produced, item, Math.max(0, qty - (before[item] ?? 0)));
   }

@@ -63,6 +63,9 @@ export class Hud implements UiApi {
   private levelEl!: HTMLElement;
   private xpEl!: HTMLElement;
   private xpBarEl!: HTMLElement;
+  private perkBadgeEl!: HTMLButtonElement;
+  /** Open perk dialogs by level: each re-renders its cards when the perks change, and closes when its choice is made. */
+  private perkDialogs = new Map<number, { refresh: () => void; close: () => void }>();
   private resources!: ResourceBar;
   private sheetEl!: HTMLElement;
   private sheetTitleEl!: HTMLElement;
@@ -90,10 +93,15 @@ export class Hud implements UiApi {
       this.refresh();
     });
     events.on('levelUp', (e) => this.showLevelUp(e));
+    events.on('perks', () => {
+      for (const d of [...this.perkDialogs.values()]) d.refresh();
+      this.refresh();
+    });
     for (const e of ['inventory', 'objectAdded', 'objectRemoved', 'objectChanged', 'land', 'day', 'speed', 'xp', 'goals'] as const) {
       events.on(e, () => this.refresh());
     }
     events.on('reset', () => {
+      for (const d of [...this.perkDialogs.values()]) d.close();
       this.ctx.tools.cancel();
       this.closePanel();
       this.resources.reset();
@@ -132,9 +140,15 @@ export class Hud implements UiApi {
     this.levelEl = h('span', { class: 'stat-value', 'data-testid': 'hud-level' });
     this.xpEl = h('span', { class: 'xp-text', 'data-testid': 'hud-xp' });
     this.xpBarEl = h('span', { class: 'day-bar-fill xp-bar-fill', 'data-testid': 'hud-xp-bar' });
+    this.perkBadgeEl = h(
+      'button',
+      { type: 'button', class: 'perk-badge', 'data-testid': 'hud-perk-badge', hidden: true, onclick: () => this.openPerkChoice() },
+      '⭐',
+    );
     const level = h(
       'div',
       { class: 'stat stat-level', title: 'Farm level' },
+      this.perkBadgeEl,
       h('span', { 'aria-hidden': 'true' }, '⭐'),
       h(
         'span',
@@ -219,6 +233,15 @@ export class Hud implements UiApi {
     this.xpEl.textContent = xpForNext === null ? 'MAX' : `${Math.floor(xpIntoLevel)}/${xpForNext}`;
     this.resources.update();
     this.xpBarEl.style.width = `${xpForNext === null ? 100 : Math.min(100, (xpIntoLevel / xpForNext) * 100).toFixed(1)}%`;
+    const pending = game.perks.pending.length;
+    const badge = pending ? `⭐${pending > 1 ? ` ${pending}` : ''}` : '';
+    if (this.perkBadgeEl.textContent !== badge) {
+      this.perkBadgeEl.textContent = badge;
+      const label = pending === 1 ? 'A perk to choose' : `${pending} perks to choose`;
+      this.perkBadgeEl.title = label;
+      this.perkBadgeEl.setAttribute('aria-label', label);
+    }
+    this.perkBadgeEl.hidden = !pending;
     for (const { el, read } of this.badges) {
       const n = read();
       const text = n ? String(n) : '';
@@ -405,7 +428,7 @@ export class Hud implements UiApi {
         `${game.level}|${listBuildMenuToggles()
           .map((t) => t.isOn(this.ctx))
           .join(',')}|${listBuildMenu()
-          .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(b.materials))}`)
+          .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(game.materialsFor(b.id)))}`)
           .join('|')}`,
       render: (body) => {
         const toggles = listBuildMenuToggles();
@@ -448,10 +471,10 @@ export class Hud implements UiApi {
                 const unlockLevel = buildableUnlockLevel(b.id);
                 const locked = !game.isUnlocked(unlockLevel);
                 const shortMoney = !game.canAfford(b.cost);
-                const missing = game.missingMaterials(b.materials);
+                const missing = game.missingMaterials(game.materialsFor(b.id));
                 // What stands between the player and building it, e.g. "Needs $40 more and 4 more 🪵 Wood".
                 const needs = [shortMoney ? `${formatMoney(b.cost - game.money)} more` : '', formatMissing(missing)].filter(Boolean).join(' and ');
-                const materials = formatMaterials(b.materials);
+                const materials = formatMaterials(game.materialsFor(b.id));
                 return h(
                   'button',
                   {
@@ -551,7 +574,7 @@ export class Hud implements UiApi {
     let text: string;
     if (mode.kind === 'build') {
       const def = getBuildable(mode.type);
-      const materials = formatMaterials(def?.materials);
+      const materials = formatMaterials(this.ctx.game.materialsFor(mode.type));
       text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}${materials ? ` + ${materials}` : ''}) — tap a tile`;
     } else {
       text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% of money and materials back)`;
@@ -585,45 +608,140 @@ export class Hud implements UiApi {
     window.setTimeout(() => el.remove(), 1200);
   }
 
-  /** "Level N!" popup listing what just unlocked. Several level-ups stack; the newest is on top. */
+  /** "Level N!" popup listing what just unlocked, with the level's perk choice when it has one. */
   private showLevelUp({ level, bonus, unlocks }: GameEvents['levelUp']): void {
+    this.showPerkDialog(level, [
+      h('div', { class: 'levelup-star', 'aria-hidden': 'true' }, '⭐'),
+      h('h2', { id: `levelup-${level}` }, `Level ${level}!`),
+      h('p', { 'data-testid': 'levelup-bonus' }, `Your farm grew. Bonus: ${formatMoney(bonus)}`),
+      unlocks.length
+        ? [
+            h('h3', { class: 'group-title' }, 'Unlocked'),
+            h(
+              'ul',
+              { class: 'unlock-list', 'data-testid': 'levelup-unlocks' },
+              unlocks.map((u) => h('li', {}, h('span', { 'aria-hidden': 'true' }, withIcons(u.icon)), ` ${u.name}`)),
+            ),
+          ]
+        : null,
+    ]);
+  }
+
+  openPerkChoice(): void {
+    const level = this.ctx.game.perks.pending[0];
+    if (level === undefined) return;
+    const open = this.root.querySelector<HTMLElement>(`[data-perk-level="${level}"]`);
+    if (open) {
+      // Already open (maybe under a newer one): bring it to the top.
+      this.root.append(open);
+      open.querySelector<HTMLElement>('[data-autofocus]')?.focus();
+      return;
+    }
+    this.showPerkDialog(level, [
+      h('div', { class: 'levelup-star', 'aria-hidden': 'true' }, '⭐'),
+      h('h2', { id: `levelup-${level}` }, `Level ${level} perk`),
+      h('p', {}, 'Pick one: a perk lasts for good.'),
+    ]);
+  }
+
+  /**
+   * A level-up or perk dialog. While the level's perk choice is open it shows the three cards and "Decide later" (also
+   * Esc); otherwise just "Great!". Several stack with the oldest on top, so choices come in level order.
+   */
+  private showPerkDialog(level: number, head: (Node | Node[] | null)[]): void {
+    const { perks } = this.ctx.game;
+    const choosing = perks.pending.includes(level);
     const close = () => {
       window.removeEventListener('keydown', onKey, true);
+      if (this.perkDialogs.get(level)?.close === close) this.perkDialogs.delete(level);
       backdrop.remove();
+      // The next dialog (now on top) takes the focus.
+      const top = this.root.lastElementChild;
+      if (top?.classList.contains('dialog-backdrop')) top.querySelector<HTMLElement>('[data-autofocus], .btn')?.focus();
+    };
+    const isTop = () => this.root.lastElementChild === backdrop;
+    const cards = h('div', { class: 'perk-cards', role: 'group', 'aria-label': 'Perks to choose from', 'data-testid': 'perk-cards' });
+    let shown = '';
+    const renderCards = () => {
+      const offer = perks.offer(level);
+      // Unchanged cards stay as they are, so the one with the focus keeps it.
+      const ids = offer.map((p) => p.id).join();
+      if (ids === shown && cards.childElementCount) return;
+      shown = ids;
+      const focused = cards.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.testid : undefined;
+      cards.replaceChildren(
+        ...offer.map((perk, i) =>
+          h(
+            'button',
+            {
+              type: 'button',
+              class: 'perk-card',
+              'data-testid': `perk-card-${perk.id}`,
+              'data-autofocus': i === 0 ? '' : undefined,
+              onclick: () => {
+                const r = perks.choose(level, perk.id);
+                if (r.ok) {
+                  close();
+                  this.toast(`${r.perk.icon} ${r.perk.name}: ${r.perk.description}`, 'success');
+                } else {
+                  shown = '';
+                  renderCards();
+                }
+              },
+            },
+            h('span', { class: 'perk-icon', 'aria-hidden': 'true' }, withIcons(perk.icon)),
+            h('span', { class: 'perk-text' }, h('span', { class: 'perk-name' }, perk.name), h('span', { class: 'perk-desc' }, perk.description)),
+          ),
+        ),
+      );
+      if (!offer.length) cards.append(h('p', { class: 'empty' }, 'No perk left to offer.'));
+      if (focused) (cards.querySelector<HTMLElement>(`[data-testid="${focused}"]`) ?? cards.querySelector<HTMLElement>('.perk-card'))?.focus();
     };
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key === 'Escape' || e.key === 'Enter') && this.root.lastElementChild === backdrop) {
+      if (!isTop()) return;
+      if (e.key === 'Escape' || (e.key === 'Enter' && !choosing)) {
+        // Esc on a choice is "Decide later": it stays open behind the ⭐ badge.
         e.stopPropagation();
         e.preventDefault();
         close();
+      } else if (choosing && ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        const all = [...cards.querySelectorAll<HTMLElement>('.perk-card')];
+        const i = all.indexOf(document.activeElement as HTMLElement);
+        const step = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;
+        all[(i + step + all.length) % all.length]?.focus();
+        e.preventDefault();
       }
     };
-    const ok = h('button', { type: 'button', class: 'btn', 'data-testid': 'levelup-ok', onclick: close }, 'Great!');
+    if (choosing) renderCards();
+    const ok = choosing
+      ? h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'perk-later', onclick: close }, 'Decide later')
+      : h('button', { type: 'button', class: 'btn', 'data-testid': 'levelup-ok', 'data-autofocus': '', onclick: close }, 'Great!');
     const backdrop = h(
       'div',
-      { class: 'dialog-backdrop' },
+      { class: 'dialog-backdrop', 'data-perk-level': choosing ? level : undefined },
       h(
         'div',
         { class: 'dialog levelup', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': `levelup-${level}`, 'data-testid': 'levelup-dialog' },
-        h('div', { class: 'levelup-star', 'aria-hidden': 'true' }, '⭐'),
-        h('h2', { id: `levelup-${level}` }, `Level ${level}!`),
-        h('p', { 'data-testid': 'levelup-bonus' }, `Your farm grew. Bonus: ${formatMoney(bonus)}`),
-        unlocks.length
-          ? [
-              h('h3', { class: 'group-title' }, 'Unlocked'),
-              h(
-                'ul',
-                { class: 'unlock-list', 'data-testid': 'levelup-unlocks' },
-                unlocks.map((u) => h('li', {}, h('span', { 'aria-hidden': 'true' }, withIcons(u.icon)), ` ${u.name}`)),
-              ),
-            ]
-          : null,
+        ...head,
+        choosing ? [h('h3', { class: 'group-title' }, 'Choose a perk'), cards] : null,
         h('div', { class: 'actions' }, ok),
       ),
     );
+    if (choosing) {
+      this.perkDialogs.get(level)?.close();
+      this.perkDialogs.set(level, {
+        close,
+        // Chosen elsewhere (or reset): the dialog has done its job. Still open: other choices may have changed the cards.
+        refresh: () => (perks.pending.includes(level) ? renderCards() : close()),
+      });
+    }
     window.addEventListener('keydown', onKey, true);
-    this.root.append(backdrop);
-    ok.focus();
+    // Oldest on top: a newer level's dialog goes under the open level-up dialogs.
+    const under = this.root.querySelector(':scope > .dialog-backdrop[data-levelup]');
+    backdrop.dataset.levelup = String(level);
+    if (under) under.before(backdrop);
+    else this.root.append(backdrop);
+    if (isTop()) backdrop.querySelector<HTMLElement>('[data-autofocus]')?.focus();
   }
 
   /** Modal confirm dialog. Resolves true when confirmed. */

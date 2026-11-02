@@ -5,11 +5,12 @@ import { MANURE_GAIN, MANURE_PER_SPREAD, MAX_FERTILITY } from '../data/soil';
 import { startTimer, timerDone, timerProgress, timerRemaining, type Timer } from './clock';
 import { START_LAYOUT } from './constants';
 import type { Game } from './game';
+import { perkFactor } from './perks';
 import { nextSeasonIn, seasonRunEnd } from './seasons';
 import { droughtGrowMs, harvestShare } from './hazards';
 import { afterHarvest, areaSoil, drainOf, restedFertility, yieldAt } from './soil';
 import { addStartingObject, onNewGame } from './state';
-import type { ClockState, PlacedObject } from './types';
+import type { ClockState, GameState, PlacedObject } from './types';
 
 /** Per-field state, saved with the object. */
 export type FieldState = {
@@ -81,12 +82,12 @@ function settleFertility(clock: ClockState, obj: PlacedObject<FieldState>, ferti
 }
 
 /**
- * What harvesting the field's crop would bring now: its quantity scaled by the field's fertility, less what a drought
- * or crows took (`harvestShare`). 0 when empty.
+ * What harvesting the field's crop would bring now: its quantity scaled by the field's fertility (and perks), less what
+ * a drought or crows took (`harvestShare`). 0 when empty.
  */
-export function harvestYield(clock: ClockState, obj: PlacedObject<FieldState>): number {
+export function harvestYield(state: GameState, obj: PlacedObject<FieldState>): number {
   const crop = fieldCrop(obj.state);
-  return crop ? Math.round(yieldAt(crop.harvestQty, fertilityOf(clock, obj)) * harvestShare(obj.state)) : 0;
+  return crop ? Math.round(yieldAt(crop.harvestQty, fertilityOf(state.clock, obj), perkFactor(state, 'green-thumb')) * harvestShare(obj.state)) : 0;
 }
 
 /** The field's last harvested crop, if its id is still known. */
@@ -195,14 +196,14 @@ export function harvest(game: Game, obj: PlacedObject<FieldState>): HarvestResul
   const crop = fieldCrop(obj.state);
   if (!crop || cropStage(clock, obj.state) !== 'ripe') return { ok: false, reason: 'not-ripe' };
   const fertility = fertilityOf(clock, obj);
-  const qty = harvestYield(clock, obj);
+  const qty = harvestYield(game.state, obj);
   if (game.spaceFor(crop.harvestItem) < qty) return { ok: false, reason: 'full' };
   game.addItem(crop.harvestItem, qty);
   obj.state.crop = null;
   obj.state.timer = null;
   delete obj.state.parched;
   delete obj.state.pecked;
-  settleFertility(clock, obj, afterHarvest(fertility, drainOf(crop.id, crop.soilDrain, obj.state.lastCrop ?? null)), true);
+  settleFertility(clock, obj, afterHarvest(fertility, drainOf(crop.id, crop.soilDrain, obj.state.lastCrop ?? null, perkFactor(game.state, 'rich-soil'))), true);
   obj.state.lastCrop = crop.id;
   game.touch(obj);
   game.activity.emit('harvested', { item: crop.harvestItem, qty });

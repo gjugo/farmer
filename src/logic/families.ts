@@ -18,6 +18,7 @@ import { DAY_MS } from './constants';
 import type { Game } from './game';
 import { firewoodPerHome } from './hazards';
 import * as inventory from './inventory';
+import { perkFactor } from './perks';
 import { seasonAt, SEASON_MS } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState, Inventory } from './types';
@@ -49,7 +50,7 @@ export interface DayNeeds {
   meal: number;
   /** Different foods eaten. */
   variety: number;
-  /** Winter: wood burned (null on other days), and what every occupied home needed. */
+  /** Winter: occupied homes kept warm (null on other days), and occupied homes in all. */
   firewood: number | null;
   firewoodNeeded: number;
   /** Families clothed this year; null until the loom is unlocked. */
@@ -58,7 +59,7 @@ export interface DayNeeds {
   provisions?: boolean;
 }
 
-export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'firewood';
+export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'firewood' | 'neighbours';
 
 /** One line of the approval breakdown, e.g. `{ id: 'variety', label: '3 kinds of food', points: 10 }`. */
 export interface ApprovalPart {
@@ -165,8 +166,8 @@ function plural(n: number, one: string, many = `${one}s`): string {
   return `${n} ${n === 1 ? one : many}`;
 }
 
-/** Approval (0..100) for a day's results, with the breakdown the Families sheet shows. */
-export function approvalOf(day: DayNeeds): Approval {
+/** Approval (0..100) for a day's results, with the breakdown the Families sheet shows; `neighbours`: Good neighbours' points. */
+export function approvalOf(day: DayNeeds, neighbours = 0): Approval {
   const parts: ApprovalPart[] = [{ id: 'base', label: 'Base', points: APPROVAL.base }];
   if (day.eaten < day.meal && day.provisions) parts.push({ id: 'food', label: 'Living on the provisions they brought', points: 0 });
   else if (day.eaten === 0) parts.push({ id: 'food', label: 'No food in the granary', points: APPROVAL.noFood });
@@ -188,6 +189,7 @@ export function approvalOf(day: DayNeeds): Approval {
           { id: 'firewood', label: `${cold} of ${plural(day.firewoodNeeded, 'home')} without firewood`, points: Math.round((APPROVAL.freezing * cold) / day.firewoodNeeded) },
     );
   }
+  if (neighbours) parts.push({ id: 'neighbours', label: 'Good neighbours', points: neighbours });
   const total = parts.reduce((sum, p) => sum + p.points, 0);
   return { approval: Math.max(0, Math.min(100, total)), breakdown: parts };
 }
@@ -241,12 +243,15 @@ function settleDay(game: Game, day: number): void {
   const eaten = Object.values(ate).reduce((a, b) => a + b, 0);
 
   const winter = seasonAt(t) === 'winter';
-  // A harsh winter doubles it (`src/logic/hazards.ts`); the approval rules stay the same.
-  const firewoodNeeded = Math.min(homesOf(state), families) * firewoodPerHome(state, t);
+  const firewoodNeeded = Math.min(homesOf(state), families);
   let firewood: number | null = null;
   if (winter) {
-    firewood = Math.min(firewoodNeeded, game.count('wood'));
-    if (firewood > 0) game.removeItem('wood', firewood);
+    // Warm hearths: each home burns half as much (the day's wood is rounded up). A harsh winter doubles it
+    // (`src/logic/hazards.ts`); the approval rules stay the same.
+    const perHome = firewoodPerHome(state, t) * perkFactor(state, 'warm-hearths');
+    const burnt = Math.min(Math.ceil(firewoodNeeded * perHome - 1e-9), game.count('wood'));
+    if (burnt > 0) game.removeItem('wood', burnt);
+    firewood = Math.min(firewoodNeeded, Math.floor(burnt / perHome + 1e-9));
   }
 
   let clothed: number | null = null;
@@ -263,7 +268,7 @@ function settleDay(game: Game, day: number): void {
 
   const needs: DayNeeds = { families, ate, eaten, meal: families * MEAL_PER_FAMILY, variety: Object.keys(ate).length, firewood, firewoodNeeded, clothed };
   if (day <= PROVISION_DAYS) needs.provisions = true;
-  const { approval, breakdown } = approvalOf(needs);
+  const { approval, breakdown } = approvalOf(needs, perkFactor(state, 'good-neighbours'));
   Object.assign(s, { settledDay: day, approval, breakdown, lastDay: needs });
   game.activity.emit('familiesSettled', { approval });
 }

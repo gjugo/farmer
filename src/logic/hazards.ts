@@ -20,6 +20,7 @@ import { animalsOf, isPenType, type PenState } from './animals';
 import { DAY_MS } from './constants';
 import type { FieldState } from './crops';
 import type { Game } from './game';
+import { perkFactor } from './perks';
 import { nextSeasonAt, nextSeasonIn, seasonAt, SEASON_MS } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState, PlacedObject } from './types';
@@ -292,7 +293,7 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 
 /** Wood the farm needs for a harsh winter as it is housed now. */
 export function harshWinterWood(state: GameState): number {
-  return warmHomes(state) * FIREWOOD_PER_HOME * HARSH_WINTER.firewoodFactor * SEASON_DAYS;
+  return Math.ceil(warmHomes(state) * FIREWOOD_PER_HOME * perkFactor(state, 'warm-hearths') * HARSH_WINTER.firewoodFactor * SEASON_DAYS);
 }
 
 // Planning ---------------------------------------------------------------------------
