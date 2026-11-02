@@ -279,8 +279,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   - **Automatic work:** an assigned farmer does the next job there by themselves. A **field** gets manure when it is
     worn (below 80%, with 4 in stock), is ploughed (in a ploughing season), sown with its **🌱 Crop plan** (a crop,
     **Best in season**, the default: the longest grower that is ripe before its seasons end, rotating away from the
-    last crop, or **Fallow**) and harvested when ripe; ploughing and seed are paid as by hand, and the
-    work waits while money is short. A **coop or pasture** gets its products collected and its hungry animals fed from
+    last crop, or **Fallow**) and harvested when ripe; ploughing is free, seed is paid as by hand, and the
+    work waits while money for seed is short. A **coop or pasture** gets its products collected and its hungry animals fed from
     stock (it waits without feed). A **processing building** keeps queueing its **⚙️ Keep making** recipe while the
     inputs are in stock and the queue has room, and its finished goods are collected. A **woodcutter's lodge, quarry or
     mine** works cycle after cycle. The panel says why a farmer waits.
@@ -400,7 +400,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   5–8 summer, 9–12 autumn, 13–16 winter, then round again), so a year takes about 2 hours. The pace is slow on
   purpose: a new player reaches level 2 in 10–15 minutes and level 5 in 2–3 hours (level 5 asks for 5,000 XP: families eat
   part of what the farm makes). The HUD shows the season next to
-  the day (bottom right) and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
+  the day (bottom right) and a toast announces each new one. A field must be **ploughed** (free, but it takes a farmer) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
   which turns every empty field back to unploughed (faded soil); in winter nothing can be ploughed or sown.
   Each crop is sown only in its seasons (see **Crops** above), and only while it will be ripe before they end. A ripe

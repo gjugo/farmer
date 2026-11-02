@@ -1,6 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { getCrop, type CropDef } from '../data/crops';
-import { PLOUGH_COST, PLOUGH_SEASONS, type Season } from '../data/seasons';
+import { PLOUGH_SEASONS, type Season } from '../data/seasons';
 import { MANURE_GAIN, MANURE_PER_SPREAD, MAX_FERTILITY } from '../data/soil';
 import { startTimer, timerDone, timerProgress, timerRemaining, type Timer } from './clock';
 import { START_LAYOUT } from './constants';
@@ -125,15 +125,14 @@ export function canPloughNow(clock: ClockState): boolean {
   return nextSeasonIn(clock.elapsed, PLOUGH_SEASONS) === clock.elapsed;
 }
 
-export type PloughResult = { ok: true } | { ok: false; reason: 'occupied' | 'ploughed' | 'season' | 'money' };
+export type PloughResult = { ok: true } | { ok: false; reason: 'occupied' | 'ploughed' | 'season' };
 
-/** Charges `PLOUGH_COST` and ploughs an empty field. Nothing changes when it fails. */
+/** Ploughs an empty field (free: the cost is the farmer's time). Nothing changes when it fails. */
 export function plough(game: Game, obj: PlacedObject<FieldState>): PloughResult {
   const clock = game.state.clock;
   if (cropStage(clock, obj.state) !== 'empty') return { ok: false, reason: 'occupied' };
   if (isPloughed(clock, obj.state)) return { ok: false, reason: 'ploughed' };
   if (!canPloughNow(clock)) return { ok: false, reason: 'season' };
-  if (!game.spend(PLOUGH_COST)) return { ok: false, reason: 'money' };
   obj.state.ploughedAt = clock.elapsed;
   game.touch(obj);
   game.activity.emit('ploughed', {});

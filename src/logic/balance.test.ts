@@ -297,6 +297,10 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // (Fields frozen in winter don't count: their farmers are at the lodge and the quarry.)
     const unstaffed = workplaces.filter((wp) => workerAt(game.state, wp.id) === null && !frozen(wp) && !assignFarmer(game, wp.id).ok).length;
     const comingHomes = homeRoom(game.state) - workersOf(game.state).farmers + game.objectsOfType(COTTAGE).filter((o) => o.site).length;
+    // Its own materials from level 2 (cottages and firewood take wood): a woodcutter's lodge, then a quarry built with
+    // the lodge's wood. Before the cottages, so they don't use up the quarry's materials.
+    if (game.level >= 2 && game.objectsOfType('woodcutter').length === 0) build('woodcutter', 40);
+    if (game.objectsOfType('quarry').length === 0 && game.missingMaterials(getBuildable('quarry')!.materials).length === 0) build('quarry', 40);
     // Only when the pantry holds its reserve: a family it can't feed would leave again.
     const pantry = PANTRY.reduce((n, id) => n + game.count(id), 0);
     if (unstaffed > 0 && comingHomes <= 0 && pantry >= (keepFood - 1) * foodKinds) build(COTTAGE, 40);
@@ -323,10 +327,6 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
       }
     };
     if (fields.length >= 4) stock('coop', 'chicken', 60);
-    // Its own materials from level 2 (cottages and firewood take wood): a woodcutter's lodge, then a quarry built with
-    // the lodge's wood.
-    if (game.level >= 2 && game.objectsOfType('woodcutter').length === 0) build('woodcutter', 40);
-    if (game.objectsOfType('quarry').length === 0 && game.missingMaterials(getBuildable('quarry')!.materials).length === 0) build('quarry', 40);
     const stocked = pens('coop').some((p) => p.state.animals.length > 0);
     // Past the first four, no more fields while some have nobody to work them: the money goes to cottages first.
     if (fields.length < maxFields && (fields.length < 4 || stocked) && (fields.length < 4 || unstaffed === 0)) build(FIELD, 40);
@@ -460,6 +460,9 @@ describe('level curve balance', () => {
   // back when buying winter firewood (spending it all left the relaxed player unable to sow, so it never built its
   // quarry or reached L5 on some roads): casual L2 13.0, L5 173.0; relaxed L2 12.5, L5 158.0; busy L2 13.0, L5 161.2
   // (road seeds 1–5: casual L5 158–173, relaxed 158–174, busy 137–161).
+  // Ploughing free (#118): the busy bot, with a little more money, spent its wood on cottages and built its quarry only
+  // after the last winter (never staffed), so the bot now builds the lodge and quarry before cottages: casual L2 13.0,
+  // L5 158.0; relaxed L2 12.5, L5 158.5; busy L2 13.0, L5 159.0 (each quarry at about minute 50).
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });
