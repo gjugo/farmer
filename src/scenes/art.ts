@@ -399,6 +399,31 @@ export function sceneryArt(x: number, y: number): string | null {
   return hash(x, y, 13) % 1000 < POND_PER_MILLE ? POND : null;
 }
 
+// Ground decorations (src/scenes/decor.ts, drawn by src/features/decor) -------------------
+
+/** All-year decorations over the grass, drawn in each season's look (`<name>_<season>`). */
+export const TUFT_ART = ['decor_tuft_0', 'decor_tuft_1'] as const;
+export const STONE_ART = ['decor_stones_0', 'decor_stones_1'] as const;
+/** Each season's own decorations; the last of each list never leads a cell (see `decorArt`). */
+export const SEASON_DECOR: Record<Season, readonly string[]> = {
+  spring: ['decor_daisies', 'decor_buttercups', 'decor_cornflowers', 'decor_puddle'],
+  summer: ['decor_tallgrass_0', 'decor_tallgrass_1', 'decor_poppies'],
+  autumn: ['decor_mushrooms_0', 'decor_mushrooms_1', 'decor_leaves_0', 'decor_leaves_1'],
+  winter: ['decor_twigs_0', 'decor_twigs_1', 'decor_snowdrift'],
+};
+/** Undergrowth at forest edges, each in four seasons: ferns brown in autumn, all of it snowy in winter. */
+export const FERN_ART = ['fern_0', 'fern_1'] as const;
+export const LOG_ART = 'fallen_log';
+/** Every decoration sprite: the seasonal ones by base name, plus the bushes the undergrowth shares with the scenery. */
+export const DECOR_ART: readonly string[] = [
+  ...TUFT_ART,
+  ...STONE_ART,
+  ...FERN_ART,
+  LOG_ART,
+  ...SEASONS.flatMap((s) => SEASON_DECOR[s]),
+  ...SCENERY,
+];
+
 // Map resources (src/logic/maplayer.ts, drawn by src/features/nature) ----------------------
 
 /** Grown trees: mostly oaks and pines, the odd apple tree. */
@@ -448,6 +473,10 @@ export const SEASONAL_ART: readonly string[] = [
   POND,
   ...MAP_ART,
   ...GARDEN_SEASONAL_ART,
+  ...TUFT_ART,
+  ...STONE_ART,
+  ...FERN_ART,
+  LOG_ART,
 ];
 const seasonal = new Set<string>(SEASONAL_ART);
 
@@ -521,6 +550,7 @@ export function usedArt(): string[] {
     ...ICON_ART,
     ...SCENERY,
     POND,
+    ...DECOR_ART,
     ...MAP_ART,
     ...PILE_ART.flatMap((k) => Array.from({ length: PILE_ART_STAGES }, (_, i) => pileArt(k, i + 1)!)),
   ]);

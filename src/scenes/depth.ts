@@ -6,6 +6,8 @@ import { isBehind, type Footprint } from './iso';
  */
 export const DEPTH = {
   ground: 0,
+  /** Ground decorations (tufts, flowers, undergrowth): on the grass, under everything placed. */
+  decor: 0.5,
   flat: 1,
   /** Grass fringes over the edges of paths and fields (src/features/fringes): above them, under shadows and walkers. */
   fringe: 3,
