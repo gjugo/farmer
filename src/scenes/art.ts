@@ -82,7 +82,7 @@ export function neighbourMask(has: (x: number, y: number) => boolean, x: number,
 }
 
 function joined(prefix: string, mask: number, alone: string): string {
-  const edges = EDGES.filter(([bit]) => mask & bit).map(([, name]) => name);
+  const edges = edgeNames(mask);
   return `${prefix}${edges.length ? edges.join('_') : alone}`;
 }
 
@@ -90,6 +90,26 @@ function joined(prefix: string, mask: number, alone: string): string {
 export function pathPiece(mask: number): string {
   return joined('path_', mask & 15, 'single');
 }
+
+/** The edges in a neighbour mask, by name (`NE | SW` → `['ne', 'sw']`). */
+export function edgeNames(mask: number): string[] {
+  return EDGES.filter(([bit]) => mask & bit).map(([, name]) => name);
+}
+
+/** The grid step across each edge. */
+export const EDGE_STEP: Record<number, readonly [number, number]> = { [NE]: [0, -1], [SE]: [1, 0], [SW]: [0, 1], [NW]: [-1, 0] };
+
+/** What grass fringes hang over: a path's dirt, or a field's soil bed (a lower strip, clear of the crops). */
+export const FRINGE_KINDS = ['path', 'field'] as const;
+export type FringeKind = (typeof FRINGE_KINDS)[number];
+
+/** The strip of grass tufts along one edge (`NE`, `SE`, `SW` or `NW`) of a path or field tile, e.g. `fringe_path_ne`. */
+export function fringeArt(kind: FringeKind, edge: number): string {
+  return `fringe_${kind}_${edgeNames(edge)[0]}`;
+}
+
+/** Every fringe strip: one per kind and edge. */
+export const FRINGE_ART: readonly string[] = FRINGE_KINDS.flatMap((kind) => EDGES.map(([bit]) => fringeArt(kind, bit)));
 
 /** The fence piece whose rails reach the given neighbours (`fence_post` when there are none). */
 export function fencePiece(mask: number): string {
@@ -405,11 +425,12 @@ export const MAP_ART: readonly string[] = [
 
 /**
  * Sprites drawn in four seasonal versions, `<name>_<season>`: the ground (plain grass, every path piece,
- * soil), the scenery and the map's trees and deposits. Fields and the pasture are composed per season from these at boot.
+ * the grass fringes, soil), the scenery and the map's trees and deposits. Fields and the pasture are composed per season from these at boot.
  */
 export const SEASONAL_ART: readonly string[] = [
   ...GRASS,
   ...Array.from({ length: 16 }, (_, m) => pathPiece(m)),
+  ...FRINGE_ART,
   SOIL.dry,
   SOIL.wet,
   ...SCENERY,
@@ -477,6 +498,7 @@ export function usedArt(): string[] {
     ...Object.values(SOIL),
     ...Array.from({ length: 16 }, (_, m) => pathPiece(m)),
     ...Array.from({ length: 16 }, (_, m) => fencePiece(m)),
+    ...FRINGE_ART,
     GATE,
     ...Object.values(TEXTURE_ART),
     MILL.body,
