@@ -6,17 +6,19 @@ import {
   CLOTH_PER_FAMILY,
   COTTAGE,
   FARMHOUSE_HOMES,
-  FIREWOOD_PER_HOME,
   FOODS,
   LEAVE_APPROVAL,
   MEAL_PER_FAMILY,
   PROVISION_DAYS,
 } from '../data/families';
+import { GARDEN_APPROVAL, GARDENS } from '../data/gardens';
 import { PROCESSORS } from '../data/processing';
 import { SEASONS } from '../data/seasons';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS } from './constants';
 import type { Game } from './game';
+import { firewoodPerHome } from './hazards';
+import { gardenedHomes } from './gardens';
 import * as inventory from './inventory';
 import { perkFactor } from './perks';
 import { seasonAt, SEASON_MS } from './seasons';
@@ -27,7 +29,8 @@ import { addFarmer, removeFarmer, workersOf } from './workers';
 /**
  * Families with needs. Each family is one farmer and lives in a home: the farmer's farmhouse or a cottage. Once a
  * game day (at every day boundary) the families eat from the granary, burn firewood in winter and, at the start of
- * winter once the loom is unlocked, take cloth for the year; the day's results give their approval. When approval is
+ * winter once the loom is unlocked, take cloth for the year; the day's results (and how many homes have a house
+ * garden, `src/logic/gardens.ts`) give their approval. When approval is
  * high and a home is free a new family moves in; when it stays low for a whole day one leaves.
  *
  * Everything runs on the game clock inside the work scheduler (`src/logic/work.ts`): day boundaries and arrival times
@@ -55,11 +58,13 @@ export interface DayNeeds {
   firewoodNeeded: number;
   /** Families clothed this year; null until the loom is unlocked. */
   clothed: number | null;
+  /** Homes that day and how many had a garden; null until gardens are unlocked. Missing in saves from before gardens. */
+  gardens?: { homes: number; gardened: number } | null;
   /** One of the new farm's first days (`PROVISION_DAYS`): what the granary lacked, provisions made up. */
   provisions?: boolean;
 }
 
-export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'firewood' | 'neighbours';
+export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'firewood' | 'gardens' | 'neighbours';
 
 /** One line of the approval breakdown, e.g. `{ id: 'variety', label: '3 kinds of food', points: 10 }`. */
 export interface ApprovalPart {
@@ -189,6 +194,15 @@ export function approvalOf(day: DayNeeds, neighbours = 0): Approval {
           { id: 'firewood', label: `${cold} of ${plural(day.firewoodNeeded, 'home')} without firewood`, points: Math.round((APPROVAL.freezing * cold) / day.firewoodNeeded) },
     );
   }
+  if (day.gardens && day.gardens.homes > 0) {
+    const { homes, gardened } = day.gardens;
+    const n = Math.min(gardened, homes);
+    parts.push({
+      id: 'gardens',
+      label: n === homes ? `A garden at every home (${homes})` : `Gardens at ${n} of ${plural(homes, 'home')}`,
+      points: Math.round((GARDEN_APPROVAL * n) / homes),
+    });
+  }
   if (neighbours) parts.push({ id: 'neighbours', label: 'Good neighbours', points: neighbours });
   const total = parts.reduce((sum, p) => sum + p.points, 0);
   return { approval: Math.max(0, Math.min(100, total)), breakdown: parts };
@@ -202,6 +216,11 @@ function winterStarts(time: number): boolean {
 /** Are clothes a need yet (the loom is unlocked)? */
 export function clothesNeeded(game: Game): boolean {
   return game.isUnlocked(PROCESSORS.loom.unlockLevel);
+}
+
+/** Do the families want gardens yet (the first kind is unlocked)? */
+export function gardensNeeded(game: Game): boolean {
+  return game.isUnlocked(Math.min(...Object.values(GARDENS).map((g) => g.unlockLevel)));
 }
 
 // Game rules -----------------------------------------------------------------------
@@ -246,8 +265,9 @@ function settleDay(game: Game, day: number): void {
   const firewoodNeeded = Math.min(homesOf(state), families);
   let firewood: number | null = null;
   if (winter) {
-    // Warm hearths: each home burns half as much (the day's wood is rounded up).
-    const perHome = FIREWOOD_PER_HOME * perkFactor(state, 'warm-hearths');
+    // Warm hearths: each home burns half as much (the day's wood is rounded up). A harsh winter doubles it
+    // (`src/logic/hazards.ts`); the approval rules stay the same.
+    const perHome = firewoodPerHome(state, t) * perkFactor(state, 'warm-hearths');
     const burnt = Math.min(Math.ceil(firewoodNeeded * perHome - 1e-9), game.count('wood'));
     if (burnt > 0) game.removeItem('wood', burnt);
     firewood = Math.min(firewoodNeeded, Math.floor(burnt / perHome + 1e-9));
@@ -265,7 +285,8 @@ function settleDay(game: Game, day: number): void {
     clothed = s.clothedAt !== null && t < s.clothedAt + YEAR_MS ? Math.min(s.clothed, families) : 0;
   }
 
-  const needs: DayNeeds = { families, ate, eaten, meal: families * MEAL_PER_FAMILY, variety: Object.keys(ate).length, firewood, firewoodNeeded, clothed };
+  const gardens = gardensNeeded(game) ? { homes: homesOf(state), gardened: gardenedHomes(state) } : null;
+  const needs: DayNeeds = { families, ate, eaten, meal: families * MEAL_PER_FAMILY, variety: Object.keys(ate).length, firewood, firewoodNeeded, clothed, gardens };
   if (day <= PROVISION_DAYS) needs.provisions = true;
   const { approval, breakdown } = approvalOf(needs, perkFactor(state, 'good-neighbours'));
   Object.assign(s, { settledDay: day, approval, breakdown, lastDay: needs });

@@ -21,6 +21,9 @@ git (or rerun the commands below) after running it.
 | `quarry`, `quarry_winter` | `quarry_raw.png`, `quarry_winter_raw.png` | all |
 | `mine`, `mine_winter` | `mine_raw.png`, `mine_winter_raw.png` | all |
 | `for_sale_sign`, `for_sale_sign_winter` | `for_sale_sign_raw.png`, `for_sale_sign_winter_raw.png` | all |
+| `well`, `well_winter`, `kennel`, `kennel_winter` (1×1) | `well_raw.png`, `well_winter_raw.png`, `kennel_raw.png`, `kennel_winter_raw.png`; see **Well, kennel, scarecrow and crow** below | all |
+| `scarecrow`, `scarecrow_winter` (1×1, no pad) | `scarecrow_raw.png`, `scarecrow_winter_raw.png` | all |
+| `crow_0`, `crow_1` (two frames: standing, pecking) | `crow_0_raw.png`, `crow_1_raw.png` | none |
 | `granary_1..3`, each with `_winter` | `granary_{1,2,3}_raw.png`, `granary_{1,2,3}_winter_raw.png` | all |
 | `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
 | `feed_mill`, `feed_mill_winter`, `feed_mill_sails` (8 frames), `feed_mill_static`, `feed_mill_static_winter` | `feed_mill_raw.png`, `feed_mill_body_raw.png`, `feed_mill_sails_raw.png`, `feed_mill_winter_raw.png`; see **Feed mill** below | all |
@@ -38,7 +41,10 @@ git (or rerun the commands below) after running it.
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
 | `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe (flax's sprout is its growing image, smaller), `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none, except cabbage |
 | `cabbage_<stage>_winter` (frosted, the winter crop) | `cabbage_<stage>_winter_raw.png`, `seeded_winter_raw.png`; see **Crops** below | winter |
-| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `apple`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| `veg_patch` (base, `_spring`, `_summer`, `_autumn`, `_winter`: bare) | `veg_patch_raw.png`, `veg_patch_{spring,autumn,winter}_raw.png`; see **House gardens** below | all |
+| `hen_run`, `hen_run_winter` (the two hens are the `chicken` sheet, drawn by the game) | `hen_run_raw.png`, `hen_run_winter_raw.png` | all |
+| `orchard`, `orchard_winter` (the pad; its two trees are `tree_apple` in its seasons, drawn by the game) | `orchard_raw.png`, `orchard_winter_raw.png` | all |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
 | `trader_wagon`, `trader_wagon_winter` (the travelling trader with his wagon) | `trader_wagon_raw.png`, `trader_wagon_winter_raw.png`; see **Trader's wagon** below | all |
 
@@ -146,6 +152,101 @@ the pad). Some code points into a building's 2x sprite and needs updating with i
 `src/features/resources/index.ts`, a grid point on the footprint). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
 its own bounds, so pieces fitted with the same corners share one canvas and anchor.
+
+### Well, kennel, scarecrow and crow
+
+`generateWithStyle`, `sprite`, n=2, one pick each, then one `editImage` for winter ("Winter: keep the same ...
+exactly, same shape, size, position, angle and outlines; add a thick layer of snow on the roof ..., and cover the
+whole grass pad in white snow"). The well and kennel used `cottage_raw.png` as `style_image`: "A small round stone
+farm well with a little pitched wooden shingle roof on two wooden posts, a crank and rope with a wooden bucket ... /
+A small wooden dog kennel with a pitched plank roof and a round-arched doorway, with a friendly brown and white farm
+dog lying in front of the doorway, ... on a small square grass pad of exactly one tile. Isometric 2:1 view, south
+corner of the pad toward the viewer, a straight-edged diamond pad with no thickness ...". The scarecrow used
+`for_sale_sign_raw.png` ("a straw-stuffed figure on a single upright wooden pole with a crossbar for its arms,
+floppy brown straw hat, patched checked shirt and patched trousers, ... a small tuft of grass at the foot of the
+pole ... no ground plate, no soil, no shadow") and is fitted padless like the sign (category `buildings`, so its
+winter twin swaps in); its winter edit kept the canvas, so both use one BASE and SCALE. The crow used
+`chicken_raw.png` ("a small black crow standing on the ground, wings folded, head up, three-quarter view from
+slightly above ..., only the bird, no ground, no shadow"); `crow_1` is `editImage` on it ("the same crow, pecking at
+the ground: keep ... legs and feet in exactly the same place and pose, but tip its head and neck down ...").
+
+```bash
+$P $L/fit_building.py $L/source/well_raw.png /tmp/props well 1 1 42 405 724 403 381 574.5
+$P $L/fit_building.py $L/source/well_winter_raw.png /tmp/props well_winter 1 1 56 388 703 385 376.5 548.2
+$P $L/fit_building.py $L/source/kennel_raw.png /tmp/props kennel 1 1 44 346 738 351 396 522
+$P $L/fit_building.py $L/source/kennel_winter_raw.png /tmp/props kennel_winter 1 1 51 335 705 339 382 500.5
+for s in "" _winter; do $P $L/fit_prop.py $L/source/scarecrow${s}_raw.png /tmp/props scarecrow$s 301 712 0.21 --shadow=28; done
+```
+
+The crow frames are not tile-anchored: the anchor is the ground under the feet, and both frames share one canvas
+(2x 58×50, anchor 32,44) so swapping them doesn't jump. Ludo re-frames every edit, so each frame has its own feet
+point (the middle of the toes, measured on the raw image) and scale (`crow_1`'s keeps the bird's area equal to
+`crow_0`'s); the standing crow is about 46 px tall at 2x.
+
+```bash
+$P - $L/source /tmp/props <<'EOF'
+import json, sys
+from PIL import Image
+src, out = sys.argv[1], sys.argv[2]
+FRAMES = {'crow_0': (442, 655, 0.065), 'crow_1': (428, 592, 0.065 * 1.103)}  # feet x, feet y, raw px -> 2x px
+placed = {}
+for name, (fx, fy, s) in FRAMES.items():
+    im = Image.open(f'{src}/{name}_raw.png').convert('RGBA')
+    im = im.resize((round(im.width * s), round(im.height * s)), Image.Resampling.LANCZOS)
+    bb = im.getbbox()
+    placed[name] = (im.crop(bb), fx * s - bb[0], fy * s - bb[1])
+left = max(p[1] for p in placed.values()) + 2; up = max(p[2] for p in placed.values()) + 2
+right = max(p[0].width - p[1] for p in placed.values()) + 2; down = max(p[0].height - p[2] for p in placed.values()) + 2
+ax, ay = 2 * round(left / 2), 2 * round(up / 2)
+W, H = 2 * round((ax + right) / 2 + 0.5), 2 * round((ay + down) / 2 + 0.5)
+for name, (im, fx, fy) in placed.items():
+    c = Image.new('RGBA', (W, H), (0, 0, 0, 0)); c.alpha_composite(im, (round(ax - fx), round(ay - fy)))
+    c.save(f'{out}/2x_{name}.png', optimize=True)
+    c.resize((W // 2, H // 2), Image.Resampling.LANCZOS).save(f'{out}/1x_{name}.png', optimize=True)
+    json.dump({'2x': [ax, ay], '1x': [ax / 2, ay / 2]}, open(f'{out}/{name}.json', 'w'))
+EOF
+for n in well well_winter scarecrow scarecrow_winter kennel kennel_winter crow_0 crow_1; do
+  $P $L/install_prop.py /tmp/props $n
+done
+```
+
+These eight were new to the pack, so their manifest entries (`footprint` `[1, 1]`; the six buildings in
+`buildings/` with category `buildings`, the crows in `props/` with category `props`) were added first with
+placeholder sizes, which `install_prop.py` then filled in.
+
+## House gardens
+
+`generateWithStyle` with the Ludo cottage as `style_image`, `sprite`, n=2: "a small family vegetable garden ... a
+straight-edged flat diamond pad of 2-by-2 tiles with no thickness: dark tilled soil beds in neat rows ..., leafy green
+carrot tops showing orange shoulders, a few round green cabbages and lettuces, and a low woven wattle fence of thin
+sticks around the edges of the pad. No building" and "a small backyard hen run ... a tiny wooden hen hut ... on the
+back corner of the pad; a low wooden post-and-wire fence runs around the pad's edges ... No chickens". The orchard pad
+used the chosen hen run as `style_image`: "an empty small orchard plot ... short green grass ... a low rustic wooden
+split-rail fence along the two back edges only; a small wooden ladder ... and a wicker apple basket at the left
+corner. The middle of the pad is open grass ... No trees". The seasons are `editImage` on the chosen summer image
+("keep the same ... exactly: same pad, same shape, size, position, fence and outlines" + young seedlings and
+flowers for spring, golden grass and pumpkins for autumn, bare snowy furrows with the fence kept for winter, snow on
+the hut, run and pad for the hen run and orchard). The vegetable patch is seasonal like the ground (`veg_patch_<season>`,
+listed in `GARDEN_SEASONAL_ART` in `src/scenes/art.ts`); its spring, summer and autumn entries are in category
+`props` so only `veg_patch` counts as a building with a winter twin. The hens (`HEN_AREA`) and the orchard's two
+trees (`TREES`, at 0.85 scale) are placed by `src/features/gardens/index.ts`. Edits on the same canvas size as the
+summer image are fitted with the summer corners, so the seasons line up; the hen run's winter came back on a
+different canvas and has its own.
+
+```bash
+$P $L/fit_building.py $L/source/veg_patch_raw.png /tmp/props veg_patch 2 2 42 255 724 254 382 425
+for s in spring autumn winter; do
+  $P $L/fit_building.py $L/source/veg_patch_${s}_raw.png /tmp/props veg_patch_$s 2 2 42 255 724 254 382 425
+done
+$P $L/fit_building.py $L/source/hen_run_raw.png /tmp/props hen_run 2 2 41 297 726 296 382.5 467.8
+$P $L/fit_building.py $L/source/hen_run_winter_raw.png /tmp/props hen_run_winter 2 2 56 292 704 289 377 452.5
+$P $L/fit_building.py $L/source/orchard_raw.png /tmp/props orchard 2 2 43 272 728 272 385.5 443.2
+$P $L/fit_building.py $L/source/orchard_winter_raw.png /tmp/props orchard_winter 2 2 43 272 728 272 385.5 443.2
+$P $L/install_prop.py /tmp/props veg_patch veg_patch_summer
+for n in veg_patch_spring veg_patch_autumn veg_patch_winter hen_run hen_run_winter orchard orchard_winter; do
+  $P $L/install_prop.py /tmp/props $n
+done
+```
 
 ## Feed mill: `mill_sails.py`
 
@@ -385,7 +486,7 @@ large brown hen's egg ... / a small steel farm milk churn ... / a fluffy round b
 wool ... / a plump burlap sack of animal feed ... / a round wheel of yellow cheese with a wedge cut out ... / a
 pale yellow block of butter ... on a small round wooden board / a golden-brown crusty loaf ... / a bolt of woven
 blue cloth ... / a sheaf of ripe golden wheat ... / a fat orange carrot with a bushy green top ... / a ripe ear of
-yellow corn with its husks peeled back / a small stack of three chopped logs ... / two chunky grey cut stone
+yellow corn with its husks peeled back / a single shiny ripe red apple with a short brown stem and one green leaf (with the egg icon as `style_image`) / a small stack of three chopped logs ... / two chunky grey cut stone
 blocks ... / three dark blue-grey iron ingots ... / a small wooden bucket filled with dark brown manure ... / a
 small stack of shiny gold coins ... / two plump round brown potatoes ... / a small tied bundle of pale straw-yellow
 barley ears with long whiskery bristly awns ... tied with a green band / a tied bundle of harvested flax stems ... a few
@@ -402,7 +503,7 @@ The new crops' icons (potato to pumpkin) were styled on the Ludo carrot icon ins
 first (`add_asset.py corn <name> "--notes=item icon: <name> (Ludo.ai, cel-shaded)"`).
 
 ```bash
-for n in egg milk wool feed cheese butter bread cloth wheat carrot corn potato barley flax cabbage pumpkin wood stone iron manure coins; do
+for n in egg milk wool feed cheese butter bread cloth wheat carrot corn potato barley flax cabbage pumpkin apple wood stone iron manure coins; do
   $P $L/fit_icon.py $L/source/icon_${n}_raw.png /tmp/props $n && $P $L/install_prop.py /tmp/props $n
 done
 ```

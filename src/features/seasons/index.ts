@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SEASON_INFO, type Season } from '../../data/seasons';
 import type { FarmContext } from '../../game/context';
 import { onGameStart, registerDebugInfo, registerSettingsSection } from '../../game/hooks';
+import { harshWinterAt } from '../../logic/hazards';
 import { dayOfSeason, nextSeasonAt, seasonOf } from '../../logic/seasons';
 import { baseArt, seasonalArt, seasonalGroundTint } from '../../scenes/art';
 import { artSeason, setArtSeason, textureKey } from '../../scenes/sprites';
@@ -132,7 +133,8 @@ onGameStart((ctx) => {
       }
     }
     lastElapsed = elapsed;
-    weather.setWeather(drawn, weatherBudget(drawn, scene.scale.width, scene.scale.height, cam.zoom, weatherSettings.enabled));
+    const harsh = harshWinterAt(game.state, elapsed);
+    weather.setWeather(drawn, weatherBudget(drawn, scene.scale.width, scene.scale.height, cam.zoom, weatherSettings.enabled, harsh));
   });
 
   registerDebugInfo('season', () => {

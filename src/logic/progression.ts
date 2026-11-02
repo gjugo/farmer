@@ -2,6 +2,7 @@ import { isAnimalKind } from '../data/animals';
 import { ACTIVE_GOALS, getGoal, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL, type GoalDef } from '../data/progression';
 import { START_LAND } from './constants';
 import type { Game } from './game';
+import { isProtected } from './hazards';
 import { FARM_PARCELS, parcelsBought } from './parcels';
 import { seasonOf } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
@@ -36,7 +37,7 @@ export function initialProgression(xp = 0): ProgressionState {
 
 registerStateSlice<ProgressionState>(PROGRESSION, () => initialProgression());
 
-const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'own-parcels', 'reach-level', 'families']);
+const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'own-parcels', 'reach-level', 'families', 'protected-coops']);
 
 export function isStateGoal(def: GoalDef): boolean {
   return STATE_KINDS.has(def.kind);
@@ -58,6 +59,8 @@ export function stateGoalValue(state: GameState, def: GoalDef): number {
       return levelForXp(getSlice<ProgressionState>(state, PROGRESSION).xp);
     case 'families':
       return workersOf(state).farmers;
+    case 'protected-coops':
+      return state.objects.filter((o) => o.type === 'coop' && !o.site && isProtected(state, o, 'fox')).length;
     default:
       return 0;
   }
@@ -134,6 +137,7 @@ export class Progression {
     activity.on('collected', ({ item, qty }) => this.count((d) => d.kind === 'collect' && d.item === item, qty));
     activity.on('made', ({ item, qty }) => this.count((d) => d.kind === 'make' && d.item === item, qty));
     activity.on('produced', ({ item, qty }) => this.count((d) => d.kind === 'produce' && d.item === item, qty));
+    activity.on('gathered', ({ item, qty }) => this.count((d) => d.kind === 'gather' && d.item === item, qty));
     activity.on('bought', ({ item, qty }) => this.count((d) => d.kind === 'buy' && d.item === item, qty));
     activity.on('sold', ({ item, qty }) => this.count((d) => d.kind === 'sell' && (!d.item || d.item === item), qty));
     activity.on('placed', ({ type }) => this.count((d) => d.kind === 'build' && d.type === type, 1));

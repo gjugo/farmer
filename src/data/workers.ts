@@ -50,8 +50,11 @@ export const BUILD_WORK_PER_TILE_MS = 15_000;
 export const BUILD_WORK_MIN_MS = 30_000;
 export const BUILD_WORK_MAX_MS = 180_000;
 
-/** Buildables a player lays without a farmer (cheap 1×1 pieces drawn in long runs). */
-export const NO_FARMER_BUILDABLES: readonly string[] = ['path'];
+/**
+ * Buildables a player lays without a farmer: cheap 1×1 pieces drawn in long runs, and the house gardens (the family
+ * lays out its own, see `src/data/gardens.ts`).
+ */
+export const NO_FARMER_BUILDABLES: readonly string[] = ['path', 'veg-patch', 'hen-run', 'orchard'];
 
 /** How long building `type` keeps a farmer busy; 0 when it needs no farmer. */
 export function buildWorkMs(type: string): number {

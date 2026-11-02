@@ -179,7 +179,16 @@ export const TEXTURE_ART: Record<string, string> = {
   quarry: 'quarry',
   mine: 'mine',
   cottage: 'cottage',
+  well: 'well',
+  scarecrow: 'scarecrow',
+  kennel: 'kennel',
+  'veg-patch': 'veg_patch',
+  'hen-run': 'hen_run',
+  orchard: 'orchard',
 };
+
+/** The crows that eat on a field (see `src/features/hazards`): two frames, head up and pecking. */
+export const CROW_ART = ['crow_0', 'crow_1'] as const;
 
 /** Storage buildings have a sprite per level, e.g. `granary_2`; the build preview is level 1. */
 export const STORAGE_ART = { granary: 3, storehouse: 3 } as const;
@@ -307,7 +316,7 @@ export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_m
 /** Item icons in the pack: every item of the game, plus coins for money. */
 export const ICON_ART = [
   'egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn',
-  'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'wood', 'stone', 'iron', 'manure', 'coins',
+  'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'apple', 'wood', 'stone', 'iron', 'manure', 'coins',
 ] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */
@@ -362,6 +371,11 @@ export function depositArt(kind: keyof typeof DEPOSIT_ART, x: number, y: number,
   return spent ? art.spent : art.full[hash(x, y, 19) % art.full.length];
 }
 
+/** House gardens drawn in four seasons (the vegetable patch is bare in winter); the others have a winter version only. */
+export const GARDEN_SEASONAL_ART = ['veg_patch'] as const;
+/** The orchard's two trees: the map's apple tree, in its seasons. */
+export const ORCHARD_TREE = 'tree_apple';
+
 /** Every map-resource sprite, each in four seasons. */
 export const MAP_ART: readonly string[] = [
   ...new Set<string>([...TREE_ART, STUMP_ART, ...Object.values(DEPOSIT_ART).flatMap((d) => [...d.full, d.spent])]),
@@ -382,6 +396,7 @@ export const SEASONAL_ART: readonly string[] = [
   ...SCENERY,
   POND,
   ...MAP_ART,
+  ...GARDEN_SEASONAL_ART,
 ];
 const seasonal = new Set<string>(SEASONAL_ART);
 
@@ -448,6 +463,7 @@ export function usedArt(): string[] {
     ...CROP_ART_IDS.flatMap((c) => Object.keys(CROP_STAGES).map((s) => cropArt(c, s)!)),
     ...ANIMAL_ART,
     FARMER_ART,
+    ...CROW_ART,
     ...ICON_ART,
     ...SCENERY,
     POND,

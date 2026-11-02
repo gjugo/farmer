@@ -53,6 +53,8 @@ export function summaryLines(result: CatchUpResult): string[] {
   const { arrived = 0, left = 0 } = result.families ?? {};
   if (arrived > 0) lines.push(`🏡 ${arrived === 1 ? 'A new family' : `${arrived} new families`} moved in`);
   if (left > 0) lines.push(`🧳 ${left === 1 ? 'A family' : `${left} families`} left the farm`);
+  // Hazards: warnings, losses and the ones the defences kept off (a drought or harsh winter ending needs no line).
+  for (const n of result.hazards ?? []) if (n.outcome !== 'ended') lines.push(n.text);
   const missed = result.traders?.missed ?? 0;
   if (missed > 0) lines.push(`🛒 ${missed === 1 ? 'A travelling trader' : `${missed} travelling traders`} came by while you were away and moved on without trading`);
   if (result.dayAfter !== result.dayBefore) lines.push(`📅 New market day: day ${result.dayAfter} prices`);

@@ -1,6 +1,7 @@
 import { ANIMALS, isAnimalKind, PENS } from '../data/animals';
 import { getBuildable, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, getCrop } from '../data/crops';
+import { GARDENS } from '../data/gardens';
 import { ITEMS } from '../data/items';
 import { MATERIAL_IDS, MATERIAL_UNLOCK } from '../data/materials';
 import { PROCESSORS } from '../data/processing';
@@ -30,7 +31,7 @@ export function xpForLevel(level: number): number {
 
 /**
  * The lowest level at which an item can be obtained: grown, produced by an animal,
- * made in a building, bought at the Market (materials) or (feed only) bought in a pen. Infinity when there is no source.
+ * made in a building, picked in a house garden, bought at the Market (materials) or (feed only) bought in a pen. Infinity when there is no source.
  */
 export function itemUnlockLevel(itemId: string): number {
   const sources: number[] = [];
@@ -42,6 +43,7 @@ export function itemUnlockLevel(itemId: string): number {
     if (p.recipes.some((r) => r.output.item === itemId)) sources.push(p.unlockLevel);
   }
   for (const id of MATERIAL_IDS) if (id === itemId) sources.push(MATERIAL_UNLOCK[id]);
+  for (const g of Object.values(GARDENS)) if (g.item === itemId) sources.push(g.unlockLevel);
   // Feed packs are sold in every pen's panel.
   if (itemId === 'feed') sources.push(Math.min(...Object.values(PENS).map((p) => p.unlockLevel)));
   return Math.min(Infinity, ...sources);
