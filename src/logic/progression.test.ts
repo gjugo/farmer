@@ -182,7 +182,7 @@ describe('unlocks', () => {
   });
 
   it('lists what each level unlocks', () => {
-    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Hen Run', 'Iron at the Market', 'Ox Barn', 'Pasture', 'Potato']);
+    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Hen Run', 'Iron at the Market', 'Kennel', 'Ox Barn', 'Pasture', 'Potato']);
     expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
     // The later levels unlock crops: flax and the winter cabbage at 6, pumpkin at 7.
@@ -308,9 +308,9 @@ describe('goals', () => {
     expect(GOALS.slice(cloth + 1, cloth + 4).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
   });
 
-  it('new goals are appended, after every goal saves already know by index', () => {
+  it('new goals are appended, after every goal saves already know by index: the trader and garden goals, the hazard goals, then the oxcart goals', () => {
     const pumpkins = GOALS.findIndex((g) => g.id === 'grow-pumpkins');
-    expect(GOALS.slice(pumpkins + 1).map((g) => g.id)).toEqual(['trade-trader', 'build-veg-patch', 'gather-apples', 'build-oxbarn', 'haul-goods']);
+    expect(GOALS.slice(pumpkins + 1).map((g) => g.id)).toEqual(['trade-trader', 'build-veg-patch', 'gather-apples', 'build-well', 'guard-coop', 'build-oxbarn', 'haul-goods']);
   });
 
   it('the oxcart goals come last: build an ox barn, haul 100 goods by cart', () => {
@@ -318,7 +318,7 @@ describe('goals', () => {
       ['build-oxbarn', 'own-buildings', 1],
       ['haul-goods', 'haul', 100],
     ]);
-    expect(GOALS.findIndex((g) => g.id === 'gather-apples')).toBe(GOALS.length - 3);
+    expect(GOALS.findIndex((g) => g.id === 'guard-coop')).toBe(GOALS.length - 3);
   });
 
   it('haul goals count goods unloaded by cart', () => {

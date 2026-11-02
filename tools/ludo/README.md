@@ -21,6 +21,9 @@ git (or rerun the commands below) after running it.
 | `quarry`, `quarry_winter` | `quarry_raw.png`, `quarry_winter_raw.png` | all |
 | `mine`, `mine_winter` | `mine_raw.png`, `mine_winter_raw.png` | all |
 | `for_sale_sign`, `for_sale_sign_winter` | `for_sale_sign_raw.png`, `for_sale_sign_winter_raw.png` | all |
+| `well`, `well_winter`, `kennel`, `kennel_winter` (1×1) | `well_raw.png`, `well_winter_raw.png`, `kennel_raw.png`, `kennel_winter_raw.png`; see **Well, kennel, scarecrow and crow** below | all |
+| `scarecrow`, `scarecrow_winter` (1×1, no pad) | `scarecrow_raw.png`, `scarecrow_winter_raw.png` | all |
+| `crow_0`, `crow_1` (two frames: standing, pecking) | `crow_0_raw.png`, `crow_1_raw.png` | none |
 | `granary_1..3`, each with `_winter` | `granary_{1,2,3}_raw.png`, `granary_{1,2,3}_winter_raw.png` | all |
 | `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
 | `feed_mill`, `feed_mill_winter`, `feed_mill_sails` (8 frames), `feed_mill_static`, `feed_mill_static_winter` | `feed_mill_raw.png`, `feed_mill_body_raw.png`, `feed_mill_sails_raw.png`, `feed_mill_winter_raw.png`; see **Feed mill** below | all |
@@ -152,6 +155,67 @@ the pad). Some code points into a building's 2x sprite and needs updating with i
 `src/features/resources/index.ts`, a grid point on the footprint). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
 its own bounds, so pieces fitted with the same corners share one canvas and anchor.
+
+### Well, kennel, scarecrow and crow
+
+`generateWithStyle`, `sprite`, n=2, one pick each, then one `editImage` for winter ("Winter: keep the same ...
+exactly, same shape, size, position, angle and outlines; add a thick layer of snow on the roof ..., and cover the
+whole grass pad in white snow"). The well and kennel used `cottage_raw.png` as `style_image`: "A small round stone
+farm well with a little pitched wooden shingle roof on two wooden posts, a crank and rope with a wooden bucket ... /
+A small wooden dog kennel with a pitched plank roof and a round-arched doorway, with a friendly brown and white farm
+dog lying in front of the doorway, ... on a small square grass pad of exactly one tile. Isometric 2:1 view, south
+corner of the pad toward the viewer, a straight-edged diamond pad with no thickness ...". The scarecrow used
+`for_sale_sign_raw.png` ("a straw-stuffed figure on a single upright wooden pole with a crossbar for its arms,
+floppy brown straw hat, patched checked shirt and patched trousers, ... a small tuft of grass at the foot of the
+pole ... no ground plate, no soil, no shadow") and is fitted padless like the sign (category `buildings`, so its
+winter twin swaps in); its winter edit kept the canvas, so both use one BASE and SCALE. The crow used
+`chicken_raw.png` ("a small black crow standing on the ground, wings folded, head up, three-quarter view from
+slightly above ..., only the bird, no ground, no shadow"); `crow_1` is `editImage` on it ("the same crow, pecking at
+the ground: keep ... legs and feet in exactly the same place and pose, but tip its head and neck down ...").
+
+```bash
+$P $L/fit_building.py $L/source/well_raw.png /tmp/props well 1 1 42 405 724 403 381 574.5
+$P $L/fit_building.py $L/source/well_winter_raw.png /tmp/props well_winter 1 1 56 388 703 385 376.5 548.2
+$P $L/fit_building.py $L/source/kennel_raw.png /tmp/props kennel 1 1 44 346 738 351 396 522
+$P $L/fit_building.py $L/source/kennel_winter_raw.png /tmp/props kennel_winter 1 1 51 335 705 339 382 500.5
+for s in "" _winter; do $P $L/fit_prop.py $L/source/scarecrow${s}_raw.png /tmp/props scarecrow$s 301 712 0.21 --shadow=28; done
+```
+
+The crow frames are not tile-anchored: the anchor is the ground under the feet, and both frames share one canvas
+(2x 58×50, anchor 32,44) so swapping them doesn't jump. Ludo re-frames every edit, so each frame has its own feet
+point (the middle of the toes, measured on the raw image) and scale (`crow_1`'s keeps the bird's area equal to
+`crow_0`'s); the standing crow is about 46 px tall at 2x.
+
+```bash
+$P - $L/source /tmp/props <<'EOF'
+import json, sys
+from PIL import Image
+src, out = sys.argv[1], sys.argv[2]
+FRAMES = {'crow_0': (442, 655, 0.065), 'crow_1': (428, 592, 0.065 * 1.103)}  # feet x, feet y, raw px -> 2x px
+placed = {}
+for name, (fx, fy, s) in FRAMES.items():
+    im = Image.open(f'{src}/{name}_raw.png').convert('RGBA')
+    im = im.resize((round(im.width * s), round(im.height * s)), Image.Resampling.LANCZOS)
+    bb = im.getbbox()
+    placed[name] = (im.crop(bb), fx * s - bb[0], fy * s - bb[1])
+left = max(p[1] for p in placed.values()) + 2; up = max(p[2] for p in placed.values()) + 2
+right = max(p[0].width - p[1] for p in placed.values()) + 2; down = max(p[0].height - p[2] for p in placed.values()) + 2
+ax, ay = 2 * round(left / 2), 2 * round(up / 2)
+W, H = 2 * round((ax + right) / 2 + 0.5), 2 * round((ay + down) / 2 + 0.5)
+for name, (im, fx, fy) in placed.items():
+    c = Image.new('RGBA', (W, H), (0, 0, 0, 0)); c.alpha_composite(im, (round(ax - fx), round(ay - fy)))
+    c.save(f'{out}/2x_{name}.png', optimize=True)
+    c.resize((W // 2, H // 2), Image.Resampling.LANCZOS).save(f'{out}/1x_{name}.png', optimize=True)
+    json.dump({'2x': [ax, ay], '1x': [ax / 2, ay / 2]}, open(f'{out}/{name}.json', 'w'))
+EOF
+for n in well well_winter scarecrow scarecrow_winter kennel kennel_winter crow_0 crow_1; do
+  $P $L/install_prop.py /tmp/props $n
+done
+```
+
+These eight were new to the pack, so their manifest entries (`footprint` `[1, 1]`; the six buildings in
+`buildings/` with category `buildings`, the crows in `props/` with category `props`) were added first with
+placeholder sizes, which `install_prop.py` then filled in.
 
 ## House gardens
 

@@ -7,6 +7,7 @@ import { START_LAYOUT } from './constants';
 import type { Game } from './game';
 import { perkFactor } from './perks';
 import { nextSeasonIn, seasonRunEnd } from './seasons';
+import { droughtGrowMs, harvestShare } from './hazards';
 import { afterHarvest, areaSoil, drainOf, restedFertility, yieldAt } from './soil';
 import { addStartingObject, onNewGame } from './state';
 import type { ClockState, GameState, PlacedObject } from './types';
@@ -29,6 +30,10 @@ export type FieldState = {
   restingSince?: number | null;
   /** Crop id of the field's last harvest, or null: the same crop again drains twice as fast. */
   lastCrop?: string | null;
+  /** A drought slowed the crop (no well nearby): its harvest is smaller (see `src/logic/hazards.ts`). Cleared at harvest. */
+  parched?: boolean;
+  /** Crows ate at the crop (no scarecrow nearby): its harvest is smaller. Cleared at harvest. */
+  pecked?: boolean;
 };
 
 export type CropStage = 'empty' | 'seeded' | 'sprout' | 'growing' | 'ripe';
@@ -76,10 +81,13 @@ function settleFertility(clock: ClockState, obj: PlacedObject<FieldState>, ferti
   obj.state.restingSince = rest ? clock.elapsed : null;
 }
 
-/** What harvesting the field's crop would bring now: its quantity scaled by the field's fertility. 0 when empty. */
+/**
+ * What harvesting the field's crop would bring now: its quantity scaled by the field's fertility (and perks), less what
+ * a drought or crows took (`harvestShare`). 0 when empty.
+ */
 export function harvestYield(state: GameState, obj: PlacedObject<FieldState>): number {
   const crop = fieldCrop(obj.state);
-  return crop ? yieldAt(crop.harvestQty, fertilityOf(state.clock, obj), perkFactor(state, 'green-thumb')) : 0;
+  return crop ? Math.round(yieldAt(crop.harvestQty, fertilityOf(state.clock, obj), perkFactor(state, 'green-thumb')) * harvestShare(obj.state)) : 0;
 }
 
 /** The field's last harvested crop, if its id is still known. */
@@ -171,7 +179,10 @@ export function plant(game: Game, obj: PlacedObject<FieldState>, cropId: string)
   if (!game.spend(crop.plantCost)) return { ok: false, reason: 'money' };
   settleFertility(clock, obj, fertilityOf(clock, obj), false);
   obj.state.crop = crop.id;
-  obj.state.timer = startTimer(game.state.clock, crop.growMs);
+  delete obj.state.parched;
+  delete obj.state.pecked;
+  // In a drought, a field no well reaches grows slower.
+  obj.state.timer = startTimer(game.state.clock, droughtGrowMs(game.state, obj, clock.elapsed, crop.growMs));
   game.touch(obj);
   game.activity.emit('planted', { crop: crop.id });
   return { ok: true };
@@ -191,11 +202,13 @@ export function harvest(game: Game, obj: PlacedObject<FieldState>): HarvestResul
   const crop = fieldCrop(obj.state);
   if (!crop || cropStage(clock, obj.state) !== 'ripe') return { ok: false, reason: 'not-ripe' };
   const fertility = fertilityOf(clock, obj);
-  const qty = yieldAt(crop.harvestQty, fertility, perkFactor(game.state, 'green-thumb'));
+  const qty = harvestYield(game.state, obj);
   if (game.spaceFor(crop.harvestItem) < qty) return { ok: false, reason: 'full' };
   game.addItem(crop.harvestItem, qty);
   obj.state.crop = null;
   obj.state.timer = null;
+  delete obj.state.parched;
+  delete obj.state.pecked;
   settleFertility(clock, obj, afterHarvest(fertility, drainOf(crop.id, crop.soilDrain, obj.state.lastCrop ?? null, perkFactor(game.state, 'rich-soil'))), true);
   obj.state.lastCrop = crop.id;
   game.touch(obj);

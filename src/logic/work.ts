@@ -9,6 +9,7 @@ import * as animals from './animals';
 import { isBarn, nextHaulEvent, planHaul, settleHauls, startTrip, type HaulTrip } from './haul';
 import { MANURE_BELOW } from '../data/soil';
 import { nextFamiliesEvent, stepFamilies } from './families';
+import { nextHazardEvent, stepHazards } from './hazards';
 import { nextGardensEvent, stepGardens } from './gardens';
 import { canPloughNow, checkFertilise, cropStage, fertilise, fertilityOf, fieldCrop, harvest, harvestYield, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import type { Game } from './game';
@@ -242,7 +243,9 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
   w.jobs = activeJobs(state.clock, w).filter((j) => j.doneAt === undefined || !!game.getObject(j.target ?? '')?.site);
   settleAssigned(game, onSettled);
   settleResources(game);
-  // New days (meals, firewood, clothes, approval, departures) and arrivals, before work is handed out.
+  // Hazards first (a harsh winter or drought starting today counts for today), then new days (meals, firewood,
+  // clothes, approval, departures) and arrivals, before work is handed out.
+  stepHazards(game);
   stepFamilies(game);
   // House gardens yield after the meal, and carry in what waits as room appears.
   stepGardens(game);
@@ -281,8 +284,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
 
 /**
  * The next game time after now at which a farmer may find new work: a job, crop, animal cycle, batch or resource cycle
- * ends, a tree a waiting lodge could fell grows back, a season or a day begins (the families settle their needs), or a
- * family is due to move in.
+ * ends, a tree a waiting lodge could fell grows back, a season or a day begins (the families settle their needs), a
+ * family is due to move in, or a hazard is due (crows land, a fox comes, a drought starts or ends).
  */
 export function nextWorkEvent(game: Game): number {
   const { state } = game;
@@ -324,6 +327,7 @@ export function nextWorkEvent(game: Game): number {
   at(nextHaulEvent(state, now));
   if (fields) at(nextSeasonAt(now));
   at(nextFamiliesEvent(state));
+  at(nextHazardEvent(state));
   at(nextGardensEvent(state));
   return next;
 }

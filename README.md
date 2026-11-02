@@ -268,6 +268,28 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   game clock: at once on load, New game, debug **Next season** and after time away, with a 1.5 s crossfade when the
   season comes round while playing. ⚙️ Settings → **Weather effects** turns the particles off (localStorage
   `farmer.weather`); it starts off when the system asks for reduced motion.
+- **Hazards (events and defences):** from the farm's second season, things go wrong, Manor Lords style, and each has a
+  defence. They are decided from a seed saved with the farm and the game clock, inside the work scheduler, so ×1, ×60,
+  reloads and offline catch-up give the same farm. Rules in `src/logic/hazards.ts`, numbers in `src/data/hazards.ts`.
+
+  | event | when | unprotected | defence |
+  | --- | --- | --- | --- |
+  | 🥶 **Harsh winter** | about 1 winter in 3, from level 3; announced at the start of autumn | homes burn 2 wood a day instead of 1 | stock wood (the warning says how much) |
+  | ☀️ **Drought** | about 1 summer in 3, from level 2; announced a day ahead; lasts to the end of summer | crops grow at half speed and yield 30% less | a **🪣 Well** (1×1, $40 + 6 stone, level 2) within 4 tiles of the field |
+  | 🐦‍⬛ **Crows** | on random days (30%) spring to autumn, from level 2 | a flock lands on one growing field for 2 game-minutes and eats 30% of its harvest | a **👒 Scarecrow** (1×1, $15 + 2 wood, level 2) within 3 tiles |
+  | 🦊 **Fox** | on random days (25%) once the farm has chickens | takes one chicken from a coop | a **🐕 Kennel** (1×1, $60 + 6 wood, level 3) within 6 tiles of the coop |
+
+  Fairness: nothing in a new farm's first season, at most one new event a day, losses never take money, a fox never
+  takes the farm's last chicken, and a harsh winter only doubles the firewood the families need (the usual approval
+  rules count the cold homes). Reach is counted edge to edge (like a woodcutter's lodge's); a defence works once
+  built. A drought slows the crops growing when it starts and those sown during it; a well built later helps the next
+  crop. Crops keep their progress, so a parched crop never shrinks back a stage. Every warning, loss and defence is a
+  toast; **📖 Almanac** in the HUD lists what is on now, what is coming (announced events, and crows or a fox about
+  today), every threat with its defence and the recent losses; the welcome-back summary lists what happened while you
+  were away. A parched field is drawn dry and cracked, crows peck on the field they eat, and a harsh winter snows
+  heavier (still at most 150 particles). Field and coop panels say "🛡️ Protected by …" or "⚠️ Unprotected: build …";
+  the build ghost of a well, scarecrow or kennel shades the tiles it reaches and counts the fields or coops it guards.
+  Two goals near the end of the list, before the oxcart goals: **Build a well** and **Protect a coop with a kennel**.
 - **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
   Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
   (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
@@ -292,12 +314,16 @@ Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed *
 (at ×60 a season passes in 32 real seconds, at ×300 in under 7 and a whole year in under half a minute),
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary),
 **+1 family** (fills an empty home at once), **Next day** (jumps to the next day boundary, where the families settle
-their needs), **Refresh orders** (fills every order slot now), **Regrow all trees** (every stump grows back at
-once), **Reset perks** (forgets every perk taken; every level reached gets its choice back), **Trader now** (a trader
+their needs), **Drought now** (a drought until the end of the current season), **Crows now** (a flock lands on a
+growing field now), **Fox now** (a fox comes to a coop now), **Harsh winter next** (the coming winter, or this one, is
+harsh, with its warning), **Refresh orders** (fills every order slot now), **Regrow all trees** (every stump grows back
+at once), **Reset perks** (forgets every perk taken; every level reached gets its choice back), **Trader now** (a trader
 parks by the farmhouse at once, whatever the level and schedule, and leaves at the end of the day) and **Clear market
 drops** (every flooded price back to the day's price). Setting a higher level opens a choice for each level on the way.
-**+10** adds only what the granaries or storehouses have room for. **Next day** and **Next season** are not time away:
-a trader due on the way arrives as in play.
+The hazard buttons skip the rolls, the level and the season, but defences still work and a fox still never takes the
+last chicken; when nothing can happen (no growing field, fewer than 2 chickens) a toast says why. **+10** adds only
+what the granaries or storehouses have room for. **Next day** and **Next season** are not time away: a trader due on
+the way arrives as in play.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
@@ -355,6 +381,13 @@ normal, 45 poor), `overlay` whether the Soil overlay is on. Each field in `windo
 `state.fertility` (points when it began resting, or while a crop grows), `state.restingSince` (game ms, null while a
 crop grows) and `state.lastCrop`; the field panel shows the current fertility (`panel-meter-fertility`), and the
 Build menu's toggle is `build-toggle-soil` (`aria-pressed`).
+`window.farm.hazards` is `{ seed, current, upcoming, log, coverage(x, y), crows, guarded }`: `current` and `upcoming`
+list events as `{ kind: 'harsh-winter' | 'drought' | 'crows' | 'fox', start, end, announcedAt?, target? }` (game ms;
+crows eating name their field in `target`), `log` the last 30 notes newest first as
+`{ at, kind, outcome: 'warning' | 'started' | 'loss' | 'defended' | 'ended', text, target?, lost? }`, `coverage(x, y)`
+the defences reaching a tile (e.g. `['well', 'scarecrow']`), `crows` the crow sprites on the map and `guarded` maps
+`well`, `scarecrow` and `kennel` to the ids of the fields or coops they guard. A field hit by a drought or crows carries
+`state.parched` / `state.pecked` until it is harvested. The saved slice is `window.farm.ext.hazards`.
 `window.farm.perks` is `{ taken, pending, offer(level) }`: `taken` lists `{ level, id }` of the perks taken,
 `pending` the levels whose choice is still open (oldest first) and `offer(level)` the ids of that level's cards. Test
 ids: `levelup-dialog`, `perk-card-<id>`, `perk-later`, `levelup-ok`, `hud-perk-badge`, `perks-section`, `perk-<id>`,

@@ -6,7 +6,6 @@ import {
   CLOTH_PER_FAMILY,
   COTTAGE,
   FARMHOUSE_HOMES,
-  FIREWOOD_PER_HOME,
   FOODS,
   LEAVE_APPROVAL,
   MEAL_PER_FAMILY,
@@ -18,6 +17,7 @@ import { SEASONS } from '../data/seasons';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS } from './constants';
 import type { Game } from './game';
+import { firewoodPerHome } from './hazards';
 import { gardenedHomes } from './gardens';
 import * as inventory from './inventory';
 import { perkFactor } from './perks';
@@ -265,8 +265,9 @@ function settleDay(game: Game, day: number): void {
   const firewoodNeeded = Math.min(homesOf(state), families);
   let firewood: number | null = null;
   if (winter) {
-    // Warm hearths: each home burns half as much (the day's wood is rounded up).
-    const perHome = FIREWOOD_PER_HOME * perkFactor(state, 'warm-hearths');
+    // Warm hearths: each home burns half as much (the day's wood is rounded up). A harsh winter doubles it
+    // (`src/logic/hazards.ts`); the approval rules stay the same.
+    const perHome = firewoodPerHome(state, t) * perkFactor(state, 'warm-hearths');
     const burnt = Math.min(Math.ceil(firewoodNeeded * perHome - 1e-9), game.count('wood'));
     if (burnt > 0) game.removeItem('wood', burnt);
     firewood = Math.min(firewoodNeeded, Math.floor(burnt / perHome + 1e-9));

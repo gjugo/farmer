@@ -42,6 +42,13 @@ describe('weather budget', () => {
     expect(weatherBudget('winter', 3840, 2160, 2, true)).toBe(WEATHER_CAP);
   });
 
+  it('snows heavier in a harsh winter, still never over the cap; other seasons are as they were', () => {
+    expect(weatherBudget('winter', 390, 844, 1, true, true)).toBeGreaterThan(weatherBudget('winter', 390, 844, 1, true));
+    expect(weatherBudget('winter', 3840, 2160, 2, true, true)).toBe(WEATHER_CAP);
+    expect(weatherBudget('autumn', 1280, 800, 1, true, true)).toBe(weatherBudget('autumn', 1280, 800, 1, true));
+    expect(weatherBudget('winter', 1280, 800, 1, false, true)).toBe(0);
+  });
+
   it('thins out when zoomed far out', () => {
     expect(weatherBudget('winter', 1280, 800, 0.2, true)).toBeLessThan(weatherBudget('winter', 1280, 800, 1, true) / 2);
     expect(weatherBudget('winter', 1280, 800, 0.2, true)).toBeGreaterThan(0);
