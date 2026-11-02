@@ -106,7 +106,8 @@ describe('starting jobs', () => {
     expect(game.count('flour')).toBe(1);
     expect(game.count('egg')).toBe(1);
     expect(checkStart(game, bakery, 'bread')).toEqual({ ok: false, reason: 'inputs' });
-    wait(game, bakery, 240_000);
+    expect(wait(game, bakery, 119_999)).toBe(0);
+    expect(wait(game, bakery, 1)).toBe(1);
     expect(collect(game, bakery)).toEqual({ bread: 3 });
   });
 
@@ -121,7 +122,7 @@ describe('starting jobs', () => {
     expect(game.count('rye-flour')).toBe(1);
     // Wheat flour doesn't make rye bread, nor rye flour bread.
     expect(checkStart(game, bakery, 'bread')).toEqual({ ok: false, reason: 'inputs' });
-    wait(game, bakery, 240_000);
+    wait(game, bakery, 150_000);
     expect(collect(game, bakery)).toEqual({ 'rye-bread': 3 });
   });
 

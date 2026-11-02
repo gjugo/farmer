@@ -48,7 +48,7 @@ export function approvalFace(approval: number): string {
 
 const pointsText = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±0');
 
-/** "🌾 Wheat ×2, 🥕 Carrot ×2" */
+/** "🍞 Bread ×2, 🥕 Carrot ×2" */
 function foods(ate: Record<string, number>): string {
   return Object.entries(ate)
     .map(([id, n]) => `${getItem(id)?.icon ?? ''} ${getItem(id)?.name ?? id} ×${n}`.trim())
@@ -116,7 +116,7 @@ export function familiesBlock(game: Game): HTMLElement {
       'p',
       { class: 'muted families-needs' },
       withIcons(
-        `Each family eats ${MEAL_PER_FAMILY} food a day from the granary (${FOODS.map((id) => getItem(id)?.icon ?? id).join(' ')}): the more kinds they get, the happier they are. On winter days each family burns ${FIREWOOD_PER_HOME} 🪵 wood at its own hearth, from the storehouse.${clothes}${ale}`,
+        `Each family eats ${MEAL_PER_FAMILY} food a day from the granary (${FOODS.map((id) => getItem(id)?.icon ?? id).join(' ')}): the more kinds they get, the happier they are. They eat no raw grain: the 🌬️ Windmill grinds wheat and rye into flour, and the 🍞 bakery bakes it into bread. On winter days each family burns ${FIREWOOD_PER_HOME} 🪵 wood at its own hearth, from the storehouse.${clothes}${ale}`,
       ),
     ),
   );

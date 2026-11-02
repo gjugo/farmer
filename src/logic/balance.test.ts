@@ -1,11 +1,11 @@
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { ANIMALS, PENS, type AnimalKind, type PenType } from '../data/animals';
 import { getBuildable } from '../data/buildables';
-import { FIELD } from '../data/crops';
+import { CROPS, FIELD } from '../data/crops';
 import { isMaterial, MATERIAL_IDS, type MaterialCost } from '../data/materials';
 import { GRANARY, POOL_BUILDING, type StoragePool } from '../data/storage';
 import { buyAnimal, buyFeed, feedNeeded, winterFeedNeed, type PenState } from './animals';
-import { PROCESSORS, recipeUnlockLevel } from '../data/processing';
+import { MILL, PROCESSORS, recipeUnlockLevel } from '../data/processing';
 import { checkStart, collect as collectGoods, settle, startJob, type ProcessorState } from './processing';
 import type { FieldState } from './crops';
 import { Game } from './game';
@@ -37,6 +37,7 @@ import { ensureMainRoad, ROAD_SLICE, roadTiles } from './mainroad';
 import { addFarmer, assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, setKeepMaking, workerAt, workersOf } from './workers';
 import { maxLevelState, useClassicStart } from './test-utils';
 import { campInfo, campOf } from './camp';
+import { familiesOf } from './families';
 
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
@@ -54,8 +55,8 @@ import { campInfo, campOf } from './camp';
  * one; it makes room in the storehouse the same way before shopping for more materials than fit (selling materials
  * the purchase doesn't need first). From level 2 it builds a woodcutter's lodge, then a quarry with the lodge's wood;
  * it staffs them in winter with the farmers whose fields are frozen, and sends them back to the fields in spring, so it
- * hires nobody for them and buys only the materials they haven't made. It sells materials beyond 10 of each. It never uses processing
- * buildings, never builds the farmhouse, never builds where it would wall off land the village reaches, so a real player who does more should level at least as fast. Hazards are on at their normal rates: from
+ * hires nobody for them and buys only the materials they haven't made. It sells materials beyond 10 of each. Its only processing buildings are
+ * a Feed Barn, a Windmill and a bakery for its own feed and bread (it sells what they make only past its pantry's needs), it never builds the farmhouse, never builds where it would wall off land the village reaches, so a real player who does more should level at least as fast. Hazards are on at their normal rates: from
  * level 2 it builds scarecrows and wells where they guard fields nothing guards yet, from level 3 a kennel by the coop,
  * and for a harsh winter it stocks the wood the warning asks for.
  */
@@ -126,6 +127,22 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
   game.activity.on('starved', () => feed.starved++);
   game.activity.on('made', ({ item, qty }) => {
     if (item === 'feed') feed.made += qty;
+    if (item === 'bread' || item === 'rye-bread') bread.baked += qty;
+  });
+  // The grain chain: when its Windmill and bakery went up, the bread they baked, families who left hungry and the days
+  // some family went short.
+  const bread = { millBuiltAt: Infinity, bakeryBuiltAt: Infinity, baked: 0, hungryLeft: 0, shortDays: 0 };
+  game.activity.on('built', ({ type }) => {
+    if (type === MILL) bread.millBuiltAt = Math.min(bread.millBuiltAt, game.now);
+    if (type === 'bakery') bread.bakeryBuiltAt = Math.min(bread.bakeryBuiltAt, game.now);
+  });
+  game.activity.on('familyLeft', () => {
+    const day = familiesOf(game.state).lastDay;
+    if (day && day.eaten < day.meal) bread.hungryLeft++;
+  });
+  game.activity.on('familiesSettled', () => {
+    const day = familiesOf(game.state).lastDay;
+    if (day && day.eaten < day.meal) bread.shortDays++;
   });
   let buyingFirewood = false;
   let buyingDefence = false;
@@ -242,18 +259,49 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
       const near = [...roadTiles(game.state)].sort((a, b) => Math.abs(a.x - centre.x) + Math.abs(a.y - centre.y) - (Math.abs(b.x - centre.x) + Math.abs(b.y - centre.y)))[0];
       if (near && connectToFarmhouse(game.state, { ...near, w: 1, h: 1 })) build(TRADING_POST, 100);
     }
-    // Food for the families (the camp's bread and carrots first): its cheap crops (wheat, carrots, corn); the
-    // dearer eggs and milk are sold. A day's meals, and from autumn until the first spring harvest (a crop sown in
-    // spring can take two days) enough for winter and those days, split across the kinds (meals are spread across them).
+    // Food for the families (the camp's bread and carrots first): its cheap crops (carrots, potatoes, corn) and the
+    // bread it bakes from its wheat and rye; the dearer eggs and milk are sold. A day's meals, and from autumn until the
+    // first spring harvest (a crop sown in spring can take two days) enough for winter and those days, split across the
+    // kinds (meals are spread across them).
     const families = workersOf(game.state).farmers;
     const winterSoon = seasonAt(game.now) === 'winter' || seasonAt(nextSeasonAt(game.now)) === 'winter';
-    const PANTRY: readonly string[] = FOODS.filter((id) => getItem(id)?.category === 'crop');
+    const PANTRY: readonly string[] = FOODS.filter((id) => getItem(id)?.category === 'crop' || BREADS.includes(id));
     const foodKinds = PANTRY.filter((id) => game.count(id) > 0).length || 1;
     const lean = winterSoon || (seasonAt(game.now) === 'spring' && dayOfSeason(game.state.clock) <= 2);
     const days = lean ? SEASON_DAYS + 4 : 1;
     // What the camp still holds is eaten first, so only the rest of the need is kept back from the crops.
     const need = days * MEAL_PER_FAMILY * families - FOODS.reduce((n, id) => n + supplies(id), 0);
     const keepFood = need > 0 ? Math.ceil(need / foodKinds) + 1 : 0;
+    // Bread: a Windmill and a bakery from level 2, once it has four fields. It grinds and bakes by hand, as a player
+    // taps, until the pantry holds its bread, and keeps the grain that takes from the sale.
+    const keepGrain: Record<string, number> = {};
+    if (game.objectsOfType(FIELD).length >= 4) {
+      if (game.objectsOfType(MILL).length === 0) build(MILL, 60);
+      else if (game.objectsOfType('bakery').length === 0) build('bakery', 60);
+    }
+    const mill = game.objectsOfType(MILL).find((o) => !o.site) as PlacedObject<ProcessorState> | undefined;
+    const bakery = game.objectsOfType('bakery').find((o) => !o.site) as PlacedObject<ProcessorState> | undefined;
+    if (mill && bakery) {
+      for (const b of [mill, bakery]) {
+        settle(game.state, b);
+        collectGoods(game, b);
+      }
+      for (const [grain, flour, loaf] of GRAIN_CHAIN) {
+        const flourRecipe = PROCESSORS[MILL].recipes.find((r) => r.output.item === flour)!;
+        const breadRecipe = PROCESSORS.bakery.recipes.find((r) => r.output.item === loaf)!;
+        if (!game.isUnlocked(recipeUnlockLevel(PROCESSORS.bakery, breadRecipe))) continue;
+        const queued = (b: PlacedObject<ProcessorState>, id: string) => b.state.queue.filter((j) => j.recipe === id).length;
+        const loaves = () => game.count(loaf) + (bakery.state.ready[loaf] ?? 0) + queued(bakery, breadRecipe.id) * breadRecipe.output.qty;
+        const flours = () => game.count(flour) + (mill.state.ready[flour] ?? 0) + queued(mill, flourRecipe.id) * flourRecipe.output.qty;
+        const want = keepFood + 1;
+        while (loaves() < want && checkStart(game, bakery, breadRecipe.id).ok) startJob(game, bakery, breadRecipe.id);
+        const flourShort = Math.ceil((Math.max(0, want - loaves()) * breadRecipe.inputs[flour as 'flour']!) / breadRecipe.output.qty) - flours();
+        keepGrain[grain] = Math.max(0, flourShort);
+        while (flours() * breadRecipe.output.qty < (want - loaves()) * breadRecipe.inputs[flour as 'flour']! && checkStart(game, mill, flourRecipe.id).ok) {
+          startJob(game, mill, flourRecipe.id);
+        }
+      }
+    }
     // Winter feed: a Feed Barn once the coop has chickens (level 2), and from summer on it turns spare grain into
     // feed (1 grain to 2 feed) until the store holds a winter's need, before selling that grain. It loads and collects by
     // hand, as a player taps.
@@ -267,7 +315,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
       for (const r of PROCESSORS['feed-barn'].recipes) {
         if (!making || !game.isUnlocked(recipeUnlockLevel(PROCESSORS['feed-barn'], r))) continue;
         const [grain, need] = Object.entries(r.inputs)[0] as [string, number];
-        const keep = PANTRY.includes(grain) ? keepFood : 0;
+        const keep = PANTRY.includes(grain) ? keepFood : (keepGrain[grain] ?? 0);
         while (coming() < winterFeedNeed(game.state) && game.count(grain) - need >= keep && checkStart(game, barn, r.id).ok) startJob(game, barn, r.id);
       }
     }
@@ -275,7 +323,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     updateTrader(game);
     const trader = traderHere(game.state);
     trader?.wants.forEach((w, i) => {
-      const spare = game.count(w.item) - Math.max(PANTRY.includes(w.item) ? keepFood : 0, supplies(w.item));
+      const spare = game.count(w.item) - Math.max(PANTRY.includes(w.item) ? keepFood : (keepGrain[w.item] ?? 0), supplies(w.item));
       if (spare > 0) sellToTrader(game, i, spare);
     });
     // It doesn't flood the Market: past an item's daily allowance (and a 10% drop) it keeps the rest for tomorrow,
@@ -283,7 +331,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const tight = used(game.state, 'goods') >= 0.5 * capacity(game.state, 'goods');
     for (const id of Object.keys(game.state.inventory)) {
       if (id === 'feed' || isMaterial(id)) continue;
-      const keep = Math.max(PANTRY.includes(id) ? keepFood : 0, supplies(id));
+      const keep = Math.max(PANTRY.includes(id) ? keepFood : (keepGrain[id] ?? 0), supplies(id));
       const room = tight ? Infinity : Math.max(0, allowance(id) + FLOOD_OK - (marketOf(game.state).sold[id] ?? 0));
       const n = Math.min(game.count(id) - keep, room);
       if (n > 0) sell(game, id, n);
@@ -297,6 +345,16 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
       if (game.count(id) > keep) sell(game, id, game.count(id) - keep);
     }
     const fields = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
+    // Its crop plans, once the mill grinds: "Best in season" sows the longest crop, so wheat (for the bread) never and,
+    // from level 3, winter rye on every field in autumn. Like a player, it keeps every third field in wheat while wheat
+    // grows, and every other field in carrots in autumn, so the families have vegetables before the rye comes in.
+    if (game.objectsOfType(MILL).length > 0) {
+      const autumn = seasonAt(game.now) === 'autumn';
+      fields.forEach((f, i) => {
+        const plan = i % 3 === 0 && !autumn ? 'wheat' : autumn && i % 2 === 1 && game.isUnlocked(CROPS.carrot.unlockLevel) ? 'carrot' : PLAN_BEST;
+        if (cropPlanOf(game.state, f.id) !== PLAN_FALLOW && cropPlanOf(game.state, f.id) !== plan) setCropPlan(game, f.id, plan);
+      });
+    }
     const resources = [...game.objectsOfType('woodcutter'), ...game.objectsOfType('quarry')].filter((o) => !o.site);
     const workplaces = [...pens('coop'), ...pens('pasture'), ...fields].filter((o) => !o.site);
     // Winter: farmers whose fields can't be sown cut wood and break stone instead; when the ground thaws they go back.
@@ -392,7 +450,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     }
   }
   const storageLevels = (type: string) => game.objectsOfType(type).map((o) => o.state.level as number);
-  return { reachedAt, storage, granaries: storageLevels(GRANARY), storehouses: storageLevels(POOL_BUILDING.materials), produced, bought, staffed, game, feed };
+  return { reachedAt, storage, granaries: storageLevels(GRANARY), storehouses: storageLevels(POOL_BUILDING.materials), produced, bought, staffed, game, feed, bread };
 }
 
 interface Sim {
@@ -408,7 +466,16 @@ interface Sim {
   game: Game;
   /** Winter feed: when its Feed Barn was built (game ms), animals starved, feed made at the barn and bought in packs. */
   feed: { barnBuiltAt: number; starved: number; made: number; bought: number };
+  /** The grain chain: when its Windmill and bakery were built (game ms), bread baked, families who left hungry, short days. */
+  bread: { millBuiltAt: number; bakeryBuiltAt: number; baked: number; hungryLeft: number; shortDays: number };
 }
+
+/** The breads it bakes for its families, and the grain and flour each takes. */
+const GRAIN_CHAIN = [
+  ['wheat', 'flour', 'bread'],
+  ['rye', 'rye-flour', 'rye-bread'],
+] as const;
+const BREADS: readonly string[] = GRAIN_CHAIN.map(([, , loaf]) => loaf);
 
 const minutes = (ms: number | undefined) => (ms === undefined ? Infinity : ms / 60_000);
 
@@ -496,6 +563,13 @@ describe('level curve balance', () => {
   // packs): casual L2 13.0, L5 170.0; relaxed L2 12.5, L5 157.5; busy L2 12.5, L5 157.0. With a Feed Barn built once the
   // coop has chickens (minute 26-29) and spare wheat made into feed from summer on: casual L2 13.0, L5 166.0; relaxed
   // L2 12.5, L5 159.0; busy L2 12.5, L5 150.5; 84-108 feed made, none bought, no animal starved.
+  // Flour and bread (#125): families eat bread, not raw wheat. Each player builds a Windmill ($80) and a bakery ($120)
+  // once it has four fields at level 2 (minute 25-41), grinds and bakes by hand until its pantry holds its bread, keeps
+  // every third field in wheat (spring to autumn) and every other one in carrots in autumn ("Best in season" sows winter
+  // rye there from level 3, which the mill and bakery make rye bread of in winter): casual L2 12.0, L5 170.0; relaxed
+  // L2 12.0, L5 158.0; busy L2 11.8, L5 146.7; 147-156 loaves baked, no family left. Families went short on 6-9 of 23
+  // days (4-5 before, with one family leaving in the relaxed and busy runs). With the bakery at 4 min a batch (6 loaves
+  // a day), or a mill and bakery at their old $110 and $245, families left hungry.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });
@@ -556,6 +630,20 @@ describe('level curve balance', () => {
     expect(minutes(sim.feed.barnBuiltAt)).toBeLessThan(3 * SEASON_DAYS * DAY_MS / 60_000);
     expect(sim.feed.made).toBeGreaterThan(0);
     expect(sim.feed.starved).toBe(0);
+  });
+
+  it.each([
+    ['casual', casual],
+    ['relaxed', relaxed],
+    ['busy', busy],
+  ])('the %s player builds a Windmill and a bakery at level 2, bakes its families’ bread, and no family leaves hungry', (_name, sim) => {
+    // Both up before the first autumn, so its bread is in store for the winter.
+    expect(sim.bread.millBuiltAt).toBeGreaterThanOrEqual(sim.reachedAt.get(2)!);
+    expect(minutes(Math.max(sim.bread.millBuiltAt, sim.bread.bakeryBuiltAt))).toBeLessThan(2 * SEASON_DAYS * DAY_MS / 60_000);
+    expect(sim.bread.baked).toBeGreaterThan(100);
+    expect(sim.bread.hungryLeft).toBe(0);
+    // A short meal now and then (the first harvests, the end of winter), not a hungry farm: measured 6-9 days of 23.
+    expect(sim.bread.shortDays).toBeLessThanOrEqual(10);
   });
 
   it.each([
