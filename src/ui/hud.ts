@@ -325,6 +325,17 @@ export class Hud implements UiApi {
     this.toastsEl = h('div', { class: 'toasts', 'aria-live': 'polite', 'data-testid': 'toasts' });
 
     this.root.append(top, clock, this.buildMenu.el, bar, this.sheetEl, this.bannerEl, this.toastsEl, tip.el);
+    this.trackTopRight(right);
+  }
+
+  /**
+   * Keeps `--de-bottom` (the bottom of the resources and money, top right) up to date, so the sheet below them never
+   * covers the money: on narrower screens the money wraps under the resource bar, below the usual top row.
+   */
+  private trackTopRight(right: HTMLElement): void {
+    const update = () => this.root.style.setProperty('--de-bottom', `${right.offsetTop + right.offsetHeight}px`);
+    update();
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(update).observe(right);
   }
 
   private levelTip(): { title: string; lines: string[] } {
