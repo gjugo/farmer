@@ -1,5 +1,7 @@
 import { getBuildable, type BuildableDef } from '../data/buildables';
+import { COTTAGE, COTTAGE_DEF } from '../data/families';
 import { materialEntries, type MaterialCost, type MaterialId } from '../data/materials';
+import { isStorageType, STORAGE } from '../data/storage';
 import type { ActivityEvents } from './activity';
 import { dayOf, gameDelta } from './clock';
 import { DEMOLISH_REFUND } from './constants';
@@ -61,12 +63,12 @@ export function footprintOf(obj: PlacedObject): Footprint {
   return getBuildable(obj.type)?.footprint ?? { w: 1, h: 1 };
 }
 
-export function demolishRefund(def: BuildableDef | undefined): number {
+export function demolishRefund(def: Pick<BuildableDef, 'cost'> | undefined): number {
   return def ? Math.floor(def.cost * DEMOLISH_REFUND) : 0;
 }
 
 /** Materials given back on demolishing: the same share as the money, rounded down. */
-export function demolishMaterialsRefund(def: BuildableDef | undefined): MaterialCost {
+export function demolishMaterialsRefund(def: Pick<BuildableDef, 'materials'> | undefined): MaterialCost {
   const out: MaterialCost = {};
   for (const [id, qty] of materialEntries(def?.materials)) {
     const back = Math.floor(qty * DEMOLISH_REFUND);
@@ -75,15 +77,43 @@ export function demolishMaterialsRefund(def: BuildableDef | undefined): Material
   return out;
 }
 
-/** What demolishing the object gives back: everything paid for an unfinished site, else part of the cost. */
+/** The upgrades a building has had (granaries, storehouses and cottages): each level's cost above level 1 up to its own. */
+export function upgradesOf(obj: PlacedObject): { cost: number; materials?: MaterialCost }[] {
+  const levels: readonly { upgrade?: { cost: number; materials?: MaterialCost } }[] = isStorageType(obj.type)
+    ? STORAGE[obj.type].levels
+    : obj.type === COTTAGE
+      ? COTTAGE_DEF.levels
+      : [];
+  const raw = obj.state.level;
+  const level = typeof raw === 'number' && Number.isInteger(raw) ? Math.max(1, Math.min(levels.length, raw)) : 1;
+  return levels.slice(1, level).flatMap((l) => (l.upgrade ? [l.upgrade] : []));
+}
+
+/** The build cost plus every upgrade's, as one cost (what a finished building's refund is a share of). */
+function paidFor(obj: PlacedObject): { cost: number; materials: MaterialCost } | undefined {
+  const def = getBuildable(obj.type);
+  if (!def) return undefined;
+  const materials: MaterialCost = { ...def.materials };
+  let cost = def.cost;
+  for (const u of upgradesOf(obj)) {
+    cost += u.cost;
+    for (const [id, qty] of materialEntries(u.materials)) materials[id] = (materials[id] ?? 0) + qty;
+  }
+  return { cost, materials };
+}
+
+/**
+ * What demolishing the object gives back: everything paid for an unfinished site, else part of the cost (of an
+ * upgraded granary, storehouse or cottage, part of the build plus its upgrades).
+ */
 export function refundOf(obj: PlacedObject): number {
-  return obj.site ? obj.site.paid : demolishRefund(getBuildable(obj.type));
+  return obj.site ? obj.site.paid : demolishRefund(paidFor(obj));
 }
 
 /** Materials demolishing the object gives back: all those paid for an unfinished site (fewer with Thrifty), else part. */
 export function materialsRefundOf(obj: PlacedObject, state: Pick<GameState, 'ext'>): MaterialCost {
   const def = getBuildable(obj.type);
-  return obj.site ? materialsCost(state, def?.materials) : demolishMaterialsRefund(def);
+  return obj.site ? materialsCost(state, def?.materials) : demolishMaterialsRefund(paidFor(obj));
 }
 
 export interface PlaceOptions {

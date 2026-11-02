@@ -5,9 +5,7 @@ import {
   ARRIVE_APPROVAL,
   CLOTH_PER_FAMILY,
   CLOTHES_PER_FAMILY,
-  COTTAGE,
   FAMILIES_PER_ALE,
-  FARMHOUSE_HOMES,
   FOODS,
   LEAVE_APPROVAL,
   MEAL_PER_FAMILY,
@@ -21,6 +19,7 @@ import { DAY_MS } from './constants';
 import type { Game } from './game';
 import { firewoodPerHome } from './hazards';
 import { gardenedHomes } from './gardens';
+import { homeBuildings, homeRoom } from './homes';
 import * as inventory from './inventory';
 import { perkFactor } from './perks';
 import { seasonAt, SEASON_MS } from './seasons';
@@ -55,7 +54,7 @@ export interface DayNeeds {
   meal: number;
   /** Different foods eaten. */
   variety: number;
-  /** Winter: occupied homes kept warm (null on other days), and occupied homes in all. */
+  /** Winter: families' hearths kept warm (null on other days), and hearths in all (one per housed family). */
   firewood: number | null;
   firewoodNeeded: number;
   /** Families clothed this year; null until the loom is unlocked. */
@@ -65,7 +64,10 @@ export interface DayNeeds {
   /** Families who had ale that day, and the ale they drank; null until the brewery is unlocked (missing in older saves). */
   ale?: number | null;
   aleDrunk?: number;
-  /** Homes that day and how many had a garden; null until gardens are unlocked. Missing in saves from before gardens. */
+  /**
+   * Home buildings that day (the farmhouse and finished cottages, whatever their room) and how many had a garden; null
+   * until gardens are unlocked. Missing in saves from before gardens.
+   */
   gardens?: { homes: number; gardened: number } | null;
   /** One of the new farm's first days (`PROVISION_DAYS`): what the granary lacked, provisions made up. */
   provisions?: boolean;
@@ -146,11 +148,6 @@ export function familiesOf(state: GameState): FamiliesState {
 }
 
 // Pure rules -----------------------------------------------------------------------
-
-/** Homes on the farm: the farmhouse's, plus every finished cottage. */
-export function homesOf(state: GameState): number {
-  return FARMHOUSE_HOMES + state.objects.filter((o) => o.type === COTTAGE && !o.site).length;
-}
 
 /** Families on the farm: one per farmer. */
 export function familiesCount(state: GameState): number {
@@ -264,7 +261,7 @@ export function addFamily(game: Game): boolean {
 }
 
 function homeFree(state: GameState): boolean {
-  return homesOf(state) > familiesCount(state) && familiesCount(state) < MAX_FARMERS;
+  return homeRoom(state) > familiesCount(state) && familiesCount(state) < MAX_FARMERS;
 }
 
 /** One family leaves: their farmer goes and their workplace is freed. The last family never leaves. */
@@ -289,7 +286,7 @@ function settleDay(game: Game, day: number): void {
   const eaten = Object.values(ate).reduce((a, b) => a + b, 0);
 
   const winter = seasonAt(t) === 'winter';
-  const firewoodNeeded = Math.min(homesOf(state), families);
+  const firewoodNeeded = Math.min(homeRoom(state), families);
   let firewood: number | null = null;
   if (winter) {
     // Warm hearths: each home burns half as much (the day's wood is rounded up). A harsh winter doubles it
@@ -326,7 +323,7 @@ function settleDay(game: Game, day: number): void {
     dressed = Math.min(s.dressed, clothed);
   }
 
-  const gardens = gardensNeeded(game) ? { homes: homesOf(state), gardened: gardenedHomes(state) } : null;
+  const gardens = gardensNeeded(game) ? { homes: homeBuildings(state), gardened: gardenedHomes(state) } : null;
   const needs: DayNeeds = {
     families,
     ate,

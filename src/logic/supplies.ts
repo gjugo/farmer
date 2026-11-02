@@ -1,5 +1,6 @@
 import { FOODS, MEAL_PER_FAMILY } from '../data/families';
-import { familiesCount, homesOf } from './families';
+import { familiesCount } from './families';
+import { homeRoom } from './homes';
 import { firewoodPerHome } from './hazards';
 import { perkFactor } from './perks';
 import { seasonAt } from './seasons';
@@ -59,7 +60,7 @@ export function suppliesOf(state: GameState): Supplies {
     food: FOODS.reduce((sum, id) => sum + count(id), 0),
     families: familiesCount(state),
     wood: count('wood'),
-    homes: homesOf(state),
+    homes: homeRoom(state),
     winter: seasonAt(now) === 'winter',
     firewoodPerHome: firewoodPerHome(state, now) * perkFactor(state, 'warm-hearths'),
   });

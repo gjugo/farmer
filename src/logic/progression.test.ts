@@ -329,6 +329,7 @@ describe('goals', () => {
       'sew-clothes',
       'build-blacksmith',
       'forge-tools',
+      'upgrade-cottage',
     ]);
   });
 
@@ -350,11 +351,16 @@ describe('goals', () => {
     ]);
   });
 
-  it('the blacksmith goals come last: build a blacksmith, forge 5 tools', () => {
-    expect(GOALS.slice(-2).map((g) => [g.id, g.kind, 'type' in g ? g.type : 'item' in g ? g.item : null, g.count])).toEqual([
+  it('the blacksmith goals follow the oxcart and processing goals: build a blacksmith, forge 5 tools', () => {
+    const smith = GOALS.findIndex((g) => g.id === 'build-blacksmith');
+    expect(GOALS.slice(smith, smith + 2).map((g) => [g.id, g.kind, 'type' in g ? g.type : 'item' in g ? g.item : null, g.count])).toEqual([
       ['build-blacksmith', 'own-buildings', 'blacksmith', 1],
       ['forge-tools', 'make', 'tools', 5],
     ]);
+  });
+
+  it('"Upgrade a cottage" comes last and counts cottage upgrades', () => {
+    expect(GOALS.at(-1)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
   });
 
   it('haul goals count goods unloaded by cart', () => {
