@@ -63,7 +63,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   else becomes a **construction site** (drawn faded, with 🚧 and a progress bar) that a free farmer walks to and builds:
   1.5 game-s per footprint tile, 3–20 s. A site can't be used until it is finished; its panel shows the build only.
 - **Demolish:** 🧹 → click an object, or **Demolish** in its panel (which asks first and says what comes back).
-  Gives back 50% of its money cost and 50% of its materials (rounded down; an unfinished site gives back everything),
+  Gives back 50% of its money cost and 50% of its materials (of an upgraded granary, storehouse or cottage, of its
+  build plus its upgrades; rounded down; an unfinished site gives back everything),
   materials only as far as the storehouses have room: the confirm says what would be lost (demolish mode asks first too when something would be lost).
   A granary or storehouse can't be demolished while its stock wouldn't fit without it ("Sell or use 40 goods first").
 - **Storage:** everything the farm holds needs room. **Goods** (crops, eggs, milk, wool, feed, cheese, bread, …) go
@@ -272,7 +273,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; never the last
   family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
   storage: each eats **2 food** from the granary (wheat, carrot, corn, potato, cabbage, pumpkin, apple, egg, milk, bread,
-  cheese, butter; never feed, barley, flax, wool, cloth, malt or ale), spread across the kinds in stock; on **winter** days each occupied home burns **1 wood**; once the
+  cheese, butter; never feed, barley, flax, wool, cloth, malt or ale), spread across the kinds in stock; on **winter** days each family burns **1 wood** at its own hearth (a full level 2 cottage burns 2); once the
   loom is unlocked (level 5) each family takes **1 clothes** from the tailor at the start of winter if any are in stock,
   otherwise **1 cloth**, and stays clothed until the next. Once the brewery is unlocked (level 7) they drink **1 ale per
   2 families** a day while there is any.
@@ -283,8 +284,22 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   (a share of it when some do). A new farm's families live on their provisions for the
   first 2 days (no hunger penalty), so nobody leaves before the first harvest. The overview chip (😊 62%) opens
   **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood, ale and clothes, and when the
-  next family comes ("Build a cottage to house another family"); the 👨‍🌾 Farmers sheet shows the same block. A
-  cottage puffs chimney smoke on winter days while it has firewood. Arrivals and departures are toasted and listed in
+  next family comes ("Build a 🛖 cottage, or upgrade one, to house another family"); the 👨‍🌾 Farmers sheet shows the
+  same block. A cottage puffs chimney smoke on winter days while it has firewood (one chimney per family living there).
+  **Cottage upgrade** (like Manor Lords' burgage levels): a finished cottage's panel shows **⬆️ Upgrade to level 2**
+  with a checklist, each line ✅ or ❌ with what is missing: **farm level 3**; **Fuel**, a winter's firewood in the
+  storehouses (wood ≥ families × 4 winter days, counted after paying the upgrade's 12 wood); **Food**, the families ate
+  at least 2 kinds of food on the last settled day and none were short; **Cost**, $120 + 12 🪵 + 8 🪨. The button works
+  only when all are ✅ (not on a construction site, not at level 2). A free farmer then works on it like building
+  (the cost is paid as the farmer is sent, as for a granary). A level 2 cottage is drawn bigger (its own art in every
+  season, with an "Lv 2" badge and a second chimney) and houses **2 families**: the 🏠 chip shows one more room and a
+  second family moves in at approval ≥ 50%. Clothes aren't asked for (a later level 3 could ask for more foods and
+  clothes). A cottage never goes down a level when needs lapse later. **Room** (families that fit: the farmhouse 1 +
+  each finished cottage's room) drives arrivals, the 🏠 chip, supplies and firewood; **home buildings** (one per
+  farmhouse or cottage, whatever its level) count for gardens, so a 2-family cottage with a garden counts as
+  gardened. Families fill the homes in build order after the farmhouse, each up to its room ("Home of 2 families" /
+  "1 family, room for 1 more" / "Empty, room for 2"). Demolishing an upgraded cottage (or granary or storehouse) gives
+  back 50% of its build plus its upgrades. Goal: "Upgrade a cottage", after "Forge 5 tools". Arrivals and departures are toasted and listed in
   the welcome-back summary. All of it runs inside the work scheduler on game time, so ×60, ×1 and offline catch-up
   agree. Saves from before families keep every farmer they have; while there are more farmers than homes no family
   arrives (and nobody leaves just for lack of a home).
@@ -492,6 +507,14 @@ outside winter; `clothed`: `{ families, clothes, cloth }`, the families clothed 
 tailor's clothes and plain cloth, null before the loom is unlocked; `ale`: `{ families, drunk }`, the families who had
 ale that day and the ale drunk, null before the brewery is unlocked) or null before the first day, and
 `nextArrivalAt` is the game time (`window.farm.clock.elapsed`) the next family is due, null while no home is free.
+`homes` is the room (families that fit); `homeList` lists every home as `{ id, type, level, room, families }` (the
+farmhouse first, then finished cottages in build order, each filled up to its room), and `upgrade(id)` gives a
+cottage's upgrade checklist `{ level, fuel, food, cost, ok, next, blocked }` (each line `{ ok, text }`; `blocked` is
+`'site'`, `'max'` or null), or null for anything that isn't a cottage. A cottage's level is `state.level` of its entry
+in `window.farm.objects` (missing in old saves = 1); a level 2 cottage's roof badge is a container named
+`cottage-level-2`. In its panel the checklist is `panel-checklist` with rows `panel-check-cottage-level`,
+`panel-check-cottage-fuel`, `panel-check-cottage-food`, `panel-check-cottage-cost` (`data-ok="true|false"`), and the
+button is `cottage-upgrade`.
 `window.farm.gardens` lists every house garden as `{ id, kind, home, waiting, nextAt }`: `kind` is `veg-patch`,
 `hen-run` or `orchard`, `home` the id of the farmhouse or cottage it belongs to (null without one), `waiting` the
 yield waiting for room in the granary, `nextAt` the game time of its next daily yield (null while it has no finished
@@ -560,7 +583,9 @@ src/
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure, starting fields
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
-    families.ts        families: homes, daily meals / firewood / ale / clothes, approval, arrivals and departures (slice `families`)
+    families.ts        families: daily meals / firewood / ale / clothes, approval, arrivals and departures (slice `families`)
+    homes.ts           homes: room (families that fit) vs home buildings, cottage levels, who lives where
+    cottages.ts        cottage upgrades: the requirements checklist (farm level, fuel, food, cost) and the upgrade
     perks.ts           perks: perkFactor, seeded offers, choices and the slice `perks`; the Perks class on Game
     workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes, tool slots (state slice `workers`)
     tools.ts           farmers' tools: taking a set at job start, the speed-up (`toolFactor`), wear and breaking, the blacksmith's stop
@@ -578,7 +603,7 @@ src/
     items.ts           item catalogue (ids shared by every feature)
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
-    families.ts        the Cottage buildable, foods, needs per family, approval points, arrival and leaving thresholds
+    families.ts        the Cottage buildable and its levels, foods, needs per family, approval points, arrival and leaving thresholds
     perks.ts           the perk pool: name, what it does, its factor and what it is about
     tools.ts           tools: jobs a set lasts, the speed-up, the jobs they work on
     resourceBuildings.ts woodcutter's lodge, quarry and mine buildables: costs, yields, cycle times

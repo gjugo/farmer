@@ -649,6 +649,20 @@ button {
   margin: 2px 0;
 }
 
+.checklist {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist li {
+  margin: 2px 0;
+}
+
+.checklist .check-no {
+  color: var(--red);
+}
+
 .meters {
   display: grid;
   gap: 6px;

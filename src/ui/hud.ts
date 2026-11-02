@@ -743,6 +743,17 @@ export class Hud implements UiApi {
         if (current.lines?.length) {
           body.append(h('ul', { class: 'status-lines', 'data-testid': 'panel-lines' }, current.lines.map((l) => h('li', {}, withIcons(l)))));
         }
+        if (current.checklist?.length) {
+          body.append(
+            h(
+              'ul',
+              { class: 'checklist', 'data-testid': 'panel-checklist' },
+              current.checklist.map((c) =>
+                h('li', { class: c.ok ? 'check-ok' : 'check-no', 'data-testid': `panel-check-${c.id}`, 'data-ok': String(c.ok) }, withIcons(`${c.ok ? '✅' : '❌'} ${c.text}`)),
+              ),
+            ),
+          );
+        }
         if (current.meters?.length) {
           body.append(
             h(
@@ -810,7 +821,7 @@ export class Hud implements UiApi {
                     type: 'button',
                     class: `btn btn-${a.variant ?? 'primary'}`,
                     disabled: !!a.disabled,
-                    'data-testid': `panel-action-${i}`,
+                    'data-testid': a.testId ?? `panel-action-${i}`,
                     // Look the action up again at click time so the handler is never stale.
                     onclick: () => {
                       const action = spec?.actions?.[i];
