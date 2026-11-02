@@ -21,6 +21,7 @@ import { FarmScene } from './scenes/FarmScene';
 import { isDebugMode, mountDebugPanel } from './ui/debug';
 import { Hud } from './ui/hud';
 import { Menu, type MenuMode } from './ui/menu';
+import { mountInstallPrompt } from './ui/install';
 import { showWelcomeBack } from './ui/welcome';
 
 const AUTOSAVE_MS = 10_000;
@@ -115,6 +116,7 @@ const uiRoot = document.getElementById('ui')!;
 const hud = new Hud(uiRoot, ctx, () => openMenu('paused'));
 ctx.ui = hud;
 mountGuide(uiRoot, ctx);
+mountInstallPrompt(uiRoot);
 
 /** Catches up on real time away (at ×1) and shows the summary when it was long enough. */
 function welcomeBack(awayMs: number): void {
