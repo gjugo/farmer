@@ -30,8 +30,11 @@ export interface PerkDef {
   value: number;
   /** What `perkFactor` gives without it: 1 for a multiplier, 0 for points. */
   neutral: number;
-  /** Lowest level its subject (animals, processing, ...) is unlocked at; it isn't offered below it. Missing: 1. */
-  unlockLevel?: number;
+  /**
+   * Buildable types it is about (pens, processing or resource buildings): it is only offered once the farm has one
+   * of them (built or being built). Missing: always offered.
+   */
+  subjects?: readonly string[];
 }
 
 /** Perks offered at each level-up. */
@@ -39,8 +42,6 @@ export const PERK_OFFERS = 3;
 
 /** Levels that come with a perk choice: every one after the first. */
 export const FIRST_PERK_LEVEL = 2;
-
-const lowest = (levels: number[]) => Math.min(...levels);
 
 /** The pool, in a fixed order (offers are drawn from it with the farm's seed). */
 export const PERKS: readonly PerkDef[] = [
@@ -55,7 +56,7 @@ export const PERKS: readonly PerkDef[] = [
     description: 'Animals produce 20% faster.',
     value: 1 / 1.2,
     neutral: 1,
-    unlockLevel: lowest(Object.values(PENS).map((p) => p.unlockLevel)),
+    subjects: Object.keys(PENS),
   },
   { id: 'master-builder', name: 'Master builder', icon: '🔨', description: 'Building work is 30% faster.', value: 1 / 1.3, neutral: 1 },
   { id: 'big-barns', name: 'Big barns', icon: '🏚️', description: 'Granaries and storehouses hold 20% more.', value: 1.2, neutral: 1 },
@@ -70,7 +71,7 @@ export const PERKS: readonly PerkDef[] = [
     description: 'Lodges, quarries and mines yield 25% more.',
     value: 1.25,
     neutral: 1,
-    unlockLevel: lowest(Object.values(RESOURCES).map((r) => r.unlockLevel)),
+    subjects: Object.keys(RESOURCES),
   },
   {
     id: 'quick-hands',
@@ -79,7 +80,7 @@ export const PERKS: readonly PerkDef[] = [
     description: 'Processing batches are 20% faster.',
     value: 1 / 1.2,
     neutral: 1,
-    unlockLevel: lowest(Object.values(PROCESSORS).map((p) => p.unlockLevel)),
+    subjects: Object.keys(PROCESSORS),
   },
 ];
 

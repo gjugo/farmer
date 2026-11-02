@@ -5,7 +5,6 @@ import { buildWorkMs } from '../data/workers';
 import type { Game } from './game';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState } from './types';
-import { isUnlocked } from './unlocks';
 
 /**
  * Perk rules: which perks a farm has taken, which level-up choices are still open, and what the three cards of a
@@ -107,21 +106,34 @@ function generator(seed: number): () => number {
   };
 }
 
+/** The whole pool in the order the choice at `level` draws from it: fixed by the farm's seed and the level. */
+export function perkOrder(seed: number, level: number): PerkDef[] {
+  const order = [...PERKS];
+  const rand = generator(mix(seed, level));
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
+
+/** Can the farm be offered `def`: not taken, and its subject (animals, processing, resources) is on the farm? */
+function offerable(state: GameState, def: PerkDef, taken: Set<string>): boolean {
+  if (taken.has(def.id)) return false;
+  return !def.subjects || state.objects.some((o) => def.subjects!.includes(o.type));
+}
+
 /**
- * The cards of the choice at `level`: up to three perks, drawn from the pool with the farm's seed and the level, never
- * one already taken nor one whose subject is still locked at that level. The same farm always gets the same cards.
+ * The cards of the choice at `level`: the first three perks in the level's seeded order (`perkOrder`) that are
+ * neither taken nor about something the farm doesn't have yet (no Husbandry before a pen). The same farm always gets
+ * the same cards; taking a perk elsewhere, or a first pen, only swaps the card it concerns.
  */
 export function offerFor(state: GameState, level: number): PerkDef[] {
   const p = perksOf(state);
   const taken = new Set(p.taken.map((t) => t.id));
-  const pool = PERKS.filter((d) => !taken.has(d.id) && isUnlocked(level, d.unlockLevel));
-  const rand = generator(mix(p.seed ?? 0, level));
-  // Fisher–Yates, far enough to fill the offer.
-  for (let i = 0; i < Math.min(PERK_OFFERS, pool.length); i++) {
-    const j = i + Math.floor(rand() * (pool.length - i));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-  return pool.slice(0, PERK_OFFERS);
+  return perkOrder(p.seed ?? 0, level)
+    .filter((d) => offerable(state, d, taken))
+    .slice(0, PERK_OFFERS);
 }
 
 /** Opens the choice of `level` (a level-up). No-op below level 2, or when the level is already chosen or open. */
