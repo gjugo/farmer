@@ -65,45 +65,6 @@ button {
 
 /* Top bar ---------------------------------------------------------------- */
 
-.topbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: calc(8px + var(--safe-top)) 10px 8px;
-  pointer-events: none;
-}
-
-.topbar > * {
-  pointer-events: auto;
-}
-
-.stats {
-  display: flex;
-  gap: 8px;
-}
-
-.stat {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 6px 12px;
-  background: var(--paper);
-  border: 3px solid var(--wood);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  font-weight: 700;
-  font-size: 17px;
-  font-variant-numeric: tabular-nums;
-}
-
 .day-text {
   display: flex;
   flex-direction: column;
@@ -349,41 +310,6 @@ button {
   opacity: 0.5;
 }
 
-.hud-buttons {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.hud-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  min-width: 44px;
-  padding: 6px 12px;
-  background: var(--paper);
-  border: 3px solid var(--wood);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.hud-btn:hover {
-  background: #fff;
-}
-
-.hud-btn.active {
-  background: var(--gold);
-  border-color: var(--wood-dark);
-}
-
-.hud-btn-icon {
-  font-size: 18px;
-  line-height: 1;
-}
-
 @keyframes badge-pop {
   from {
     transform: scale(0.4);
@@ -465,69 +391,6 @@ button {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
-}
-
-.build-list {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.build-item {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: 2px 10px;
-  min-height: 48px;
-  padding: 8px 12px;
-  text-align: left;
-  background: #fff;
-  border: 2px solid var(--paper-dark);
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.build-item:hover:not(:disabled) {
-  border-color: var(--green);
-}
-
-.build-item:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.build-name {
-  font-weight: 700;
-}
-
-.build-meta {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.build-cost {
-  font-weight: 800;
-  color: var(--green-dark);
-}
-
-.build-desc {
-  grid-column: 1 / -1;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-/* Materials it takes, under the name and price. */
-.build-materials {
-  grid-column: 1 / -1;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--wood);
-}
-
-/* What is missing to build it (the button is greyed out). */
-.build-item .needs-note {
-  color: var(--red);
-  font-weight: 700;
 }
 
 /* Storage pools at the top of the inventory: used / capacity bars. */
@@ -837,18 +700,6 @@ button {
   opacity: 0.8;
 }
 
-.build-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.build-toggle.on {
-  background: var(--green);
-  color: #fff;
-}
-
 .progress {
   position: relative;
   height: 22px;
@@ -1041,7 +892,6 @@ button {
   border-radius: 8px;
 }
 
-
 .dialog.levelup {
   text-align: center;
 }
@@ -1074,7 +924,7 @@ button {
   font-weight: 700;
 }
 
-/* Perks: the cards of a level-up choice, the ⭐ badge on the level, and the list in the Goals sheet */
+/* Perks: the cards of a level-up choice, and the list in the Perks tab */
 
 .dialog.levelup {
   max-height: calc(100% - 32px);
@@ -1132,30 +982,6 @@ button {
   font-size: 14px;
 }
 
-.perk-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  min-width: 30px;
-  height: 30px;
-  padding: 0 6px;
-  border: 2px solid var(--wood);
-  border-radius: 15px;
-  background: var(--gold);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 24px;
-  cursor: pointer;
-  animation: badge-pop 0.4s ease-out;
-  z-index: 1;
-}
-
-.perk-badge[hidden] {
-  display: none;
-}
-
 .perk-list {
   display: grid;
   gap: 6px;
@@ -1182,16 +1008,6 @@ button {
 }
 
 /* Locked content and goals ----------------------------------------------------- */
-
-.build-item.locked {
-  filter: grayscale(1);
-  opacity: 0.6;
-}
-
-.build-item .lock-note {
-  color: var(--ink);
-  font-weight: 700;
-}
 
 .goal-list {
   display: grid;
@@ -1303,45 +1119,6 @@ button {
   color: var(--ink);
 }
 
-/* Phones --------------------------------------------------------------------- */
-
-@media (max-width: 640px) {
-  .hud-btn-label,
-  .season-text {
-    display: none; /* the season still shows as the day's icon */
-  }
-
-  .hud-btn {
-    padding: 6px 10px;
-  }
-
-  .stat {
-    font-size: 15px;
-    padding: 6px 10px;
-  }
-
-  .sheet {
-    top: auto;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    max-height: 60%;
-    border-radius: var(--radius) var(--radius) 0 0;
-    border-bottom: none;
-    padding-bottom: var(--safe-bottom);
-  }
-
-  .tool-banner {
-    font-size: 14px;
-  }
-
-  .toast {
-    white-space: normal;
-    text-align: center;
-  }
-}
-
 /* Home screen and pause menu ------------------------------------------------- */
 
 .menu-backdrop {
@@ -1359,7 +1136,9 @@ body[data-menu='home'] .menu-backdrop {
 }
 
 /* The farm shows dimmed behind the home screen, without the HUD. */
-body[data-menu='home'] .topbar,
+body[data-menu='home'] .hud-top,
+body[data-menu='home'] .hud-f,
+body[data-menu='home'] .hud-g,
 body[data-menu] .tool-banner {
   visibility: hidden;
 }
@@ -1496,10 +1275,6 @@ body[data-menu] .tool-banner {
 
 /* Orders board --------------------------------------------------------------- */
 
-.hud-btn {
-  position: relative;
-}
-
 .hud-badge {
   position: absolute;
   top: -8px;
@@ -1520,12 +1295,6 @@ body[data-menu] .tool-banner {
 
 .hud-badge[hidden] {
   display: none;
-}
-
-/* A visitor's chip (the travelling trader): stands out from the tools. */
-.hud-btn.hud-chip {
-  background: var(--gold);
-  border-color: var(--wood-dark);
 }
 
 .trader-intro {
@@ -1779,15 +1548,6 @@ body[data-menu] .tool-banner {
 }
 
 /* Families: the approval chip and the Families block (also in the Farmers sheet) */
-@media (max-width: 640px) {
-  .hud-btn[data-testid='btn-families'] .hud-btn-label {
-    display: inline; /* the approval percentage stays visible on phones */
-  }
-}
-
-.hud-btn[data-testid='btn-families'] .hud-btn-label {
-  font-variant-numeric: tabular-nums;
-}
 
 .families-stats {
   display: flex;
@@ -1902,4 +1662,957 @@ body[data-menu] .tool-banner {
 .almanac-guard {
   color: var(--green-dark);
   font-weight: 600;
+}
+
+/* HUD zones, laid out like Manor Lords ------------------------------------------
+ * A farm overview (top left) · B level, notices, recent events (top centre) · D resources and E money (top right)
+ * F season and speed (bottom right) · G tool bar (bottom centre), the construction menu above it.
+ */
+
+:root {
+  --g-size: 52px; /* a tool bar button */
+  --g-h: calc(var(--g-size) + 20px); /* the tool bar with its padding */
+  --top-h: 72px; /* the top row, for what hangs under it */
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+.hud-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas: 'a b de';
+  align-items: start;
+  gap: 8px;
+  padding: calc(8px + var(--safe-top)) calc(10px + var(--safe-right)) 0 calc(10px + var(--safe-left));
+  pointer-events: none;
+}
+
+#ui > .hud-top,
+.hud-top > * {
+  pointer-events: none;
+}
+
+.hud-a {
+  grid-area: a;
+  justify-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 40px;
+  padding: 2px 8px 2px 5px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.stat-chip:hover,
+.stat-chip:focus-visible {
+  background: var(--paper-dark);
+  outline: none;
+}
+
+.chip-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.chip-icon .inline-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.hud-b {
+  grid-area: b;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-b-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.hud-level {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  min-height: 44px;
+  padding: 5px 16px 5px 12px;
+  background: linear-gradient(#3b2a1c, #2a1d12);
+  color: #f6e7c4;
+  border: 2px solid #b48a4a;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  font-weight: 800;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.hud-level:hover,
+.hud-level.active {
+  border-color: var(--gold);
+}
+
+.hud-level .xp-text {
+  color: #d9c49a;
+}
+
+.hud-level .day-bar {
+  background: rgb(255 255 255 / 15%);
+}
+
+.level-star {
+  font-size: 20px;
+}
+
+.events-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #b48a4a;
+  border-radius: 50%;
+  background: #2a1d12;
+  color: #f6e7c4;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.events-btn[aria-expanded='true'] {
+  border-color: var(--gold);
+}
+
+.hud-banners {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  max-width: min(360px, calc(100vw - 20px));
+  padding: 4px 14px;
+  border: 2px solid rgb(0 0 0 / 35%);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 40%);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: toast-in 0.25s ease-out;
+}
+
+.banner-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banner-info {
+  background: #3d6b8c;
+}
+
+.banner-warn {
+  background: #b07a1a;
+}
+
+.banner-alert {
+  background: #a83a2e;
+}
+
+.events-pop {
+  position: absolute;
+  top: 52px;
+  z-index: 21;
+  width: min(340px, calc(100vw - 20px));
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+.events-title {
+  margin-bottom: 6px;
+  font-weight: 800;
+}
+
+.events-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.event {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--paper-dark);
+}
+
+.event-day {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 20px;
+}
+
+.event-error {
+  color: #8a2a20;
+}
+
+.hud-de {
+  grid-area: de;
+  justify-self: end;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hud-de .resource-bar {
+  flex-basis: auto;
+  justify-content: flex-end;
+}
+
+.res-chip.res-hl {
+  background: #fbe7b5;
+  box-shadow: inset 0 0 0 2px var(--gold);
+}
+
+.stat-money {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 6px 12px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-weight: 800;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: auto;
+}
+
+/* F: season, day and speed. */
+.hud-f {
+  position: absolute;
+  right: calc(10px + var(--safe-right));
+  bottom: calc(10px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.hud-season {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 4px 12px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.season-icon {
+  font-size: 20px;
+}
+
+.hud-speed {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgb(30 22 14 / 80%);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.speed-btn {
+  width: 44px;
+  height: 44px;
+  border: 2px solid #8a6a3a;
+  border-radius: 50%;
+  background: #2a1d12;
+  color: #f6e7c4;
+  font-size: 17px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.speed-btn[aria-pressed='true'] {
+  background: var(--gold);
+  border-color: #fff3c4;
+  color: var(--ink);
+}
+
+/* G: the tool bar. */
+.hud-g {
+  position: absolute;
+  left: 50%;
+  bottom: calc(8px + var(--safe-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgb(30 22 14 / 82%);
+  border: 2px solid #6b5333;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  z-index: 6;
+}
+
+.tool-btn {
+  position: relative;
+  width: var(--g-size);
+  height: var(--g-size);
+  border: 3px solid #b48a4a;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff8e8, #d8c29a);
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 18%), 0 2px 6px rgb(0 0 0 / 40%);
+  font-size: 24px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tool-btn:hover {
+  border-color: var(--gold);
+}
+
+.tool-btn.active {
+  background: radial-gradient(circle at 35% 30%, #fff3c4, var(--gold));
+  border-color: #fff3c4;
+}
+
+.tool-icon {
+  line-height: 1;
+}
+
+.hud-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 2px solid var(--paper);
+  border-radius: 11px;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  animation: badge-pop 0.3s ease-out;
+}
+
+.sheet-tab .hud-badge {
+  position: static;
+  margin-left: 4px;
+}
+
+/* The tooltip. */
+.hud-tip {
+  position: fixed;
+  z-index: 30;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 8px 12px;
+  background: #2a1d12;
+  color: #f6e7c4;
+  border: 2px solid #b48a4a;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  pointer-events: none !important;
+}
+
+.hud-tip-title {
+  font-weight: 800;
+}
+
+.hud-tip-lines {
+  display: grid;
+  gap: 2px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  color: #e6d4ac;
+}
+
+/* Windows and the action panel: the right-hand sheet. */
+.sheet {
+  top: calc(var(--top-h) + var(--safe-top));
+  right: calc(10px + var(--safe-right));
+  bottom: auto;
+  left: auto;
+  width: min(380px, calc(100% - 20px));
+  max-height: calc(100% - var(--top-h) - var(--safe-top) - 120px - var(--safe-bottom));
+}
+
+.sheet-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px 0;
+  background: var(--paper-dark);
+  border-bottom: 2px solid var(--wood);
+  overflow-x: auto;
+}
+
+.sheet-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+  padding: 4px 12px;
+  border: 2px solid var(--wood);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: #e8d6ae;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sheet-tab.active {
+  background: var(--paper);
+  margin-bottom: -2px;
+}
+
+.sheet-head {
+  border-bottom: 0;
+}
+
+.sheet-tabs[hidden] + .sheet-body {
+  border-top: 2px solid var(--wood);
+}
+
+/* The construction menu: checkboxes, the parchment panel of cards, the category icons. */
+.build-menu {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--g-h) + 4px + var(--safe-bottom));
+  transform: translateX(-50%);
+  width: min(980px, calc(100% - 20px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 7;
+  pointer-events: none !important;
+}
+
+.build-menu > * {
+  pointer-events: auto;
+}
+
+.build-toggles {
+  display: flex;
+  gap: 14px;
+}
+
+.build-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 2px 12px;
+  background: rgb(30 22 14 / 70%);
+  color: #f6e7c4;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.build-toggle input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--green);
+}
+
+.build-panel {
+  width: 100%;
+  padding: 8px 14px 12px;
+  background:
+    radial-gradient(ellipse at center, rgb(255 255 255 / 35%), transparent 70%),
+    linear-gradient(#efe0bd, #e2cc9c);
+  border: 3px solid #8a6a3a;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 6px rgb(138 106 58 / 18%), var(--shadow);
+}
+
+.build-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--wood-dark);
+}
+
+.build-cards {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 4px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  padding: 2px 2px 4px;
+}
+
+.build-card {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 104px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  scroll-snap-align: start;
+  touch-action: pan-x;
+}
+
+.build-pic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 128px;
+  background:
+    radial-gradient(ellipse at 50% 70%, rgb(120 160 80 / 35%), transparent 65%),
+    linear-gradient(#f8eed6, #e9d6aa);
+  border: 2px solid #b8975c;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+
+.build-pic img {
+  max-width: 96px;
+  max-height: 116px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.build-pic-icon {
+  font-size: 48px;
+}
+
+.build-strip {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  background: #241912;
+  color: #fff;
+  font-size: 18px;
+  border-radius: 0 0 4px 4px;
+}
+
+.build-strip .inline-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.build-card:hover .build-pic,
+.build-card:focus-visible .build-pic {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 2px var(--gold);
+}
+
+.build-card:focus-visible {
+  outline: none;
+}
+
+.build-card.locked .build-pic,
+.build-card.locked .build-strip {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+.build-card.short .build-pic img {
+  opacity: 0.6;
+}
+
+.build-lock {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  padding: 1px 8px;
+  background: rgb(36 25 18 / 85%);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.build-orn {
+  align-self: center;
+  margin-top: -24px;
+  color: #8a6a3a;
+  font-size: 16px;
+}
+
+/* The card's line: shown on touch screens, where there is no hover. */
+.build-line {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 2px 0;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--ink);
+}
+
+.build-name {
+  font-weight: 800;
+}
+
+.build-cost {
+  font-weight: 700;
+  color: var(--green-dark);
+}
+
+.build-cost .inline-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.build-line .needs-note {
+  color: var(--red);
+  font-weight: 700;
+}
+
+@media (hover: none) {
+  .build-line {
+    display: flex;
+  }
+}
+
+.build-cats {
+  display: flex;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #2a1e13;
+  border-radius: 999px;
+}
+
+.build-cat {
+  width: 46px;
+  height: 46px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  filter: grayscale(0.6);
+  opacity: 0.8;
+  touch-action: manipulation;
+}
+
+.build-cat:hover,
+.build-cat.active {
+  filter: none;
+  opacity: 1;
+  background: rgb(255 255 255 / 12%);
+  border-color: #b48a4a;
+}
+
+.build-cat.active {
+  border-color: var(--gold);
+}
+
+.build-demolish {
+  margin-left: 8px;
+}
+
+/* Tools and toasts sit above the tool bar. */
+.tool-banner {
+  bottom: calc(var(--g-h) + 8px + var(--safe-bottom));
+}
+
+.toasts {
+  bottom: calc(var(--g-h) + 64px + var(--safe-bottom));
+}
+
+.debug-panel {
+  bottom: calc(var(--g-h) + 8px + var(--safe-bottom));
+}
+
+.credits summary {
+  min-height: 40px;
+  line-height: 40px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* The player's pause: a quiet note over the farm. */
+body[data-player-paused]:not([data-menu]) #ui::after {
+  content: 'Paused';
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--g-h) + 120px + var(--safe-bottom));
+  transform: translateX(-50%);
+  padding: 4px 16px;
+  background: rgb(30 22 14 / 75%);
+  color: #f6e7c4;
+  border-radius: 6px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* Phones --------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  :root {
+    --g-size: 48px;
+    --g-h: calc(var(--g-size) + 14px);
+  }
+
+  .hud-top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'a e'
+      'd d'
+      'b b';
+    row-gap: 6px;
+    padding-left: calc(6px + var(--safe-left));
+    padding-right: calc(6px + var(--safe-right));
+  }
+
+  .hud-de {
+    display: contents;
+  }
+
+  .hud-de .resource-bar {
+    grid-area: d;
+    justify-self: center;
+    justify-content: center;
+  }
+
+  .stat-money {
+    grid-area: e;
+    min-height: 44px;
+    padding: 4px 8px;
+    font-size: 15px;
+  }
+
+  .hud-a {
+    gap: 0;
+  }
+
+  .stat-chip {
+    min-height: 40px;
+    padding: 2px 4px 2px 3px;
+    font-size: 14px;
+  }
+
+  .chip-icon {
+    font-size: 15px;
+  }
+
+  .res-chip {
+    padding: 2px 4px 2px 2px;
+    font-size: 14px;
+  }
+
+  .res-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .res-pool {
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  .hud-level {
+    min-width: 0;
+    min-height: 40px;
+    padding: 3px 12px 3px 8px;
+    font-size: 15px;
+  }
+
+  .hud-banner {
+    min-height: 30px;
+    font-size: 13px;
+  }
+
+  .events-pop {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    top: auto;
+    width: auto;
+  }
+
+  /* G spans the bottom; F sits above it on the right. */
+  .hud-g {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    justify-content: space-around;
+    gap: 0;
+    padding: 6px calc(6px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(6px + var(--safe-left));
+    border-radius: 0;
+    border-width: 2px 0 0;
+  }
+
+  .hud-f {
+    bottom: calc(var(--g-h) + 10px + var(--safe-bottom));
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .hud-season {
+    min-height: 44px;
+    padding: 2px 8px;
+  }
+
+  .hud-season .season-text {
+    display: none; /* the icon names it; the tip says the rest */
+  }
+
+  .hud-speed {
+    gap: 2px;
+  }
+
+  /* Windows and the action panel: full-width bottom sheets above the tool bar. */
+  .sheet {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: calc(var(--g-h) + var(--safe-bottom));
+    width: 100%;
+    max-height: 58%;
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: none;
+    z-index: 8;
+  }
+
+  .build-menu {
+    left: 0;
+    right: 0;
+    width: 100%;
+    transform: none;
+    bottom: calc(var(--g-h) + var(--safe-bottom));
+    gap: 4px;
+  }
+
+  .build-panel {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 6px 8px 8px;
+  }
+
+  .build-cards {
+    justify-content: flex-start;
+  }
+
+  .build-card {
+    width: 92px;
+  }
+
+  .build-pic {
+    height: 104px;
+  }
+
+  .build-pic img {
+    max-width: 86px;
+    max-height: 96px;
+  }
+
+  .build-cat {
+    width: 44px;
+    height: 44px;
+  }
+
+  .build-cats {
+    width: 100%;
+    justify-content: space-around;
+    gap: 0;
+    border-radius: 0;
+  }
+
+  /* The menu takes the bottom of the screen: the clock and the debug panel make way. */
+  body[data-build-open] .hud-f,
+  body[data-build-open] .debug-panel {
+    visibility: hidden;
+  }
+
+  .tool-banner {
+    font-size: 14px;
+    width: calc(100% - 20px);
+    justify-content: space-between;
+  }
+
+  .toast {
+    white-space: normal;
+    text-align: center;
+  }
+
+  .toasts {
+    width: calc(100% - 20px);
+    bottom: calc(var(--g-h) + 120px + var(--safe-bottom));
+  }
+
+  body[data-player-paused]:not([data-menu]) #ui::after {
+    bottom: calc(var(--g-h) + 70px + var(--safe-bottom));
+  }
 }

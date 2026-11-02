@@ -3,7 +3,7 @@ import { ANIMALS, FEED_PACK, PENS, type AnimalKind, type PenType } from '../../d
 import { getItem } from '../../data/items';
 import { FEED_WORK_MS } from '../../data/workers';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
-import { registerBehavior } from '../../game/hooks';
+import { registerBehavior, registerHudButton } from '../../game/hooks';
 import { withFarmer } from '../../game/workers';
 import { fullMessage, leftBehindMessage } from '../../logic/storage';
 import {
@@ -16,6 +16,7 @@ import {
   collect,
   feedAll,
   feedNeeded,
+  isPenType,
   readyCount,
   type AnimalStatus,
   type PenState,
@@ -315,3 +316,31 @@ for (const type of Object.keys(PENS) as PenType[]) {
     panel: penPanel,
   });
 }
+
+// Farm overview ----------------------------------------------------------------------
+
+/** Animals in every finished pen, by kind. */
+function livestock(ctx: FarmContext): Record<AnimalKind, number> {
+  const counts = Object.fromEntries(Object.keys(ANIMALS).map((k) => [k, 0])) as Record<AnimalKind, number>;
+  for (const obj of ctx.game.state.objects) {
+    if (!isPenType(obj.type) || obj.site) continue;
+    for (const a of animalsOf(obj as PlacedObject<PenState>)) counts[a.kind] = (counts[a.kind] ?? 0) + 1;
+  }
+  return counts;
+}
+
+registerHudButton({
+  id: 'livestock',
+  label: 'Livestock: the animals in your coops and pastures',
+  icon: '🐄',
+  spot: {
+    kind: 'chip',
+    order: 50,
+    detail: (ctx) => {
+      const counts = livestock(ctx);
+      const lines = (Object.keys(counts) as AnimalKind[]).filter((k) => counts[k] > 0).map((k) => `${ANIMALS[k].icon} ${ANIMALS[k].name}: ${counts[k]}`);
+      return lines.length ? lines : ['No animals yet: build a 🐔 coop and buy chickens from its panel'];
+    },
+  },
+  live: (ctx) => ({ icon: '🐄', label: String(Object.values(livestock(ctx)).reduce((a, b) => a + b, 0)) }),
+});

@@ -116,13 +116,12 @@ function welcomeBack(awayMs: number): void {
 }
 
 function openMenu(mode: MenuMode): void {
-  ctx.tools.cancel();
-  hud.closePanel();
+  hud.closeAll();
   game.paused = true;
   menu.open(mode);
 }
 
-/** Closes the menu and lets the clock run again. */
+/** Closes the menu and lets the clock run again (unless the player paused it with ⏸, which stays). */
 function play(): void {
   menu.close();
   game.paused = false;
@@ -184,17 +183,17 @@ if (skipMenu) {
   openMenu('home');
 }
 
-// Esc: back out of the menu, or open the pause menu when no tool, panel or dialog is open. Runs on the document,
-// before the HUD (closes a panel) and the scene (cancels a tool) see the key on the window; dialogs stop it earlier.
+// Esc closes the topmost thing: back out of the menu; else the HUD steps back one level (a tip, a tool, the
+// construction menu, a window); else the pause menu opens. Dialogs (and the resource popover) stop it earlier.
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape' || e.defaultPrevented) return;
   if (menu.current) {
     if (menu.escape()) e.preventDefault();
     return;
   }
-  if (ctx.tools.mode.kind !== 'normal' || hud.panelOpen || uiRoot.querySelector('.dialog-backdrop')) return;
+  if (uiRoot.querySelector('.dialog-backdrop')) return;
   e.preventDefault();
-  openMenu('paused');
+  if (!hud.escape()) openMenu('paused');
 });
 
 Object.defineProperty(window, 'farm', {

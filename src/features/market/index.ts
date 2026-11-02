@@ -314,5 +314,5 @@ registerHudButton({
   id: 'market',
   label: 'Market',
   icon: '🏪',
-  onClick: (ctx) => ctx.ui.toggleSheet(marketSheet(ctx)),
+  spot: { kind: 'tab', window: 'trade', order: 10, sheet: marketSheet },
 });

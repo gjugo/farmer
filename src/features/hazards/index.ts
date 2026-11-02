@@ -16,7 +16,7 @@ import { withIcons } from '../../ui/icons';
 
 /**
  * Hazards on screen (rules in `src/logic/hazards.ts`, numbers in `src/data/hazards.ts`): a toast for every warning,
- * loss and defence; the 📖 Almanac in the HUD with what is on, what is coming, what guards against each and the recent
+ * loss and defence; a banner under the level for the hazard on or announced; the 📖 Almanac in the HUD with what is on, what is coming, what guards against each and the recent
  * losses; crows on the field they eat; the reach of a well, scarecrow or kennel on the build ghost; and
  * `window.farm.hazards` for QA. Fields and coops say in their panels what protects them (`protectionLine`); a parched
  * field's look is in `src/features/fields`, the harsh winter's heavier snow in `src/features/seasons`.
@@ -130,10 +130,33 @@ registerHudButton({
   id: 'almanac',
   label: 'Almanac',
   icon: '📖',
-  onClick: (ctx) => ctx.ui.toggleSheet(almanacSheet(ctx)),
+  spot: { kind: 'tab', window: 'almanac', sheet: almanacSheet },
   badge: (ctx) => {
     const s = hazardsOf(ctx.game.state);
     return s.current.length + s.upcoming.filter((e) => e.announcedAt !== undefined).length;
+  },
+});
+
+/** The hazard the banner tells of: the one on that ends first, else the next one announced. */
+function bannerHazard(game: Game): { event: HazardEvent; on: boolean } | null {
+  const s = hazardsOf(game.state);
+  const on = [...s.current].sort((a, b) => a.end - b.end)[0];
+  if (on) return { event: on, on: true };
+  const next = s.upcoming.filter((e) => e.announcedAt !== undefined).sort((a, b) => a.start - b.start)[0];
+  return next ? { event: next, on: false } : null;
+}
+
+registerHudButton({
+  id: 'hazard',
+  label: 'Hazard',
+  icon: '⚠️',
+  spot: { kind: 'banner', order: 30, opens: 'almanac', severity: (ctx) => (bannerHazard(ctx.game)?.on ? 'alert' : 'warn') },
+  visible: (ctx) => bannerHazard(ctx.game) !== null,
+  live: (ctx) => {
+    const b = bannerHazard(ctx.game);
+    if (!b) return { icon: '⚠️', label: 'Hazard' };
+    const info = HAZARD_INFO[b.event.kind];
+    return { icon: info.icon, label: b.on ? `${info.name} now` : `${info.name} coming ${when(ctx.game, b.event.start)}` };
   },
 });
 

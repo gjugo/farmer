@@ -1,88 +1,136 @@
-import { getBuildable, listBuildMenu } from '../data/buildables';
-import { getItem, ITEM_LIST } from '../data/items';
-import { formatMaterials, formatMissing, isStoredMaterial } from '../data/materials';
+import { CROP_LIST } from '../data/crops';
+import { getBuildable } from '../data/buildables';
+import { formatMaterials } from '../data/materials';
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
-import { STORAGE_POOLS, type StoragePool } from '../data/storage';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
-import { listBuildMenuToggles, listHudButtons, listSettingsSections } from '../game/hooks';
+import { listHotkeys, listHudButtons, registerDebugInfo, type HudButton, type HudSpot, type HudWindowId } from '../game/hooks';
 import { uiSignals } from '../game/signals';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
+import { seasonCheck } from '../logic/crops';
 import type { GameEvents } from '../logic/game';
 import { dayOfSeason, seasonOf } from '../logic/seasons';
-import { poolStatus, storageInfo, type PoolInfo } from '../logic/storage';
-import { buildableUnlockLevel } from '../logic/unlocks';
+import { unlocksAt } from '../logic/unlocks';
 import type { FarmScene } from '../scenes/FarmScene';
+import { BuildMenu } from './buildmenu';
 import { h, formatMoney } from './dom';
-import { itemIcon, packIcon, withIcons } from './icons';
+import { packIcon, withIcons } from './icons';
 import { ResourceBar } from './resources';
+import { Tip } from './tip';
 
 const REFRESH_MS = 250;
 
-const POOL_LABEL: Record<StoragePool, { title: string; icon: string; building: string }> = {
-  goods: { title: 'Goods', icon: '🌾', building: 'granary' },
-  materials: { title: 'Materials', icon: '🪵', building: 'storehouse' },
+/** The player's clock speeds (⏸ apart), like Manor Lords': ×1, ×4 and ×12. Not saved: a load starts at ×1. */
+export const HUD_SPEEDS = [1, 4, 12] as const;
+
+/** Toasts kept in 🕮 Recent events. */
+const EVENTS_KEPT = 30;
+
+/** The HUD's windows: the tool bar opens Farm, Trade and the Almanac, the level opens Development. */
+const WINDOWS: Record<HudWindowId, { title: string; icon: string; key?: string }> = {
+  development: { title: 'Development', icon: '⭐' },
+  farm: { title: 'Farm', icon: '👪', key: 'F' },
+  trade: { title: 'Trade', icon: '⚖️', key: 'T' },
+  almanac: { title: 'Almanac', icon: '📖', key: 'H' },
 };
 
-/** A pool's used/capacity bar for the inventory sheet; it warns from 90% and says plainly when the pool is full. */
-function storageBar(pool: StoragePool, info: PoolInfo): HTMLElement {
-  const status = poolStatus(info);
-  const label = POOL_LABEL[pool];
-  const pct = info.capacity > 0 ? Math.min(100, Math.round((info.used / info.capacity) * 100)) : 100;
-  const note =
-    info.used > info.capacity
-      ? `Over capacity: nothing new comes in until you sell or use ${info.used - info.capacity}. Build or upgrade a ${label.building}.`
-      : status === 'full'
-        ? `Full: nothing more comes in. Build or upgrade a ${label.building}, or sell something.`
-        : status === 'warn'
-          ? `Almost full: build or upgrade a ${label.building} soon.`
-          : null;
-  return h(
-    'div',
-    { class: `storage-pool storage-${status}`, 'data-testid': `storage-${pool}`, 'data-used': info.used, 'data-capacity': info.capacity },
-    h('div', { class: 'storage-head' }, withIcons(`${label.icon} ${label.title}`), h('span', { class: 'storage-count' }, `${info.used} / ${info.capacity}`)),
-    h(
-      'div',
-      { class: 'storage-bar', role: 'progressbar', 'aria-label': `${label.title} stored`, 'aria-valuemin': 0, 'aria-valuemax': info.capacity, 'aria-valuenow': info.used },
-      h('div', { class: 'storage-fill', style: `width: ${pct}%` }),
-    ),
-    note ? h('p', { class: 'storage-note', 'data-testid': `storage-note-${pool}` }, note) : null,
-  );
+type Spot<K extends HudSpot['kind']> = HudButton & { spot: Extract<HudSpot, { kind: K }> };
+
+interface Tab {
+  def: Spot<'tab'>;
+  btn: HTMLButtonElement;
+  badge: HTMLElement;
+  shown: boolean;
+  count: number;
 }
 
-/** The HTML overlay: top bar, side sheet (menus and action panels), tool banner, toasts and dialogs. */
+interface Chip {
+  def: Spot<'chip'>;
+  btn: HTMLButtonElement;
+  icon: HTMLElement;
+  value: HTMLElement;
+}
+
+interface Banner {
+  def: Spot<'banner'>;
+  btn: HTMLButtonElement;
+  icon: HTMLElement;
+  text: HTMLElement;
+}
+
+/** A toast as 🕮 Recent events lists it. */
+interface LoggedEvent {
+  day: number;
+  message: string;
+  kind: 'info' | 'success' | 'error';
+}
+
+/** Count badge on a button; hidden at 0. */
+function setBadge(el: HTMLElement, n: number): void {
+  const text = n ? String(n) : '';
+  if (el.textContent !== text) el.textContent = text;
+  el.hidden = !n;
+}
+
+function setText(el: HTMLElement, text: string): void {
+  if (el.textContent !== text) el.textContent = text;
+}
+
+/**
+ * The HTML overlay, laid out like Manor Lords' HUD: the farm overview (A) top left, the level with notices and recent
+ * events (B) top centre, the resource bar (D) and money (E) top right, the season and speed (F) bottom right, and the
+ * tool bar (G) bottom centre with the construction menu above it. Windows (Development, Farm, Trade, Almanac) and the
+ * action panel of a clicked object share one sheet: right-hand on a desktop, a bottom sheet on a phone. Features add
+ * their tabs, overview chips and banners with `registerHudButton`; this file names none of them.
+ */
 export class Hud implements UiApi {
   private readonly ctx: FarmContext;
+  readonly tip = new Tip();
   private moneyEl!: HTMLElement;
   private moneyValueEl!: HTMLElement;
   private dayEl!: HTMLElement;
   private dayBarEl!: HTMLElement;
-  private dayStatEl!: HTMLElement;
+  private seasonEl!: HTMLButtonElement;
   private seasonIconEl!: HTMLElement;
-  private seasonEl!: HTMLElement;
+  private seasonNameEl!: HTMLElement;
+  private levelBtn!: HTMLButtonElement;
   private levelEl!: HTMLElement;
   private xpEl!: HTMLElement;
   private xpBarEl!: HTMLElement;
-  private perkBadgeEl!: HTMLButtonElement;
+  private eventsBtn!: HTMLButtonElement;
+  private eventsPop!: HTMLElement;
+  private eventsSig = '';
+  private readonly log: LoggedEvent[] = [];
+  private speedButtons = new Map<string, HTMLButtonElement>();
   /** Open perk dialogs by level: each re-renders its cards when the perks change, and closes when its choice is made. */
   private perkDialogs = new Map<number, { refresh: () => void; close: () => void }>();
   private resources!: ResourceBar;
+  private buildMenu!: BuildMenu;
   private sheetEl!: HTMLElement;
   private sheetTitleEl!: HTMLElement;
+  private sheetTabsEl!: HTMLElement;
   private sheetBodyEl!: HTMLElement;
   private bannerEl!: HTMLElement;
   private toastsEl!: HTMLElement;
-  private buttons = new Map<string, HTMLButtonElement>();
-  private badges: { el: HTMLElement; read: () => number | null }[] = [];
-  private liveButtons: { btn: HTMLButtonElement; read: () => { icon: string; label: string } }[] = [];
-  private visibleButtons: { btn: HTMLButtonElement; read: () => boolean }[] = [];
+  /** Tool bar buttons by id (`paths`, `build`, `farm`, `trade`, `almanac`, `menu`), and the window buttons' badges. */
+  private tools = new Map<string, HTMLButtonElement>();
+  private windowBadges = new Map<HudWindowId, HTMLElement>();
+  private tabs: Tab[] = [];
+  private chips: Chip[] = [];
+  private banners: Banner[] = [];
   private sheet: SheetSpec | null = null;
   private sheetSignature = '';
+  /** The window on show (null for the action panel or another sheet) and the tab each window showed last. */
+  private win: { id: HudWindowId; tab: string } | null = null;
+  private tabsShown = '';
+  private lastTab = new Map<HudWindowId, string>();
+  /** The tool was picked in the construction menu: stepping back (Esc, Cancel) returns to it. */
+  private toolFromMenu = false;
 
   constructor(
     private readonly root: HTMLElement,
     ctx: FarmContext,
-    /** Opens the pause menu (☰ Menu). */
+    /** Opens the pause menu (⚙️ Menu). */
     private readonly onMenu: () => void,
   ) {
     this.ctx = ctx;
@@ -103,101 +151,164 @@ export class Hud implements UiApi {
     }
     events.on('reset', () => {
       for (const d of [...this.perkDialogs.values()]) d.close();
-      this.ctx.tools.cancel();
-      this.closePanel();
+      this.closeAll();
+      // A new or loaded farm starts running, at ×1 (the load resets the speed).
+      ctx.game.playerPaused = false;
       this.resources.reset();
       this.updateStats();
     });
     ctx.tools.events.on('change', (mode) => this.onToolChange(mode));
     window.setInterval(() => this.refresh(), REFRESH_MS);
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !this.root.querySelector('.dialog-backdrop')) this.closePanel();
-    });
+    window.addEventListener('keydown', (e) => this.onKey(e));
+    window.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (!this.eventsPop.hidden && !this.eventsPop.contains(e.target as Node) && !this.eventsBtn.contains(e.target as Node)) this.eventsPop.hidden = true;
+      },
+      true,
+    );
+    registerDebugInfo('hud', () =>
+      Object.freeze({
+        window: this.win?.id ?? null,
+        tab: this.win?.tab ?? null,
+        sheet: this.sheet?.id ?? null,
+        build: Object.freeze({ open: this.buildMenu.open, category: this.buildMenu.category }),
+        speed: ctx.game.speed,
+        paused: ctx.game.playerPaused,
+        banners: Object.freeze(this.banners.filter((b) => !b.btn.hidden).map((b) => b.def.id)),
+      }),
+    );
     this.updateStats();
   }
 
   // Layout ----------------------------------------------------------------------
 
   private build(): void {
-    this.moneyValueEl = h('span', { class: 'stat-value', 'data-testid': 'hud-money' });
-    this.moneyEl = h('div', { class: 'stat stat-money', title: 'Money' }, packIcon('coins', 'stat-icon'), this.moneyValueEl);
-    this.dayEl = h('span', { class: 'stat-value', 'data-testid': 'hud-day' });
-    this.dayBarEl = h('span', { class: 'day-bar-fill' });
-    this.seasonIconEl = h('span', { 'aria-hidden': 'true' });
-    this.seasonEl = h('span', { class: 'season-text', 'data-testid': 'hud-season' });
-    this.dayStatEl = h(
-      'div',
-      { class: 'stat stat-day', title: 'Day' },
-      this.seasonIconEl,
-      h(
-        'span',
-        { class: 'day-text' },
-        h('span', { class: 'level-line' }, this.dayEl, this.seasonEl),
-        h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.dayBarEl),
-      ),
-    );
-    const day = this.dayStatEl;
+    const { tip } = this;
 
-    this.levelEl = h('span', { class: 'stat-value', 'data-testid': 'hud-level' });
+    // A: the farm overview.
+    const overview = h('div', { class: 'hud-a', role: 'group', 'aria-label': 'Farm overview', 'data-testid': 'hud-overview' });
+    for (const def of listHudButtons('chip')) {
+      const icon = h('span', { class: 'chip-icon', 'aria-hidden': 'true' }, withIcons(def.icon ?? '•'));
+      const value = h('span', { class: 'chip-value' });
+      const btn = h('button', { type: 'button', class: 'stat-chip', 'data-testid': `stat-${def.id}` }, icon, value);
+      const opens = def.spot.opens;
+      tip.attach(
+        btn,
+        () => ({ title: `${def.icon ? `${def.icon} ` : ''}${def.label}`, lines: def.spot.detail?.(this.ctx) }),
+        opens ? () => this.openTab(opens) : undefined,
+      );
+      this.chips.push({ def, btn, icon, value });
+      overview.append(btn);
+    }
+
+    // B: the level, recent events and the notices under them.
+    this.levelEl = h('span', { class: 'level-value', 'data-testid': 'hud-level' });
     this.xpEl = h('span', { class: 'xp-text', 'data-testid': 'hud-xp' });
     this.xpBarEl = h('span', { class: 'day-bar-fill xp-bar-fill', 'data-testid': 'hud-xp-bar' });
-    this.perkBadgeEl = h(
+    const devBadge = h('span', { class: 'hud-badge', 'data-testid': 'badge-development', hidden: true });
+    this.windowBadges.set('development', devBadge);
+    this.levelBtn = h(
       'button',
-      { type: 'button', class: 'perk-badge', 'data-testid': 'hud-perk-badge', hidden: true, onclick: () => this.openPerkChoice() },
-      '⭐',
+      { type: 'button', class: 'hud-level', 'data-testid': 'btn-level', 'aria-label': 'Farm level: Development' },
+      h('span', { class: 'level-star', 'aria-hidden': 'true' }, '⭐'),
+      h('span', { class: 'day-text' }, h('span', { class: 'level-line' }, this.levelEl, this.xpEl), h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.xpBarEl)),
+      devBadge,
     );
-    const level = h(
-      'div',
-      { class: 'stat stat-level', title: 'Farm level' },
-      this.perkBadgeEl,
-      h('span', { 'aria-hidden': 'true' }, '⭐'),
-      h(
-        'span',
-        { class: 'day-text' },
-        h('span', { class: 'level-line' }, this.levelEl, this.xpEl),
-        h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.xpBarEl),
-      ),
+    tip.attach(this.levelBtn, () => this.levelTip(), () => this.toggleWindow('development'));
+    this.eventsPop = h('div', { class: 'events-pop', role: 'region', 'aria-label': 'Recent events', 'data-testid': 'events-pop', hidden: true });
+    this.eventsBtn = h(
+      'button',
+      { type: 'button', class: 'events-btn', 'data-testid': 'events-log', 'aria-label': 'Recent events', title: 'Recent events', onclick: () => this.toggleEvents() },
+      '🕮',
     );
-
-    const tools = h('nav', { class: 'hud-buttons', 'aria-label': 'Farm tools' });
-    const addButton = (id: string, icon: string, label: string, onClick: () => void) => {
+    const bannerRow = h('div', { class: 'hud-banners', 'aria-live': 'polite', 'data-testid': 'hud-banners' });
+    for (const def of listHudButtons('banner')) {
+      const icon = h('span', { class: 'banner-icon', 'aria-hidden': 'true' });
+      const text = h('span', { class: 'banner-text' }, def.label);
+      const opens = def.spot.opens;
       const btn = h(
         'button',
-        { class: 'hud-btn', type: 'button', 'data-testid': `btn-${id}`, 'aria-label': label, title: label, onclick: onClick },
-        h('span', { class: 'hud-btn-icon', 'aria-hidden': 'true' }, icon),
-        h('span', { class: 'hud-btn-label' }, label),
+        { type: 'button', class: 'hud-banner', 'data-testid': `banner-${def.id}`, hidden: true, onclick: () => opens && this.openTab(opens) },
+        icon,
+        text,
       );
-      this.buttons.set(id, btn);
-      tools.append(btn);
-    };
-    addButton('build', '🔨', 'Build', () => this.toggleSheet(this.buildSheet()));
-    addButton('demolish', '🧹', 'Demolish', () => {
-      const tools = this.ctx.tools;
-      if (tools.mode.kind === 'demolish') tools.cancel();
-      else {
-        this.closePanel();
-        tools.set({ kind: 'demolish' });
-      }
-    });
-    addButton('inventory', '🎒', 'Inventory', () => this.toggleSheet(this.inventorySheet()));
-    for (const b of listHudButtons()) {
-      addButton(b.id, b.icon ?? '•', b.label, () => b.onClick(this.ctx));
-      if (b.badge) {
-        const el = h('span', { class: 'hud-badge', 'data-testid': `badge-${b.id}`, hidden: true });
-        this.buttons.get(b.id)!.append(el);
-        this.badges.push({ el, read: () => b.badge!(this.ctx) });
-      }
-      if (b.live) this.liveButtons.push({ btn: this.buttons.get(b.id)!, read: () => b.live!(this.ctx) });
-      if (b.visible) this.visibleButtons.push({ btn: this.buttons.get(b.id)!, read: () => b.visible!(this.ctx) });
-      if (b.className) this.buttons.get(b.id)!.classList.add(b.className);
+      this.banners.push({ def, btn, icon, text });
+      bannerRow.append(btn);
     }
-    addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
-    addButton('menu', '☰', 'Menu', () => this.onMenu());
+    const centre = h('div', { class: 'hud-b' }, h('div', { class: 'hud-b-row' }, this.levelBtn, this.eventsBtn), bannerRow, this.eventsPop);
 
+    // D and E: the resource bar and the money.
     this.resources = new ResourceBar(this.ctx.game);
-    const topbar = h('header', { class: 'topbar' }, h('div', { class: 'stats' }, this.moneyEl, day, level), tools, this.resources.el);
+    this.moneyValueEl = h('span', { class: 'stat-value', 'data-testid': 'hud-money' });
+    this.moneyEl = h('div', { class: 'stat stat-money', title: 'Money' }, packIcon('coins', 'stat-icon'), this.moneyValueEl);
+    const right = h('div', { class: 'hud-de' }, this.resources.el, this.moneyEl);
+
+    const top = h('header', { class: 'hud-top topbar' }, overview, centre, right);
+
+    // F: the season and day, and the speed.
+    this.seasonIconEl = h('span', { class: 'season-icon', 'aria-hidden': 'true' });
+    this.seasonNameEl = h('span', { class: 'season-text', 'data-testid': 'hud-season' });
+    this.dayEl = h('span', { class: 'stat-value', 'data-testid': 'hud-day' });
+    this.dayBarEl = h('span', { class: 'day-bar-fill' });
+    this.seasonEl = h(
+      'button',
+      { type: 'button', class: 'hud-season', 'data-testid': 'btn-season' },
+      this.seasonIconEl,
+      h('span', { class: 'day-text' }, h('span', { class: 'level-line' }, this.dayEl, this.seasonNameEl), h('span', { class: 'day-bar', 'aria-hidden': 'true' }, this.dayBarEl)),
+    );
+    tip.attach(this.seasonEl, () => this.seasonTip());
+    const speed = h('div', { class: 'hud-speed', role: 'group', 'aria-label': 'Game speed' });
+    const speedBtn = (id: string, icon: string, label: string, run: () => void) => {
+      const btn = h('button', { type: 'button', class: 'speed-btn', 'data-testid': `speed-${id}`, 'aria-label': label, title: label, 'aria-pressed': 'false', onclick: run }, icon);
+      this.speedButtons.set(id, btn);
+      speed.append(btn);
+    };
+    speedBtn('pause', '⏸', 'Pause (Space)', () => this.togglePause());
+    HUD_SPEEDS.forEach((s, i) => speedBtn(String(s), ['▶', '⏩', '⏭'][i]!, `Speed ×${s} (${i + 1})`, () => this.setSpeed(s)));
+    const clock = h('div', { class: 'hud-f' }, this.seasonEl, speed);
+
+    // G: the tool bar.
+    const bar = h('nav', { class: 'hud-g', 'aria-label': 'Farm tools' });
+    const tool = (id: string, icon: string, label: string, key: string, run: () => void, explain?: string) => {
+      const btn = h('button', { type: 'button', class: 'tool-btn', 'data-testid': `btn-${id}`, 'aria-label': `${label} (${key})` }, h('span', { class: 'tool-icon', 'aria-hidden': 'true' }, icon));
+      tip.attach(btn, () => ({ title: `${icon} ${label} (${key})`, lines: explain ? [explain] : [] }), run, false);
+      this.tools.set(id, btn);
+      bar.append(btn);
+      return btn;
+    };
+    tool('paths', '🛤️', 'Paths', 'P', () => this.togglePaths(), 'Lay dirt paths: farmers walk them from the farmhouse to their work');
+    tool('build', '🔨', 'Build', 'B', () => this.toggleBuildMenu(), 'The construction menu');
+    for (const w of ['farm', 'trade', 'almanac'] as const) {
+      const def = WINDOWS[w];
+      const tabs = listHudButtons('tab').filter((t) => t.spot.window === w);
+      const btn = tool(w, def.icon, def.title, def.key!, () => this.toggleWindow(w), tabs.map((t) => `${t.icon ?? ''} ${t.label}`.trim()).join(' · '));
+      const badge = h('span', { class: 'hud-badge', 'data-testid': `badge-${w}`, hidden: true });
+      btn.append(badge);
+      this.windowBadges.set(w, badge);
+    }
+    tool('menu', '⚙️', 'Menu', 'Esc', () => this.onMenu(), 'Save, load, settings and sound');
+
+    // The tabs, made once: a window shows the ones that are visible.
+    for (const def of listHudButtons('tab')) {
+      const badge = h('span', { class: 'hud-badge', 'data-testid': `badge-${def.id}`, hidden: true });
+      const btn = h(
+        'button',
+        { type: 'button', role: 'tab', class: 'sheet-tab', 'data-testid': `tab-${def.id}`, 'aria-selected': 'false', onclick: () => this.openWindow(def.spot.window, def.id) },
+        h('span', { 'aria-hidden': 'true' }, withIcons(def.icon ?? '')),
+        h('span', { class: 'sheet-tab-label' }, def.label),
+        badge,
+      );
+      this.tabs.push({ def, btn, badge, shown: true, count: 0 });
+    }
+
+    this.buildMenu = new BuildMenu(this.ctx, tip, {
+      build: (type) => this.startTool({ kind: 'build', type }, true),
+      demolish: () => this.toggleDemolish(),
+    });
 
     this.sheetTitleEl = h('h2', { class: 'sheet-title', id: 'sheet-title', 'data-testid': 'panel-title' });
+    this.sheetTabsEl = h('nav', { class: 'sheet-tabs', role: 'tablist', 'aria-label': 'Tabs', 'data-testid': 'panel-tabs', hidden: true });
     this.sheetBodyEl = h('div', { class: 'sheet-body' });
     this.sheetEl = h(
       'section',
@@ -208,69 +319,109 @@ export class Hud implements UiApi {
         this.sheetTitleEl,
         h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', 'data-testid': 'panel-close', onclick: () => this.closePanel() }, '✕'),
       ),
+      this.sheetTabsEl,
       this.sheetBodyEl,
     );
 
     this.bannerEl = h('div', { class: 'tool-banner', 'data-testid': 'tool-banner', hidden: true });
     this.toastsEl = h('div', { class: 'toasts', 'aria-live': 'polite', 'data-testid': 'toasts' });
 
-    this.root.append(topbar, this.sheetEl, this.bannerEl, this.toastsEl);
+    this.root.append(top, clock, this.buildMenu.el, bar, this.sheetEl, this.bannerEl, this.toastsEl, tip.el);
+  }
+
+  private levelTip(): { title: string; lines: string[] } {
+    const { level, xpIntoLevel, xpForNext } = this.ctx.game.progression.info;
+    const lines: string[] = [];
+    if (xpForNext === null) lines.push('The top level: everything is unlocked');
+    else {
+      lines.push(`${Math.max(0, Math.ceil(xpForNext - xpIntoLevel))} XP to level ${level + 1}`);
+      const next = unlocksAt(level + 1);
+      if (next.length) lines.push(`Unlocks ${next.map((u) => `${u.icon} ${u.name}`).join(', ')}`);
+    }
+    lines.push('Earn XP by farming and from 🎯 Goals. Click for 🎯 Goals and ⭐ Perks');
+    return { title: `⭐ Level ${level}`, lines };
+  }
+
+  private seasonTip(): { title: string; lines: string[] } {
+    const { game } = this.ctx;
+    const season = SEASON_INFO[seasonOf(game.state.clock)];
+    const sowable = CROP_LIST.filter((c) => game.isUnlocked(c.unlockLevel) && seasonCheck(game.state.clock, c) === 'ok');
+    return {
+      title: `${season.icon} ${season.name}, day ${dayOfSeason(game.state.clock)} of ${SEASON_DAYS}`,
+      lines: [sowable.length ? `Sow now: ${sowable.map((c) => `${c.icon} ${c.name}`).join(', ')}` : 'Nothing can be sown now', `Day ${game.day} of your farm`],
+    };
   }
 
   private updateStats(): void {
-    this.moneyValueEl.textContent = formatMoney(this.ctx.game.money);
     const { game } = this.ctx;
-    const dayText = `Day ${game.day}`;
-    if (this.dayEl.textContent !== dayText) this.dayEl.textContent = dayText;
+    this.moneyValueEl.textContent = formatMoney(game.money);
+    setText(this.dayEl, `Day ${game.day}`);
     const season = SEASON_INFO[seasonOf(game.state.clock)];
-    if (this.seasonEl.textContent !== season.name) {
-      this.seasonEl.textContent = season.name;
-      this.seasonIconEl.textContent = season.icon;
-    }
-    const seasonTitle = `Day ${game.day} · ${season.name}, day ${dayOfSeason(game.state.clock)} of ${SEASON_DAYS}`;
-    if (this.dayStatEl.title !== seasonTitle) this.dayStatEl.title = seasonTitle;
+    setText(this.seasonNameEl, season.name);
+    setText(this.seasonIconEl, season.icon);
+    const label = `${season.name}, day ${dayOfSeason(game.state.clock)} of ${SEASON_DAYS} · Day ${game.day}`;
+    if (this.seasonEl.getAttribute('aria-label') !== label) this.seasonEl.setAttribute('aria-label', label);
     this.dayBarEl.style.width = `${(timeOfDay(game.state.clock) * 100).toFixed(1)}%`;
 
     const { level, xpIntoLevel, xpForNext } = game.progression.info;
-    this.levelEl.textContent = `Lv ${level}`;
-    this.xpEl.textContent = xpForNext === null ? 'MAX' : `${Math.floor(xpIntoLevel)}/${xpForNext}`;
-    this.resources.update();
+    setText(this.levelEl, `Lv ${level}`);
+    setText(this.xpEl, xpForNext === null ? 'MAX' : `${Math.floor(xpIntoLevel)}/${xpForNext}`);
     this.xpBarEl.style.width = `${xpForNext === null ? 100 : Math.min(100, (xpIntoLevel / xpForNext) * 100).toFixed(1)}%`;
-    const pending = game.perks.pending.length;
-    const badge = pending ? `⭐${pending > 1 ? ` ${pending}` : ''}` : '';
-    if (this.perkBadgeEl.textContent !== badge) {
-      this.perkBadgeEl.textContent = badge;
-      const label = pending === 1 ? 'A perk to choose' : `${pending} perks to choose`;
-      this.perkBadgeEl.title = label;
-      this.perkBadgeEl.setAttribute('aria-label', label);
+    this.resources.update();
+
+    for (const [id, btn] of this.speedButtons) {
+      const on = id === 'pause' ? game.playerPaused : !game.playerPaused && game.speed === Number(id);
+      if (btn.getAttribute('aria-pressed') !== String(on)) btn.setAttribute('aria-pressed', String(on));
     }
-    this.perkBadgeEl.hidden = !pending;
-    for (const { el, read } of this.badges) {
-      const n = read();
-      const text = n ? String(n) : '';
-      if (el.textContent !== text) el.textContent = text;
-      el.hidden = !n;
-    }
-    for (const { btn, read } of this.visibleButtons) {
-      const hidden = !read();
-      if (btn.hidden !== hidden) btn.hidden = hidden;
-    }
-    for (const { btn, read } of this.liveButtons) {
-      const { icon, label } = read();
-      const iconEl = btn.querySelector('.hud-btn-icon')!;
-      if (iconEl.textContent !== icon) iconEl.textContent = icon;
-      if (btn.title !== label) {
-        btn.title = label;
-        btn.setAttribute('aria-label', label);
-        btn.querySelector('.hud-btn-label')!.textContent = label;
+    document.body.toggleAttribute('data-player-paused', game.playerPaused);
+
+    for (const c of this.chips) {
+      const { icon, label: value } = c.def.live?.(this.ctx) ?? { icon: c.def.icon ?? '•', label: '' };
+      if (c.icon.dataset.icon !== icon) {
+        c.icon.dataset.icon = icon;
+        c.icon.replaceChildren(...withIcons(icon));
       }
+      setText(c.value, value);
+      c.btn.dataset.value = value;
+      const aria = `${c.def.label}: ${value}`;
+      if (c.btn.getAttribute('aria-label') !== aria) c.btn.setAttribute('aria-label', aria);
+      c.btn.hidden = c.def.visible ? !c.def.visible(this.ctx) : false;
     }
+    for (const b of this.banners) {
+      const shown = b.def.visible ? b.def.visible(this.ctx) : true;
+      if (b.btn.hidden !== !shown) b.btn.hidden = !shown;
+      if (!shown) continue;
+      const { icon, label } = b.def.live?.(this.ctx) ?? { icon: b.def.icon ?? '', label: b.def.label };
+      setText(b.icon, icon);
+      setText(b.text, label);
+      const cls = `hud-banner banner-${b.def.spot.severity(this.ctx)}`;
+      if (b.btn.className !== cls) b.btn.className = cls;
+    }
+
+    const sums = new Map<HudWindowId, number>();
+    for (const t of this.tabs) {
+      t.shown = t.def.visible ? t.def.visible(this.ctx) : true;
+      t.count = t.shown ? (t.def.badge?.(this.ctx) ?? 0) : 0;
+      setBadge(t.badge, t.count);
+      const w = t.def.spot.window;
+      sums.set(w, (sums.get(w) ?? 0) + t.count);
+    }
+    for (const [w, el] of this.windowBadges) setBadge(el, sums.get(w) ?? 0);
   }
 
   /** Re-renders whatever depends on game state. Cheap; called on events and on a timer. */
   refresh(): void {
     this.updateStats();
+    this.buildMenu.refresh();
+    this.tip.refresh();
+    if (!this.eventsPop.hidden) this.renderEvents();
     if (!this.sheet) return;
+    if (this.win) {
+      // The tab went away (the trader left): show the window's first tab.
+      const tab = this.tabs.find((t) => t.def.id === this.win!.tab);
+      if (!tab?.shown) return this.openWindow(this.win.id);
+      this.renderTabs();
+    }
     const sig = this.sheet.signature();
     // Rebuilding the body would close a drop-down the player has open: wait until it loses focus.
     const picking = document.activeElement instanceof HTMLSelectElement && this.sheetBodyEl.contains(document.activeElement);
@@ -283,15 +434,60 @@ export class Hud implements UiApi {
     this.sheet?.tick?.(this.sheetBodyEl);
   }
 
-  // Sheets ----------------------------------------------------------------------
+  // Windows and sheets ------------------------------------------------------------
 
-  private showSheet(sheet: SheetSpec): void {
+  private showSheet(sheet: SheetSpec, win: { id: HudWindowId; tab: string } | null = null): void {
+    this.buildMenu.hide();
+    this.eventsPop.hidden = true;
     this.sheet = sheet;
+    this.win = win;
     this.sheetSignature = '';
+    this.tabsShown = '';
     this.sheetEl.hidden = false;
     this.sheetEl.dataset.sheet = sheet.id;
-    for (const [id, btn] of this.buttons) btn.classList.toggle('active', id === sheet.id);
+    if (win) this.sheetEl.dataset.window = win.id;
+    else delete this.sheetEl.dataset.window;
+    this.renderTabs();
+    this.updateActive();
     this.refresh();
+  }
+
+  /** The window's tab row; hidden for the action panel and for a window with a single tab. */
+  private renderTabs(): void {
+    const win = this.win;
+    const tabs = win ? this.tabs.filter((t) => t.def.spot.window === win.id && t.shown) : [];
+    const sig = `${win?.id}|${win?.tab}|${tabs.map((t) => t.def.id).join(',')}`;
+    if (sig === this.tabsShown) return;
+    this.tabsShown = sig;
+    for (const t of tabs) {
+      const on = t.def.id === win!.tab;
+      t.btn.setAttribute('aria-selected', String(on));
+      t.btn.classList.toggle('active', on);
+    }
+    this.sheetTabsEl.replaceChildren(...tabs.map((t) => t.btn));
+    this.sheetTabsEl.hidden = tabs.length < 2;
+  }
+
+  /** Opens a window on `tab`, or else on the tab it showed last (or its first). Leaves any tool. */
+  private openWindow(id: HudWindowId, tab?: string): void {
+    const tabs = this.tabs.filter((t) => t.def.spot.window === id && t.shown);
+    const pick = tabs.find((t) => t.def.id === tab) ?? tabs.find((t) => t.def.id === this.lastTab.get(id)) ?? tabs[0];
+    if (!pick) return;
+    this.lastTab.set(id, pick.def.id);
+    this.toolFromMenu = false;
+    this.ctx.tools.cancel();
+    if (this.win?.id === id && this.win.tab === pick.def.id) return;
+    this.showSheet(pick.def.spot.sheet(this.ctx), { id, tab: pick.def.id });
+  }
+
+  private toggleWindow(id: HudWindowId): void {
+    if (this.win?.id === id) this.closePanel();
+    else this.openWindow(id);
+  }
+
+  openTab(id: string): void {
+    const tab = this.tabs.find((t) => t.def.id === id);
+    if (tab) this.openWindow(tab.def.spot.window, id);
   }
 
   toggleSheet(sheet: SheetSpec): void {
@@ -299,17 +495,209 @@ export class Hud implements UiApi {
     else this.showSheet(sheet);
   }
 
-  /** Whether a side sheet or action panel is open. */
-  get panelOpen(): boolean {
-    return this.sheet !== null;
-  }
 
   closePanel(): void {
     if (!this.sheet) return;
     this.sheet = null;
+    this.win = null;
     this.sheetEl.hidden = true;
     this.sheetBodyEl.replaceChildren();
-    for (const [id, btn] of this.buttons) if (id !== 'demolish') btn.classList.remove('active');
+    this.updateActive();
+  }
+
+  /** Closes every window, menu and tip and leaves any tool (the pause menu opens, a new farm loads). */
+  closeAll(): void {
+    this.toolFromMenu = false;
+    this.ctx.tools.cancel();
+    this.closePanel();
+    this.buildMenu.hide();
+    this.eventsPop.hidden = true;
+    this.tip.hide();
+    this.updateActive();
+  }
+
+  /** Which tool bar buttons light up: the open window, the construction menu or the tool in use. */
+  private updateActive(): void {
+    const mode = this.ctx.tools.mode;
+    const paths = mode.kind === 'build' && mode.type === 'path';
+    const set = (id: string, on: boolean) => this.tools.get(id)?.classList.toggle('active', on);
+    set('paths', paths);
+    set('build', this.buildMenu.open || (mode.kind === 'build' && !paths) || mode.kind === 'demolish');
+    for (const w of ['farm', 'trade', 'almanac'] as const) set(w, this.win?.id === w);
+    this.levelBtn.classList.toggle('active', this.win?.id === 'development');
+    this.buildMenu.demolishBtn.classList.toggle('active', mode.kind === 'demolish');
+    this.buildMenu.demolishBtn.setAttribute('aria-pressed', String(mode.kind === 'demolish'));
+  }
+
+  // Recent events --------------------------------------------------------------------
+
+  private toggleEvents(): void {
+    this.eventsPop.hidden = !this.eventsPop.hidden;
+    this.eventsBtn.setAttribute('aria-expanded', String(!this.eventsPop.hidden));
+    if (!this.eventsPop.hidden) {
+      this.eventsSig = '';
+      this.renderEvents();
+    }
+  }
+
+  private renderEvents(): void {
+    const sig = `${this.log.length}|${this.log[0]?.message}|${this.log[0]?.day}`;
+    if (sig === this.eventsSig) return;
+    this.eventsSig = sig;
+    this.eventsPop.replaceChildren(
+      h('div', { class: 'events-title' }, '🕮 Recent events'),
+      this.log.length
+        ? h(
+            'ol',
+            { class: 'events-list', 'data-testid': 'events-list' },
+            this.log.map((e) => h('li', { class: `event event-${e.kind}` }, h('span', { class: 'event-day' }, `Day ${e.day}`), h('span', {}, withIcons(e.message)))),
+          )
+        : h('p', { class: 'muted' }, 'Nothing has happened yet.'),
+    );
+  }
+
+  // Speed ------------------------------------------------------------------------------
+
+  private togglePause(): void {
+    this.ctx.game.playerPaused = !this.ctx.game.playerPaused;
+    this.refresh();
+  }
+
+  private setSpeed(speed: number): void {
+    this.ctx.game.playerPaused = false;
+    this.ctx.game.setSpeed(speed);
+    this.refresh();
+  }
+
+  // Keys -------------------------------------------------------------------------------
+
+  /** Hotkeys do nothing while the menu or a dialog is open, or while typing. */
+  private keysBlocked(e: KeyboardEvent): boolean {
+    if (e.ctrlKey || e.metaKey || e.altKey || document.body.dataset.menu || this.root.querySelector('.dialog-backdrop')) return true;
+    const t = e.target;
+    return t instanceof HTMLInputElement || t instanceof HTMLSelectElement || t instanceof HTMLTextAreaElement || (t instanceof HTMLElement && t.isContentEditable);
+  }
+
+  private onKey(e: KeyboardEvent): void {
+    if (e.key === 'Escape' || e.defaultPrevented || this.keysBlocked(e)) return;
+    const key = e.key.toLowerCase();
+    const run: Record<string, () => void> = {
+      ' ': () => this.togglePause(),
+      p: () => this.togglePaths(),
+      b: () => this.toggleBuildMenu(),
+      x: () => this.toggleDemolish(),
+      f: () => this.toggleWindow('farm'),
+      t: () => this.toggleWindow('trade'),
+      h: () => this.toggleWindow('almanac'),
+    };
+    HUD_SPEEDS.forEach((s, i) => (run[String(i + 1)] = () => this.setSpeed(s)));
+    const action = run[key] ?? listHotkeys().find((k) => k.key.toLowerCase() === key)?.run.bind(null, this.ctx);
+    if (!action) return;
+    if (e.repeat) return e.preventDefault();
+    e.preventDefault();
+    // Space would also press the focused button when the key comes up.
+    if (key === ' ' && document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
+    action();
+  }
+
+  /**
+   * Esc, one level at a time: a pinned tip or the recent events, then a tool (back to the construction menu when it
+   * came from there), then the construction menu, then a window or panel. True when it closed something; when it
+   * didn't, the pause menu opens (`main.ts`).
+   */
+  escape(): boolean {
+    if (this.tip.pinned) {
+      this.tip.hide();
+      return true;
+    }
+    if (!this.eventsPop.hidden) {
+      this.eventsPop.hidden = true;
+      return true;
+    }
+    if (this.ctx.tools.mode.kind !== 'normal') {
+      this.backFromTool();
+      return true;
+    }
+    if (this.buildMenu.open) {
+      this.buildMenu.hide();
+      this.updateActive();
+      return true;
+    }
+    if (this.sheet) {
+      this.closePanel();
+      return true;
+    }
+    return false;
+  }
+
+  // Tools -----------------------------------------------------------------------
+
+  private startTool(mode: ToolMode, fromMenu: boolean): void {
+    this.closePanel();
+    this.buildMenu.hide();
+    this.toolFromMenu = fromMenu;
+    this.ctx.tools.set(mode);
+  }
+
+  /** Leaves the tool: back to the construction menu when it was picked there. */
+  private backFromTool(): void {
+    const back = this.toolFromMenu;
+    this.toolFromMenu = false;
+    this.ctx.tools.cancel();
+    if (back) this.showBuildMenu();
+  }
+
+  private showBuildMenu(): void {
+    this.closePanel();
+    this.eventsPop.hidden = true;
+    this.buildMenu.show();
+    this.updateActive();
+  }
+
+  private toggleBuildMenu(): void {
+    if (this.buildMenu.open) {
+      this.buildMenu.hide();
+      this.updateActive();
+      return;
+    }
+    this.toolFromMenu = false;
+    this.ctx.tools.cancel();
+    this.showBuildMenu();
+  }
+
+  private togglePaths(): void {
+    const mode = this.ctx.tools.mode;
+    if (mode.kind === 'build' && mode.type === 'path') this.backFromTool();
+    else this.startTool({ kind: 'build', type: 'path' }, false);
+  }
+
+  private toggleDemolish(): void {
+    if (this.ctx.tools.mode.kind === 'demolish') this.backFromTool();
+    else this.startTool({ kind: 'demolish' }, this.buildMenu.open || this.toolFromMenu);
+  }
+
+  private onToolChange(mode: ToolMode): void {
+    if (mode.kind === 'normal') this.toolFromMenu = false;
+    this.updateActive();
+    this.resources.highlight(mode.kind === 'build' ? 'materials' : null);
+    document.body.dataset.tool = mode.kind;
+    if (mode.kind === 'normal') {
+      this.bannerEl.hidden = true;
+      return;
+    }
+    let text: string;
+    if (mode.kind === 'build') {
+      const def = getBuildable(mode.type);
+      const materials = formatMaterials(this.ctx.game.materialsFor(mode.type));
+      text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}${materials ? ` + ${materials}` : ''}) — tap a tile`;
+    } else {
+      text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% of money and materials back)`;
+    }
+    this.bannerEl.replaceChildren(
+      h('span', {}, withIcons(text)),
+      h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'btn-cancel-tool', onclick: () => this.backFromTool() }, this.toolFromMenu ? '← Back' : 'Cancel'),
+    );
+    this.bannerEl.hidden = false;
   }
 
   openPanel(build: PanelBuilder): void {
@@ -426,177 +814,12 @@ export class Hud implements UiApi {
     });
   }
 
-  private buildSheet(): SheetSpec {
-    const { game, tools } = this.ctx;
-    return {
-      id: 'build',
-      title: () => '🔨 Build',
-      signature: () =>
-        `${game.level}|${listBuildMenuToggles()
-          .map((t) => t.isOn(this.ctx))
-          .join(',')}|${listBuildMenu()
-          .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(game.materialsFor(b.id)))}`)
-          .join('|')}`,
-      render: (body) => {
-        const toggles = listBuildMenuToggles();
-        if (toggles.length) {
-          body.append(
-            h(
-              'div',
-              { class: 'build-toggles' },
-              toggles.map((t) =>
-                h(
-                  'button',
-                  {
-                    type: 'button',
-                    class: `btn btn-secondary build-toggle${t.isOn(this.ctx) ? ' on' : ''}`,
-                    'aria-pressed': String(t.isOn(this.ctx)),
-                    'data-testid': `build-toggle-${t.id}`,
-                    onclick: () => {
-                      t.toggle(this.ctx);
-                      this.refresh();
-                    },
-                  },
-                  `${t.icon ? `${t.icon} ` : ''}${t.label}: ${t.isOn(this.ctx) ? 'on' : 'off'}`,
-                ),
-              ),
-            ),
-          );
-        }
-        const groups = new Map<string, ReturnType<typeof listBuildMenu>>();
-        for (const b of listBuildMenu()) {
-          const key = b.category ?? 'other';
-          groups.set(key, [...(groups.get(key) ?? []), b]);
-        }
-        for (const [category, defs] of groups) {
-          body.append(
-            h('h3', { class: 'group-title' }, category),
-            h(
-              'div',
-              { class: 'build-list' },
-              defs.map((b) => {
-                const unlockLevel = buildableUnlockLevel(b.id);
-                const locked = !game.isUnlocked(unlockLevel);
-                const shortMoney = !game.canAfford(b.cost);
-                const missing = game.missingMaterials(game.materialsFor(b.id));
-                // What stands between the player and building it, e.g. "Needs $40 more and 4 more 🪵 Wood".
-                const needs = [shortMoney ? `${formatMoney(b.cost - game.money)} more` : '', formatMissing(missing)].filter(Boolean).join(' and ');
-                const materials = formatMaterials(game.materialsFor(b.id));
-                return h(
-                  'button',
-                  {
-                    type: 'button',
-                    class: `build-item${locked ? ' locked' : ''}`,
-                    disabled: locked || shortMoney || missing.length > 0,
-                    'data-testid': `build-${b.id}`,
-                    'data-locked': locked ? String(unlockLevel) : undefined,
-                    onclick: () => {
-                      this.closePanel();
-                      tools.set({ kind: 'build', type: b.id });
-                    },
-                  },
-                  h('span', { class: 'build-name' }, `${locked ? '🔒 ' : ''}${b.name}`),
-                  h('span', { class: 'build-meta' }, `${b.footprint.w}×${b.footprint.h}`),
-                  h('span', { class: 'build-cost', 'data-testid': `build-cost-${b.id}` }, formatMoney(b.cost)),
-                  materials ? h('span', { class: 'build-materials', 'data-testid': `build-materials-${b.id}` }, withIcons(materials)) : null,
-                  locked
-                    ? h('span', { class: 'build-desc lock-note' }, `Unlocks at level ${unlockLevel}`)
-                    : needs
-                      ? h('span', { class: 'build-desc needs-note', 'data-testid': `build-needs-${b.id}` }, withIcons(`Needs ${needs}${missing.length ? ' — buy at the 🏪 Market' : ''}`))
-                      : b.description
-                        ? h('span', { class: 'build-desc' }, b.description)
-                        : null,
-                );
-              }),
-            ),
-          );
-        }
-      },
-    };
-  }
-
-  private inventorySheet(): SheetSpec {
-    const { game } = this.ctx;
-    return {
-      id: 'inventory',
-      title: () => '🎒 Inventory',
-      signature: () => JSON.stringify([game.state.inventory, storageInfo(game.state)]),
-      render: (body) => {
-        const info = storageInfo(game.state);
-        body.append(h('div', { class: 'storage-bars' }, STORAGE_POOLS.map((pool) => storageBar(pool, info[pool]))));
-        const known = new Set(ITEM_LIST.map((i) => i.id));
-        const ids = [...ITEM_LIST.map((i) => i.id), ...Object.keys(game.state.inventory).filter((id) => !known.has(id))];
-        const rows = ids.filter((id) => game.count(id) > 0);
-        if (!rows.length) {
-          body.append(h('p', { class: 'empty' }, 'Your barn is empty. Grow crops and raise animals to fill it.'));
-          return;
-        }
-        const list = (testId: string, group: string[]) =>
-          h(
-            'ul',
-            { class: 'inventory-list', 'data-testid': testId },
-            group.map((id) => {
-              const item = getItem(id);
-              return h(
-                'li',
-                { class: 'inventory-item', 'data-testid': `inv-${id}` },
-                itemIcon(id),
-                h('span', { class: 'item-name' }, item?.name ?? id),
-                h('span', { class: 'item-count' }, `×${game.count(id)}`),
-              );
-            }),
-          );
-        const goods = rows.filter((id) => !isStoredMaterial(id));
-        const materials = rows.filter(isStoredMaterial);
-        if (goods.length) body.append(list('inventory-list', goods));
-        if (materials.length) {
-          body.append(h('h3', { class: 'group-title' }, 'Building materials'), list('inventory-materials', materials));
-        }
-      },
-    };
-  }
-
-  private settingsSheet(): SheetSpec {
-    return {
-      id: 'settings',
-      title: () => '⚙️ Settings',
-      signature: () => 'settings',
-      render: (body) => {
-        for (const section of listSettingsSections()) section.render(this.ctx, body);
-        body.append(h('p', { class: 'muted' }, 'Your farm is saved automatically in this browser. Save, Load and New game are in ☰ Menu.'));
-      },
-    };
-  }
-
-  // Tools -----------------------------------------------------------------------
-
-  private onToolChange(mode: ToolMode): void {
-    this.buttons.get('demolish')?.classList.toggle('active', mode.kind === 'demolish');
-    this.buttons.get('build')?.classList.toggle('active', mode.kind === 'build' || this.sheet?.id === 'build');
-    document.body.dataset.tool = mode.kind;
-    if (mode.kind === 'normal') {
-      this.bannerEl.hidden = true;
-      return;
-    }
-    let text: string;
-    if (mode.kind === 'build') {
-      const def = getBuildable(mode.type);
-      const materials = formatMaterials(this.ctx.game.materialsFor(mode.type));
-      text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}${materials ? ` + ${materials}` : ''}) — tap a tile`;
-    } else {
-      text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% of money and materials back)`;
-    }
-    this.bannerEl.replaceChildren(
-      h('span', {}, withIcons(text)),
-      h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'btn-cancel-tool', onclick: () => this.ctx.tools.cancel() }, 'Cancel'),
-    );
-    this.bannerEl.hidden = false;
-  }
-
   // Feedback --------------------------------------------------------------------
 
   toast(message: string, kind: 'info' | 'success' | 'error' = 'info'): void {
     if (kind === 'error') uiSignals.emit('refused', { message });
+    this.log.unshift({ day: this.ctx.game.day, message, kind });
+    this.log.length = Math.min(this.log.length, EVENTS_KEPT);
     const el = h('div', { class: `toast toast-${kind}`, role: kind === 'error' ? 'alert' : 'status', 'data-testid': 'toast' }, withIcons(message));
     this.toastsEl.append(el);
     while (this.toastsEl.children.length > 4) this.toastsEl.firstElementChild?.remove();
@@ -707,7 +930,7 @@ export class Hud implements UiApi {
     const onKey = (e: KeyboardEvent) => {
       if (!isTop()) return;
       if (e.key === 'Escape' || (e.key === 'Enter' && !choosing)) {
-        // Esc on a choice is "Decide later": it stays open behind the ⭐ badge.
+        // Esc on a choice is "Decide later": it stays open behind the ⭐ banner.
         e.stopPropagation();
         e.preventDefault();
         close();

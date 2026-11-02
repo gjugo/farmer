@@ -26,8 +26,35 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 
 ### Controls
 
+- **HUD** (laid out like Manor Lords'):
+  - **Top left, farm overview:** icon-and-number chips for 🧑‍🌾 free farmers, 👷 working farmers, 🏠 free home room
+    ("(+1)" while a cottage is being built), 😊 approval, 🐄 livestock and 🧺 **supplies** (days of food left at today's
+    use; in winter the lower of food and firewood, shown with 🪵 when firewood runs out first). Hover or tap a chip for
+    what it is and a breakdown; click it (on a phone: tap again) to open its tab.
+  - **Top centre:** ⭐ the level with its XP bar (hover: XP to the next level and what it unlocks; click: the
+    **Development** window, 🎯 Goals and ⭐ Perks, badged with claimable goals and open perk choices). Under it,
+    **banners** coloured by severity: a perk to choose (blue), the trader tomorrow (blue) or here (amber), a hazard
+    announced (amber) or on now (red); a tap opens its tab. 🕮 next to the level lists the last 30 messages with their day.
+  - **Top right:** the resource bar (the materials chip lights up while placing a building) and 💰 money.
+  - **Bottom right:** the season and "Day 12" (hover or tap: "Summer, day 3 of 4" and the crops you can sow now), and
+    the speed: ⏸ / ▶ ×1 / ⏩ ×4 / ⏭ ×12. The player's pause is separate from the menu's: closing the menu keeps it.
+    The speed isn't saved (loading starts at ×1, playing); debug speeds and the offline catch-up are unchanged.
+  - **Bottom centre, the tool bar:** 🛤️ Paths, 🔨 Build (the construction menu), 👪 Farm (Families · Farmers ·
+    Storage), ⚖️ Trade (Market · Orders · Trader, the Trader tab only while he is announced or here), 📖 Almanac and
+    ⚙️ Menu. A tab's badge shows on its tab and its button.
+  - **Construction menu:** category icons over the tool bar (🪓 Resources · 📦 Storage · 🏠 Homes · 🌾 Farming ·
+    ⚒️ Crafts · 🧹 Demolish), a parchment panel of picture cards above them (each building's own sprite in the current
+    season; hover, or the line under it on a touch screen, gives the name, cost and what is missing; locked cards are
+    grey with 🔒 Lv N; on a phone they scroll sideways), and the 🌱 Soil checkbox above that. It remembers the last
+    category. A building's category is its `category` in its data.
+  - Windows and an object's action panel share one sheet: on the right on a desktop, a full-width bottom sheet above
+    the tool bar on a phone. One at a time.
+- **Keys:** P paths, B build menu, X demolish, F Farm, T Trade, H Almanac, M sound on/off, Space pause, 1/2/3 speed
+  ×1/×4/×12. They do nothing while a dialog or the menu is open. **Esc** closes the topmost thing: a tip or the recent
+  events, then a tool (back to the construction menu if it was picked there), then the construction menu, then a
+  window; with nothing open it opens the pause menu.
 - **Pan:** drag the map, or WASD / arrow keys. **Zoom:** mouse wheel or pinch.
-- **Build:** 🔨 Build → pick an item → click/tap a tile. A green ghost means the spot is valid (and a path from the
+- **Build:** 🔨 Build → a category → a card → click/tap a tile. A green ghost means the spot is valid (and a path from the
   farmhouse reaches it). Esc, right-click or **Cancel** leaves build mode. Each item shows its money cost and the
   **building materials** it takes (🪵 wood, 🪨 stone, 🔩 iron); what you can't pay for is greyed out with what is missing
   ("Needs 4 more 🪵 Wood"), its ghost turns red, and placing it says to buy the rest at the 🏪 Market.
@@ -45,7 +72,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   ($60 + 8 🪵 + 8 🪨). Click one for its panel: level, the pool's used/capacity, what is stored, and **Upgrade** with its
   cost (level 3 needs 🔩 iron) or why it can't be done yet. An upgrade keeps a farmer busy like building. The level
   shows on the map (each level has its own art, plus an "Lv 2" badge). A granary or storehouse holds nothing while it is
-  still a construction site. 🎒 Inventory shows both pools as bars, warns
+  still a construction site. 👪 Farm → 📦 Storage shows both pools as bars, warns
   from 90% and says clearly when one is full. Wherever items come in, only what fits goes in: a harvest is refused
   ("The granary is full: …") and the crop stays ripe in the field; eggs, milk and wool stay in the pen and finished
   goods in their building until there is room (Collect takes what fits and says what is left); a feed pack is refused
@@ -55,10 +82,10 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   orders and starting processing jobs free room at once. Time away only moves goods into pens and buildings, as
   always. Saves from before storage keep everything, even above capacity, but nothing new comes into an over-full
   pool until it is back under; a one-time toast suggests building a granary.
-- **Resource bar:** under the top bar, one chip per category with its total: 🌾 crops (wheat, carrot, potato, corn, barley, flax, cabbage, pumpkin), 🥚 animal
+- **Resource bar:** top right, one chip per category with its total: 🌾 crops (wheat, carrot, potato, corn, barley, flax, cabbage, pumpkin), 🥚 animal
   products (egg, milk, wool), feed, 🧀 goods (cheese, butter, bread, cloth, malt, ale, linen, clothes) and 🪵 materials (wood, stone, iron), plus the
   room used in each pool (goods `used/capacity` after the four goods chips, materials after Materials), green, amber
-  from 90% and red when full, like 🎒 Inventory. Hover a chip (mouse) or tap it for each item's icon and count; Esc or a
+  from 90% and red when full, like 📦 Storage. Hover a chip (mouse) or tap it for each item's icon and count; Esc or a
   tap outside closes it. When a count changes the chip shows **+N** in green or **−N** in red for a moment (harvests,
   sales, building costs, processing). Categories come from `RESOURCE_CATEGORIES` in `src/data/resources.ts`: an item
   falls into one by its `category`, so new items need no change there.
@@ -85,8 +112,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   the Market's buy price. Orders board rewards and the travelling trader are not affected.
 - **Travelling traders:** from level 3, about twice a season (one day in each half of a season) a trader's wagon parks
   for one game day on a free owned tile next to the farmhouse door (or the nearest path tile). He is announced the day
-  before with a toast and a **🛒 Trader tomorrow** chip in the HUD, which becomes **🛒 Trader here** while he stays;
-  tapping the chip or the wagon opens his panel. He buys 2–3 goods the farm can already make (its unlocked crops,
+  before with a toast and a **🛒 Trader tomorrow** banner under the level, which becomes **🛒 Trader here** while he
+  stays; tapping the banner or the wagon opens his tab in ⚖️ Trade. He buys 2–3 goods the farm can already make (its unlocked crops,
   animals' products and processed goods) at +40–80% of base price, each up to a set quantity (about $240 worth), with no
   saturation; and sells 2–3 offers, each with stock: a building material below the Market's buy price (never below what
   the Market pays for it), an unlocked animal at −25% (into a pen with room), and bulk feed. Purchases are capped at the
@@ -185,7 +212,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Soil:** the ground's quality differs across the map, in blobs: **rich** (95%), **normal** (70%) and **poor** (45%).
   It is the same on every load (worked out from a fixed seed, never saved). Rich ground grows lusher grass in every
   season; the starting land has one rich patch, under and in front of the starting fields, and is mostly normal
-  elsewhere. Turn on **🌱 Soil** at the top of 🔨 Build to see the quality over your land (green, yellow, red); while
+  elsewhere. Tick **🌱 Soil** above the 🔨 Build menu's cards to see the quality over your land (green, yellow, red); while
   placing a field its ghost is tinted the same way, tile by tile.
   - **Fertility** (0–100%): a new field starts at the average soil quality of its tiles. A harvest yields
     `round(qty × (0.5 + 0.75 × fertility))`: about ×1.0 on normal soil, ×1.2 rich, ×0.85 poor, ×0.5 when spent.
@@ -204,7 +231,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   starting a batch 20 s, building 15 s per footprint tile (30 s–3 min; paths need no farmer), plus the walk there and
   back. The farm starts with one farmer; more come as families moving into cottages (below), up to 20.
   - **Workplaces:** fields, coops, pastures, processing and resource buildings take one farmer each. Assign one with
-    **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in the 👨‍🌾 Farmers
+    **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in 👪 Farm → 👨‍🌾 Farmers
     sheet, which lists every farmer with their workplace and what they are doing now. A farmer works at one place.
   - **Automatic work:** an assigned farmer does the next job there by themselves. A **field** gets manure when it is
     worn (below 80%, with 4 in stock), is ploughed (in a ploughing season), sown with its **🌱 Crop plan** (a crop,
@@ -249,7 +276,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   +10 when every family had ale (by share), and in winter +10 when every home is warm or up
   to −60 when homes are cold (by the share of cold homes); from level 2, up to +5 when every home has a house garden
   (a share of it when some do). A new farm's families live on their provisions for the
-  first 2 days (no hunger penalty), so nobody leaves before the first harvest. The HUD chip (😊 62%) opens
+  first 2 days (no hunger penalty), so nobody leaves before the first harvest. The overview chip (😊 62%) opens
   **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood, ale and clothes, and when the
   next family comes ("Build a cottage to house another family"); the 👨‍🌾 Farmers sheet shows the same block. A
   cottage puffs chimney smoke on winter days while it has firewood. Arrivals and departures are toasted and listed in
@@ -282,7 +309,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   5–8 summer, 9–12 autumn, 13–16 winter, then round again), so a year takes about 2 hours. The pace is slow on
   purpose: a new player reaches level 2 in 10–15 minutes and level 5 in 2–3 hours (level 5 asks for 5,000 XP: families eat
   part of what the farm makes). The HUD shows the season next to
-  the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
+  the day (bottom right) and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
   which turns every empty field back to unploughed (faded soil); in winter nothing can be ploughed or sown.
   Each crop is sown only in its seasons (see **Crops** above), and only while it will be ripe before they end. A ripe
@@ -298,7 +325,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   in autumn; the HTML HUD is untouched) and weather particles in screen space (snowfall in winter, drifting leaves
   in autumn, a few petals in spring, clear summers), at most 150 and thinner when zoomed out. The look follows the
   game clock: at once on load, New game, debug **Next season** and after time away, with a 1.5 s crossfade when the
-  season comes round while playing. ⚙️ Settings → **Weather effects** turns the particles off (localStorage
+  season comes round while playing. ⚙️ Menu → Settings → **Weather effects** turns the particles off (localStorage
   `farmer.weather`); it starts off when the system asks for reduced motion.
 - **Hazards (events and defences):** from the farm's second season, things go wrong, Manor Lords style, and each has a
   defence. They are decided from a seed saved with the farm and the game clock, inside the work scheduler, so ×1, ×60,
@@ -316,17 +343,17 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   rules count the cold homes). Reach is counted edge to edge (like a woodcutter's lodge's); a defence works once
   built. A drought slows the crops growing when it starts and those sown during it; a well built later helps the next
   crop. Crops keep their progress, so a parched crop never shrinks back a stage. Every warning, loss and defence is a
-  toast; **📖 Almanac** in the HUD lists what is on now, what is coming (announced events, and crows or a fox about
+  toast; **📖 Almanac** in the tool bar (a banner under the level while one is announced or on) lists what is on now, what is coming (announced events, and crows or a fox about
   today), every threat with its defence and the recent losses; the welcome-back summary lists what happened while you
   were away. A parched field is drawn dry and cracked, crows peck on the field they eat, and a harsh winter snows
   heavier (still at most 150 particles). Field and coop panels say "🛡️ Protected by …" or "⚠️ Unprotected: build …";
   the build ghost of a well, scarecrow or kennel shades the tiles it reaches and counts the fields or coops it guards.
   Two goals near the end of the list, before the oxcart goals: **Build a well** and **Protect a coop with a kennel**.
-- **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
+- **Sound:** starts on the first click/tap (browser autoplay rules). **M** mutes everything (with a toast); ⚙️ Menu → Settings has
   Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
   (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
 - **Perks:** every level-up from level 2 to 10 offers **3 perks** as cards in the "Level N!" dialog; pick one and it
-  lasts for good. **Decide later** (or Esc) keeps the choice open: a ⭐ badge on the HUD level reopens it, and several
+  lasts for good. **Decide later** (or Esc) keeps the choice open: a ⭐ banner under the level (and ⭐ Perks → Choose a perk) reopens it, and several
   open choices stack, oldest first. The cards are buttons (Tab or the arrow keys, Enter). The offer is fixed by the
   level and a seed saved with the farm, so a reload never rerolls it; it never repeats a perk already taken, and
   Husbandry, Quick hands and Prospector only turn up once the farm has a pen, a processing building or a resource
@@ -337,7 +364,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   (approval +10, its own line in the breakdown, from the next day), Rich soil (harvests drain the soil 30% less),
   Prospector (lodges, quarries and mines yield 25% more, rounded up) and Quick hands (processing batches 20% faster).
   Each is read through `perkFactor(state, id)` (`src/logic/perks.ts`) at one place in the rules, so live play, ×60 and
-  the offline catch-up agree. The perks taken are listed under **⭐ Perks** in the 🎯 Goals sheet, with a button for
+  the offline catch-up agree. The perks taken are listed in the **⭐ Perks** tab of the Development window (click the level), with a button for
   the open choices. A save from before perks gets one open choice per level it has already reached.
 
 ### Debug mode (QA)
@@ -418,7 +445,7 @@ jobs a set lasts (30) and the speed-up it gives (1.25). Test ids: `farmers-tools
 normal, 45 poor), `overlay` whether the Soil overlay is on. Each field in `window.farm.objects` carries
 `state.fertility` (points when it began resting, or while a crop grows), `state.restingSince` (game ms, null while a
 crop grows) and `state.lastCrop`; the field panel shows the current fertility (`panel-meter-fertility`), and the
-Build menu's toggle is `build-toggle-soil` (`aria-pressed`).
+construction menu's checkbox is `build-toggle-soil` (`checked`).
 `window.farm.hazards` is `{ seed, current, upcoming, log, coverage(x, y), crows, guarded }`: `current` and `upcoming`
 list events as `{ kind: 'harsh-winter' | 'drought' | 'crows' | 'fox', start, end, announcedAt?, target? }` (game ms;
 crows eating name their field in `target`), `log` the last 30 notes newest first as
@@ -428,8 +455,21 @@ the defences reaching a tile (e.g. `['well', 'scarecrow']`), `crows` the crow sp
 `state.parched` / `state.pecked` until it is harvested. The saved slice is `window.farm.ext.hazards`.
 `window.farm.perks` is `{ taken, pending, offer(level) }`: `taken` lists `{ level, id }` of the perks taken,
 `pending` the levels whose choice is still open (oldest first) and `offer(level)` the ids of that level's cards. Test
-ids: `levelup-dialog`, `perk-card-<id>`, `perk-later`, `levelup-ok`, `hud-perk-badge`, `perks-section`, `perk-<id>`,
+ids: `levelup-dialog`, `perk-card-<id>`, `perk-later`, `levelup-ok`, `banner-perk`, `perks-section`, `perk-<id>`,
 `perks-choose`, `debug-reset-perks`.
+`window.farm.hud` is `{ window, tab, sheet, build: { open, category }, speed, paused, banners }`: the window open
+(`development`, `farm`, `trade`, `almanac` or null) and its tab, the sheet shown (a tab's sheet id, `action` for an
+object's panel), the construction menu and its category, the clock speed, the player's pause (⏸) and the ids of the
+banners showing. HUD test ids: `btn-paths`, `btn-build`, `btn-farm`, `btn-trade`, `btn-almanac`, `btn-menu`,
+`btn-level`, `btn-season`, `btn-demolish` (🧹 in the construction menu), `build-menu`, `build-cat-<category>`
+(`resources`, `storage`, `homes`, `farming`, `crafts`), `build-<type>` (cards; `data-locked` with the level while
+locked, `aria-disabled` while locked or unaffordable, `build-cost-<type>`, `build-needs-<type>`), `build-toggle-soil`,
+`tab-<id>` (`goals`, `perks`, `families`, `farmers`, `storage`, `market`, `orders`, `trader`, `almanac`),
+`badge-<tab id>` and `badge-<window>` (`badge-development`, `badge-farm`, `badge-trade`, `badge-almanac`),
+`stat-<id>` (`free`, `working`, `homes`, `approval`, `livestock`, `supplies`; `data-value`), `banner-<id>` (`perk`,
+`trader`, `hazard`; class `banner-info|warn|alert`), `events-log` (🕮) with `events-pop` / `events-list`,
+`speed-pause`, `speed-1`, `speed-4`, `speed-12` (`aria-pressed`), `hud-tip`, `panel`, `panel-title`, `panel-tabs`,
+`panel-close`, `btn-cancel-tool`, `hud-level`, `hud-xp`, `hud-money`, `hud-day`, `hud-season`.
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
@@ -485,7 +525,7 @@ src/
     customers.ts       customer names for orders
   game/              Glue between logic, scene and UI
     context.ts         FarmContext, PanelSpec, ToolState
-    hooks.ts           registerBehavior / registerHudButton / onGameStart / registerSettingsSection / registerDebugInfo
+    hooks.ts           registerBehavior / registerHudButton / registerHotkey / onGameStart / registerSettingsSection / registerDebugInfo
     signals.ts         uiSignals: UI moments that are not state changes (refused action, welcome-back opened)
   scenes/            Phaser scenes
     iso.ts             isometric projection (no Phaser, unit-tested): ISO_W/ISO_H, tile ↔ world, picking, depth order
@@ -496,8 +536,11 @@ src/
     BootScene.ts       loads the pack (progress bar), anchors, animations, composed textures
     FarmScene.ts       ground (one Blitter), scenery, objects, camera, build/demolish input
   ui/                HTML/CSS overlay above the canvas
-    hud.ts             top bar, side sheet (build, inventory, settings, action panel), toasts, dialogs
-    resources.ts       the resource bar under the top bar: category chips, +N/−N flashes, popover, pool room
+    hud.ts             the HUD zones (overview, level and banners, money, season and speed, tool bar), windows
+                       with tabs and the action panel in one sheet, hotkeys and Esc, toasts and recent events, dialogs
+    buildmenu.ts       the construction menu: category icons, picture cards, checkboxes
+    tip.ts             the HUD's hover / tap tooltip
+    resources.ts       the resource bar at the top right: category chips, +N/−N flashes, popover, pool room
     debug.ts           ?debug=1 panel
     menu.ts            home screen and pause menu: save / load / export / import, settings
   features/          One folder per feature, auto-loaded (see below)
@@ -505,13 +548,13 @@ src/
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
     processing/        feed mill, dairy, bakery, loom, blacksmith, malthouse, brewery, tailor (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
-    soil/              the Soil overlay and its Build-menu toggle, the field ghost's soil tint, the field panel's
+    soil/              the Soil overlay and its construction-menu checkbox, the field ghost's soil tint, the field panel's
                        soil block and Spread manure action, `window.farm.soil` (data: src/data/soil.ts)
     seasons/           season-change toasts, the seasonal look (art swap, colour grade, crossfade), weather
                        particles and their setting, `window.farm.season`
-    market/            🏪 Market HUD button: sell panel (flooded marks, confirm before flooding) and Buy section
-    trader/            🛒 travelling trader: the wagon by the farmhouse, the HUD chip, his panel (logic: src/logic/trader.ts)
-    storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade,
+    market/            🏪 Market tab (⚖️ Trade): sell panel (flooded marks, confirm before flooding) and Buy section
+    trader/            🛒 travelling trader: the wagon by the farmhouse, his banner and ⚖️ Trade tab (logic: src/logic/trader.ts)
+    storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade, the 📦 Storage tab,
                        `window.farm.storage`, the one-time notice for old saves; stock piles in the yards
                        (piles.ts, `window.farm.stockpiles`)
     resources/         woodcutter's lodge, quarry, mine: work chips/dust, the yard's pile, panel
@@ -519,13 +562,13 @@ src/
     nature/            trees, stumps, outcrops and veins on the map; the lodge's reach on the build ghost;
                        `window.farm.map`
                        (data: src/data/resourceBuildings.ts, logic: src/logic/resources.ts)
-    orders/            📋 Orders HUD button (with badge) and orders panel
-    families/          😊 approval chip and 👪 Families sheet, cottage smoke and panel, arrival/departure toasts,
+    orders/            📋 Orders tab (⚖️ Trade, with badge) and orders panel
+    families/          🏠 home room, 😊 approval and 🧺 supplies chips, the 👪 Families tab, cottage smoke and panel, arrival/departure toasts,
                        `window.farm.families` (data: src/data/families.ts, logic: src/logic/families.ts)
     gardens/           vegetable patch, hen run (two hens) and orchard (two apple trees): panel, the free homes
                        outlined on the build ghost, the garden line of home panels, `window.farm.gardens`
                        (data: src/data/gardens.ts, logic: src/logic/gardens.ts)
-    workers/           👨‍🌾 Farmers HUD button, workplace sheet (with the tools and the families block), farmers at work on the map,
+    workers/           free / working farmer chips, the 👨‍🌾 Farmers tab (workplace sheet (with the tools and the families block), farmers at work on the map,
                        the worn-out tools toast, `window.farm.workers`, `window.farm.tools`
                        (data: src/data/workers.ts, logic: src/logic/workers.ts and work.ts; hand work goes through
                        `withFarmer`, workplace panels get their farmer block from `workplacePanel`, src/game/workers.ts)
@@ -625,9 +668,20 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 
 ### Other extension points
 
-- **HUD button** (e.g. Market): `registerHudButton({ id, label, icon, onClick: (ctx) => ctx.ui.openPanel(...) })`.
-  Add `badge: (ctx) => n` to show a count on the button (hidden at 0), `visible: (ctx) => bool` to show it only at
-  times (the trader's chip) and `className` for its look (`hud-chip`).
+- **HUD button:** a feature places itself in the HUD with `registerHudButton({ id, label, icon, spot, badge?, live?, visible? })`;
+  `src/ui/hud.ts` lists no features. The `spot` says where:
+  - a **window tab**: `{ kind: 'tab', window: 'development' | 'farm' | 'trade' | 'almanac', order, sheet: (ctx) => SheetSpec }`
+    (e.g. the Market). Its `badge` also counts on the window's button.
+  - a **farm overview chip**: `{ kind: 'chip', order, opens: '<tab id>', detail: (ctx) => lines }`; `live` gives its
+    icon and number, `label` explains it (e.g. supplies).
+  - a **banner** under the level: `{ kind: 'banner', order, opens: '<tab id>', severity: (ctx) => 'info' | 'warn' | 'alert' }`;
+    `live` gives its text, `visible` when it shows (e.g. the trader).
+
+  `badge: (ctx) => n` shows a count (hidden at 0), `visible: (ctx) => bool` shows it only at times. Ids are unique per
+  kind of spot. `ctx.ui.openTab(id)` opens a tab from anywhere (the trader's wagon does). A **hotkey**:
+  `registerHotkey({ key: 'm', label, run: (ctx) => ... })` (blocked while a dialog or the menu is open). A
+  **construction menu checkbox**: `registerBuildMenuToggle({ id, label, icon, isOn, toggle })` (the 🌱 Soil overlay). A
+  new building goes in the menu's tab named by its `category` (`BUILD_CATEGORIES` in `src/data/buildables.ts`).
 - **Global feature state** (e.g. market prices): `registerStateSlice('market', () => ({ ... }))`
   and `getSlice(game.state, 'market')`. Defaults are merged into old saves. A slice that saves tile coordinates passes
   a third argument, `(saved, dx, dy) => moved`, so save migrations that move the farm on the map move them too.
@@ -675,9 +729,9 @@ Version 14 added tools: every farmer of an older save gets an empty tool slot (`
   farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the
   welcome-back summary then, not before), **New game** (asks first when a farm exists), **Load game** and
   **Settings** (sound, weather, …). The clock does not run on the home screen and nothing is autosaved there.
-- **Pause menu:** ☰ **Menu** in the HUD, or **Esc** when no tool, panel or dialog is open (Esc still cancels a tool
-  or closes a panel first; in the menu it goes back, then resumes). Resume, Save game, Load game, New game, Settings
-  and Quit to title. The game is paused while it is open, and the hidden-tab and page-close saves keep working.
+- **Pause menu:** ⚙️ **Menu** in the tool bar, or **Esc** when nothing else is open (Esc still cancels a tool
+  or closes a menu or window first; in the menu it goes back, then resumes). Resume, Save game, Load game, New game, Settings
+  and Quit to title. The game is paused while it is open, and the hidden-tab and page-close saves keep working. Resume keeps the player's own ⏸ pause.
 - **Save slots** (`src/logic/slots.ts`): 3 manual slots in `farmer.slot.1`–`farmer.slot.3`, beside the autosave,
   each showing day, season, farm level, money and when it was saved ("Empty" otherwise). **Save game** writes the
   current farm into a slot (overwriting asks first). **Load game** lists the Autosave and the slots; loading asks first,

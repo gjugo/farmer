@@ -511,7 +511,6 @@ export class FarmScene extends Phaser.Scene {
     this.input.mouse?.disableContextMenu();
     const kb = this.input.keyboard!;
     this.keys = kb.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT', true, true) as typeof this.keys;
-    kb.on('keydown-ESC', () => this.ctx.tools.cancel());
 
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.onPointerDown, this);
     this.input.on(Phaser.Input.Events.POINTER_MOVE, this.onPointerMove, this);

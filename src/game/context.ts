@@ -88,10 +88,12 @@ export interface UiApi {
   openPanel(build: PanelBuilder): void;
   /** Opens a custom sheet, or closes it when a sheet with the same id is already open. */
   toggleSheet(sheet: SheetSpec): void;
+  /** Opens the window that holds the tab `id` (a `registerHudButton` tab, e.g. `trader`) on that tab. */
+  openTab(id: string): void;
   closePanel(): void;
   /** Modal confirm dialog. Resolves true when confirmed. */
   confirm(title: string, message: string, options?: ConfirmOptions): Promise<boolean>;
-  /** Opens the oldest open perk choice (the ⭐ badge on the level does the same); nothing when none is open. */
+  /** Opens the oldest open perk choice (⭐ Perks → Choose a perk does the same); nothing when none is open. */
   openPerkChoice(): void;
 }
 

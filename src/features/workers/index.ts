@@ -13,6 +13,7 @@ import { onToolsWornOut, toolOf, toolsSummary } from '../../logic/tools';
 import { siteProgress, sitesOf } from '../../logic/work';
 import {
   assignFarmer,
+  busyFarmers,
   freeFarmers,
   isWorkplaceType,
   jobPhase,
@@ -178,8 +179,35 @@ registerHudButton({
   id: 'farmers',
   label: 'Farmers',
   icon: '👨‍🌾',
-  onClick: (ctx) => ctx.ui.toggleSheet(farmersSheet(ctx)),
-  live: (ctx) => ({ icon: '👨‍🌾', label: `Farmers ${freeFarmers(ctx.game.state)}/${workersOf(ctx.game.state).farmers}` }),
+  spot: { kind: 'tab', window: 'farm', order: 20, sheet: farmersSheet },
+});
+
+/** "3 at a workplace · 1 building" for the farmer chips. */
+function farmerBreakdown(game: Game): string[] {
+  const w = workersOf(game.state);
+  const assigned = w.workplaces.filter(Boolean).length;
+  const sites = sitesOf(game.state).length;
+  return [
+    `${w.farmers} ${w.farmers === 1 ? 'farmer' : 'farmers'}: ${busyFarmers(game.state)} at work now, ${freeFarmers(game.state)} free`,
+    `${assigned} with a workplace, ${w.farmers - assigned} without`,
+    sites ? `${sites} construction ${sites === 1 ? 'site' : 'sites'} waiting for a builder` : 'No construction waiting',
+  ];
+}
+
+registerHudButton({
+  id: 'free',
+  label: 'Free farmers: resting, ready for the next job',
+  icon: '🧑‍🌾',
+  spot: { kind: 'chip', order: 10, opens: 'farmers', detail: (ctx) => farmerBreakdown(ctx.game) },
+  live: (ctx) => ({ icon: '🧑‍🌾', label: String(freeFarmers(ctx.game.state)) }),
+});
+
+registerHudButton({
+  id: 'working',
+  label: 'Working farmers: busy with a job now',
+  icon: '👷',
+  spot: { kind: 'chip', order: 20, opens: 'farmers', detail: (ctx) => farmerBreakdown(ctx.game) },
+  live: (ctx) => ({ icon: '👷', label: String(busyFarmers(ctx.game.state)) }),
 });
 
 /** The running game, for the debug info (set at game start). */
@@ -368,7 +396,7 @@ registerBehavior<Record<string, unknown>>(FARMHOUSE, {
       lines: [
         `Home of your ${farmers === 1 ? 'farmer' : `${farmers} farmers`}; ${free} resting on the bench out front.`,
         'Farmers walk out of the door along paths. Lay a path from the door to every field, pen and building you want worked.',
-        'Give farmers a workplace in 👨‍🌾 Farmers or from the workplace itself.',
+        'Give farmers a workplace in 👪 Farm → 👨‍🌾 Farmers or from the workplace itself.',
       ],
       hint: homeGardenLine(ctx.game, obj),
     };

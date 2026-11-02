@@ -9,7 +9,7 @@ import { withIcons } from '../../ui/icons';
  * Rules and progress live in `src/logic/progression.ts`, the list in `src/data/progression.ts`.
  */
 
-/** The perks taken, each with what it does, and a button for the choices still open. Shown at the bottom of the Goals sheet. */
+/** The perks taken, each with what it does, and a button for the choices still open: the Perks tab. */
 function perksSection(ctx: FarmContext): HTMLElement[] {
   const { perks } = ctx.game;
   const pending = perks.pending.length;
@@ -17,12 +17,23 @@ function perksSection(ctx: FarmContext): HTMLElement[] {
     const def = getPerk(t.id);
     return def ? [{ def, level: t.level }] : [];
   });
-  if (!taken.length && !pending) return [];
   return [
     h(
       'section',
       { class: 'perks-section', 'data-testid': 'perks-section' },
-      h('h3', { class: 'group-title' }, '⭐ Perks'),
+      pending
+        ? h(
+            'button',
+            {
+              type: 'button',
+              class: 'btn',
+              'data-testid': 'perks-choose',
+              onclick: () => ctx.ui.openPerkChoice(),
+            },
+            pending === 1 ? '⭐ Choose a perk' : `⭐ Choose a perk (${pending} waiting)`,
+          )
+        : null,
+      h('h3', { class: 'group-title' }, 'Taken'),
       taken.length
         ? h(
             'ul',
@@ -40,18 +51,6 @@ function perksSection(ctx: FarmContext): HTMLElement[] {
               ),
           )
         : h('p', { class: 'empty' }, 'No perks yet: each level-up from level 2 lets you pick one.'),
-      pending
-        ? h(
-            'button',
-            {
-              type: 'button',
-              class: 'btn',
-              'data-testid': 'perks-choose',
-              onclick: () => ctx.ui.openPerkChoice(),
-            },
-            pending === 1 ? '⭐ Choose a perk' : `⭐ Choose a perk (${pending} waiting)`,
-          )
-        : null,
     ),
   ];
 }
@@ -62,11 +61,8 @@ function goalsSheet(ctx: FarmContext): SheetSpec {
   return {
     id: 'goals',
     title: () => '🎯 Goals',
-    signature: () => JSON.stringify([progression.goals().map((g) => [g.def.id, g.progress]), game.perks.taken, game.perks.pending]),
-    render: (body) => {
-      renderGoals(body);
-      body.append(...perksSection(ctx));
-    },
+    signature: () => JSON.stringify(progression.goals().map((g) => [g.def.id, g.progress])),
+    render: (body) => renderGoals(body),
   };
 
   function renderGoals(body: HTMLElement): void {
@@ -143,10 +139,40 @@ function goalsSheet(ctx: FarmContext): SheetSpec {
   }
 }
 
+function perksSheet(ctx: FarmContext): SheetSpec {
+  const { perks } = ctx.game;
+  return {
+    id: 'perks',
+    title: () => '⭐ Perks',
+    signature: () => JSON.stringify([perks.taken, perks.pending]),
+    render: (body) => body.append(...perksSection(ctx)),
+  };
+}
+
 registerHudButton({
   id: 'goals',
   label: 'Goals',
   icon: '🎯',
-  onClick: (ctx) => ctx.ui.toggleSheet(goalsSheet(ctx)),
+  spot: { kind: 'tab', window: 'development', order: 10, sheet: goalsSheet },
   badge: (ctx) => ctx.game.progression.claimable(),
+});
+
+registerHudButton({
+  id: 'perks',
+  label: 'Perks',
+  icon: '⭐',
+  spot: { kind: 'tab', window: 'development', order: 20, sheet: perksSheet },
+  badge: (ctx) => ctx.game.perks.pending.length,
+});
+
+registerHudButton({
+  id: 'perk',
+  label: 'A perk to choose',
+  icon: '⭐',
+  spot: { kind: 'banner', order: 10, opens: 'perks', severity: () => 'info' },
+  visible: (ctx) => ctx.game.perks.pending.length > 0,
+  live: (ctx) => {
+    const n = ctx.game.perks.pending.length;
+    return { icon: '⭐', label: n === 1 ? 'A perk to choose' : `${n} perks to choose` };
+  },
 });
