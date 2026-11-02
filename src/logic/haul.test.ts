@@ -7,7 +7,6 @@ import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { START_LAYOUT } from './constants';
 import { Game } from './game';
 import { barnWait, buyOx, cartsOf, goodsOnCarts, legEnds, planHaul, sanitizeBarn, tripsOf, type BarnState, type HaulTrip } from './haul';
-import { setOwned } from './land';
 import { addDeposit, addTrees, inRange, mapOf } from './maplayer';
 import { catchUp } from './offline';
 import type { ProcessorState } from './processing';
@@ -25,12 +24,10 @@ const HOUR = 60 * MIN;
 const X = START_LAYOUT.x;
 const Y = START_LAYOUT.y;
 
-/** A top-level farm owning the whole map, with plenty of money, food for its families and no materials. */
+/** A top-level farm, with plenty of money, food for its families and no materials. */
 function farm(farmers = 1): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   game.state.inventory = { wheat: 10, carrot: 10 };
   for (let i = 1; i < farmers; i++) addFarmer(game);
   return game;
@@ -419,7 +416,7 @@ describe('saves', () => {
     const raw = JSON.parse(serialize(game.state));
     raw.version = 12;
     const loaded = new Game(parseSave(JSON.stringify(raw)).state);
-    expect(SAVE_VERSION).toBe(14);
+    expect(SAVE_VERSION).toBe(15);
     const obj = loaded.getObject(lodge.id)!;
     expect(obj.state.waiting).toBe(7);
     // Not full yet: the farmer works on, and the yard fills up and is carried in. Nothing was lost.

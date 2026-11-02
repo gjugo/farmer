@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { registerBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { SOIL_QUALITY } from '../data/soil';
-import { START_LAND } from './constants';
-import { Game } from './game';
+import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
+import { footprintOf, Game } from './game';
+import { MAP_SLICE, mapOf } from './maplayer';
+import { canPlace } from './placement';
 import { deserialize, loadFromStorage, loadSave, parseSave, SAVE_KEY, SAVE_VERSION, saveToStorage, serialize, type SaveStorage } from './save';
 import { getSlice, registerStateSlice } from './slices';
 import { GOALS } from '../data/progression';
@@ -36,7 +38,6 @@ describe('save / load', () => {
     g.addItem('egg', 10);
     g.place('path', ix, iy);
     g.place('path', ix + 1, iy);
-    g.setLandOwned(0, 0, true);
     g.setSpeed(60);
     for (let i = 0; i < 100; i++) g.tick(250); // 1.5M game ms ≈ day 7
 
@@ -53,7 +54,7 @@ describe('save / load', () => {
       ['path', ix, iy],
       ['path', ix + 1, iy],
     ]);
-    expect(loaded.land.owned[0]).toBe(1);
+    expect(loaded.land).toEqual({ width: MAP_WIDTH, height: MAP_HEIGHT });
     expect(loaded.clock.elapsed).toBe(g.state.clock.elapsed);
     expect(new Game(loaded).day).toBe(g.day);
     expect(g.day).toBeGreaterThan(1);
@@ -146,7 +147,7 @@ describe('save / load', () => {
     b.state = { crop: 'wheat', timer: { start: 0, duration: 480_000 }, ploughedAt: 0 };
     const loaded = parseSave(JSON.stringify({ version: 9, savedAt: 1, state })).state;
     const fields = loaded.objects.filter((o) => o.type === FIELD);
-    expect(SAVE_VERSION).toBe(14);
+    expect(SAVE_VERSION).toBe(15);
     expect(fields[0].state).toEqual({ crop: null, timer: null, ploughedAt: 0, fertility: SOIL_QUALITY.rich, restingSince: 5000, lastCrop: null });
     expect(fields[1].state).toMatchObject({ crop: 'wheat', fertility: SOIL_QUALITY.rich, restingSince: null, lastCrop: null });
     expect(fields.map((f) => f.state.fertility)).toEqual(fields.map((f) => areaSoil({ x: f.x, y: f.y, w: 2, h: 2 })));
@@ -163,6 +164,51 @@ describe('save / load', () => {
     expect(GOALS[next(13)].id).toBe('house-families');
     expect(GOALS[next(14)].id).toBe('spread-manure');
     expect(GOALS[next(15)].id).toBe('earn-1000');
+  });
+
+  it('opens the whole map to a version 14 save, bought land or not, and moves nothing', () => {
+    const state = createNewGame();
+    // Version 14 owned land tile by tile: the starting land plus a bought block to its left.
+    const owned = new Array<number>(MAP_WIDTH * MAP_HEIGHT).fill(0);
+    const own = (x0: number, y0: number, w: number, h: number) => {
+      for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) owned[y * MAP_WIDTH + x] = 1;
+    };
+    own(START_LAND.x, START_LAND.y, START_LAND.w, START_LAND.h);
+    own(START_LAND.x - 12, START_LAND.y, 12, START_LAND.h);
+    const raw = JSON.parse(JSON.stringify({ version: 14, savedAt: 1, state: { ...state, land: { width: MAP_WIDTH, height: MAP_HEIGHT, owned } } }));
+    const loaded = parseSave(JSON.stringify(raw)).state;
+    expect(loaded.land).toEqual({ width: MAP_WIDTH, height: MAP_HEIGHT });
+    // The same trees, deposits and buildings.
+    expect(mapOf(loaded)).toEqual(raw.state.ext[MAP_SLICE]);
+    expect(loaded.objects).toEqual(raw.state.objects);
+    // Land that was never bought takes buildings now: the far corner, and a tile next to the bought block.
+    const free = (x: number, y: number) =>
+      !loaded.objects.some((o) => x >= o.x && y >= o.y && x < o.x + footprintOf(o).w && y < o.y + footprintOf(o).h) &&
+      canPlace(loaded, { w: 1, h: 1 }, x, y, footprintOf).ok;
+    let tiles = 0;
+    for (let y = 0; y < MAP_HEIGHT; y++) for (let x = 0; x < MAP_WIDTH; x++) if (owned[y * MAP_WIDTH + x] === 0 && free(x, y)) tiles++;
+    // Most of the unbought land is open (the rest under trees, deposits and ponds).
+    expect(tiles).toBeGreaterThan(MAP_WIDTH * MAP_HEIGHT * 0.6);
+    expect(loaded.money).toBe(state.money);
+  });
+
+  it('a version 14 save with "Buy a plot of land" active gets "Own 10 fields" in its slot', () => {
+    const state = createNewGame();
+    const p = getSlice<ProgressionState>(state, PROGRESSION);
+    p.goals = [
+      { id: 'earn-1000', progress: 400 },
+      { id: 'buy-land', progress: 0 },
+      { id: 'build-woodcutter', progress: 0 },
+    ];
+    p.nextGoal = GOALS.findIndex((g) => g.id === 'build-woodcutter') + 1;
+    const loaded = getSlice<ProgressionState>(parseSave(JSON.stringify({ version: 14, savedAt: 1, state })).state, PROGRESSION);
+    expect(loaded.goals.map((g) => g.id)).toEqual(['earn-1000', 'own-10-fields', 'build-woodcutter']);
+    expect(loaded.goals[0].progress).toBe(400);
+    expect(loaded.nextGoal).toBe(p.nextGoal);
+    // The slot did not move: "Own 10 fields" stands where "Buy a plot of land" stood, between the same goals.
+    const at = GOALS.findIndex((g) => g.id === 'own-10-fields');
+    expect([GOALS[at - 1].id, GOALS[at + 1].id]).toEqual(['earn-1000', 'build-woodcutter']);
+    expect(GOALS[at]).toMatchObject({ title: 'Own 10 fields', kind: 'own-buildings', type: FIELD, count: 10, reward: { money: 200, xp: 75 } });
   });
 
   it('falls back to a new game for missing, corrupt or unknown saves', () => {

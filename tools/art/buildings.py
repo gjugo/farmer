@@ -552,32 +552,6 @@ def market_stall():
     return c
 
 
-# ================================================================== FOR SALE sign 1x1
-def for_sale():
-    c = bcanvas(1, 1, top=280)
-    WOOD = "#b57a43"
-    y = 0.55
-    for x in (0.24, 0.76):
-        c.box(x - 0.035, y - 0.035, 0, x + 0.035, y + 0.035, 0.86, shade(WOOD, 0.2), WOOD, shade(WOOD, -0.2), sw=2)
-    pl = Plane(c, "y", y + 0.04)
-    pl.rect(0.1, 0.9, 0.4, 0.82, c.lin([(0, "#fffaf0"), (1, "#efe2c8")]), sw=3)
-    pl.rect(0.14, 0.86, 0.44, 0.78, "none", stroke="#d9483b", sw=3)
-    for txt, z, size in (("FOR", 0.63, 22), ("SALE", 0.48, 27)):
-        ex, ey = pl.P(0.5, z)
-        c.text(0, 0, txt, size, "#d9483b", transform=f"matrix(1,0.5,0,1,{f2(ex)},{f2(ey)})")
-    c.shadow_pts([(0.1, y, 0.4), (0.9, y, 0.4), (0.1, y, 0.82), (0.9, y, 0.82), (0.2, y, 0), (0.8, y, 0)])
-    p = pl.P(0.9, 0.4, 0.0)
-    c.line(p, (p[0], p[1] + 14), OUT, 2)
-    c.circle(p[0], p[1] + 25, 12, "#f6c945", OUT, 2.5)
-    c.text(p[0], p[1] + 31, "$", 15, "#b07d12")
-    rnd = random.Random(1)
-    for x in (0.24, 0.76):
-        for k in range(3):
-            q = c.P(x + rnd.uniform(-0.06, 0.06), y + rnd.uniform(-0.02, 0.08))
-            c.path(f"M{f2(q[0])},{f2(q[1])} q-2,-10 -6,-14 M{f2(q[0])},{f2(q[1])} q3,-10 8,-12", "none", "#5fae3e", 3)
-    return c
-
-
 # ================================================================== FARMHOUSE 2x2
 FARMHOUSE_BENCH = (0.3, 0.98, 1.6, 1.78, 0.14)   # x0, x1, y0, y1, seat height: where idle farmers sit
 
@@ -957,5 +931,4 @@ def build():
     image("buildings", "quarry", quarry(), (2, 2), notes="stone quarry: stepped rock face, crane and cut blocks, 2x2")
     image("buildings", "mine", mine(), (2, 2), notes="iron mine: hill with a timber-framed tunnel, rails and an ore cart, 2x2")
     image("buildings", "farmhouse", farmhouse(), (2, 2), notes="farmhouse, 2x2: door at x 1.3 on the front-left (+y) face, bench for idle farmers in front")
-    image("buildings", "for_sale_sign", for_sale(), (1, 1), notes="'for sale' sign for unowned plots, 1x1")
     image("buildings", "cottage", cottage(), (2, 2), notes="cottage, 2x2: a home for one family, chimney at the back left (smoke drawn by the game)")

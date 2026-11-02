@@ -8,7 +8,7 @@
  * - Meadow: plain grass on about 60% of the tiles; the rest are special tiles (clover, flowers, ...) that come in
  *   patches, following low-frequency noise. Winter has its own specials (grass tips in the snow, a small drift).
  * - Tint (a multiply): gentle colour patches from the noise, the soil showing through (rich lusher, poor drier;
- *   stronger than the noise), the zone's shade and locked land darkened and muted.
+ *   stronger than the noise) and the zone's shade.
  */
 
 import { SEASONS, type Season } from '../data/seasons';
@@ -165,14 +165,6 @@ export const ZONE_TINT: Record<GroundZone, Record<Season, number>> = {
   wet: { spring: 0xdcecdc, summer: 0xdcecdc, autumn: 0xe4e8d8, winter: 0xeef4fc },
 };
 
-/** Locked land: darkened and muted (green taken down most) over whatever ground is there. */
-export const LOCKED_TINT: Record<Season, number> = {
-  spring: 0xc4b4c8,
-  summer: 0xc4b4c8,
-  autumn: 0xc8bcc4,
-  winter: 0xd6dcea,
-};
-
 /**
  * The zone shade of tile (x, y): its own zone's tint averaged with its 8 neighbours' (its own counting 4 times), so the
  * forest floor and wet meadow fade out over a tile instead of stopping at a tile edge.
@@ -191,10 +183,9 @@ export function zoneShade(x: number, y: number, zoneAt: (x: number, y: number) =
   return [sum[0] / n, sum[1] / n, sum[2] / n];
 }
 
-/** The tint a ground tile is drawn with: noise × soil × zone shade × locked, as one multiply. */
-export function groundTint(x: number, y: number, quality: number, zone: GroundZone, locked: boolean, season: Season, shade?: Rgb): number {
+/** The tint a ground tile is drawn with: noise × soil × zone shade, as one multiply. */
+export function groundTint(x: number, y: number, quality: number, zone: GroundZone, season: Season, shade?: Rgb): number {
   const parts = [noiseTint(x, y, season), rgbOf(soilTint(quality, season)), shade ?? rgbOf(ZONE_TINT[zone][season])];
-  if (locked) parts.push(rgbOf(LOCKED_TINT[season]));
   return tintOf(parts.reduce((a, b) => [a[0] * b[0], a[1] * b[1], a[2] * b[2]]));
 }
 
@@ -211,10 +202,9 @@ export function groundLook(
   y: number,
   quality: number,
   zone: GroundZone,
-  locked: boolean,
   season: Season,
   zoneAt?: (x: number, y: number) => GroundZone,
 ): GroundLook {
   const shade = zoneAt ? zoneShade(x, y, zoneAt, season) : undefined;
-  return { art: `${groundVariant(x, y, zone, season)}_${season}`, tint: groundTint(x, y, quality, zone, locked, season, shade), zone };
+  return { art: `${groundVariant(x, y, zone, season)}_${season}`, tint: groundTint(x, y, quality, zone, season, shade), zone };
 }

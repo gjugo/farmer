@@ -24,7 +24,6 @@ export const AUDIO_CREDITS: readonly AudioCredit[] = [
   { key: "order", title: "handleCoins2 (Kenney 'Rpg Audio' pack) + 100 CC0 SFX - bell_02", author: "Kenney (kenney.nl) + rubberduck", url: "https://kenney.nl/assets/rpg-audio", license: "CC0" },
   { key: "goal", title: "Pleasing Bell Sound Effect", author: "Spring Spring", url: "https://opengameart.org/content/pleasing-bell-sound-effect", license: "CC0" },
   { key: "levelup", title: "jingles_PIZZI07 (pizzicato strings) (Kenney 'Music Jingles' pack)", author: "Kenney (kenney.nl)", url: "https://kenney.nl/assets/music-jingles", license: "CC0" },
-  { key: "land", title: "100 CC0 SFX - paper_01 + bookPlace1 (Kenney 'Rpg Audio' pack)", author: "rubberduck + Kenney (kenney.nl)", url: "https://opengameart.org/content/100-cc0-sfx", license: "CC0" },
   { key: "refused", title: "impactSoft_heavy_000 (Kenney 'Impact Sounds' pack)", author: "Kenney (kenney.nl)", url: "https://kenney.nl/assets/impact-sounds", license: "CC0" },
   { key: "welcome", title: "Bell dings/chimes - bell_ding1", author: "PWL", url: "https://opengameart.org/content/bell-dingschimes", license: "CC0" },
   { key: "cluck", title: "Hen announcing shes lain an egg.ogg", author: "alys (pdsounds.org)", url: "https://commons.wikimedia.org/wiki/File:Hen_announcing_shes_lain_an_egg.ogg", license: "Public Domain" },

@@ -3,7 +3,6 @@ import '../data/animals';
 import '../data/resourceBuildings';
 import { buyAnimal, type PenState } from '../logic/animals';
 import { Game } from '../logic/game';
-import { setOwned } from '../logic/land';
 import { maxLevelState } from '../logic/test-utils';
 import type { PlacedObject } from '../logic/types';
 import type { Job } from '../logic/workers';
@@ -12,8 +11,6 @@ import { carriedItem, farmerLoad } from './workers';
 function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 

@@ -146,8 +146,8 @@ export function runStartHooks(ctx: FarmContext): void {
 }
 
 /**
- * Handles a tap on a tile without an object, in normal mode (e.g. a "For sale" sign
- * on locked land). Return true when handled; otherwise the open panel is closed.
+ * Handles a tap on a tile without an object, in normal mode (e.g. a marker a feature draws
+ * on the ground). Return true when handled; otherwise the open panel is closed.
  */
 export type TileTapHandler = (ctx: FarmContext, x: number, y: number) => boolean | void;
 

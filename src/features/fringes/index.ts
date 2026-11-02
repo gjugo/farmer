@@ -14,8 +14,7 @@ import { fringeTiles, type FringeTile } from './layout';
  * Grass fringes: a strip of grass tufts hanging over each edge of a path or field tile that borders open grass, so
  * the ground's hard diamond edges look grown over (which edges: `fringeTiles` in `./layout.ts`; the art: `fringe_*`,
  * see tools/ludo/README.md). All of them are one Blitter over the paths and fields and under every shadow and
- * walker; it is laid out again only when an object is built or demolished, land is bought, the game is reset or the
- * season changes. `window.farm.fringes` for QA.
+ * walker; it is laid out again only when an object is built or demolished, the game is reset or the season changes. `window.farm.fringes` for QA.
  */
 
 onGameStart((ctx) => {
@@ -30,7 +29,7 @@ onGameStart((ctx) => {
   let dirty = true;
   const key = (x: number, y: number) => `${x},${y}`;
 
-  /** A fringe is the neighbouring grass hanging over: it takes that tile's tint (colour patches, soil, zone, locked land). */
+  /** A fringe is the neighbouring grass hanging over: it takes that tile's tint (colour patches, soil, zone). */
   const tintOf = (x: number, y: number) => scene.groundTintAt(x, y);
 
   const layout = () => {
@@ -60,8 +59,8 @@ onGameStart((ctx) => {
   };
 
   const changed = () => (dirty = true);
-  for (const event of ['objectAdded', 'objectRemoved', 'land', 'reset'] as const) game.events.on(event, changed);
-  // Laid out at most once a frame (buying a parcel announces every tile), and again when the farm's look changes season.
+  for (const event of ['objectAdded', 'objectRemoved', 'reset'] as const) game.events.on(event, changed);
+  // Laid out at most once a frame, and again when the farm's look changes season.
   scene.events.on(Phaser.Scenes.Events.UPDATE, () => {
     if (dirty || drawn !== artSeason()) layout();
   });

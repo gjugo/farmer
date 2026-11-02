@@ -15,14 +15,11 @@ import {
   type ProcessorState,
 } from './processing';
 import { deserialize, serialize } from './save';
-import { setOwned } from './land';
 import type { PlacedObject } from './types';
 
 function setup(type: keyof typeof PROCESSORS = 'dairy') {
   const game = new Game(maxLevelState());
   game.earn(10_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   const placed = game.place(type, 0, 0);
   if (!placed.ok) throw new Error(`could not place ${type}: ${placed.reason}`);
   return { game, obj: placed.object as unknown as PlacedObject<ProcessorState> };

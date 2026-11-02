@@ -13,7 +13,6 @@ import { DAY_MS, START_LAND } from './constants';
 import { harvest, harvestYield, plant, type FieldState } from './crops';
 import { addFamily, approvalOf, familiesOf, type DayNeeds } from './families';
 import { Game } from './game';
-import { setOwned } from './land';
 import { buyPrice, dailyPrice, sell, sellPrice } from './market';
 import { catchUp } from './offline';
 import { choosePerk, initPerks, offerFor, perkFactor, perksOf, queueChoice, resetPerks } from './perks';
@@ -35,12 +34,10 @@ function give(state: GameState, id: PerkId, level = 2 + perksOf(state).taken.len
   perksOf(state).taken.push({ level, id });
 }
 
-/** A top-level farm owning the whole map, with plenty of money and materials. */
+/** A top-level farm, with plenty of money and materials. */
 function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 

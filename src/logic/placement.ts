@@ -1,4 +1,4 @@
-import { inBounds, isOwned } from './land';
+import { inBounds } from './land';
 import type { GameState, PlacedObject } from './types';
 
 export interface Footprint {
@@ -7,9 +7,9 @@ export interface Footprint {
 }
 
 /** Why a spot is refused by a placement rule a feature registered (see `registerPlacementRule`). */
-export type RuleReason = 'tree' | 'deposit' | 'needs-outcrop' | 'needs-vein' | 'needs-home' | 'home-has-garden';
+export type RuleReason = 'tree' | 'deposit' | 'needs-outcrop' | 'needs-vein' | 'needs-home' | 'home-has-garden' | 'pond';
 
-export type PlacementResult = { ok: true } | { ok: false; reason: 'out-of-bounds' | 'locked' | 'occupied' | RuleReason };
+export type PlacementResult = { ok: true } | { ok: false; reason: 'out-of-bounds' | 'occupied' | RuleReason };
 
 /**
  * A rule beyond land and objects, e.g. trees and deposits on the map (`src/logic/maplayer.ts`): the reason the
@@ -43,7 +43,7 @@ export function objectAt(state: GameState, x: number, y: number, footprintOf: Fo
   return state.objects.find((o) => covers(o, footprintOf(o), x, y));
 }
 
-/** A footprint can be placed when every tile is inside the map, owned and free, and no placement rule refuses it. */
+/** A footprint can be placed when every tile is inside the map and free, and no placement rule refuses it. */
 export function canPlace(
   state: GameState,
   fp: Footprint,
@@ -53,10 +53,7 @@ export function canPlace(
   type?: string,
 ): PlacementResult {
   for (let ty = y; ty < y + fp.h; ty++) {
-    for (let tx = x; tx < x + fp.w; tx++) {
-      if (!inBounds(state.land, tx, ty)) return { ok: false, reason: 'out-of-bounds' };
-      if (!isOwned(state.land, tx, ty)) return { ok: false, reason: 'locked' };
-    }
+    for (let tx = x; tx < x + fp.w; tx++) if (!inBounds(state.land, tx, ty)) return { ok: false, reason: 'out-of-bounds' };
   }
   const overlaps = state.objects.some((o) => {
     const ofp = footprintOf(o);

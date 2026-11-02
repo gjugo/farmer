@@ -50,7 +50,7 @@ export interface DecorGround {
   height: number;
   /** A tree (grown or a stump) stands here: the forest. */
   tree(x: number, y: number): boolean;
-  /** Nothing ever grows here (deposits, the locked land's bushes and ponds). */
+  /** Nothing ever grows here (deposits, the wild's bushes and ponds). */
   blocked(x: number, y: number): boolean;
 }
 
@@ -149,7 +149,3 @@ export function decorArt(spot: DecorSpot, season: Season): string {
   }
 }
 
-/** Whether a spot shows: never on a covered tile; the meadow only on the farm's own (grass) land. */
-export function decorVisible(spot: DecorSpot, owned: boolean, covered: boolean): boolean {
-  return !covered && (spot.role === 'undergrowth' || owned);
-}

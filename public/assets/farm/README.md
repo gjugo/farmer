@@ -15,7 +15,7 @@ You can use, modify and ship these in commercial games. No attribution required.
   crops/      wheat, carrot, corn x 4 stages (0 seeded, 1 sprout, 2 growing, 3 ripe)
   animals/    cow, sheep, chicken sprite sheets (idle, walk, eat x 4 directions)
   buildings/  barn 4x4, chicken_coop 3x3, feed_mill 2x2 (+ animated sails), dairy 3x2,
-              bakery 3x2, weaving_hut 2x2, market_stall 2x1, for_sale_sign 1x1
+              bakery 3x2, weaving_hut 2x2, market_stall 2x1
   props/      trees, bushes, rocks, hay, crates, sacks, milk can
   icons/      egg, milk, wool, feed, cheese, butter, bread, cloth, wheat, carrot, corn, coins
 manifest.json   sizes, anchors, footprints, animation frame ranges for every asset
@@ -71,7 +71,7 @@ the mill). `feed_mill_static` has the sails baked in if you don't need the anima
 ## Unowned land
 
 Use `unowned_0` / `unowned_1` tiles for land the player hasn't bought, or lay
-`overlay_locked` over any tile. `for_sale_sign` marks a plot for purchase.
+`overlay_locked` over any tile. (The game has no land to buy: the whole map is the farm's.)
 `overlay_cursor_ok` / `overlay_cursor_bad` are hover cursors.
 
 ## Running the demo

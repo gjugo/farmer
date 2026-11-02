@@ -5,7 +5,6 @@ import { buyAnimal, collect, feedAll, type PenState } from './animals';
 import { DAY_MS, MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { checkFertilise, fertilise, fertilityOf, fieldSoil, harvest, harvestYield, plant, STARTING_FIELDS, type FieldState } from './crops';
 import { Game } from './game';
-import { setOwned } from './land';
 import { catchUp } from './offline';
 import { SEASON_MS } from './seasons';
 import { afterHarvest, areaSoil, drainOf, restedFertility, soilAt, soilBand, START_PATCH, yieldAt } from './soil';
@@ -16,12 +15,10 @@ import { assignFarmer, PLAN_FALLOW, setCropPlan } from './workers';
 
 const field = (game: Game, i = 0) => game.objectsOfType(FIELD)[i] as PlacedObject<FieldState>;
 
-/** A top-level farm owning the whole map, with plenty of money and a big granary and storehouse (empty). */
+/** A top-level farm, with plenty of money and a big granary and storehouse (empty). */
 function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   for (const [type, x] of [['granary', 0], ['storehouse', 2]] as const) {
     const r = game.place(type, x, 0);
     if (!r.ok) throw new Error(r.reason);

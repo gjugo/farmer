@@ -3,11 +3,10 @@ import { SEASONS, type Season } from '../../data/seasons';
 import { onGameStart, registerDebugInfo } from '../../game/hooks';
 import type { Game } from '../../logic/game';
 import { footprintOf } from '../../logic/game';
-import { isOwned } from '../../logic/land';
 import { depositAt, mapOf, treeAt, type MapLayer } from '../../logic/maplayer';
 import { ART_RES, ART_SCALE, sceneryArt, seasonalArt } from '../../scenes/art';
 import { DECOR_ATLAS } from '../../scenes/BootScene';
-import { decorArt, decorVisible, scatterDecor, type DecorSpot } from '../../scenes/decor';
+import { decorArt, scatterDecor, type DecorSpot } from '../../scenes/decor';
 import { DEPTH } from '../../scenes/depth';
 import { gridToWorld } from '../../scenes/iso';
 import { artSeason, packAsset } from '../../scenes/sprites';
@@ -15,7 +14,8 @@ import { artSeason, packAsset } from '../../scenes/sprites';
 /**
  * Ground decorations on screen (the scatter is `src/scenes/decor.ts`): one Blitter over the grass and under
  * everything placed, a bob per spot made back to front when the map is (re)built. Nothing runs per frame but a check
- * of the season drawn: a new season, an object added or removed, or land bought only changes frames and visibility.
+ * of the season drawn: a new season or an object added or removed only changes frames and visibility. A spot shows
+ * wherever nothing is built on its tile, all over the map.
  * Not interactive: a tap goes straight through to the tile. And `window.farm.decor` for QA.
  */
 
@@ -30,7 +30,7 @@ function coveredTiles(game: Game): Set<number> {
   return out;
 }
 
-/** The decorations of the farm's map: around its trees, never on deposits or the locked land's bushes and ponds. */
+/** The decorations of the farm's map: around its trees, never on deposits or the wild's bushes and ponds. */
 function scatterFor(game: Game, layer: MapLayer): DecorSpot[] {
   const { width, height } = game.state.land;
   return scatterDecor({
@@ -71,7 +71,7 @@ onGameStart((ctx) => {
     refresh();
   };
 
-  /** Brings every bob up to date with the season drawn, the land and what is built. */
+  /** Brings every bob up to date with the season drawn and what is built. */
   const refresh = () => {
     dirty = false;
     const season = artSeason();
@@ -80,7 +80,7 @@ onGameStart((ctx) => {
     const covered = coveredTiles(game);
     spots.forEach((spot, i) => {
       const bob = bobs[i];
-      const visible = decorVisible(spot, isOwned(land, spot.x, spot.y), covered.has(spot.y * land.width + spot.x));
+      const visible = !covered.has(spot.y * land.width + spot.x);
       const art = seasonalArt(decorArt(spot, season), season);
       const res = packAsset(art)?.res[ART_RES];
       if (!visible || !res) {
@@ -106,8 +106,6 @@ onGameStart((ctx) => {
     game.events.on('reset', rebuild),
     game.events.on('objectAdded', later),
     game.events.on('objectRemoved', later),
-    // Buying a parcel announces each tile: redrawn once per frame at most.
-    game.events.on('land', later),
   ];
   const onUpdate = () => {
     if (dirty || artSeason() !== drawn) refresh();
@@ -124,7 +122,7 @@ onGameStart((ctx) => {
     if (dirty) refresh();
     const { land } = game.state;
     const covered = coveredTiles(game);
-    const visible = spots.filter((s) => decorVisible(s, isOwned(land, s.x, s.y), covered.has(s.y * land.width + s.x)));
+    const visible = spots.filter((s) => !covered.has(s.y * land.width + s.x));
     const bySeason = Object.fromEntries(
       SEASONS.map((season) => {
         const counts: Record<string, number> = {};

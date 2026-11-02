@@ -6344,44 +6344,6 @@
    }
   },
   {
-   "name": "for_sale_sign",
-   "category": "buildings",
-   "type": "image",
-   "footprint": [
-    1,
-    1
-   ],
-   "notes": "'for sale' sign for unowned plots, 1x1 (Ludo.ai, cel-shaded; shadow baked in)",
-   "res": {
-    "2x": {
-     "file": "2x/buildings/for_sale_sign.png",
-     "w": 84,
-     "h": 164,
-     "anchor": [
-      42.0,
-      88.0
-     ],
-     "origin": [
-      0.5,
-      0.53659
-     ]
-    },
-    "1x": {
-     "file": "1x/buildings/for_sale_sign.png",
-     "w": 42,
-     "h": 82,
-     "anchor": [
-      21.0,
-      44.0
-     ],
-     "origin": [
-      0.5,
-      0.53659
-     ]
-    }
-   }
-  },
-  {
    "name": "cottage",
    "category": "buildings",
    "type": "image",
@@ -22283,44 +22245,6 @@
      "origin": [
       0.5,
       0.37129
-     ]
-    }
-   }
-  },
-  {
-   "name": "for_sale_sign_winter",
-   "category": "buildings",
-   "type": "image",
-   "footprint": [
-    1,
-    1
-   ],
-   "notes": "for_sale_sign in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
-   "res": {
-    "2x": {
-     "file": "2x/buildings/for_sale_sign_winter.png",
-     "w": 80,
-     "h": 164,
-     "anchor": [
-      40.0,
-      87.0
-     ],
-     "origin": [
-      0.5,
-      0.53049
-     ]
-    },
-    "1x": {
-     "file": "1x/buildings/for_sale_sign_winter.png",
-     "w": 40,
-     "h": 82,
-     "anchor": [
-      20.0,
-      43.5
-     ],
-     "origin": [
-      0.5,
-      0.53049
      ]
     }
    }
