@@ -36,7 +36,11 @@ const reducedMotion = typeof window.matchMedia === 'function' && window.matchMed
 let weatherSettings = loadWeatherSettings(storage, reducedMotion);
 const weather = new WeatherScene();
 
-/** Swaps every seasonal texture in the scene for the version of the season being drawn (the Farm scene repaints its ground itself). */
+/**
+ * Swaps every seasonal texture in the scene for the version of the season being drawn. The Farm scene repaints its
+ * ground itself, and the ground decorations change art with the season, not just their look: `src/features/decor`
+ * redraws them itself.
+ */
 function retexture(scene: Phaser.Scene): void {
   const visit = (objects: Phaser.GameObjects.GameObject[]) => {
     for (const o of objects) {
