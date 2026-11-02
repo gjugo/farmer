@@ -423,6 +423,11 @@ granaries and storehouses) in placement order as `{ id, type, pools, piles, draw
 chips are `data-testid="resource-<category>"` (`crops`, `animal`, `feed`, `goods`, `materials`) with `data-count` (and
 `data-delta` while a change shows); the pools are `resources-pool-goods` / `resources-pool-materials` (`data-used`,
 `data-capacity`, class `storage-ok|warn|full`), the popover `resources-popover` with rows `resources-item-<id>`.
+`window.farm.fringes` is `{ count, at(x, y) }`: `count` is the number of grass fringe strips drawn (one per fringed
+edge), `at(x, y)` the fringed edges of tile (x, y) as names, e.g. `['ne', 'sw']` (`ne` = toward -y, `se` = +x, `sw` = +y,
+`nw` = -x), empty where there are none. A path or field tile is fringed on every edge whose neighbour is open grass (no
+object on it, inside the map): none between two paths, between a path and a field, inside a field, along buildings,
+pens and pastures.
 `window.farm.decor` is `{ count, bySeason, at(x, y) }`: `count` is the ground decorations showing now (tufts, flowers
 and the rest on owned land, undergrowth along forest edges), `bySeason[season]` maps each sprite to how many of the
 showing decorations would be it in that season (e.g. `bySeason.spring.decor_daisies`), and `at(x, y)` is the sprite
