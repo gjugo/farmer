@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SEASONS } from '../data/seasons';
-import { ART_BASE, ART_RES, COMPOSED, GRASS, seasonalArt, seasonalComposed, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
+import { ART_BASE, ART_RES, COMPOSED, GRASS, seasonalComposed, SHADOW, usedArt, type PackManifest } from './art';
+import { groundFrames } from './ground';
 import { listTextures } from './textures';
 import { packAsset, setPack } from './sprites';
 
@@ -8,7 +9,7 @@ const MANIFEST = 'farm-manifest';
 /** Texture holding every ground tile, so the whole ground is one Blitter (see FarmScene). */
 export const GROUND_ATLAS = 'ground-atlas';
 /** Ground tiles in the atlas: each season's version, a column per season. */
-export const GROUND_TILES = SEASONS.map((season) => [...GRASS, ...UNOWNED].map((name) => seasonalArt(name, season)));
+export const GROUND_TILES = SEASONS.map(groundFrames);
 
 /** Loads the art pack with a progress bar, prepares its textures, bakes the few runtime ones, then starts the farm. */
 export class BootScene extends Phaser.Scene {

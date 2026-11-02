@@ -21,8 +21,17 @@ export function setPack(manifest: PackManifest): void {
 /** The season the farm is drawn in (src/features/seasons switches it). */
 let look: Season = 'spring';
 
+const seasonListeners = new Set<(season: Season) => void>();
+
 export function setArtSeason(season: Season): void {
   look = season;
+  for (const listener of seasonListeners) listener(season);
+}
+
+/** Calls `listener` whenever the season being drawn is set (the Farm scene repaints its ground). Returns an unsubscribe. */
+export function onArtSeason(listener: (season: Season) => void): () => void {
+  seasonListeners.add(listener);
+  return () => seasonListeners.delete(listener);
 }
 
 export function artSeason(): Season {
