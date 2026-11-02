@@ -152,7 +152,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     return game.missingMaterials(materials).length === 0;
   };
 
-  // Like a player, it builds next to a path when it can, else lays one from the village (free here: paths cost next to nothing).
+  // Like a player, it builds next to a path when it can, else lays one from the village (paths are free).
   const build = (type: string, reserve: number): PlacedObject | null => {
     const def = getBuildable(type)!;
     if (!game.isUnlocked(def.unlockLevel)) return null;

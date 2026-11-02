@@ -88,9 +88,10 @@ export function listBuildCategory(category: BuildCategory): BuildableDef[] {
 registerBuildable({
   id: 'path',
   name: 'Path',
-  cost: 5,
+  // Free, like Manor Lords' roads: laying the way to a site is never what holds a farm back.
+  cost: 0,
   footprint: { w: 1, h: 1 },
   texture: 'path',
-  description: 'A dirt path. Farmers walk along paths to get to their work.',
+  description: 'A dirt path, free to lay. Farmers walk along paths to get to their work.',
   unlockLevel: 1,
 });
