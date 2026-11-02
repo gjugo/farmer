@@ -170,6 +170,9 @@ export const TEXTURE_ART: Record<string, string> = {
   dairy: 'dairy',
   bakery: 'bakery',
   loom: 'weaving_hut',
+  malthouse: 'malthouse',
+  brewery: 'brewery',
+  tailor: 'tailor',
   'sale-sign': 'for_sale_sign',
   'trader-wagon': 'trader_wagon',
   farmhouse: 'farmhouse',
@@ -341,8 +344,8 @@ export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_m
 
 /** Item icons in the pack: every item of the game, plus coins for money. */
 export const ICON_ART = [
-  'egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn',
-  'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'apple', 'wood', 'stone', 'iron', 'manure', 'coins',
+  'egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'malt', 'ale', 'linen', 'clothes', 'wheat', 'carrot',
+  'corn', 'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'apple', 'wood', 'stone', 'iron', 'manure', 'coins',
 ] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */

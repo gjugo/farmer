@@ -115,6 +115,9 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'guard-coop', title: 'Protect a coop with a kennel', icon: '🐕', kind: 'protected-coops', count: 1, reward: { money: 80, xp: 30 } },
   { id: 'build-oxbarn', title: 'Build an ox barn', icon: '🐂', kind: 'own-buildings', type: 'oxbarn', count: 1, reward: { money: 150, xp: 60 } },
   { id: 'haul-goods', title: 'Haul 100 goods by cart', icon: '🛒', kind: 'haul', count: 100, reward: { money: 250, xp: 120 } },
+  { id: 'make-malt', title: 'Malt barley into 10 malt', icon: '🫘', kind: 'make', item: 'malt', count: 10, reward: { money: 300, xp: 150 } },
+  { id: 'brew-ale', title: 'Brew 5 ale', icon: '🍺', kind: 'make', item: 'ale', count: 5, reward: { money: 400, xp: 200 } },
+  { id: 'sew-clothes', title: 'Sew 3 clothes', icon: '👕', kind: 'make', item: 'clothes', count: 3, reward: { money: 500, xp: 250 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

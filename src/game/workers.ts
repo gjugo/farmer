@@ -2,7 +2,7 @@ import { ANIMALS } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD } from '../data/crops';
 import { getItem } from '../data/items';
-import { isProcessorType, PROCESSORS } from '../data/processing';
+import { isProcessorType, PROCESSORS, recipeUnlockLevel, type RecipeDef } from '../data/processing';
 import { isResourceType, RESOURCES } from '../data/resourceBuildings';
 import { seasonNames } from '../data/seasons';
 import { JOBS, type JobKind } from '../data/workers';
@@ -10,6 +10,7 @@ import { animalsOf, isPenType, type PenState } from '../logic/animals';
 import { canPloughNow, formatDuration } from '../logic/crops';
 import { cartPose, isBarn, type HaulTrip } from '../logic/haul';
 import type { Game } from '../logic/game';
+import { inputsOf } from '../logic/processing';
 import { defOf } from '../logic/resources';
 import { findRoute } from '../logic/roads';
 import { fullMessage } from '../logic/storage';
@@ -225,17 +226,25 @@ function planChoice(ctx: FarmContext, obj: PlacedObject): PanelChoice {
   };
 }
 
-/** "Keep making" choices: nothing, or one of the building's recipes. */
+/** "Keep making" choices: nothing, or one of the building's unlocked recipes. */
 function recipeChoice(ctx: FarmContext, obj: PlacedObject): PanelChoice {
   const { game } = ctx;
-  const recipes = isProcessorType(obj.type) ? PROCESSORS[obj.type].recipes : [];
+  const def = isProcessorType(obj.type) ? PROCESSORS[obj.type] : null;
+  const recipes = def ? def.recipes.filter((r) => game.isUnlocked(recipeUnlockLevel(def, r)) || keepMakingOf(game.state, obj.id) === r.id) : [];
+  const name = (id: string) => getItem(id)?.name ?? id;
+  // "1 Clothes from 2 Cloth" when two recipes would read the same.
+  const label = (r: RecipeDef) => {
+    const out = `${r.output.qty} ${name(r.output.item)}`;
+    const same = recipes.filter((o) => o.output.item === r.output.item && o.output.qty === r.output.qty).length > 1;
+    return same ? `${out} from ${inputsOf(r).map(([id, n]) => `${n} ${name(id)}`).join(' + ')}` : out;
+  };
   return {
     id: 'keep-making',
     label: '⚙️ Keep making',
     value: keepMakingOf(game.state, obj.id) ?? '',
     options: [
       { value: '', label: 'Nothing' },
-      ...recipes.map((r) => ({ value: r.id, label: `${r.output.qty} ${getItem(r.output.item)?.name ?? r.output.item}` })),
+      ...recipes.map((r) => ({ value: r.id, label: label(r) })),
     ],
     onChange: (recipe) => setKeepMaking(game, obj.id, recipe || null),
   };

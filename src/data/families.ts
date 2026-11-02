@@ -3,8 +3,9 @@ import type { KnownItemId } from './items';
 
 /**
  * Families: every farmer is a family living in a home. The farmhouse houses the first one, each cottage one more.
- * Families eat from the granary, burn firewood in winter and want clothes once the loom is unlocked; how well the
- * farm meets those needs is their approval, and approval decides whether new families move in or old ones leave.
+ * Families eat from the granary, burn firewood in winter, want clothes once the loom is unlocked and enjoy ale once
+ * the brewery is; how well the farm meets those needs is their approval, and approval decides whether new families
+ * move in or old ones leave.
  * Rules live in `src/logic/families.ts`; the look and panel in `src/features/families`.
  */
 
@@ -13,7 +14,7 @@ export const COTTAGE = 'cottage';
 /** Homes besides the cottages: the farmhouse houses the starting family. */
 export const FARMHOUSE_HOMES = 1;
 
-/** What families eat, in the order they reach for it. Never feed, wool or cloth. */
+/** What families eat, in the order they reach for it. Never feed, wool, cloth or the brewery's malt and ale. */
 export const FOODS: readonly KnownItemId[] = ['wheat', 'carrot', 'corn', 'potato', 'cabbage', 'pumpkin', 'apple', 'egg', 'milk', 'bread', 'cheese', 'butter'];
 
 /** Food each family eats a day. */
@@ -28,8 +29,15 @@ export const PROVISION_DAYS = 2;
 /** Wood each occupied home burns on a winter day. */
 export const FIREWOOD_PER_HOME = 1;
 
-/** Cloth each family takes at the start of winter (once the loom is unlocked); it keeps them clothed that year. */
+/**
+ * Cloth each family takes at the start of winter (once the loom is unlocked); it keeps them clothed that year. A family
+ * takes `CLOTHES_PER_FAMILY` clothes instead while the tailor's clothes are in stock.
+ */
 export const CLOTH_PER_FAMILY = 1;
+export const CLOTHES_PER_FAMILY = 1;
+
+/** Families drink ale (once the brewery is unlocked) each day while there is any: one ale for this many families. */
+export const FAMILIES_PER_ALE = 2;
 
 /** A new family moves in when approval is at least this (percent). */
 export const ARRIVE_APPROVAL = 50;
@@ -55,8 +63,12 @@ export const APPROVAL = {
   /** Every family fed, but less than a full meal each. */
   shortMeal: -20,
   noFood: -50,
-  /** When every family is clothed (a share of it when some are). */
+  /** When every family is clothed in cloth (a share of it when some are). */
   clothed: 10,
+  /** The same in the tailor's clothes. */
+  dressed: 15,
+  /** When every family had ale that day (a share of it when some did). */
+  ale: 10,
   /** Winter days: every occupied home had firewood, or some went cold (all of them cold: the full `freezing`). */
   firewood: 10,
   freezing: -60,

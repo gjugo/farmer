@@ -56,7 +56,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   always. Saves from before storage keep everything, even above capacity, but nothing new comes into an over-full
   pool until it is back under; a one-time toast suggests building a granary.
 - **Resource bar:** under the top bar, one chip per category with its total: 🌾 crops (wheat, carrot, potato, corn, barley, flax, cabbage, pumpkin), 🥚 animal
-  products (egg, milk, wool), feed, 🧀 goods (cheese, butter, bread, cloth) and 🪵 materials (wood, stone, iron), plus the
+  products (egg, milk, wool), feed, 🧀 goods (cheese, butter, bread, cloth, malt, ale, linen, clothes) and 🪵 materials (wood, stone, iron), plus the
   room used in each pool (goods `used/capacity` after the four goods chips, materials after Materials), green, amber
   from 90% and red when full, like 🎒 Inventory. Hover a chip (mouse) or tap it for each item's icon and count; Esc or a
   tap outside closes it. When a count changes the chip shows **+N** in green or **−N** in red for a moment (harvests,
@@ -147,8 +147,19 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   and every parcel they owned part of.
 - **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
   after their cycle (chicken 3 game-minutes, cow 6, sheep 8); click the pen (or **Collect**) to pick up eggs, milk and wool.
-- **Processing:** build a Feed Mill, Dairy, Bakery or Loom, open it and pick a recipe. Inputs are taken at once;
-  up to 3 jobs queue and run one at a time (feed 2 game-minutes, butter 4, bread 5, cheese 8, cloth 10).
+- **Processing:** build a Feed Mill, Dairy, Bakery, Loom, Malthouse, Brewery or Tailor, open it and pick a recipe.
+  Inputs are taken at once; up to 3 jobs queue and run one at a time (feed 2 game-minutes, butter 4, bread 5,
+  malt 5, cheese 8, linen 8, cloth 10, ale 10, clothes 10). The longer chains:
+
+  | Building | Level | Size | Recipes |
+  | --- | --- | --- | --- |
+  | 🧵 Loom | 5 | 2×2 | 2 wool → 1 cloth ($75); 3 flax → 1 linen ($60, from level 6, when flax unlocks) |
+  | 🫘 Malthouse | 6 | 2×2 | 3 barley → 2 malt ($12) |
+  | 🍺 Brewery | 7 | 3×2 | 2 malt → 1 ale ($90): families drink it |
+  | 👕 Tailor | 8 | 2×2 | 2 cloth → 1 clothes, or 2 linen → 1 clothes ($150): families wear them |
+
+  So barley → malt → ale and wool → cloth or flax → linen → clothes. Goals at the end of the list: "Malt barley into
+  10 malt", "Brew 5 ale", "Sew 3 clothes".
   Click the building (or **Collect**) to pick up finished goods.
 - **Orders:** 📋 Orders shows 3 customer orders for goods you have had before. Fulfil hands over the goods
   for a reward above today's market value; the HUD badge counts orders you can fulfil now. A fulfilled slot
@@ -163,7 +174,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   | 🥔 Potato | 3 | spring, summer | 12 min | 14 | 15 | food; drains the soil hard |
   | 🌽 Corn | 4 | spring, summer | 16 min | 12 | 12 | food; feed mill |
   | 🌿 Barley | 4 | spring, summer | 9 min | 10 | 6 | feed mill (2 barley → 4 feed) |
-  | 🪻 Flax | 6 | spring, summer | 14 min | 8 | 10 | sold for now |
+  | 🪻 Flax | 6 | spring, summer | 14 min | 8 | 10 | loom (3 flax → 1 linen) |
   | 🥬 Cabbage | 6 | autumn (grows into winter) | 35 min | 10 | 9 | food; **the winter crop** |
   | 🎃 Pumpkin | 7 | summer, autumn | 25 min | 6 | 13 | food; the best price |
 
@@ -215,14 +226,17 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; never the last
   family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
   storage: each eats **2 food** from the granary (wheat, carrot, corn, potato, cabbage, pumpkin, apple, egg, milk, bread,
-  cheese, butter; never feed, barley, flax, wool or cloth), spread across the kinds in stock; on **winter** days each occupied home burns **1 wood**; once the
-  loom is unlocked (level 5) each family takes **1 cloth** at the start of winter and stays clothed until the next.
+  cheese, butter; never feed, barley, flax, wool, cloth, malt or ale), spread across the kinds in stock; on **winter** days each occupied home burns **1 wood**; once the
+  loom is unlocked (level 5) each family takes **1 clothes** from the tailor at the start of winter if any are in stock,
+  otherwise **1 cloth**, and stays clothed until the next. Once the brewery is unlocked (level 7) they drink **1 ale per
+  2 families** a day while there is any.
   **Approval** (0–100%) comes from that day: base 50, +5 per food kind eaten beyond the first (up to +20), −20 short of
-  food, −50 with nothing to eat, up to +10 when every family is clothed, and in winter +10 when every home is warm or up
+  food, −50 with nothing to eat, up to +10 when every family is clothed in cloth (+15 in clothes; mixed, by share), up to
+  +10 when every family had ale (by share), and in winter +10 when every home is warm or up
   to −60 when homes are cold (by the share of cold homes); from level 2, up to +5 when every home has a house garden
   (a share of it when some do). A new farm's families live on their provisions for the
   first 2 days (no hunger penalty), so nobody leaves before the first harvest. The HUD chip (😊 62%) opens
-  **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood and clothes, and when the
+  **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood, ale and clothes, and when the
   next family comes ("Build a cottage to house another family"); the 👨‍🌾 Farmers sheet shows the same block. A
   cottage puffs chimney smoke on winter days while it has firewood. Arrivals and departures are toasted and listed in
   the welcome-back summary. All of it runs inside the work scheduler on game time, so ×60, ×1 and offline catch-up
@@ -366,9 +380,11 @@ chips are `data-testid="resource-<category>"` (`crops`, `animal`, `feed`, `goods
 next season); `look` is the season the farm is drawn in (it follows `season`, a crossfade at most behind) and
 `weather` the number of weather particles alive now (0 in summer or with weather effects off, never over 150).
 `window.farm.families` is `{ homes, families, approval, breakdown, lastDay, nextArrivalAt }`: `breakdown` lists
-`{ id, label, points }` parts (`base`, `variety`, `food`, `clothes`, `firewood`, `gardens`), `lastDay` is
-`{ ate, variety, firewood, clothed }` for the last settled day (`ate`: food id → eaten; `firewood`: wood burned, null
-outside winter; `clothed`: families clothed, null before the loom is unlocked) or null before the first day, and
+`{ id, label, points }` parts (`base`, `variety`, `food`, `clothes`, `ale`, `firewood`, `gardens`, `neighbours`), `lastDay` is
+`{ ate, variety, firewood, clothed, ale }` for the last settled day (`ate`: food id → eaten; `firewood`: wood burned, null
+outside winter; `clothed`: `{ families, clothes, cloth }`, the families clothed this year and how many of them wear the
+tailor's clothes and plain cloth, null before the loom is unlocked; `ale`: `{ families, drunk }`, the families who had
+ale that day and the ale drunk, null before the brewery is unlocked) or null before the first day, and
 `nextArrivalAt` is the game time (`window.farm.clock.elapsed`) the next family is due, null while no home is free.
 `window.farm.gardens` lists every house garden as `{ id, kind, home, waiting, nextAt }`: `kind` is `veg-patch`,
 `hen-run` or `orchard`, `home` the id of the farmhouse or cottage it belongs to (null without one), `waiting` the
@@ -422,7 +438,7 @@ src/
     slices.ts          feature-owned global state (GameState.ext)
     crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure, starting fields
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
-    families.ts        families: homes, daily meals / firewood / clothes, approval, arrivals and departures (slice `families`)
+    families.ts        families: homes, daily meals / firewood / ale / clothes, approval, arrivals and departures (slice `families`)
     perks.ts           perks: perkFactor, seeded offers, choices and the slice `perks`; the Perks class on Game
     workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
     work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
@@ -468,7 +484,7 @@ src/
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
-    processing/        feed mill, dairy, bakery, loom (data: src/data/processing.ts, logic: src/logic/processing.ts)
+    processing/        feed mill, dairy, bakery, loom, malthouse, brewery, tailor (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
     soil/              the Soil overlay and its Build-menu toggle, the field ghost's soil tint, the field panel's
                        soil block and Spread manure action, `window.farm.soil` (data: src/data/soil.ts)
