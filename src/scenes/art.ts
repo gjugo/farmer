@@ -247,7 +247,7 @@ export function facing(dx: number, dy: number): Facing {
 
 /** The farmer's sprite sheet: `farmer_<anim>_<facing>` animations. */
 export const FARMER_ART = 'farmer';
-export type FarmerAnim = 'idle' | 'sit' | 'walk' | JobKind;
+export type FarmerAnim = 'idle' | 'sit' | 'walk' | JobKind | `carry_${Load}`;
 
 /** The animation for each job's work, with the tool he holds (`tools/ludo/README.md`, "Tools"). */
 export const WORK_ANIM: Record<JobKind, FarmerAnim> = {
@@ -263,6 +263,43 @@ export const WORK_ANIM: Record<JobKind, FarmerAnim> = {
   quarry: 'quarry', // pickaxe
   mine: 'mine', // pickaxe
 };
+
+/** What a farmer can carry on a walk: each has its own walk, `carry_<load>` (`tools/ludo/README.md`, "Carrying"). */
+export const LOADS = ['sack', 'basket', 'bucket', 'logs', 'stone'] as const;
+export type Load = (typeof LOADS)[number];
+/** The walk to the work (`out`) or home from it (`back`). */
+export type Trip = 'out' | 'back';
+/** A trip's load: always this one, nothing (null, the empty-handed walk), or `'item'`: whatever `ITEM_LOAD` gives the item it carries. */
+export type CarryRule = Load | 'item' | null;
+
+/**
+ * What each job's farmer carries out and back. Visual only: the goods already moved when the job started, so this
+ * goes by the job and its workplace, never the stock. `'item'` trips look up the item (`carriedItem` in
+ * `src/features/workers`): the pen's product, the building's output, or a construction site's main material.
+ */
+export const CARRY: Record<JobKind, Record<Trip, CarryRule>> = {
+  plough: { out: null, back: null },
+  plant: { out: null, back: null },
+  harvest: { out: null, back: 'sack' }, // the crop
+  collect: { out: null, back: 'item' }, // eggs, milk, wool, goods or waiting materials
+  feed: { out: 'sack', back: null },
+  fertilise: { out: 'sack', back: null }, // manure
+  load: { out: 'sack', back: null }, // the recipe's inputs
+  build: { out: 'item', back: null }, // wood, else stone
+  chop: { out: null, back: 'item' },
+  quarry: { out: null, back: 'item' },
+  mine: { out: null, back: 'item' },
+};
+
+/** The load an item is carried in; any item not listed goes in a sack. Iron shares the stone block. */
+export const ITEM_LOAD: Partial<Record<string, Load>> = { egg: 'basket', milk: 'bucket', wood: 'logs', stone: 'stone', iron: 'stone' };
+
+/** The load of a job's trip, given the item an `'item'` trip carries (null: unknown, a sack). */
+export function carryLoad(kind: JobKind, trip: Trip, item: string | null = null): Load | null {
+  const rule = CARRY[kind]?.[trip] ?? null;
+  if (rule !== 'item') return rule;
+  return (item && ITEM_LOAD[item]) || 'sack';
+}
 
 /** Feed mill body and its turning sails (same canvas and anchor). */
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;

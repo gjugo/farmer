@@ -1,3 +1,4 @@
+import { ANIMALS } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD } from '../data/crops';
 import { getItem } from '../data/items';
@@ -5,8 +6,10 @@ import { isProcessorType, PROCESSORS } from '../data/processing';
 import { isResourceType, RESOURCES } from '../data/resourceBuildings';
 import { seasonNames } from '../data/seasons';
 import { JOBS, type JobKind } from '../data/workers';
+import { animalsOf, isPenType, type PenState } from '../logic/animals';
 import { canPloughNow, formatDuration } from '../logic/crops';
 import type { Game } from '../logic/game';
+import { defOf } from '../logic/resources';
 import { findRoute } from '../logic/roads';
 import { fullMessage } from '../logic/storage';
 import type { PlacedObject } from '../logic/types';
@@ -28,8 +31,10 @@ import {
   unassignFarmer,
   workerAt,
   workersOf,
+  type Job,
   type JobPhase,
 } from '../logic/workers';
+import { carryLoad, type Load } from '../scenes/art';
 import { formatMoney } from '../ui/dom';
 import type { FarmContext, PanelAction, PanelChoice, PanelSpec } from './context';
 
@@ -147,6 +152,31 @@ export function farmerActivity(game: Game, farmer: number): string {
   if (findRoute(state, siteArea(workplace)) === null) return 'Free · no path leads to the workplace';
   const next = workplaceNext(game, workplace);
   return `Free · ${'task' in next ? 'work is waiting' : waitText(game, next).toLowerCase()}`;
+}
+
+/**
+ * The item a job's `'item'` trip carries (see `CARRY` in `src/scenes/art.ts`), from its workplace and never the stock,
+ * which changed when the job started: a pen's product (milk when cows live there), a resource building's output, or a
+ * construction site's main material (wood when it costs any, else stone). Null for anything else (a sack).
+ */
+export function carriedItem(game: Game, job: Job): string | null {
+  // Hand-ordered jobs have no target: they work on the object under their work spot.
+  const obj = job.target ? game.getObject(job.target) : game.objectAt(Math.floor(job.x), Math.floor(job.y));
+  if (!obj) return job.kind === 'build' ? 'stone' : null;
+  if (job.kind === 'build') return (getBuildable(obj.type)?.materials?.wood ?? 0) > 0 ? 'wood' : 'stone';
+  if (isPenType(obj.type)) {
+    const kinds = animalsOf(obj as unknown as PlacedObject<PenState>).map((a) => a.kind);
+    const kind = kinds.includes('cow') ? 'cow' : kinds[0];
+    return kind ? ANIMALS[kind].product : null;
+  }
+  if (isResourceType(obj.type)) return defOf(obj).output;
+  return null;
+}
+
+/** What the farmer on `job` carries right now: a load while walking out or back, else null. */
+export function farmerLoad(game: Game, job: Job): Load | null {
+  const { phase } = jobPhase(game.state.clock, job);
+  return phase === 'work' ? null : carryLoad(job.kind, phase, carriedItem(game, job));
 }
 
 /** Crop plan choices: "Best in season", "Fallow" and every crop (locked ones disabled). */
