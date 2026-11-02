@@ -3,10 +3,11 @@ import { dayOf, timerDone, timerProgress, type Timer } from './clock';
 import type { Game } from './game';
 import type { Rect } from './land';
 import { fellNearest, mapOf, nearestFreeTree, nextFreeTreeAt, take, workedDeposit, type Deposit } from './maplayer';
+import { perkFactor } from './perks';
 import { findRoute } from './roads';
 import { isPlainObject } from './slices';
 import { seasonAt } from './seasons';
-import type { ClockState, PlacedObject } from './types';
+import type { ClockState, GameState, PlacedObject } from './types';
 import { workerAt } from './workers';
 
 /**
@@ -108,6 +109,11 @@ export function startCycle(game: Game, obj: PlacedObject<ResourceState>, walkMs:
   return true;
 }
 
+/** What one cycle makes on this farm: the building's yield, 25% more with Prospector (rounded up). */
+export function cycleYield(state: Pick<GameState, 'ext'>, def: ResourceDef): number {
+  return Math.ceil(def.yield * perkFactor(state, 'prospector') - 1e-9);
+}
+
 /**
  * Ends a finished cycle: the yield goes into the storehouses as far as they have room, the rest waits in the
  * building. Returns how much was made (0 when no cycle ended).
@@ -118,10 +124,10 @@ export function settle(game: Game, obj: PlacedObject<ResourceState>): number {
   const def = defOf(obj);
   obj.state.cycle = null;
   // A quarry or mine takes the yield from its deposit: the last cycle may find less (or, shared, nothing) left.
-  let made = def.yield;
+  let made = cycleYield(game.state, def);
   if (def.deposit) {
     const deposit = depositOf(game, obj);
-    made = deposit ? take(deposit, def.yield) : 0;
+    made = deposit ? take(deposit, made) : 0;
     if (made > 0) game.mapChanged();
   }
   const stored = game.addItem(def.output, made);

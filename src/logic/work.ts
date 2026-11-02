@@ -10,6 +10,7 @@ import { MANURE_BELOW } from '../data/soil';
 import { nextFamiliesEvent, stepFamilies } from './families';
 import { canPloughNow, checkFertilise, cropStage, fertilise, fertilityOf, fieldCrop, harvest, harvestYield, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import type { Game } from './game';
+import { perkFactor } from './perks';
 import * as processing from './processing';
 import * as resources from './resources';
 import { findRoute, type Route } from './roads';
@@ -86,7 +87,7 @@ function fieldNext(game: Game, obj: PlacedObject<FieldState>): WorkplaceNext {
   const stage = cropStage(clock, obj.state);
   if (stage === 'ripe') {
     const crop = fieldCrop(obj.state)!;
-    if (game.spaceFor(crop.harvestItem) < harvestYield(clock, obj)) return { wait: 'full' };
+    if (game.spaceFor(crop.harvestItem) < harvestYield(game.state, obj)) return { wait: 'full' };
     return task('harvest', HARVEST_WORK_MS, () => harvest(game, obj).ok);
   }
   if (stage !== 'empty') return { wait: 'growing' };
@@ -193,7 +194,7 @@ function settleAssigned(game: Game, onSettled: SettledHook): void {
     const obj = id ? game.getObject(id) : undefined;
     if (!obj || obj.site || !isProcessorType(obj.type)) continue;
     const p = obj as unknown as PlacedObject<processing.ProcessorState>;
-    const n = processing.settle(game.state.clock, p);
+    const n = processing.settle(game.state, p);
     if (n > 0) onSettled(p, n);
   }
 }
@@ -241,7 +242,7 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
     if (workplace && !workplace.site) {
       const next = workplaceNext(game, workplace);
       const route = 'task' in next ? routeTo(workplace) : null;
-      if ('task' in next && route && next.task.run(walkMs(route))) {
+      if ('task' in next && route && next.task.run(walkMs(route, perkFactor(state, 'good-boots')))) {
         start(i, next.task.kind, workplace, next.task.workMs, route);
         continue;
       }

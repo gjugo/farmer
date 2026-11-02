@@ -2,7 +2,8 @@ import { getItem, ITEM_LIST } from '../../data/items';
 import { isStoredMaterial, MATERIAL_IDS, type MaterialId } from '../../data/materials';
 import type { FarmContext, SheetSpec } from '../../game/context';
 import { registerHudButton } from '../../game/hooks';
-import { buy, buyPrice, buyUnlockLevel, dailyPrice, msUntilNextDay, priceTrend, sell, sellAll } from '../../logic/market';
+import { buy, buyPrice, buyUnlockLevel, farmSellPrice, msUntilNextDay, priceTrend, sell, sellAll } from '../../logic/market';
+import { perkFactor } from '../../logic/perks';
 import { fullMessage, storageInfo } from '../../logic/storage';
 import { formatMoney, h } from '../../ui/dom';
 import { itemIcon, withIcons } from '../../ui/icons';
@@ -140,7 +141,7 @@ function marketSheet(ctx: FarmContext): SheetSpec {
   return {
     id: 'market',
     title: () => '🏪 Market',
-    signature: () => `${game.day}|${game.level}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}`,
+    signature: () => `${game.day}|${game.level}|${perkFactor(game.state, 'haggler')}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}`,
     render: (body) => {
       const day = game.day;
       body.append(
@@ -160,14 +161,14 @@ function marketSheet(ctx: FarmContext): SheetSpec {
         return;
       }
       // "Sell everything" keeps building materials (see `sellAll`).
-      const total = ids.filter((id) => !isStoredMaterial(id)).reduce((sum, id) => sum + game.count(id) * (dailyPrice(day, id) ?? 0), 0);
+      const total = ids.filter((id) => !isStoredMaterial(id)).reduce((sum, id) => sum + game.count(id) * (farmSellPrice(game.state, day, id) ?? 0), 0);
       body.append(
         h(
           'ul',
           { class: 'market-list', 'data-testid': 'market-list' },
           ids.map((id) => {
             const item = getItem(id);
-            const price = dailyPrice(day, id);
+            const price = farmSellPrice(game.state, day, id);
             const count = game.count(id);
             const dir = priceTrend(day, id);
             const trend = TREND[dir];

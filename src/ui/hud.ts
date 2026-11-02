@@ -405,7 +405,7 @@ export class Hud implements UiApi {
         `${game.level}|${listBuildMenuToggles()
           .map((t) => t.isOn(this.ctx))
           .join(',')}|${listBuildMenu()
-          .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(b.materials))}`)
+          .map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(game.materialsFor(b.id)))}`)
           .join('|')}`,
       render: (body) => {
         const toggles = listBuildMenuToggles();
@@ -448,10 +448,10 @@ export class Hud implements UiApi {
                 const unlockLevel = buildableUnlockLevel(b.id);
                 const locked = !game.isUnlocked(unlockLevel);
                 const shortMoney = !game.canAfford(b.cost);
-                const missing = game.missingMaterials(b.materials);
+                const missing = game.missingMaterials(game.materialsFor(b.id));
                 // What stands between the player and building it, e.g. "Needs $40 more and 4 more 🪵 Wood".
                 const needs = [shortMoney ? `${formatMoney(b.cost - game.money)} more` : '', formatMissing(missing)].filter(Boolean).join(' and ');
-                const materials = formatMaterials(b.materials);
+                const materials = formatMaterials(game.materialsFor(b.id));
                 return h(
                   'button',
                   {
@@ -551,7 +551,7 @@ export class Hud implements UiApi {
     let text: string;
     if (mode.kind === 'build') {
       const def = getBuildable(mode.type);
-      const materials = formatMaterials(def?.materials);
+      const materials = formatMaterials(this.ctx.game.materialsFor(mode.type));
       text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}${materials ? ` + ${materials}` : ''}) — tap a tile`;
     } else {
       text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% of money and materials back)`;

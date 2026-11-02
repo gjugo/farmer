@@ -2,6 +2,7 @@ import { ANIMALS, FEED_PACK, isAnimalKind, PENS, type AnimalKind, type PenType }
 import { MANURE_PER_COLLECT } from '../data/soil';
 import { startTimer, timerDone, timerProgress, type Timer } from './clock';
 import type { Game } from './game';
+import { perkFactor } from './perks';
 import type { ClockState, PlacedObject } from './types';
 
 /**
@@ -98,7 +99,7 @@ export function feedAll(game: Game, obj: PlacedObject<PenState>): number {
     if (animalStatus(game.state.clock, a) !== 'hungry') continue;
     const def = ANIMALS[a.kind];
     if (!game.removeItem('feed', def.feedPerCycle)) continue;
-    a.timer = startTimer(game.state.clock, def.cycleMs);
+    a.timer = startTimer(game.state.clock, Math.round(def.cycleMs * perkFactor(game.state, 'husbandry')));
     fed++;
   }
   if (fed > 0) {

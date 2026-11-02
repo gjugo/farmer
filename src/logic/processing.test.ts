@@ -30,7 +30,7 @@ function setup(type: keyof typeof PROCESSORS = 'dairy') {
 /** Advances game time by `ms` and settles the building, as the scene does every frame. */
 function wait(game: Game, obj: PlacedObject<ProcessorState>, ms: number): number {
   game.state.clock.elapsed += ms;
-  return settle(game.state.clock, obj);
+  return settle(game.state, obj);
 }
 
 describe('recipe validation', () => {
@@ -184,7 +184,7 @@ describe('save and load', () => {
     const loaded = deserialize(serialize(game.state));
     const game2 = new Game(loaded);
     const obj2 = game2.getObject(obj.id) as unknown as PlacedObject<ProcessorState>;
-    sanitize(obj2, game2.state.clock);
+    sanitize(obj2, game2.state);
     expect(obj2.state.queue.map((j) => j.recipe)).toEqual(['cheese', 'butter']);
     expect(currentProgress(game2.state.clock, obj2)).toBeCloseTo(1 / 3);
     wait(game2, obj2, 320_000);
@@ -197,7 +197,7 @@ describe('save and load', () => {
       queue: [{ recipe: 'nope' }, { recipe: 'butter', timer: 'x' }, 5, { recipe: 'cheese', timer: { start: 1, duration: 2 } }],
       ready: { cheese: 2, milk: -1, butter: 'a' },
     };
-    sanitize(obj, game.state.clock);
+    sanitize(obj, game.state);
     expect(obj.state.queue.map((j) => j.recipe)).toEqual(['butter', 'cheese']);
     expect(obj.state.queue[0].timer).toEqual({ start: game.now, duration: 240_000 });
     expect(obj.state.queue[1].timer).toBeNull();
