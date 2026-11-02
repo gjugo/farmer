@@ -182,7 +182,7 @@ describe('unlocks', () => {
   });
 
   it('lists what each level unlocks', () => {
-    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Pasture', 'Potato']);
+    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Ox Barn', 'Pasture', 'Potato']);
     expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
     // The later levels unlock crops: flax and the winter cabbage at 6, pumpkin at 7.
@@ -304,8 +304,25 @@ describe('goals', () => {
   });
 
   it('the new crop goals come last, after the goals saves already know by index', () => {
-    expect(GOALS.slice(-3).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
-    expect(GOALS.findIndex((g) => g.id === 'weave-cloth')).toBe(GOALS.length - 4);
+    const at = GOALS.findIndex((g) => g.id === 'weave-cloth');
+    expect(GOALS.slice(at + 1, at + 4).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
+  });
+
+  it('the oxcart goals come last: build an ox barn, haul 100 goods by cart', () => {
+    expect(GOALS.slice(-2).map((g) => [g.id, g.kind, g.count])).toEqual([
+      ['build-oxbarn', 'own-buildings', 1],
+      ['haul-goods', 'haul', 100],
+    ]);
+    expect(GOALS.findIndex((g) => g.id === 'grow-pumpkins')).toBe(GOALS.length - 3);
+  });
+
+  it('haul goals count goods unloaded by cart', () => {
+    const game = new Game(maxLevelState());
+    const data = getSlice<ProgressionState>(game.state, PROGRESSION);
+    data.goals = [{ id: 'haul-goods', progress: 0 }];
+    game.activity.emit('hauled', { item: 'wood', qty: 20 });
+    game.activity.emit('hauled', { item: 'stone', qty: 15 });
+    expect(game.progression.goals()[0].progress).toBe(35);
   });
 
   it('harvest cabbage in winter counts only a winter harvest', () => {

@@ -178,6 +178,7 @@ export const TEXTURE_ART: Record<string, string> = {
   quarry: 'quarry',
   mine: 'mine',
   cottage: 'cottage',
+  oxbarn: 'ox_barn',
 };
 
 /** Storage buildings have a sprite per level, e.g. `granary_2`; the build preview is level 1. */
@@ -261,7 +262,31 @@ export const WORK_ANIM: Record<JobKind, FarmerAnim> = {
   chop: 'chop', // axe
   quarry: 'quarry', // pickaxe
   mine: 'mine', // pickaxe
+  haul: 'walk', // beside the ox, or loading and unloading the cart (src/features/haul)
 };
+
+/** The ox of an ox barn: `ox_<idle|walk>_<facing>` animations, like the farm animals. */
+export const OX_ART = 'ox';
+/** The oxcart, one sprite per facing: `cart_se`, `cart_sw`, `cart_ne`, `cart_nw`. */
+export const CART_ART = 'cart';
+export const CART_FACINGS: readonly Facing[] = ['se', 'sw', 'ne', 'nw'];
+
+export function cartArt(f: Facing): string {
+  return `${CART_ART}_${f}`;
+}
+
+/**
+ * What lies on a cart carrying `load`: logs, stone or iron (the storehouse piles), or sacks (the granary's feed pile)
+ * for every good; a bigger pile past half a load. Null when the cart is empty.
+ */
+export function cartLoadArt(load: Record<string, number>): string | null {
+  const entries = Object.entries(load).filter(([, n]) => n > 0);
+  if (entries.length === 0) return null;
+  const [item] = entries.sort((a, b) => b[1] - a[1])[0];
+  const kind = item === 'wood' || item === 'stone' || item === 'iron' ? item : 'feed';
+  const total = entries.reduce((n, [, q]) => n + q, 0);
+  return pileArt(kind, total > 10 ? 2 : 1);
+}
 
 /** Feed mill body and its turning sails (same canvas and anchor). */
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;
@@ -409,6 +434,8 @@ export function usedArt(): string[] {
     ...(Object.keys(STORAGE_ART) as (keyof typeof STORAGE_ART)[]).flatMap((t) => Array.from({ length: STORAGE_ART[t] }, (_, i) => storageArt(t, i + 1))),
     ...CROP_ART_IDS.flatMap((c) => Object.keys(CROP_STAGES).map((s) => cropArt(c, s)!)),
     ...ANIMAL_ART,
+    OX_ART,
+    ...CART_FACINGS.map(cartArt),
     FARMER_ART,
     ...ICON_ART,
     ...SCENERY,

@@ -13,7 +13,7 @@ export const STARTING_FARMERS = 1;
 /** The most farmers a farm can employ. */
 export const MAX_FARMERS = 20;
 
-export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'fertilise' | 'feed' | 'collect' | 'load' | 'chop' | 'quarry' | 'mine';
+export type JobKind = 'build' | 'plough' | 'plant' | 'harvest' | 'fertilise' | 'feed' | 'collect' | 'load' | 'chop' | 'quarry' | 'mine' | 'haul';
 
 export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   build: { label: 'Building', icon: '🔨' },
@@ -28,6 +28,8 @@ export const JOBS: Record<JobKind, { label: string; icon: string }> = {
   chop: { label: 'Cutting wood', icon: '🪓' },
   quarry: { label: 'Quarrying stone', icon: '⛏️' },
   mine: { label: 'Mining iron', icon: '⚒️' },
+  // An ox barn's carter: drives the oxcart from a yard to the stores (see `src/data/haul.ts`).
+  haul: { label: 'Hauling', icon: '🐂' },
 };
 
 /** Game milliseconds a farmer is busy for each job (building: see `buildWorkMs`). */

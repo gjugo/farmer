@@ -1,3 +1,4 @@
+import { YARD_CYCLES } from '../data/haul';
 import { RESOURCES, SLOW_SEASONS, type ResourceDef, type ResourceType } from '../data/resourceBuildings';
 import { dayOf, timerDone, timerProgress, type Timer } from './clock';
 import type { Game } from './game';
@@ -13,8 +14,9 @@ import { workerAt } from './workers';
 /**
  * Woodcutter's lodge, quarry and mine. The building holds the cycle its farmer is working: the work scheduler
  * (`src/logic/work.ts`) starts it when the farmer sets off, timed to end with their work, and `settle` puts the
- * yield in the storehouses when it ends. What doesn't fit waits in the building, and the farmer does other work
- * until there is room and they carry it in. Nothing is ever lost.
+ * yield in the building's yard when it ends. The yard holds `YARD_CYCLES` cycles' yield: an ox barn's cart hauls it
+ * to the stores (`src/logic/haul.ts`), and once it is full the farmer carries it all in on foot before working
+ * another cycle. Nothing is ever lost.
  *
  * What they work comes from the map (`src/logic/maplayer.ts`): a lodge fells the nearest grown tree within its range
  * each cycle, and a quarry or mine takes each cycle's yield from the deposit it stands on, until it is used up.
@@ -24,7 +26,7 @@ import { workerAt } from './workers';
 export type ResourceState = {
   /** The cycle being worked: from the end of the farmer's walk there to the end of their work. Null between cycles. */
   cycle: Timer | null;
-  /** Output that did not fit in the storehouses. A new cycle starts only once it has been carried in. */
+  /** Output in the yard, waiting for a cart (or, once the yard is full, the farmer) to carry it to the stores. */
   waiting: number;
   /** The day `today` counts. */
   day: number;
@@ -84,6 +86,17 @@ export function cycleProgress(clock: ClockState, obj: PlacedObject<ResourceState
   return cycle ? timerProgress(clock, cycle) : null;
 }
 
+/** Units the building's yard holds: `YARD_CYCLES` cycles' yield. */
+export function yardCapacity(state: Pick<GameState, 'ext'>, def: ResourceDef): number {
+  return YARD_CYCLES * cycleYield(state, def);
+}
+
+/** The yard has no room for another cycle's yield: the farmer must carry it in first. */
+export function yardFull(state: Pick<GameState, 'ext'>, obj: PlacedObject<ResourceState>): boolean {
+  const def = defOf(obj);
+  return obj.state.waiting + cycleYield(state, def) > yardCapacity(state, def);
+}
+
 /** Made today, stored or waiting. */
 export function todayYield(clock: ClockState, obj: PlacedObject<ResourceState>): number {
   return obj.state.day === dayOf(clock) ? obj.state.today : 0;
@@ -91,11 +104,11 @@ export function todayYield(clock: ClockState, obj: PlacedObject<ResourceState>):
 
 /**
  * Starts a cycle that begins once the farmer has walked there (`walkMs`) and lasts the work. A lodge claims the
- * nearest grown tree in range, which falls when the cycle ends. Refused (false) while a cycle runs, output waits,
- * the building is still a site, or there is nothing to work (no tree in range, the deposit used up).
+ * nearest grown tree in range, which falls when the cycle ends. Refused (false) while a cycle runs, the yard is
+ * full, the building is still a site, or there is nothing to work (no tree in range, the deposit used up).
  */
 export function startCycle(game: Game, obj: PlacedObject<ResourceState>, walkMs: number): boolean {
-  if (obj.site || obj.state.cycle || obj.state.waiting > 0) return false;
+  if (obj.site || obj.state.cycle || yardFull(game.state, obj)) return false;
   const def = defOf(obj);
   if (def.deposit && !depositOf(game, obj)) return false;
   const start = game.now + Math.max(0, walkMs);
@@ -114,10 +127,7 @@ export function cycleYield(state: Pick<GameState, 'ext'>, def: ResourceDef): num
   return Math.ceil(def.yield * perkFactor(state, 'prospector') - 1e-9);
 }
 
-/**
- * Ends a finished cycle: the yield goes into the storehouses as far as they have room, the rest waits in the
- * building. Returns how much was made (0 when no cycle ended).
- */
+/** Ends a finished cycle: the yield goes into the building's yard. Returns how much was made (0 when no cycle ended). */
 export function settle(game: Game, obj: PlacedObject<ResourceState>): number {
   const { cycle } = obj.state;
   if (!cycle || !timerDone(game.state.clock, cycle)) return 0;
@@ -130,8 +140,7 @@ export function settle(game: Game, obj: PlacedObject<ResourceState>): number {
     made = deposit ? take(deposit, made) : 0;
     if (made > 0) game.mapChanged();
   }
-  const stored = game.addItem(def.output, made);
-  obj.state.waiting += made - stored;
+  obj.state.waiting += made;
   const day = dayOf({ elapsed: cycle.start + cycle.duration, speed: 1 });
   if (obj.state.day !== day) {
     obj.state.day = day;
@@ -143,7 +152,7 @@ export function settle(game: Game, obj: PlacedObject<ResourceState>): number {
   return made;
 }
 
-/** Carries waiting output into the storehouses, as much as fits. Returns how much went in. */
+/** Carries the yard's output into the storehouses, as much as fits. Returns how much went in. */
 export function collect(game: Game, obj: PlacedObject<ResourceState>): number {
   if (obj.state.waiting <= 0) return 0;
   const n = game.addItem(defOf(obj).output, obj.state.waiting);
@@ -155,7 +164,7 @@ export function collect(game: Game, obj: PlacedObject<ResourceState>): number {
 
 /**
  * Why the building makes nothing now: nothing to work (no grown tree in range, the deposit used up), no farmer, no
- * path from the farmhouse, or its output waits for room.
+ * path from the farmhouse, or its yard is full and the storehouse has no room for it.
  */
 export type IdleReason = 'site' | 'no-trees' | 'exhausted' | 'no-farmer' | 'no-path' | 'storehouse-full';
 
@@ -163,9 +172,9 @@ export type IdleReason = 'site' | 'no-trees' | 'exhausted' | 'no-farmer' | 'no-p
 export function idleReason(game: Game, obj: PlacedObject<ResourceState>): IdleReason | null {
   if (obj.site) return 'site';
   if (obj.state.cycle) return null;
-  if (obj.state.waiting > 0 && game.spaceFor(defOf(obj).output) === 0) return 'storehouse-full';
-  if (obj.state.waiting === 0 && defOf(obj).deposit && !depositOf(game, obj)) return 'exhausted';
-  if (obj.state.waiting === 0 && !hasTree(game, obj)) return 'no-trees';
+  if (yardFull(game.state, obj) && game.spaceFor(defOf(obj).output) === 0) return 'storehouse-full';
+  if (defOf(obj).deposit && !depositOf(game, obj)) return 'exhausted';
+  if (!hasTree(game, obj)) return 'no-trees';
   if (workerAt(game.state, obj.id) === null) return 'no-farmer';
   const fp = defOf(obj).footprint;
   if (!findRoute(game.state, { x: obj.x, y: obj.y, w: fp.w, h: fp.h })) return 'no-path';

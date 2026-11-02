@@ -48,6 +48,8 @@ export type GoalTask =
   | { kind: 'upgrade'; type: string; count: number }
   /** Spread manure on fields `count` times. */
   | { kind: 'fertilise'; count: number }
+  /** Haul `count` goods to the stores by oxcart. */
+  | { kind: 'haul'; count: number }
   // State goals
   | { kind: 'own-buildings'; type: string; count: number }
   | { kind: 'own-animals'; animal?: AnimalKind; count: number }
@@ -100,6 +102,8 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'harvest-potatoes', title: 'Harvest 30 potatoes', icon: '🥔', kind: 'harvest', item: 'potato', count: 30, reward: { money: 120, xp: 50 } },
   { id: 'winter-cabbage', title: 'Harvest cabbage in winter', icon: '🥬', kind: 'harvest', item: 'cabbage', season: 'winter', count: 1, reward: { money: 250, xp: 120 } },
   { id: 'grow-pumpkins', title: 'Grow 10 pumpkins', icon: '🎃', kind: 'harvest', item: 'pumpkin', count: 10, reward: { money: 300, xp: 150 } },
+  { id: 'build-oxbarn', title: 'Build an ox barn', icon: '🐂', kind: 'own-buildings', type: 'oxbarn', count: 1, reward: { money: 150, xp: 60 } },
+  { id: 'haul-goods', title: 'Haul 100 goods by cart', icon: '🛒', kind: 'haul', count: 100, reward: { money: 250, xp: 120 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {
