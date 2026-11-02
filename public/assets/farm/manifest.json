@@ -10110,35 +10110,111 @@
    "category": "buildings",
    "type": "image",
    "footprint": [
-    2,
-    2
+    3,
+    3
    ],
-   "notes": "farmhouse, 2x2 (Ludo.ai, cel-shaded): door on the front-left (+y) face, shadow baked onto its pad",
+   "notes": "farmhouse, level 1 and the build card, 3x3 (Ludo.ai, cel-shaded): door on the front-left (+y) face, shadow baked onto its pad",
    "res": {
     "2x": {
      "file": "2x/buildings/farmhouse.png",
-     "w": 508,
-     "h": 415,
+     "w": 762,
+     "h": 594,
      "anchor": [
-      253.0,
-      159.0
+      381.0,
+      207.0
      ],
      "origin": [
-      0.49803,
-      0.38313
+      0.5,
+      0.34848
      ]
     },
     "1x": {
      "file": "1x/buildings/farmhouse.png",
-     "w": 254,
-     "h": 208,
+     "w": 381,
+     "h": 297,
      "anchor": [
-      126.5,
-      79.5
+      190.5,
+      103.5
      ],
      "origin": [
-      0.49803,
-      0.38221
+      0.5,
+      0.34848
+     ]
+    }
+   }
+  },
+  {
+   "name": "farmhouse_2",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "farmhouse level 2 (manor house), 3x3: stone wing, porch, three chimneys; door on the front-left (+y) face (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/farmhouse_2.png",
+     "w": 762,
+     "h": 659,
+     "anchor": [
+      381.0,
+      271.0
+     ],
+     "origin": [
+      0.5,
+      0.41123
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/farmhouse_2.png",
+     "w": 381,
+     "h": 330,
+     "anchor": [
+      190.5,
+      135.5
+     ],
+     "origin": [
+      0.5,
+      0.41061
+     ]
+    }
+   }
+  },
+  {
+   "name": "farmhouse_3",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "farmhouse level 3 (manor hall), 3x3: stone tower with a bell turret, walled forecourt; door on the front-left (+y) face (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/farmhouse_3.png",
+     "w": 764,
+     "h": 707,
+     "anchor": [
+      382.0,
+      305.0
+     ],
+     "origin": [
+      0.5,
+      0.4314
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/farmhouse_3.png",
+     "w": 382,
+     "h": 354,
+     "anchor": [
+      191.0,
+      152.5
+     ],
+     "origin": [
+      0.5,
+      0.43079
      ]
     }
    }
@@ -26054,35 +26130,111 @@
    "category": "buildings",
    "type": "image",
    "footprint": [
-    2,
-    2
+    3,
+    3
    ],
-   "notes": "farmhouse in winter (Ludo.ai, cel-shaded): snow on the roof and pad, icicles",
+   "notes": "farmhouse level 1 in winter, 3x3 (Ludo.ai, cel-shaded): snow on the roof and pad, icicles",
    "res": {
     "2x": {
      "file": "2x/buildings/farmhouse_winter.png",
-     "w": 503,
-     "h": 403,
+     "w": 764,
+     "h": 605,
      "anchor": [
-      252.0,
-      150.0
+      381.0,
+      219.0
      ],
      "origin": [
-      0.50099,
-      0.37221
+      0.49869,
+      0.36198
      ]
     },
     "1x": {
      "file": "1x/buildings/farmhouse_winter.png",
-     "w": 252,
-     "h": 202,
+     "w": 382,
+     "h": 302,
      "anchor": [
-      126.0,
-      75.0
+      190.5,
+      109.5
      ],
      "origin": [
-      0.5,
-      0.37129
+      0.49869,
+      0.36258
+     ]
+    }
+   }
+  },
+  {
+   "name": "farmhouse_2_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "farmhouse level 2 in winter: snow on the roofs and pad, icicles (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/farmhouse_2_winter.png",
+     "w": 761,
+     "h": 658,
+     "anchor": [
+      381.0,
+      270.0
+     ],
+     "origin": [
+      0.50066,
+      0.41033
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/farmhouse_2_winter.png",
+     "w": 380,
+     "h": 329,
+     "anchor": [
+      190.5,
+      135.0
+     ],
+     "origin": [
+      0.50132,
+      0.41033
+     ]
+    }
+   }
+  },
+  {
+   "name": "farmhouse_3_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    3
+   ],
+   "notes": "farmhouse level 3 in winter: snow on the roofs, tower and forecourt, icicles (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/farmhouse_3_winter.png",
+     "w": 763,
+     "h": 707,
+     "anchor": [
+      381.0,
+      305.0
+     ],
+     "origin": [
+      0.49934,
+      0.4314
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/farmhouse_3_winter.png",
+     "w": 382,
+     "h": 354,
+     "anchor": [
+      190.5,
+      152.5
+     ],
+     "origin": [
+      0.49869,
+      0.43079
      ]
     }
    }
