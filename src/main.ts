@@ -5,11 +5,13 @@ import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
 import { readDebugInfo } from './game/hooks';
 import { Game, type FarmSnapshot } from './logic/game';
+import { marketPrices } from './logic/market';
 import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
 import { ordersOf, type OrdersState } from './logic/orders';
 import { loadSave, saveToStorage, serialize, type SaveStorage } from './logic/save';
 import { listSlots, readSlot, STORAGE_FULL, summarize, type SlotSummary } from './logic/slots';
 import { createNewGame } from './logic/state';
+import { traderInfo } from './logic/trader';
 import type { StorageInfo } from './logic/storage';
 import { BootScene } from './scenes/BootScene';
 import { FarmScene } from './scenes/FarmScene';
@@ -39,6 +41,13 @@ declare global {
         menu: MenuMode | null;
         /** The autosave and the three manual save slots, as the Load screen lists them. */
         slots: readonly SlotSummary[];
+        /**
+         * The travelling trader: whether he is here, when he arrives and leaves (game ms: the one here, else the next
+         * one due; nulls below level 3), and while here what he wants and sells with the stock left.
+         */
+        trader: ReturnType<typeof traderInfo>;
+        /** Item id → the Market's price for one unit now and how far it is down from the day's price (0..0.5). */
+        market: Record<string, { price: number; drop: number }>;
         /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
         iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
       }
@@ -196,6 +205,8 @@ Object.defineProperty(window, 'farm', {
       lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)),
       menu: menu.current,
       slots: Object.freeze(listSlots(storage).map((s) => Object.freeze(s))),
+      trader: traderInfo(game),
+      market: marketPrices(game.state),
       iso,
     });
   },

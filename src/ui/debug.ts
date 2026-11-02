@@ -5,7 +5,9 @@ import { DAY_MS } from '../logic/constants';
 import { addFamily } from '../logic/families';
 import { mapOf, regrowAll } from '../logic/maplayer';
 import { catchUpGame } from '../logic/offline';
+import { clearDrops } from '../logic/market';
 import { refreshOrders } from '../logic/orders';
+import { traderNow } from '../logic/trader';
 import { nextSeasonAt } from '../logic/seasons';
 import { fullMessage, poolOf } from '../logic/storage';
 import { h } from './dom';
@@ -119,7 +121,7 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
         class: 'btn',
         'data-testid': 'debug-next-season',
         // Jumps the clock like time away (crops, animals and jobs move on), without the welcome-back summary.
-        onclick: () => catchUpGame(game, nextSeasonAt(game.now) - game.now),
+        onclick: () => catchUpGame(game, nextSeasonAt(game.now) - game.now, { away: false }),
       },
       'Next season',
     ),
@@ -146,7 +148,7 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
           class: 'btn',
           'data-testid': 'debug-next-day',
           // Like "Next season": the families settle the new day (meal, firewood, clothes, approval) on the way.
-          onclick: () => catchUpGame(game, (Math.floor(game.now / DAY_MS) + 1) * DAY_MS - game.now),
+          onclick: () => catchUpGame(game, (Math.floor(game.now / DAY_MS) + 1) * DAY_MS - game.now, { away: false }),
         },
         'Next day',
       ),
@@ -179,6 +181,37 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
         },
       },
       'Refresh orders',
+    ),
+    h(
+      'div',
+      { class: 'debug-row' },
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'btn',
+          'data-testid': 'debug-trader-now',
+          // Whatever the schedule and level: he parks by the farmhouse and stays until the day ends.
+          onclick: () => {
+            traderNow(game);
+            ctx.ui.toast('🛒 A travelling trader has parked by the farmhouse', 'success');
+          },
+        },
+        'Trader now',
+      ),
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'btn',
+          'data-testid': 'debug-clear-drops',
+          onclick: () => {
+            clearDrops(game.state);
+            ctx.ui.toast('Market prices back to normal', 'success');
+          },
+        },
+        'Clear market drops',
+      ),
     ),
     h(
       'button',

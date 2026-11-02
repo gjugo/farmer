@@ -40,6 +40,8 @@ export type GoalTask =
   | { kind: 'buy'; item: KnownItemId; count: number }
   /** Earn $`count` from sales. */
   | { kind: 'earn'; count: number }
+  /** Trades with travelling traders (one per sale or purchase). */
+  | { kind: 'trade'; count: number }
   /** Build `count` buildables of `type`. */
   | { kind: 'build'; type: string; count: number }
   /** Upgrade buildables of `type` `count` times. */
@@ -94,6 +96,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'mine-iron', title: 'Mine 5 iron', icon: '🔩', kind: 'produce', item: 'iron', count: 5, reward: { money: 200, xp: 100 } },
   { id: 'own-sheep', title: 'Own 2 sheep', icon: '🐑', kind: 'own-animals', animal: 'sheep', count: 2, reward: { money: 200, xp: 100 } },
   { id: 'weave-cloth', title: 'Weave 2 cloth', icon: '🧵', kind: 'make', item: 'cloth', count: 2, reward: { money: 250, xp: 120 } },
+  { id: 'trade-trader', title: 'Trade with a travelling trader', icon: '🛒', kind: 'trade', count: 1, reward: { money: 150, xp: 75 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

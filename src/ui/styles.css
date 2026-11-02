@@ -695,6 +695,18 @@ button {
   color: var(--muted);
 }
 
+.market-price .flooded {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #3f74b5;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+
 .market-actions {
   grid-area: actions;
   display: flex;
@@ -1401,6 +1413,22 @@ body[data-menu] .tool-banner {
 
 .hud-badge[hidden] {
   display: none;
+}
+
+/* A visitor's chip (the travelling trader): stands out from the tools. */
+.hud-btn.hud-chip {
+  background: var(--gold);
+  border-color: var(--wood-dark);
+}
+
+.trader-intro {
+  margin-top: 0;
+}
+
+.trader-left {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .orders-intro {

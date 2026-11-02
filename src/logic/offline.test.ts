@@ -7,6 +7,7 @@ import { animalStatus, buyAnimal, feedAll, type PenState } from './animals';
 import { DAY_MS } from './constants';
 import { cropStage, plant, plough, type FieldState } from './crops';
 import { Game } from './game';
+import { updateTrader } from './trader';
 import { setOwned } from './land';
 import { catchUp, catchUpGame, formatAway, shouldShowSummary } from './offline';
 import { settle, startJob, type ProcessorState } from './processing';
@@ -124,6 +125,7 @@ describe('offline catch-up', () => {
     for (let t = 0; t < away; t += 250) {
       played.game.tick(250);
       settle(played.game.state.clock, played.dairy);
+      updateTrader(played.game); // as the trader feature does every frame
     }
     const caught = build();
     catchUp(caught.game, away);

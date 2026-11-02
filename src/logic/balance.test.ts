@@ -7,7 +7,8 @@ import { GRANARY, POOL_BUILDING, type StoragePool } from '../data/storage';
 import { buyAnimal, buyFeed, feedNeeded, type PenState } from './animals';
 import type { FieldState } from './crops';
 import { Game } from './game';
-import { buy, buyPrice, buyUnlockLevel, sell } from './market';
+import { allowance, buy, buyPrice, buyUnlockLevel, marketOf, sell } from './market';
+import { sellToTrader, traderHere, traderOf, updateTrader } from './trader';
 import { START_LAND } from './constants';
 import { buyParcel, FARM_PARCELS, parcelPrice, parcelsBought, parcelsForSale } from './parcels';
 import { connectToFarmhouse, doorOf, farmhouseOf } from './roads';
@@ -79,10 +80,13 @@ function touches(tiles: Set<string>, a: { x: number; y: number; w: number; h: nu
 
 /** The new game's map: any seed gives a start grove and outcrop, this one keeps the runs repeatable. */
 const MAP_SEED = 20261031;
+/** The travelling traders' schedule and offers, fixed so the runs repeat. */
+const TRADER_SEED = 79;
 
 function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields: number; minutes: number }): Sim {
   const state = createNewGame();
   state.ext[MAP_SLICE] = newMapLayer(state, MAP_SEED);
+  traderOf(state).seed = TRADER_SEED;
   const game = new Game(state);
   const reachedAt = new Map<number, number>([[1, 0]]);
   game.events.on('levelUp', ({ level }) => reachedAt.set(level, game.now));
@@ -101,6 +105,8 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     if (!buyingFirewood) bought[item] = (bought[item] ?? 0) + qty;
   });
   const STEP = 1000;
+  /** Units it sells past an item's daily allowance: a price up to this many % down is still worth taking. */
+  const FLOOD_OK = 10;
   const KEEP_MATERIALS = 10;
 
   /** Buys what `cost` lacks, in fives, if there is the money (keeping `reserve`) and the room; false when it can't. */
@@ -202,10 +208,22 @@ function simulate({ reactMs, maxFields, minutes }: { reactMs: number; maxFields:
     const lean = winterSoon || (seasonAt(game.now) === 'spring' && dayOfSeason(game.state.clock) <= 2);
     const days = lean ? SEASON_DAYS + 4 : 1;
     const keepFood = fed ? Math.ceil((days * MEAL_PER_FAMILY * families) / foodKinds) + 1 : 0;
+    // A trader in the yard gets first pick of what it would sell.
+    updateTrader(game);
+    const trader = traderHere(game.state);
+    trader?.wants.forEach((w, i) => {
+      const spare = game.count(w.item) - (PANTRY.includes(w.item) ? keepFood : 0);
+      if (spare > 0) sellToTrader(game, i, spare);
+    });
+    // It doesn't flood the Market: past an item's daily allowance (and a 10% drop) it keeps the rest for tomorrow,
+    // unless the granary is half full.
+    const tight = used(game.state, 'goods') >= 0.5 * capacity(game.state, 'goods');
     for (const id of Object.keys(game.state.inventory)) {
       if (id === 'feed' || isMaterial(id)) continue;
       const keep = PANTRY.includes(id) ? keepFood : 0;
-      if (game.count(id) > keep) sell(game, id, game.count(id) - keep);
+      const room = tight ? Infinity : Math.max(0, allowance(id) + FLOOD_OK - (marketOf(game.state).sold[id] ?? 0));
+      const n = Math.min(game.count(id) - keep, room);
+      if (n > 0) sell(game, id, n);
     }
     const firewood = SEASON_DAYS * FIREWOOD_PER_HOME * Math.min(families, homesOf(game.state));
     // Materials its buildings made beyond a working stock are sold too.
@@ -339,6 +357,11 @@ describe('level curve balance', () => {
   // goal now counts a coop built before it shows (it blocked a goal slot for good). With level 5 at 6000 XP the casual
   // player missed it (≈5900 XP in 3 h), at 5500 reached it at 183 min; at 5000: casual L2 9.0, L5 171.0; relaxed
   // L2 9.0, L5 159.0; busy L2 9.0, L5 153.7.
+  // Market saturation (each item's price falls past ~$150 a day of it, recovering a quarter a day) and travelling
+  // traders from level 3. Selling everything at once as before: casual L5 174.0, relaxed 176.0, busy 146.8. It now
+  // sells each item only up to the day's allowance and 10 more (unless the granary is half full), and its wanted goods to
+  // a trader first: casual L2 9.0, L5 156.0; relaxed L2 9.5, L5 172.5; busy L2 9.2, L5 119.3 (trader seed 79; over
+  // seeds 1-5 relaxed L5 172.5-178.5, casual 162-173, the same as before saturation: relaxed 172.5, casual 174.0).
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });
