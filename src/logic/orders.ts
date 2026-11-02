@@ -140,9 +140,15 @@ export function orderPool(orders: OrdersState): ItemId[] {
 
 // Generating -----------------------------------------------------------------------
 
-/** Quantity range for one item: cheap raw goods in larger amounts (up to 10), processed goods 1–3. */
+/** Processed goods worth this much or more are ordered 1–3 at a time. */
+const DEAR_GOODS = 12;
+
+/**
+ * Quantity range for one item: cheap goods in larger amounts (up to 10), the dear processed goods 1–3. Bread and flour
+ * are cheap processed goods, ordered by the dozen like crops.
+ */
 export function qtyRange(item: ItemDef): { min: number; max: number } {
-  if (item.category === 'processed') return { min: 1, max: 3 };
+  if (item.category === 'processed' && item.price >= DEAR_GOODS) return { min: 1, max: 3 };
   const max = Math.min(10, Math.max(2, Math.round(60 / item.price)));
   return { min: Math.ceil(max / 2), max };
 }
