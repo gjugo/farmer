@@ -81,7 +81,7 @@ describe('tree species', () => {
         const kind = speciesAt(layer, t.x, t.y);
         const where = treeSite(layer, t.x, t.y);
         counts[kind]++;
-        if (kind === 'willow') expect(nearPond(t.x, t.y)).toBe(true);
+        if (kind === 'willow') expect(where.pond && nearPond(t.x, t.y)).toBe(true);
         if (kind === 'apple') expect(where.start || where.edge).toBe(true);
         // The wood's main mix holds, apart from the edge's birches and apples and the ponds' willows.
         const mix = woodMix(parcelAt(FARM_PARCELS, t.x, t.y), t.x, t.y);

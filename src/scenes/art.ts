@@ -433,10 +433,15 @@ export function woodMix(area: { x: number; y: number } | undefined, x: number, y
 /** Willows grow only this close (in tiles, either way) to a pond site. */
 export const WILLOW_POND_REACH = 3;
 
-/** Is there a pond site (`sceneryArt` is POND) within `WILLOW_POND_REACH` tiles of (x, y)? */
-export function nearPond(x: number, y: number): boolean {
+/**
+ * Is there a pond site (`sceneryArt` is POND) within `WILLOW_POND_REACH` tiles of (x, y)? `skip` leaves out sites
+ * that never show a pond (e.g. under a tree, or on the starting land).
+ */
+export function nearPond(x: number, y: number, skip: (x: number, y: number) => boolean = () => false): boolean {
   for (let dy = -WILLOW_POND_REACH; dy <= WILLOW_POND_REACH; dy++) {
-    for (let dx = -WILLOW_POND_REACH; dx <= WILLOW_POND_REACH; dx++) if (sceneryArt(x + dx, y + dy) === POND) return true;
+    for (let dx = -WILLOW_POND_REACH; dx <= WILLOW_POND_REACH; dx++) {
+      if (sceneryArt(x + dx, y + dy) === POND && !skip(x + dx, y + dy)) return true;
+    }
   }
   return false;
 }
