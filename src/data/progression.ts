@@ -53,7 +53,9 @@ export type GoalTask =
   | { kind: 'own-parcels'; count: number }
   | { kind: 'reach-level'; count: number }
   /** Have `count` families (farmers) living on the farm. */
-  | { kind: 'families'; count: number };
+  | { kind: 'families'; count: number }
+  /** Have `count` coops with a kennel in reach (see `src/logic/hazards.ts`). */
+  | { kind: 'protected-coops'; count: number };
 
 export type GoalDef = GoalTask & {
   id: string;
@@ -94,6 +96,8 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'mine-iron', title: 'Mine 5 iron', icon: '🔩', kind: 'produce', item: 'iron', count: 5, reward: { money: 200, xp: 100 } },
   { id: 'own-sheep', title: 'Own 2 sheep', icon: '🐑', kind: 'own-animals', animal: 'sheep', count: 2, reward: { money: 200, xp: 100 } },
   { id: 'weave-cloth', title: 'Weave 2 cloth', icon: '🧵', kind: 'make', item: 'cloth', count: 2, reward: { money: 250, xp: 120 } },
+  { id: 'build-well', title: 'Build a well', icon: '🪣', kind: 'own-buildings', type: 'well', count: 1, reward: { money: 60, xp: 25 } },
+  { id: 'guard-coop', title: 'Protect a coop with a kennel', icon: '🐕', kind: 'protected-coops', count: 1, reward: { money: 80, xp: 30 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

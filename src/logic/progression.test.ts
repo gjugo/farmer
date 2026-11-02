@@ -181,7 +181,7 @@ describe('unlocks', () => {
   });
 
   it('lists what each level unlocks', () => {
-    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Pasture']);
+    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Kennel', 'Pasture']);
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
   });
 });

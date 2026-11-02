@@ -6,7 +6,6 @@ import {
   CLOTH_PER_FAMILY,
   COTTAGE,
   FARMHOUSE_HOMES,
-  FIREWOOD_PER_HOME,
   FOODS,
   LEAVE_APPROVAL,
   MEAL_PER_FAMILY,
@@ -17,6 +16,7 @@ import { SEASONS } from '../data/seasons';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS } from './constants';
 import type { Game } from './game';
+import { firewoodPerHome } from './hazards';
 import * as inventory from './inventory';
 import { seasonAt, SEASON_MS } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
@@ -241,7 +241,8 @@ function settleDay(game: Game, day: number): void {
   const eaten = Object.values(ate).reduce((a, b) => a + b, 0);
 
   const winter = seasonAt(t) === 'winter';
-  const firewoodNeeded = Math.min(homesOf(state), families) * FIREWOOD_PER_HOME;
+  // A harsh winter doubles it (`src/logic/hazards.ts`); the approval rules stay the same.
+  const firewoodNeeded = Math.min(homesOf(state), families) * firewoodPerHome(state, t);
   let firewood: number | null = null;
   if (winter) {
     firewood = Math.min(firewoodNeeded, game.count('wood'));
