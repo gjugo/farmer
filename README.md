@@ -378,6 +378,40 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   the offline catch-up agree. The perks taken are listed in the **⭐ Perks** tab of the Development window (click the level), with a button for
   the open choices. A save from before perks gets one open choice per level it has already reached.
 
+### Guide
+
+A non-blocking first-session guide walks a new farm up to its first cottage, one step at a time. It only points: the
+game keeps running, nothing is dimmed and nothing is blocked.
+
+- **Start:** after **New game** a "Welcome to your farm" dialog offers **Show me around** and **Skip the guide**; the
+  clock waits while it is open (Esc skips). It is offered on every new game. Continue, loading a save and `?menu=0` on a
+  fresh browser never start it; saves from before the guide load with it off. ⚙️ Menu → Settings → **🧭 Guide** →
+  **Restart the guide** starts it again on the current farm at step 1.
+- **The card** says "Step N of M", one or two sentences naming the hotkey, **Next ›** (**Finish** on the last step) and
+  **✕ End guide**. On a desktop it sits on the left under the farm overview; on a phone it is a strip above the clock
+  and speed that opens and folds on a tap of its head and makes way while a bottom sheet or the construction menu is
+  open. A pulsing gold **ring** goes round what the step names (a tool bar button, a build category or card, a tab, ⭐ the
+  level, the speed, the open panel's action; steady with reduced motion; hidden while a tool is in use) and a pulsing
+  **marker** stands on the map when the step means a field. Card and ring sit under dialogs and the menu; Esc never
+  closes them.
+- **Steps** (texts and ring targets in `src/data/guide.ts`, what finishes each in `src/logic/guide.ts`):
+  1. Look around → the camera moved or zoomed. 2. Assign a farmer to a starting field → a field has a farmer.
+  3. Speed (⏩ ⏭, keys 1–3, ⏸/Space) → the speed or pause changed. 4. Sow the other field by hand (🌾 Wheat) → a field
+  without a farmer has a crop. 5. ⭐ the level → the Development window opened. 6. Build a field → a field placed.
+  7. Harvest → `harvested`. 8. Sell at the Market → `sold`. 9. Wood: buy it, or build a woodcutter's lodge → wood
+  bought or a lodge placed. 10. A granary → placed. 11. A cottage → placed. 12. You're set (Almanac, perks, Settings)
+  → **Finish**.
+  Each step finishes on its event or with Next. One whose event came earlier, or whose result is already on the farm
+  (a farmer on a field, a granary, a cottage, a lodge, crops in store, a third field), is skipped when it comes up, so
+  steps can be done in any order.
+- **State:** saved per farm in `ext.guide` (`{ started, step, finished, skipped, done }`, `done` = steps whose event
+  came early); a reload resumes the step. Purely additive: no `SAVE_VERSION` bump; a save without it has the guide off.
+- **QA:** `window.farm.guide` is `{ active, step, index, total, finished, skipped }` (`step` the step's id, `index`
+  its number on the card, 1-based, 0 when off). Test ids: `guide-welcome`, `guide-start`, `guide-skip`, `guide-card`
+  (with `data-step`), `guide-toggle` (the card's head), `guide-text`, `guide-next`, `guide-end`, `guide-ring` (with
+  `data-target`, the test id it goes round), `guide-marker`, `settings-guide-restart`, `settings-guide-status`. The HUD
+  reports what it shows with the `hud` UI signal (`src/game/signals.ts`) and the farm scene camera moves with `camera`.
+
 ### Debug mode (QA)
 
 Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60 / ×300**
@@ -608,6 +642,8 @@ src/
     land/              "For sale" signs on parcels next to owned land, buy dialog
     audio/             effects, animal voices, ambience, music; mute button, sound settings, credits
                        (files: public/audio/*.mp3, licences: CREDITS.md)
+    guide/             the first-session guide: welcome dialog, step card, ring and map marker, Settings section,
+                       `window.farm.guide` (data: src/data/guide.ts, logic: src/logic/guide.ts)
 ```
 
 ## Extending the game
@@ -743,7 +779,8 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 - **Land:** `game.setLandOwned(x, y, true)` repaints tiles and fences.
 - **Startup logic:** `onGameStart((ctx) => { ... })`.
 - **New-game content:** `onNewGame((state) => addStartingObject(state, 'field', x, y))` from
-  `src/logic/state.ts` (runs only for brand-new farms, not loaded saves).
+  `src/logic/state.ts` (runs only for brand-new farms, not loaded saves). Setups run in import order;
+  `onNewGame(setup, { late: true })` runs after all the others (the farmhouse lays its roads to what they placed).
 
 ## Save data
 

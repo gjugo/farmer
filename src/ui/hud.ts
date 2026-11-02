@@ -4,7 +4,7 @@ import { formatMaterials } from '../data/materials';
 import { SEASON_DAYS, SEASON_INFO } from '../data/seasons';
 import type { ConfirmOptions, FarmContext, PanelBuilder, PanelSpec, SheetSpec, ToolMode, UiApi } from '../game/context';
 import { listHotkeys, listHudButtons, registerDebugInfo, type HudButton, type HudSpot, type HudWindowId } from '../game/hooks';
-import { uiSignals } from '../game/signals';
+import { uiSignals, type HudView } from '../game/signals';
 import { timeOfDay } from '../logic/clock';
 import { DEMOLISH_REFUND } from '../logic/constants';
 import { seasonCheck } from '../logic/crops';
@@ -126,6 +126,8 @@ export class Hud implements UiApi {
   private lastTab = new Map<HudWindowId, string>();
   /** The tool was picked in the construction menu: stepping back (Esc, Cancel) returns to it. */
   private toolFromMenu = false;
+  /** The last view announced with the `hud` signal. */
+  private viewSig = '';
 
   constructor(
     private readonly root: HTMLElement,
@@ -169,12 +171,8 @@ export class Hud implements UiApi {
     );
     registerDebugInfo('hud', () =>
       Object.freeze({
-        window: this.win?.id ?? null,
-        tab: this.win?.tab ?? null,
-        sheet: this.sheet?.id ?? null,
+        ...this.view(),
         build: Object.freeze({ open: this.buildMenu.open, category: this.buildMenu.category }),
-        speed: ctx.game.speed,
-        paused: ctx.game.playerPaused,
         banners: Object.freeze(this.banners.filter((b) => !b.btn.hidden).map((b) => b.def.id)),
       }),
     );
@@ -409,8 +407,30 @@ export class Hud implements UiApi {
     for (const [w, el] of this.windowBadges) setBadge(el, sums.get(w) ?? 0);
   }
 
+  /** What the HUD shows now. */
+  private view(): HudView {
+    return {
+      window: this.win?.id ?? null,
+      tab: this.win?.tab ?? null,
+      sheet: this.sheet?.id ?? null,
+      build: { open: this.buildMenu.open, category: this.buildMenu.category },
+      speed: this.ctx.game.speed,
+      paused: this.ctx.game.playerPaused,
+    };
+  }
+
+  /** Sends the `hud` signal when what the HUD shows has changed since the last one. */
+  private announce(): void {
+    const view = this.view();
+    const sig = JSON.stringify(view);
+    if (sig === this.viewSig) return;
+    this.viewSig = sig;
+    uiSignals.emit('hud', view);
+  }
+
   /** Re-renders whatever depends on game state. Cheap; called on events and on a timer. */
   refresh(): void {
+    this.announce();
     this.updateStats();
     this.buildMenu.refresh();
     this.tip.refresh();
@@ -527,6 +547,7 @@ export class Hud implements UiApi {
     this.levelBtn.classList.toggle('active', this.win?.id === 'development');
     this.buildMenu.demolishBtn.classList.toggle('active', mode.kind === 'demolish');
     this.buildMenu.demolishBtn.setAttribute('aria-pressed', String(mode.kind === 'demolish'));
+    this.announce();
   }
 
   // Recent events --------------------------------------------------------------------

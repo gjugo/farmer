@@ -220,4 +220,5 @@ export function ensureFarmhouse(state: GameState, preferred: Tile = STARTING_FAR
   if (!occupancy(state).has(key(door.x, door.y))) addStartingObject(state, PATH, door.x, door.y);
 }
 
-onNewGame((state) => ensureFarmhouse(state));
+// Late: the roads go to the starting fields (and anything else a setup placed), whichever module loaded first.
+onNewGame((state) => ensureFarmhouse(state), { late: true });

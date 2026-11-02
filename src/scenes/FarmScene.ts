@@ -6,6 +6,7 @@ import { formatMaterials, needsMaterialsMessage } from '../data/materials';
 import { buildWorkMs } from '../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
 import { getBehavior, registerDebugInfo, runBuildPreview, runStartHooks, runTileTapHandlers, type BuildPreview } from '../game/hooks';
+import { uiSignals } from '../game/signals';
 import { farmerName, NO_ROAD_MESSAGE, reachable, workplacePanel } from '../game/workers';
 import { formatDuration } from '../logic/crops';
 import { footprintOf, refundOf, type DemolishCheck, type PlaceResult } from '../logic/game';
@@ -577,12 +578,14 @@ export class FarmScene extends Phaser.Scene {
     cam.setZoom(z);
     cam.setScroll(wx - ox - (sx - ox) / z, wy - oy - (sy - oy) / z);
     this.clampCamera();
+    uiSignals.emit('camera', {});
   }
 
   private panBy(dxScreen: number, dyScreen: number): void {
     const cam = this.cameras.main;
     cam.setScroll(cam.scrollX - dxScreen / cam.zoom, cam.scrollY - dyScreen / cam.zoom);
     this.clampCamera();
+    uiSignals.emit('camera', {});
   }
 
   private panWithKeys(delta: number): void {

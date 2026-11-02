@@ -9,11 +9,14 @@ import type { GameState, PlacedObject } from './types';
 /** Fills a brand-new farm, e.g. with starting fields. Not run for loaded saves. */
 export type NewGameSetup = (state: GameState) => void;
 
-const setups: NewGameSetup[] = [];
+const setups: { setup: NewGameSetup; late: boolean }[] = [];
 
-/** Registers starting content for new games. Features call this from their own module. */
-export function onNewGame(setup: NewGameSetup): void {
-  setups.push(setup);
+/**
+ * Registers starting content for new games. Features call this from their own module, so setups run in import order;
+ * a `late` setup runs after all the others (the farmhouse lays its roads to what they placed, whatever the order).
+ */
+export function onNewGame(setup: NewGameSetup, { late = false }: { late?: boolean } = {}): void {
+  setups.push({ setup, late });
 }
 
 export function createNewGame(): GameState {
@@ -28,7 +31,7 @@ export function createNewGame(): GameState {
     clock: createClock(),
     ext,
   };
-  for (const setup of setups) setup(state);
+  for (const late of [false, true]) for (const s of setups) if (s.late === late) s.setup(state);
   return state;
 }
 
