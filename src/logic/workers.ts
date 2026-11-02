@@ -5,7 +5,7 @@ import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { PROCESSORS } from '../data/processing';
 import { RESOURCES } from '../data/resourceBuildings';
 import { TOOL_USES } from '../data/tools';
-import { MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
+import { MAX_FARMERS, MIN_FARMERS, type JobKind } from '../data/workers';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Game } from './game';
 import { returnLoad, type HaulTrip } from './haul';
@@ -17,7 +17,7 @@ import type { ClockState, GameState } from './types';
 
 /**
  * One job in progress: which farmer does what, where, until when. The farmer walks from the
- * farmhouse along `route`, works, and walks back; the timer covers all three.
+ * village centre (the camp, a cottage or the farmhouse) along `route`, works, and walks back; the timer covers all three.
  */
 export interface Job {
   kind: JobKind;
@@ -27,7 +27,7 @@ export interface Job {
   timer: Timer;
   /** Which farmer (0-based) does it. Missing in saves from before routes. */
   farmer?: number;
-  /** Path tiles from the farmhouse door to the site. Missing or empty: no walk. */
+  /** Path tiles from the village centre to the site. Missing or empty: no walk. */
   route?: Tile[];
   /** Game ms of the walk each way. */
   walkMs?: number;
@@ -65,7 +65,8 @@ export interface WorkersState {
   tools: (number | null)[];
 }
 
-registerStateSlice<WorkersState>('workers', () => ({ farmers: STARTING_FARMERS, jobs: [], workplaces: [], plans: {}, recipes: {}, tools: [] }), shiftJobs);
+// A new game's camp sets its starting families (`src/logic/camp.ts`); saves from before it had one.
+registerStateSlice<WorkersState>('workers', () => ({ farmers: MIN_FARMERS, jobs: [], workplaces: [], plans: {}, recipes: {}, tools: [] }), shiftJobs);
 
 /** Moves the saved jobs' work spots and routes by (dx, dy), for save migrations that move the farm. */
 export function shiftJobs(saved: unknown, dx: number, dy: number): unknown {
@@ -90,7 +91,7 @@ export function isWorkplaceType(type: string): boolean {
  */
 export function workersOf(state: GameState): WorkersState {
   const w = getSlice<WorkersState>(state, 'workers');
-  if (!Number.isInteger(w.farmers) || w.farmers < STARTING_FARMERS) w.farmers = STARTING_FARMERS;
+  if (!Number.isInteger(w.farmers) || w.farmers < MIN_FARMERS) w.farmers = MIN_FARMERS;
   if (w.farmers > MAX_FARMERS) w.farmers = MAX_FARMERS;
   if (!Array.isArray(w.jobs)) w.jobs = [];
   else w.jobs = w.jobs.filter((j) => isPlainObject(j) && isPlainObject(j.timer) && typeof j.timer.start === 'number' && typeof j.timer.duration === 'number');
@@ -324,12 +325,12 @@ export function addFarmer(game: Game): boolean {
 /**
  * The last farmer leaves (their family moved away): any job they were on is dropped (a site they were building waits
  * for another farmer) and their workplace is freed. Returns that workplace, or null when the farm is down to its
- * starting farmers and nobody leaves.
+ * last farmer and nobody leaves.
  */
 export function removeFarmer(game: Game): { workplace: string | null } | null {
   const { state } = game;
   const w = workersOf(state);
-  if (w.farmers <= STARTING_FARMERS) return null;
+  if (w.farmers <= MIN_FARMERS) return null;
   const i = w.farmers - 1;
   const workplace = w.workplaces[i] ?? null;
   w.farmers--;

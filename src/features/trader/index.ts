@@ -25,7 +25,7 @@ import { formatMoney, h } from '../../ui/dom';
 import { itemIcon } from '../../ui/icons';
 
 /**
- * The travelling trader: his wagon by the farmhouse, a HUD banner and a ⚖️ Trade tab the day before and while he is
+ * The travelling trader: his wagon in the village (by the camp, later the farmhouse), a HUD banner and a ⚖️ Trade tab the day before and while he is
  * here, and his panel.
  * Logic (schedule, offers, trading) lives in `src/logic/trader.ts`.
  */
@@ -234,7 +234,7 @@ onGameStart((ctx) => {
   const onUpdate = () => {
     const r = updateTrader(game);
     if (r.announced !== null) ctx.ui.toast('🛒 A travelling trader arrives tomorrow. He stays one day.', 'info');
-    if (r.arrived) ctx.ui.toast('🛒 A travelling trader has parked by the farmhouse. Tap his wagon to trade.', 'success');
+    if (r.arrived) ctx.ui.toast('🛒 A travelling trader has parked in the village. Tap his wagon to trade.', 'success');
     if (r.left) ctx.ui.toast('🛒 The travelling trader has moved on.', 'info');
     draw();
   };

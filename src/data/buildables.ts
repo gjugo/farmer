@@ -30,8 +30,14 @@ export interface BuildableDef {
   icon?: string;
   /** Farm level that unlocks building it (default 1). Already-built ones keep working. */
   unlockLevel?: number;
-  /** Part of every farm (the farmhouse): not in the build menu and never demolished. */
+  /** Set up by the game itself (the camp): not in the build menu and never demolished. */
   fixed?: boolean;
+  /** One per farm (the farmhouse): a second one can't be placed, and its card says "Built". */
+  unique?: boolean;
+  /** Never demolished once finished (the farmhouse); its construction site can still be cancelled. */
+  permanent?: boolean;
+  /** Game ms of building work, instead of the footprint's (see `buildWorkMs` in `src/data/workers.ts`). */
+  buildWorkMs?: number;
   /**
    * Initial per-type state for a newly placed object, told where it stands and the game time. Also used as defaults
    * when loading a save, so fields added later get filled in. Must be JSON-serialisable.
@@ -57,6 +63,12 @@ export function getBuildable(id: string): BuildableDef | undefined {
 /** All buildables in registration order. */
 export function listBuildables(): BuildableDef[] {
   return [...registry.values()];
+}
+
+/** Can `obj` be demolished (or its site cancelled)? Not the fixed ones, nor a finished permanent one. */
+export function demolishable(obj: { type: string; site?: unknown }): boolean {
+  const def = getBuildable(obj.type);
+  return !def?.fixed && !(def?.permanent && !obj.site);
 }
 
 /** What the player can build: every buildable but the fixed ones. */

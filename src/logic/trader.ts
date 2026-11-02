@@ -12,12 +12,12 @@ import { footprintOf, type Game } from './game';
 import { buyPrice, hash, PRICE_MAX_FACTOR } from './market';
 import { isOrderable, nextRandom } from './orders';
 import { canPlace, objectAt } from './placement';
-import { doorOf, farmhouseOf } from './roads';
+import { villageCentre } from './roads';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState, ItemId, PlacedObject } from './types';
 
 /**
- * Travelling traders: from `TRADER_LEVEL`, about twice a season a trader's wagon parks by the farmhouse for one game
+ * Travelling traders: from `TRADER_LEVEL`, about twice a season a trader's wagon parks in the village for one game
  * day. He buys a few goods the farm can make for well above the Market's price (no saturation) and sells building
  * materials, an animal and bulk feed, each in limited stock. He is announced the day before. The schedule follows
  * from the farm's saved seed and the day alone, so reloads never reroll it; a trader due while the player is away
@@ -216,13 +216,14 @@ function freeTile(state: GameState, x: number, y: number): boolean {
 }
 
 /**
- * Where the wagon parks: a free tile next to the farmhouse door, or else the path tile nearest the door with
- * nothing else on it. Null when the farm has no farmhouse or no such tile.
+ * Where the wagon parks: a free tile next to the village centre (the farmhouse door, or the tile in front of the camp's
+ * tent before it), or else the path tile nearest to it with nothing else on it. Null when the farm has no centre or no
+ * such tile.
  */
 export function parkingSpot(state: GameState): { x: number; y: number } | null {
-  const house = farmhouseOf(state);
-  if (!house) return null;
-  const door = doorOf(house);
+  const centre = villageCentre(state);
+  if (!centre) return null;
+  const door = { x: centre.x, y: centre.y };
   for (const [dx, dy] of STEPS) if (freeTile(state, door.x + dx, door.y + dy)) return { x: door.x + dx, y: door.y + dy };
   // Nearest path tile, walking the paths out from the door.
   const isPath = (x: number, y: number) => objectAt(state, x, y, footprintOf)?.type === PATH;

@@ -56,7 +56,7 @@ describe('a new game', () => {
   it('starts with the supplies as ordinary stock, the camp recording them as left and making room for them', () => {
     const state = createNewGame();
     expect(state.inventory).toEqual(CAMP_SUPPLIES);
-    expect(campInfo(state)).toEqual({ id: campOf(state)!.id, left: CAMP_SUPPLIES, room: SUPPLY_ROOM, packed: false });
+    expect(campInfo(state)).toEqual({ id: campOf(state)!.id, left: CAMP_SUPPLIES, room: SUPPLY_ROOM, packed: false, families: 0, waiting: 0 });
     expect(storageInfo(state)).toEqual({
       goods: { used: 30, capacity: FARMHOUSE_STORE.goods + SUPPLY_ROOM.goods },
       materials: { used: 60, capacity: FARMHOUSE_STORE.materials + SUPPLY_ROOM.materials },
@@ -155,7 +155,7 @@ describe('packing away', () => {
       take(game, id, n!);
     }
     expect(campOf(game.state)).toBeUndefined();
-    expect(campInfo(game.state)).toEqual({ id: camp.id, left: {}, room: { goods: 0, materials: 0 }, packed: true });
+    expect(campInfo(game.state)).toEqual({ id: camp.id, left: {}, room: { goods: 0, materials: 0 }, packed: true, families: 0, waiting: 0 });
     expect(storageInfo(game.state).materials.capacity).toBe(FARMHOUSE_STORE.materials);
     expect(game.checkPlacement('granary', camp.x, camp.y)).toEqual({ ok: true });
   });
@@ -203,7 +203,7 @@ describe('saves', () => {
     delete old.ext.camp;
     const loaded = deserialize(serialize(old));
     expect(campInfo(loaded)).toBeNull();
-    expect(campSlice(loaded)).toEqual({ id: null, packed: false });
+    expect(campSlice(loaded)).toEqual({ id: null, packed: false, families: 0 });
     expect(loaded.inventory).toEqual({ wheat: 12, wood: 4 });
     expect(storageInfo(loaded).goods.capacity).toBe(FARMHOUSE_STORE.goods);
     // Spending their stock never makes a camp appear or vanish.

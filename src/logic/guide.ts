@@ -6,7 +6,7 @@ import type { ActivityEvents } from './activity';
 import type { PlacedObject } from './types';
 import type { Game } from './game';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
-import { STARTING_FIELDS, type FieldState } from './crops';
+import type { FieldState } from './crops';
 import { workerAt } from './workers';
 
 /**
@@ -74,12 +74,14 @@ const CROP_ITEMS = new Set<string>(CROP_LIST.map((c) => c.harvestItem));
 
 const RULES: Record<GuideStepId, StepRule> = {
   look: { on: (s) => s.kind === 'camera' },
+  // Read and go on with Next.
+  camp: {},
   assign: { met: (game) => fields(game).some((f) => workerAt(game.state, f.id) !== null) },
-  // Sown by hand: a field without a farmer has a crop (a farmer's own sowing doesn't count).
+  // A second field, sown by hand: a field without a farmer has a crop (a farmer's own sowing doesn't count).
   sow: { met: (game) => fields(game).some((f) => f.state.crop !== null && workerAt(game.state, f.id) === null) },
   speed: { on: (s) => s.kind === 'speed' },
   develop: { on: (s) => s.kind === 'window' && s.id === 'development' },
-  field: { on: placed(FIELD), met: (game) => fields(game).length > STARTING_FIELDS.length },
+  field: { on: placed(FIELD), met: (game) => fields(game).length > 0 },
   harvest: {
     on: (s) => s.kind === 'activity' && s.name === 'harvested',
     // Crops beyond the camp's starting carrots: those came with the settlers, not from a field.

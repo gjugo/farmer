@@ -3,7 +3,8 @@ import type { MaterialCost } from './materials';
 
 /**
  * Storage: everything the farm holds needs room. Goods (crops, animal products, feed, processed goods) go
- * into granaries, building materials into storehouses, on top of a small store at the farmhouse.
+ * into granaries, building materials into storehouses. Before those, the camp's supplies have their own room (it
+ * shrinks as they are used), and the farmhouse adds a store once it is built.
  * Rules live in `src/logic/storage.ts`; the buildings' look and panel in `src/features/storage`.
  */
 
@@ -12,11 +13,8 @@ export type StoragePool = 'goods' | 'materials';
 
 export const STORAGE_POOLS: readonly StoragePool[] = ['goods', 'materials'];
 
-/**
- * Room at the farmhouse in each pool. It means a new farm can buy the wood for its first storehouse and keep
- * its first harvests before it has a granary.
- */
-export const FARMHOUSE_STORE: Readonly<Record<StoragePool, number>> = { goods: 30, materials: 30 };
+/** Room at the farmhouse in each pool, once it is built (`src/data/farmhouse.ts`). */
+export const FARMHOUSE_STORE: Readonly<Record<StoragePool, number>> = { goods: 50, materials: 50 };
 
 export type StorageType = 'granary' | 'storehouse';
 

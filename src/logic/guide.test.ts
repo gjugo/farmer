@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { COTTAGE } from '../data/families';
 import { FIELD } from '../data/crops';
 import { GUIDE_STEPS, type GuideStepId } from '../data/guide';
@@ -9,10 +9,25 @@ import { currentStep, endGuide, guideInfo, guideOf, GUIDE, nextStep, notifyGuide
 import { parseSave, serialize } from './save';
 import { addStartingObject } from './state';
 import type { PlacedObject } from './types';
+import { STARTING_FIELDS } from './crops';
+import { useClassicStart } from './test-utils';
 import { assignFarmer } from './workers';
 
-/** A free spot near the farm, clear of the starting fields and the farmhouse. */
+/** A free spot near the farm, clear of the camp and the fields. */
 const SPOT = { x: START_LAYOUT.x, y: START_LAYOUT.y + 6 };
+
+// The guide walks a new farm: only the camp, no fields.
+beforeAll(() => useClassicStart(false));
+afterAll(() => useClassicStart(true));
+
+/** Adds `n` finished, ploughed fields (no event) left of the camp. */
+function addFields(game: Game, n: number): void {
+  for (const { x, y } of STARTING_FIELDS.slice(0, n)) {
+    const field = addStartingObject(game.state, FIELD, x, y);
+    if (!field) throw new Error('could not add a field');
+    (field.state as FieldState).ploughedAt = game.now;
+  }
+}
 
 function started(): Game {
   const game = new Game();
@@ -56,6 +71,7 @@ describe('guide', () => {
       [
         'assign',
         (g) => {
+          addFields(g, 1);
           expect(assignFarmer(g, fields(g)[0]!.id).ok).toBe(true);
           notifyGuide(g, { kind: 'state' });
         },
@@ -63,6 +79,7 @@ describe('guide', () => {
       [
         'sow',
         (g) => {
+          addFields(g, 2);
           expect(plant(g, fields(g)[1]!, 'wheat').ok).toBe(true);
           notifyGuide(g, { kind: 'activity', name: 'planted', payload: { crop: 'wheat' } });
         },
@@ -90,8 +107,31 @@ describe('guide', () => {
       const game = started();
       at(game, 'materials');
       notifyGuide(game, placed('woodcutter'));
-      expect(stepId(game)).toBe('granary');
+      expect(stepId(game)).toBe('cottage');
     });
+
+    it('the camp step waits for Next', () => {
+      const game = started();
+      at(game, 'camp');
+      notifyGuide(game, { kind: 'camera' });
+      notifyGuide(game, { kind: 'state' });
+      expect(stepId(game)).toBe('camp');
+      nextStep(game);
+      expect(stepId(game)).toBe('field');
+    });
+  });
+
+  it('walks a new farm: the camp, a first field, a granary, a cottage; no starting fields, no farmhouse store', () => {
+    const game = new Game();
+    expect(game.objectsOfType(FIELD)).toHaveLength(0);
+    const order = GUIDE_STEPS.map((s) => s.id);
+    expect(order.indexOf('camp')).toBeLessThan(order.indexOf('field'));
+    expect(order.indexOf('field')).toBeLessThan(order.indexOf('assign'));
+    expect(order.indexOf('granary')).toBeLessThan(order.indexOf('harvest'));
+    const text = GUIDE_STEPS.map((s) => `${s.title} ${s.text}`).join(' ');
+    expect(text).not.toMatch(/starting field|other field|farmhouse holds|farmhouse store/i);
+    // The farmhouse only comes up as the later building it is.
+    expect(text).toMatch(/level 4/);
   });
 
   it('ignores other events', () => {
@@ -106,6 +146,7 @@ describe('guide', () => {
   it('a farmer sowing their own field does not finish “sow a field yourself”', () => {
     const game = started();
     at(game, 'sow');
+    addFields(game, 1);
     const [a] = fields(game);
     assignFarmer(game, a!.id);
     plant(game, a!, 'wheat');
@@ -140,16 +181,19 @@ describe('guide', () => {
       const game = new Game();
       add(game, 'granary');
       startGuide(game);
-      at(game, 'materials');
+      at(game, 'speed');
       nextStep(game);
-      expect(stepId(game)).toBe('cottage');
+      expect(stepId(game)).toBe('sow');
     });
 
     it('when the step comes up through Next', () => {
       const game = started();
+      addFields(game, 1);
       assignFarmer(game, fields(game)[0]!.id);
       nextStep(game);
-      // assign holds already: on to speed.
+      expect(stepId(game)).toBe('camp');
+      nextStep(game);
+      // field and assign hold already: on to speed.
       expect(stepId(game)).toBe('speed');
     });
 
@@ -159,8 +203,8 @@ describe('guide', () => {
       add(game, COTTAGE);
       startGuide(game);
       expect(stepId(game)).toBe('look');
-      at(game, 'granary');
-      notifyGuide(game, placed('granary'));
+      at(game, 'materials');
+      notifyGuide(game, placed('woodcutter'));
       expect(stepId(game)).toBe('done');
     });
   });

@@ -10,15 +10,17 @@ import {
   LEAVE_APPROVAL,
   MEAL_PER_FAMILY,
 } from '../data/families';
+import { FARMHOUSE_APPROVAL } from '../data/farmhouse';
 import { GARDEN_APPROVAL, GARDENS } from '../data/gardens';
 import { PROCESSORS } from '../data/processing';
 import { SEASONS } from '../data/seasons';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS } from './constants';
 import type { Game } from './game';
+import { familyLeftCamp, settleCamp, tentFamilies } from './camp';
 import { firewoodPerHome } from './hazards';
 import { gardenedHomes } from './gardens';
-import { homeBuildings, homeRoom } from './homes';
+import { builtFarmhouse, homeBuildings, homeRoom, houseRoom } from './homes';
 import * as inventory from './inventory';
 import { perkFactor } from './perks';
 import { seasonAt, SEASON_MS } from './seasons';
@@ -27,11 +29,11 @@ import type { GameState, Inventory } from './types';
 import { addFarmer, removeFarmer, workersOf } from './workers';
 
 /**
- * Families with needs. Each family is one farmer and lives in a home: the farmer's farmhouse or a cottage. Once a
+ * Families with needs. Each family is one farmer and lives in a home: the camp's tent, a cottage or the farmhouse. Once a
  * game day (at every day boundary) the families eat from the granary, burn firewood in winter, drink ale once the
  * brewery is unlocked and, at the start of winter once the loom is unlocked, take clothes (or else cloth) for the year;
  * the day's results (and how many homes have a house garden, `src/logic/gardens.ts`) give their approval. When approval is
- * high and a home is free a new family moves in; when it stays low for a whole day one leaves.
+ * high and a house has room a new family moves in (never into the tent); when it stays low for a whole day one leaves.
  *
  * Everything runs on the game clock inside the work scheduler (`src/logic/work.ts`): day boundaries and arrival times
  * are scheduler events, so ×60, ×1 and offline catch-up give the same farm.
@@ -68,9 +70,11 @@ export interface DayNeeds {
    * until gardens are unlocked. Missing in saves from before gardens.
    */
   gardens?: { homes: number; gardened: number } | null;
+  /** The farmhouse stood that day. Missing in saves from before it was a building of its own. */
+  farmhouse?: boolean;
 }
 
-export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'ale' | 'firewood' | 'gardens' | 'neighbours';
+export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'ale' | 'firewood' | 'gardens' | 'farmhouse' | 'neighbours';
 
 /** One line of the approval breakdown, e.g. `{ id: 'variety', label: '3 kinds of food', points: 10 }`. */
 export interface ApprovalPart {
@@ -218,6 +222,7 @@ export function approvalOf(day: DayNeeds, neighbours = 0): Approval {
       points: Math.round((GARDEN_APPROVAL * n) / homes),
     });
   }
+  if (day.farmhouse) parts.push({ id: 'farmhouse', label: 'A farmhouse oversees the farm', points: FARMHOUSE_APPROVAL });
   if (neighbours) parts.push({ id: 'neighbours', label: 'Good neighbours', points: neighbours });
   const total = parts.reduce((sum, p) => sum + p.points, 0);
   return { approval: Math.max(0, Math.min(100, total)), breakdown: parts };
@@ -245,7 +250,7 @@ export function gardensNeeded(game: Game): boolean {
 
 // Game rules -----------------------------------------------------------------------
 
-/** A family moves in now if a home is free (and the farm is below `MAX_FARMERS`). Returns false when none can. */
+/** A family moves in now if a house has room (and the farm is below `MAX_FARMERS`). Returns false when none can. */
 export function addFamily(game: Game): boolean {
   const { state } = game;
   if (!homeFree(state) || !addFarmer(game)) return false;
@@ -256,14 +261,16 @@ export function addFamily(game: Game): boolean {
   return true;
 }
 
+/** Room for a newcomer: the houses fit more than the families outside the tent (the tent never takes newcomers). */
 function homeFree(state: GameState): boolean {
-  return homeRoom(state) > familiesCount(state) && familiesCount(state) < MAX_FARMERS;
+  return houseRoom(state) > familiesCount(state) - tentFamilies(state) && familiesCount(state) < MAX_FARMERS;
 }
 
-/** One family leaves: their farmer goes and their workplace is freed. The last family never leaves. */
+/** One family leaves (one of the tent's while it stands): their farmer goes and their workplace is freed. The last family never leaves. */
 function familyLeaves(game: Game): boolean {
   const left = removeFarmer(game);
   if (!left) return false;
+  familyLeftCamp(game.state);
   game.activity.emit('familyLeft', { families: familiesCount(game.state), workplace: left.workplace });
   return true;
 }
@@ -333,6 +340,7 @@ function settleDay(game: Game, day: number): void {
     ale,
     aleDrunk,
     gardens,
+    farmhouse: !!builtFarmhouse(state),
   };
   const { approval, breakdown } = approvalOf(needs, perkFactor(state, 'good-neighbours'));
   Object.assign(s, { settledDay: day, approval, breakdown, lastDay: needs });
@@ -348,6 +356,8 @@ export function stepFamilies(game: Game): void {
   const now = state.clock.elapsed;
   const s = familiesOf(state);
   const today = Math.floor(now / DAY_MS);
+  // A home may have been finished since: the empty camp packs away once its families have room.
+  settleCamp(game);
   // A new game, or a save from before families: start counting from today.
   if (s.settledDay < 0) s.settledDay = today;
   while (s.settledDay < today) settleDay(game, s.settledDay + 1);

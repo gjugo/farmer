@@ -2295,7 +2295,8 @@ body[data-menu] .tool-banner {
   opacity: 0.55;
 }
 
-.build-card.short .build-pic img {
+.build-card.short .build-pic img,
+.build-card.built .build-pic img {
   opacity: 0.6;
 }
 

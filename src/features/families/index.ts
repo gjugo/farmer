@@ -140,7 +140,7 @@ function familiesSheet(ctx: FarmContext): SheetSpec {
         h(
           'p',
           { class: 'muted' },
-          'Every farmer is a family living in a home: the farmhouse or a cottage. Happy families bring more families; unhappy ones leave.',
+          'Every farmer is a family living in a home: the camp’s tent at first, then cottages and the farmhouse. Happy families bring more families into free cottage room; unhappy ones leave.',
         ),
         familiesBlock(game),
       );
@@ -173,7 +173,7 @@ registerHudButton({
       const homes = homeRoom(state);
       const building = homesBuilding(state);
       return [
-        `Room for ${homes} ${homes === 1 ? 'family' : 'families'} (the farmhouse and every cottage; a level 2 cottage houses 2), ${familiesCount(state)} living here`,
+        `Room for ${homes} ${homes === 1 ? 'family' : 'families'} (the tent’s starting families, every cottage, a level 2 cottage houses 2, and the farmhouse once built), ${familiesCount(state)} living here`,
         building ? `${building} ${building === 1 ? 'cottage' : 'cottages'} being built` : 'Build a 🛖 cottage, or upgrade one, for one more family',
         arrivalHint(ctx.game),
       ];
@@ -298,7 +298,7 @@ interface CottageView {
 
 const cottageViews = new Map<string, CottageView>();
 
-/** Families living in this cottage: homes fill up in build order after the farmhouse, each up to its room. */
+/** Families living in this cottage: homes fill up in build order after the tent and the farmhouse, each up to its room. */
 function occupants(game: Game, obj: PlacedObject): number {
   return obj.site ? 0 : familiesIn(game.state, familiesCount(game.state), obj.id);
 }
@@ -375,7 +375,7 @@ function cottagePanel(ctx: FarmContext, obj: PlacedObject): PanelSpec {
   const room = cottageRoom(obj);
   const { approval } = familiesOf(game.state);
   const lines = [`Level ${level} of ${MAX_COTTAGE_LEVEL}.`, occupancyLine(n, room)];
-  if (n > 0) lines.push(`Their ${n === 1 ? 'farmer sets' : 'farmers set'} out from the farmhouse door like everyone else. ${approvalFace(approval)} Approval ${approval}% (see 👪 Families).`);
+  if (n > 0) lines.push(`Their ${n === 1 ? 'farmer sets' : 'farmers set'} out from the village centre like everyone else. ${approvalFace(approval)} Approval ${approval}% (see 👪 Families).`);
   if (n < room) lines.push(arrivalHint(game));
   const spec: PanelSpec = { title, icon: '🛖', lines, hint: homeGardenLine(game, obj) };
   const next = nextCottageLevel(obj);

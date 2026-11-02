@@ -25,7 +25,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 export interface SaveFile {
   version: number;
@@ -186,7 +186,14 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     const goals = p.goals.map((g: unknown) => (isPlainObject(g) && g.id === OLD_LAND_GOAL ? { ...g, id: LAND_GOAL_NOW, progress: 0 } : g));
     return { ...raw, version: 15, state: { ...state, land, ext: { ...ext, [PROGRESSION]: { ...p, goals } } } };
   },
+  // The farmhouse became a building of its own, built later: a new farm starts with only the camp. Nothing in a save
+  // changes (an older farm keeps its farmhouse); only saves from before this one get a missing farmhouse back
+  // (`FARMHOUSE_REPAIR_BEFORE`).
+  15: (raw) => ({ ...raw, version: 16 }),
 };
+
+/** Saves older than this that lack a farmhouse get one on loading; from this version on a farm without one is normal. */
+export const FARMHOUSE_REPAIR_BEFORE = 16;
 
 /** The goal slot that was "Buy a plot of land" (version 14) and is "Own 10 fields" since. */
 const OLD_LAND_GOAL = 'buy-land';
@@ -269,6 +276,7 @@ export function parseSave(json: string | null | undefined): LoadedSave {
 
   let file: RawSave = raw;
   let version = typeof file.version === 'number' ? file.version : 0;
+  const repairFarmhouse = version < FARMHOUSE_REPAIR_BEFORE;
   while (version < SAVE_VERSION) {
     const migrate = migrations[version];
     if (!migrate) return fresh();
@@ -276,11 +284,14 @@ export function parseSave(json: string | null | undefined): LoadedSave {
     version++;
   }
   const savedAt = isNonNegNumber(file.savedAt) ? file.savedAt : null;
-  return { state: normalize(file.state), savedAt };
+  return { state: normalize(file.state, { repairFarmhouse }), savedAt };
 }
 
-/** Builds a valid GameState from untrusted data, falling back to new-game defaults field by field. */
-export function normalize(input: unknown): GameState {
+/**
+ * Builds a valid GameState from untrusted data, falling back to new-game defaults field by field. `repairFarmhouse`:
+ * a save from before the farmhouse was built later, which gets one (with paths) if it has none.
+ */
+export function normalize(input: unknown, { repairFarmhouse = false }: { repairFarmhouse?: boolean } = {}): GameState {
   const base = createNewGame();
   if (!isPlainObject(input)) return base;
 
@@ -297,8 +308,8 @@ export function normalize(input: unknown): GameState {
   applySliceDefaults(ext);
 
   const state: GameState = { money, inventory, land, objects, nextObjectId, clock, ext };
-  // Farms from before farmhouses get one, with paths to what they have built.
-  ensureFarmhouse(state);
+  // Farms from before farmhouses get one, with paths to what they have built. Newer farms build theirs later.
+  if (repairFarmhouse) ensureFarmhouse(state);
   return state;
 }
 

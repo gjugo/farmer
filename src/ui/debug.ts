@@ -234,10 +234,10 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
           type: 'button',
           class: 'btn',
           'data-testid': 'debug-trader-now',
-          // Whatever the schedule and level: he parks by the farmhouse and stays until the day ends.
+          // Whatever the schedule and level: he parks in the village and stays until the day ends.
           onclick: () => {
             traderNow(game);
-            ctx.ui.toast('🛒 A travelling trader has parked by the farmhouse', 'success');
+            ctx.ui.toast('🛒 A travelling trader has parked in the village', 'success');
           },
         },
         'Trader now',

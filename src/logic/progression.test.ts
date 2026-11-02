@@ -333,6 +333,7 @@ describe('goals', () => {
       'build-blacksmith',
       'forge-tools',
       'upgrade-cottage',
+      'build-farmhouse',
     ]);
   });
 
@@ -362,8 +363,9 @@ describe('goals', () => {
     ]);
   });
 
-  it('"Upgrade a cottage" comes last and counts cottage upgrades', () => {
-    expect(GOALS.at(-1)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
+  it('"Upgrade a cottage" counts cottage upgrades; "Build the farmhouse" comes last and counts the farmhouse, a site too', () => {
+    expect(GOALS.at(-2)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
+    expect(GOALS.at(-1)).toMatchObject({ id: 'build-farmhouse', kind: 'own-buildings', type: 'farmhouse', count: 1 });
   });
 
   it('haul goals count goods unloaded by cart', () => {

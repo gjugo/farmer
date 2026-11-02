@@ -1,4 +1,4 @@
-import { getBuildable, type BuildableDef } from '../data/buildables';
+import { demolishable, getBuildable, type BuildableDef } from '../data/buildables';
 import { COTTAGE, COTTAGE_DEF } from '../data/families';
 import { materialEntries, type MaterialCost, type MaterialId } from '../data/materials';
 import { isStorageType, STORAGE } from '../data/storage';
@@ -315,8 +315,7 @@ export class Game {
   checkDemolish(id: string): DemolishCheck {
     const object = this.getObject(id);
     if (!object) return { ok: false, reason: 'missing' };
-    const def = getBuildable(object.type);
-    if (def?.fixed) return { ok: false, reason: 'fixed' };
+    if (!demolishable(object)) return { ok: false, reason: 'fixed' };
     const excess = excessWithout(this._state, object);
     if (excess > 0) return { ok: false, reason: 'storage', excess };
     let room = Math.max(0, capacity(this._state, 'materials', id) - used(this._state, 'materials'));

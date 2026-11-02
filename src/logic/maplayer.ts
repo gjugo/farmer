@@ -3,8 +3,6 @@ import { DEPOSITS, RESOURCES, type DepositKind, type ResourceType } from '../dat
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { inBounds, inRect, type Rect } from './land';
 import { registerPlacementRule } from './placement';
-// The starting fields and farmhouse are laid out first; the map is generated around them.
-import './roads';
 import { SEASON_MS } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import { onNewGame } from './state';
@@ -424,7 +422,7 @@ function edgeSpots(p: Block): [number, number][] {
 
 /**
  * Lays out forests and deposits around what stands on the farm (never on top of it). New games call it with the
- * starting fields and farmhouse; older saves with everything they have built, so their quarries and mines get a
+ * camp and the path in front of it; older saves with everything they have built, so their quarries and mines get a
  * deposit under them and their lodges a grove within reach.
  *
  * `home` is the farm's home ground: the starting land for a new game (`onStartLand`); for older saves (from before the whole map was

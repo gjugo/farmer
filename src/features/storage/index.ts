@@ -1,13 +1,14 @@
 import type Phaser from 'phaser';
 import { getItem, ITEM_LIST } from '../../data/items';
 import { formatMaterials, needsMaterialsMessage } from '../../data/materials';
-import { FARMHOUSE_STORE, MAX_STORAGE_LEVEL, STORAGE, type StorageType } from '../../data/storage';
+import { MAX_STORAGE_LEVEL, STORAGE, type StorageType } from '../../data/storage';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { withFarmer } from '../../game/workers';
 import {
   capacity,
   capacityOfObject,
+  farmhouseStore,
   storageRoom,
   checkUpgrade,
   levelOf,
@@ -21,6 +22,7 @@ import {
   used,
   type StorageState,
 } from '../../logic/storage';
+import { campRoom } from '../../logic/camp';
 import { buildTime, materialsCost } from '../../logic/perks';
 import { ART_RES, ART_SCALE, SHADOW, storageArt } from '../../scenes/art';
 import { packAsset, textureKey } from '../../scenes/sprites';
@@ -137,8 +139,15 @@ function panel(ctx: FarmContext, obj: PlacedObject<StorageState>): PanelSpec {
   const pool = def.pool;
   const cap = capacity(game.state, pool);
   const have = used(game.state, pool);
-  const others = cap - FARMHOUSE_STORE[pool] - capacityOfObject(obj, game.state);
-  const parts = [`this ${def.name.toLowerCase()} ${capacityOfObject(obj, game.state)}`, ...(others > 0 ? [`other ${def.name.toLowerCase()}s ${others}`] : []), `farmhouse ${FARMHOUSE_STORE[pool]}`];
+  const house = farmhouseStore(game.state, pool);
+  const camp = campRoom(game.state, pool);
+  const others = cap - house - camp - capacityOfObject(obj, game.state);
+  const parts = [
+    `this ${def.name.toLowerCase()} ${capacityOfObject(obj, game.state)}`,
+    ...(others > 0 ? [`other ${def.name.toLowerCase()}s ${others}`] : []),
+    ...(house > 0 ? [`farmhouse ${house}`] : []),
+    ...(camp > 0 ? [`camp ${camp}`] : []),
+  ];
   const lines = [
     `Level ${level} of ${MAX_STORAGE_LEVEL}`,
     `${pool === 'goods' ? 'Goods' : 'Materials'}: ${have} / ${cap} (${parts.join(' + ')})`,

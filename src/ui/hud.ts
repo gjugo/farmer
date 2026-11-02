@@ -275,7 +275,7 @@ export class Hud implements UiApi {
       bar.append(btn);
       return btn;
     };
-    tool('paths', '🛤️', 'Paths', 'P', () => this.togglePaths(), 'Lay dirt paths: farmers walk them from the farmhouse to their work');
+    tool('paths', '🛤️', 'Paths', 'P', () => this.togglePaths(), 'Lay dirt paths: farmers walk them from the village (the camp, later the farmhouse) to their work');
     tool('build', '🔨', 'Build', 'B', () => this.toggleBuildMenu(), 'The construction menu');
     for (const w of ['farm', 'trade', 'almanac'] as const) {
       const def = WINDOWS[w];
