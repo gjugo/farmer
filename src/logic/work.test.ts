@@ -15,10 +15,10 @@ import { catchUp } from './offline';
 import type { ProcessorState } from './processing';
 import { connectToFarmhouse } from './roads';
 import { deserialize, serialize } from './save';
-import { SEASON_MS } from './seasons';
+import { SEASON_MS, seasonOf } from './seasons';
 import { maxLevelState } from './test-utils';
 import type { PlacedObject } from './types';
-import { nextWorkEvent, plannedCrop, siteProgress, workplaceNext } from './work';
+import { nextWorkEvent, plannedCrop, runWork, siteProgress, workplaceNext } from './work';
 import {
   assignFarmer,
   cropPlanOf,
@@ -450,6 +450,23 @@ describe('work scheduler', () => {
     expect(plannedCrop(game, field.id)).toBeNull();
     game.state.clock.elapsed = 4 * SEASON_MS - 1000; // the end of winter
     expect(plannedCrop(game, field.id)).toBeNull();
+  });
+
+  it('a farmer sows cabbage in autumn and harvests it in winter, after the frost', () => {
+    const game = farm();
+    const [field] = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
+    game.addItem('wheat', 20); // the family's meals
+    game.state.clock.elapsed = 2 * SEASON_MS; // autumn
+    assignFarmer(game, field.id);
+    setCropPlan(game, field.id, 'cabbage');
+    const log: { kind: string; season: string }[] = [];
+    for (const kind of ['planted', 'harvested'] as const) game.activity.on(kind, () => log.push({ kind, season: seasonOf(game.state.clock) }));
+    runWork(game, 4 * SEASON_MS - 1000); // to the end of winter
+    expect(log[0]).toEqual({ kind: 'planted', season: 'autumn' });
+    expect(log).toContainEqual({ kind: 'harvested', season: 'winter' });
+    // Nothing more is sown in winter: the field waits for spring.
+    expect(log.filter((e) => e.kind === 'planted')).toHaveLength(1);
+    expect(game.count('cabbage')).toBeGreaterThan(0);
   });
 
   it('"Best in season" weighs all eight crops by level: corn at level 4, potato at level 3', () => {
