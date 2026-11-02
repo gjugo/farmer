@@ -2,6 +2,7 @@ import { ANIMALS } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { CROP_LIST, FIELD, getCrop, type CropDef } from '../data/crops';
 import { findRecipe, isProcessorType } from '../data/processing';
+import { TOOLS_ITEM } from '../data/tools';
 import { isResourceType } from '../data/resourceBuildings';
 import { PLOUGH_COST } from '../data/seasons';
 import { COLLECT_WORK_MS, FEED_WORK_MS, FERTILISE_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
@@ -17,6 +18,7 @@ import { perkFactor } from './perks';
 import * as processing from './processing';
 import * as resources from './resources';
 import { findRoute, type Route } from './roads';
+import { breakWornTools, toolFactor, toolsWanted } from './tools';
 import { nextSeasonAt } from './seasons';
 import type { GameState, PlacedObject } from './types';
 import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf, PLAN_BEST, PLAN_FALLOW, walkMs, workersOf } from './workers';
@@ -33,12 +35,14 @@ import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf
 
 /**
  * A job a workplace has for its farmer: `run` does the work (paid now, as hand-ordered jobs are). It is told how long
- * the farmer's walk there takes, so a resource cycle can start when they arrive.
+ * the farmer's walk there takes, so a resource cycle can start when they arrive, and how much faster their tools make
+ * the work (`toolFactor`), so the cycle ends with it.
  */
 export interface Task {
   kind: JobKind;
+  /** Game ms of the work without tools (`assignJob` shortens it for a farmer with tools). */
   workMs: number;
-  run: (walkMs: number) => boolean;
+  run: (walkMs: number, toolFactor: number) => boolean;
   /** Hauling: the trip, given the game time the carter reaches the barn. */
   haul?: (start: number) => HaulTrip;
 }
@@ -55,6 +59,7 @@ export type WaitReason =
   | 'feed' // hungry animals, but no feed in stock
   | 'no-recipe' // no "Keep making" recipe
   | 'queue-full'
+  | 'enough-tools' // the blacksmith's recipe, with as many tools in store as the farm has farmers (`have`/`need`)
   | 'inputs' // the recipe's inputs are not in stock
   | 'full' // something is ready, but the granary has no room for it
   | 'cycle' // a resource cycle is still under way (its farmer was moved mid-cycle)
@@ -66,9 +71,9 @@ export type WaitReason =
   | 'stores-full' // goods wait, but no store has room for them
   | 'no-path'; // no path leads the cart to `to` (a pickup, a store or back to the barn)
 
-export type WorkplaceNext = { task: Task } | { wait: WaitReason; cost?: number; to?: string };
+export type WorkplaceNext = { task: Task } | { wait: WaitReason; cost?: number; to?: string; have?: number; need?: number };
 
-const task = (kind: JobKind, workMs: number, run: (walkMs: number) => boolean): WorkplaceNext => ({ task: { kind, workMs, run } });
+const task = (kind: JobKind, workMs: number, run: Task['run']): WorkplaceNext => ({ task: { kind, workMs, run } });
 
 /**
  * The longest-growing unlocked crop that can be sown now and be ripe before its seasons end; null when none can.
@@ -140,7 +145,15 @@ function processorNext(game: Game, obj: PlacedObject<processing.ProcessorState>)
   // Goods left waiting for room: keep the queue going meanwhile, else say the granary is full.
   const wait = (reason: WaitReason): WorkplaceNext => ({ wait: ready.length > 0 ? 'full' : reason });
   const recipe = keepMakingOf(game.state, obj.id);
-  if (!recipe || !findRecipe(obj.type, recipe)) return wait('no-recipe');
+  const def = recipe ? findRecipe(obj.type, recipe) : undefined;
+  if (!recipe || !def) return wait('no-recipe');
+  // Tools: no more than one in store per farmer (counting those under way), so the forge never burns the iron
+  // buildings need.
+  if (def.output.item === TOOLS_ITEM) {
+    const forging = obj.state.queue.filter((j) => findRecipe(obj.type, j.recipe)?.output.item === TOOLS_ITEM).length + (obj.state.ready[TOOLS_ITEM] ?? 0);
+    const tools = toolsWanted(game.state, forging);
+    if (tools.enough) return ready.length > 0 ? { wait: 'full' } : { wait: 'enough-tools', have: tools.have, need: tools.need };
+  }
   const check = processing.checkStart(game, obj, recipe);
   if (!check.ok) return wait(check.reason === 'queue-full' ? 'queue-full' : 'inputs');
   return task('load', LOAD_WORK_MS, () => processing.startJob(game, obj, recipe).ok);
@@ -158,7 +171,7 @@ function resourceNext(game: Game, obj: PlacedObject<resources.ResourceState>): W
   }
   if (exhausted) return { wait: 'exhausted' };
   if (noTrees) return { wait: 'no-trees' };
-  return task(def.job, resources.cycleMsAt(def, game.now), (walk) => resources.startCycle(game, obj, walk));
+  return task(def.job, resources.cycleMsAt(def, game.now), (walk, factor) => resources.startCycle(game, obj, walk, factor));
 }
 
 /** An ox barn: the carter's next oxcart trip, or why the cart stays in the barn. */
@@ -241,6 +254,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
   }
   // A site demolished while being built: its builder is home at once.
   w.jobs = activeJobs(state.clock, w).filter((j) => j.doneAt === undefined || !!game.getObject(j.target ?? '')?.site);
+  // Worn-out tools break as their farmer's job ends; the next job takes new ones.
+  breakWornTools(game);
   settleAssigned(game, onSettled);
   settleResources(game);
   // Hazards first (a harsh winter or drought starting today counts for today), then new days (meals, firewood,
@@ -268,7 +283,7 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
     if (workplace && !workplace.site) {
       const next = workplaceNext(game, workplace);
       const route = 'task' in next ? routeTo(workplace) : null;
-      if ('task' in next && route && next.task.run(walkMs(route, perkFactor(state, 'good-boots')))) {
+      if ('task' in next && route && next.task.run(walkMs(route, perkFactor(state, 'good-boots')), toolFactor(state, i, next.task.kind))) {
         start(i, next.task.kind, workplace, next.task.workMs, route, false, next.task.haul);
         continue;
       }

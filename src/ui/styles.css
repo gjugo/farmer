@@ -1711,7 +1711,7 @@ body[data-menu] .tool-banner {
 
 .farmer {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 4px 8px;
   padding: 6px 8px;
@@ -1730,7 +1730,26 @@ body[data-menu] .tool-banner {
 }
 
 .farmer-status {
+  grid-column: 2 / -1;
   font-size: 13px;
+}
+
+/* The farmer's tools, "🛠️ 18/30" or "no tools", beside their name. */
+.farmer-tool {
+  grid-row: 1;
+  grid-column: 3;
+  font-size: 13px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.farmer-tool.none {
+  color: var(--muted);
+}
+
+.farmers-tools {
+  margin: 0 0 8px;
+  font-size: 14px;
 }
 
 .farmer-workplace {

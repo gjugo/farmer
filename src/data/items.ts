@@ -43,6 +43,9 @@ export const ITEMS = {
   iron: { id: 'iron', name: 'Iron', category: 'material', price: 15, icon: '🔩' },
   // Made by pens (see `MANURE_PER_COLLECT`), spread on fields. Kept in the storehouse so it never crowds out food.
   manure: { id: 'manure', name: 'Manure', category: 'material', price: 1, icon: '💩' },
+  // Forged at the blacksmith, taken by farmers (see `src/logic/tools.ts`). Kept in the storehouse; the Market buys
+  // them but never sells them.
+  tools: { id: 'tools', name: 'Tools', category: 'material', price: 40, icon: '🛠️' },
 } as const satisfies Record<string, ItemDef>;
 
 export type KnownItemId = keyof typeof ITEMS;

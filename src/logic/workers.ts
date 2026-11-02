@@ -4,6 +4,7 @@ import { OX_BARN } from '../data/haul';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { PROCESSORS } from '../data/processing';
 import { RESOURCES } from '../data/resourceBuildings';
+import { TOOL_USES } from '../data/tools';
 import { MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Game } from './game';
@@ -11,6 +12,7 @@ import { returnLoad, type HaulTrip } from './haul';
 import { perkFactor } from './perks';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { Route, Tile } from './roads';
+import { toolWorkMs, useTool } from './tools';
 import type { ClockState, GameState } from './types';
 
 /**
@@ -56,9 +58,14 @@ export interface WorkersState {
   plans: Record<string, CropPlan>;
   /** Processing building id → the recipe its farmer keeps making. */
   recipes: Record<string, string>;
+  /**
+   * Each farmer's tool slot, by farmer number: jobs left in their tools, or null without any (`src/logic/tools.ts`).
+   * Missing in saves from before tools (version 13 and older: every slot empty).
+   */
+  tools: (number | null)[];
 }
 
-registerStateSlice<WorkersState>('workers', () => ({ farmers: STARTING_FARMERS, jobs: [], workplaces: [], plans: {}, recipes: {} }), shiftJobs);
+registerStateSlice<WorkersState>('workers', () => ({ farmers: STARTING_FARMERS, jobs: [], workplaces: [], plans: {}, recipes: {}, tools: [] }), shiftJobs);
 
 /** Moves the saved jobs' work spots and routes by (dx, dy), for save migrations that move the farm. */
 export function shiftJobs(saved: unknown, dx: number, dy: number): unknown {
@@ -97,9 +104,18 @@ export function workersOf(state: GameState): WorkersState {
     seen.add(id);
     return id;
   });
+  const tools: unknown[] = Array.isArray(w.tools) ? w.tools : [];
+  if (tools.length !== w.farmers || !tools.every(isToolSlot)) {
+    w.tools = Array.from({ length: w.farmers }, (_, i) => (isToolSlot(tools[i]) ? tools[i] : null));
+  }
   w.plans = keepStrings(w.plans, (id) => types.get(id) === FIELD);
   w.recipes = keepStrings(w.recipes, (id) => Object.hasOwn(PROCESSORS, types.get(id) ?? ''));
   return w;
+}
+
+/** A tool slot in good shape: empty, or the jobs left (0 to `TOOL_USES`). */
+function isToolSlot(v: unknown): v is number | null {
+  return v === null || (Number.isInteger(v) && (v as number) >= 0 && (v as number) <= TOOL_USES);
 }
 
 /** A saved haul trip in good shape (anything else is dropped from its job). */
@@ -201,6 +217,8 @@ export interface JobOptions {
  * Puts a free farmer on a job: `durationMs` of game time at work, plus the walk there and back
  * along `route` (none without one; it then works at (x, y)). Returns false (nothing changes)
  * when every farmer is busy. A job of 0 ms needs no farmer and always succeeds.
+ * The farmer takes tools from the store on the way out when they have none, and with tools the work takes
+ * 1/`TOOL_SPEED` of `durationMs` (see `src/logic/tools.ts`).
  */
 export function assignJob(game: Game, kind: JobKind, x: number, y: number, durationMs: number, route?: Route, options: JobOptions = {}): boolean {
   if (durationMs <= 0) return true;
@@ -211,9 +229,10 @@ export function assignJob(game: Game, kind: JobKind, x: number, y: number, durat
   w.jobs = activeJobs(state.clock, w);
   const walk = route ? walkMs(route, perkFactor(state, 'good-boots')) : 0;
   const at = route?.tiles.length ? route.work : { x, y };
-  const job: Job = { kind, x: at.x, y: at.y, timer: startTimer(state.clock, durationMs + 2 * walk), farmer, route: route?.tiles ?? [], walkMs: walk };
+  const work = toolWorkMs(durationMs, useTool(game, farmer, kind));
+  const job: Job = { kind, x: at.x, y: at.y, timer: startTimer(state.clock, work + 2 * walk), farmer, route: route?.tiles ?? [], walkMs: walk };
   if (options.target) job.target = options.target;
-  if (options.builds) job.doneAt = state.clock.elapsed + walk + durationMs;
+  if (options.builds) job.doneAt = state.clock.elapsed + walk + work;
   if (options.haul) job.haul = options.haul(state.clock.elapsed + walk);
   w.jobs.push(job);
   game.activity.emit('workStarted', { kind });
@@ -298,6 +317,7 @@ export function addFarmer(game: Game): boolean {
   if (w.farmers >= MAX_FARMERS) return false;
   w.farmers++;
   w.workplaces.push(null);
+  w.tools.push(null);
   return true;
 }
 
@@ -314,6 +334,8 @@ export function removeFarmer(game: Game): { workplace: string | null } | null {
   const workplace = w.workplaces[i] ?? null;
   w.farmers--;
   w.workplaces.length = w.farmers;
+  // Their tools leave with them.
+  w.tools.length = w.farmers;
   const jobs = jobsByFarmer(state.clock, { ...w, farmers: i + 1 });
   // A carter leaving mid-trip: what the cart carries goes back to its barn.
   if (jobs[i]?.haul) returnLoad(game, jobs[i]!.haul!);

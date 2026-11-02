@@ -20,7 +20,7 @@ describe('resource categories', () => {
     expect(itemsOf('animal')).toEqual(['egg', 'milk', 'wool']);
     expect(itemsOf('feed')).toEqual(['feed']);
     expect(itemsOf('goods')).toEqual(['cheese', 'butter', 'bread', 'cloth', 'malt', 'ale', 'linen', 'clothes']);
-    expect(itemsOf('materials')).toEqual(['wood', 'stone', 'iron', 'manure']);
+    expect(itemsOf('materials')).toEqual(['wood', 'stone', 'iron', 'manure', 'tools']);
   });
 
   it('counts unknown ids (old saves) by their pool', () => {

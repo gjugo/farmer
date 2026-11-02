@@ -8,6 +8,7 @@ import { perkFactor } from './perks';
 import { findRoute } from './roads';
 import { isPlainObject } from './slices';
 import { seasonAt } from './seasons';
+import { toolWorkMs } from './tools';
 import type { ClockState, GameState, PlacedObject } from './types';
 import { workerAt } from './workers';
 
@@ -103,16 +104,17 @@ export function todayYield(clock: ClockState, obj: PlacedObject<ResourceState>):
 }
 
 /**
- * Starts a cycle that begins once the farmer has walked there (`walkMs`) and lasts the work. A lodge claims the
+ * Starts a cycle that begins once the farmer has walked there (`walkMs`) and lasts the work: `toolFactor` faster when
+ * the farmer has tools (`src/logic/tools.ts`), so the yield arrives when their work ends. A lodge claims the
  * nearest grown tree in range, which falls when the cycle ends. Refused (false) while a cycle runs, the yard is
  * full, the building is still a site, or there is nothing to work (no tree in range, the deposit used up).
  */
-export function startCycle(game: Game, obj: PlacedObject<ResourceState>, walkMs: number): boolean {
+export function startCycle(game: Game, obj: PlacedObject<ResourceState>, walkMs: number, toolFactor = 1): boolean {
   if (obj.site || obj.state.cycle || yardFull(game.state, obj)) return false;
   const def = defOf(obj);
   if (def.deposit && !depositOf(game, obj)) return false;
   const start = game.now + Math.max(0, walkMs);
-  const duration = cycleMsAt(def, start);
+  const duration = toolWorkMs(cycleMsAt(def, start), toolFactor);
   if (def.range) {
     if (!fellNearest(mapOf(game.state), areaOf(obj), def.range, game.now, start + duration)) return false;
     game.mapChanged();

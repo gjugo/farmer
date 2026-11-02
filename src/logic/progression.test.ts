@@ -184,7 +184,7 @@ describe('unlocks', () => {
   it('lists what each level unlocks', () => {
     expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Hen Run', 'Iron at the Market', 'Kennel', 'Ox Barn', 'Pasture', 'Potato']);
     expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
-    expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
+    expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Blacksmith', 'Loom', 'Sheep']);
     // The later levels unlock crops and the longer chains: flax, the winter cabbage and the malthouse at 6, pumpkin
     // and the brewery at 7, the tailor at 8.
     expect(unlocksAt(6)).toEqual([
@@ -327,6 +327,8 @@ describe('goals', () => {
       'make-malt',
       'brew-ale',
       'sew-clothes',
+      'build-blacksmith',
+      'forge-tools',
     ]);
   });
 
@@ -339,11 +341,19 @@ describe('goals', () => {
     expect(GOALS.findIndex((g) => g.id === 'guard-coop')).toBe(barn - 1);
   });
 
-  it('the chain goals come last: 10 malt, 5 ale and 3 clothes', () => {
-    expect(GOALS.slice(-3).map((g) => [g.id, g.kind, 'item' in g ? g.item : null, g.count])).toEqual([
+  it('the chain goals follow the oxcart goals: 10 malt, 5 ale and 3 clothes', () => {
+    const malt = GOALS.findIndex((g) => g.id === 'make-malt');
+    expect(GOALS.slice(malt, malt + 3).map((g) => [g.id, g.kind, 'item' in g ? g.item : null, g.count])).toEqual([
       ['make-malt', 'make', 'malt', 10],
       ['brew-ale', 'make', 'ale', 5],
       ['sew-clothes', 'make', 'clothes', 3],
+    ]);
+  });
+
+  it('the blacksmith goals come last: build a blacksmith, forge 5 tools', () => {
+    expect(GOALS.slice(-2).map((g) => [g.id, g.kind, 'type' in g ? g.type : 'item' in g ? g.item : null, g.count])).toEqual([
+      ['build-blacksmith', 'own-buildings', 'blacksmith', 1],
+      ['forge-tools', 'make', 'tools', 5],
     ]);
   });
 

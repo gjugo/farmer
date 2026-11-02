@@ -122,6 +122,8 @@ export function waitText(game: Game, next: Exclude<WorkplaceNext, { task: unknow
       return 'Pick a recipe to keep making';
     case 'queue-full':
       return 'The queue is full';
+    case 'enough-tools':
+      return `Enough tools in store (${next.have ?? 0}/${next.need ?? 0})`;
     case 'inputs':
       return 'Waiting for ingredients';
     case 'full':

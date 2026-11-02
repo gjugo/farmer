@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { FARMHOUSE } from '../../data/farmhouse';
+import { TOOL_SPEED, TOOL_USES } from '../../data/tools';
 import type { FarmContext, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { farmerActivity, farmerLoad, farmerName, placeName } from '../../game/workers';
@@ -8,6 +9,7 @@ import { formatDuration } from '../../logic/crops';
 import type { Game } from '../../logic/game';
 import { cartPose } from '../../logic/haul';
 import { farmhouseOf } from '../../logic/roads';
+import { onToolsWornOut, toolOf, toolsSummary } from '../../logic/tools';
 import { siteProgress, sitesOf } from '../../logic/work';
 import {
   assignFarmer,
@@ -48,6 +50,18 @@ function jobsOf(game: Game): (Job | undefined)[] {
 /** Built workplaces in build order: what a farmer can be assigned to. */
 function workplaces(game: Game): PlacedObject[] {
   return game.state.objects.filter((o) => isWorkplaceType(o.type) && !o.site);
+}
+
+/** "🛠️ 18/30" (jobs left in farmer `i`'s tools) or "no tools". */
+export function toolText(game: Game, i: number): string {
+  const left = toolOf(game.state, i);
+  return left === null ? 'no tools' : `🛠️ ${left}/${TOOL_USES}`;
+}
+
+/** "Tools: 6 of 8 farmers equipped · 3 in store". */
+export function toolsLine(game: Game): string {
+  const { inStore, equipped, farmers } = toolsSummary(game.state);
+  return `🛠️ Tools: ${equipped} of ${farmers} ${farmers === 1 ? 'farmer' : 'farmers'} equipped · ${inStore} in store`;
 }
 
 /** The drop-down that sets farmer `i`'s workplace. */
@@ -104,6 +118,11 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
           sites > 0 ? ` · 🚧 ${sites} ${sites === 1 ? 'site' : 'sites'} to build` : '',
         ),
         h(
+          'p',
+          { class: 'farmers-tools', 'data-testid': 'farmers-tools', title: `Farmers with tools work ${Math.round((TOOL_SPEED - 1) * 100)}% faster; tools last ${TOOL_USES} jobs` },
+          ...withIcons(toolsLine(game)),
+        ),
+        h(
           'ul',
           { class: 'farmers-list', 'data-testid': 'farmers-list' },
           Array.from({ length: farmers }, (_, i) =>
@@ -113,6 +132,7 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
               h('span', { class: 'farmer-icon', 'aria-hidden': 'true' }, '👨‍🌾'),
               h('span', { class: 'farmer-name' }, farmerName(i)),
               h('span', { class: 'farmer-status', 'data-farmer': i, 'data-testid': `farmer-activity-${i}` }),
+              h('span', { class: 'farmer-tool', 'data-farmer': i, 'data-testid': `farmer-tool-${i}` }),
               workplaceSelect(ctx, i),
             ),
           ),
@@ -126,9 +146,22 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
   };
 }
 
-/** Writes each farmer's activity (with the time left on their job) into the sheet, in place. */
+/** Writes each farmer's activity (with the time left on their job) and tools into the sheet, in place. */
 function updateActivities(game: Game, body: HTMLElement): void {
   const jobs = jobsOf(game);
+  for (const el of body.querySelectorAll<HTMLElement>('.farmer-tool')) {
+    const text = toolText(game, Number(el.dataset.farmer));
+    if (el.dataset.text === text) continue;
+    el.dataset.text = text;
+    el.classList.toggle('none', text === 'no tools');
+    el.replaceChildren(...withIcons(text));
+  }
+  const line = body.querySelector<HTMLElement>('.farmers-tools');
+  const summary = toolsLine(game);
+  if (line && line.dataset.text !== summary) {
+    line.dataset.text = summary;
+    line.replaceChildren(...withIcons(summary));
+  }
   for (const el of body.querySelectorAll<HTMLElement>('.farmer-status')) {
     const i = Number(el.dataset.farmer);
     const job = jobs[i];
@@ -170,6 +203,8 @@ registerDebugInfo('workers', () => {
       job: jobs[i]?.kind ?? null,
       carrying: jobs[i] ? farmerLoad(game, jobs[i]) : null,
       activity: farmerActivity(game, i),
+      // Jobs left in the farmer's tools, or null without any.
+      tool: toolOf(game.state, i),
     })),
     assignments: Object.fromEntries(w.workplaces.flatMap((id, i) => (id ? [[id, i]] : []))),
     plans: w.plans,
@@ -177,6 +212,17 @@ registerDebugInfo('workers', () => {
     sites: sitesOf(game.state).map((o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, ...o.site!, builder: siteProgress(game.state, o.id) })),
   });
 });
+
+/** `window.farm.tools`, for QA: tools in store, farmers with tools, jobs per tool and the speed-up they give. */
+registerDebugInfo('tools', () => {
+  const game = current;
+  if (!game) return null;
+  const { inStore, equipped } = toolsSummary(game.state);
+  return { inStore, equipped, usesPerTool: TOOL_USES, factor: TOOL_SPEED };
+});
+
+/** A tool broke and none are left in store: say so, at most once a game day. */
+export const TOOLS_WORN_MESSAGE = 'Tools are wearing out: forge more at the blacksmith';
 
 /** Where idle farmers wait, in grid units from the farmhouse's top-left tile: two on the bench, the rest standing about (see `seatOf`). */
 const SEATS: { x: number; y: number; anim: FarmerAnim; facing: Facing }[] = [
@@ -279,6 +325,7 @@ function farmerPose(game: Game, i: number, job: Job | undefined): { at: Point; a
 
 onGameStart((ctx) => {
   current = ctx.game;
+  onToolsWornOut(ctx.game, () => ctx.ui.toast(TOOLS_WORN_MESSAGE, 'info'));
   const scene = ctx.scene;
   const sprites: FarmerSprite[] = [];
   const onUpdate = () => {

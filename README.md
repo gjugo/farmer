@@ -70,7 +70,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   visual, `stockDisplay` in `src/logic/stockpiles.ts`). In a building the biggest pile shows how full it is and the
   others are scaled to it, so a full building looks full. Construction sites show none.
 - **Market:** 🏪 Market sells anything in the inventory at today's price (**Sell everything** keeps building
-  materials). Its **Buy building materials** section sells wood, stone and (from level 3) iron: **Buy 1/5/10**, or
+  materials, manure and the blacksmith's tools; tools sell for about $40, but the Market never sells them). Its **Buy building materials** section sells wood, stone and (from level 3) iron: **Buy 1/5/10**, or
   pick any amount with the − / + stepper. It shows the storehouse room left; a purchase is capped at that room
   ("Bought only 5 …") and refused when there is none. Buy prices change daily like sell prices and are always above anything the
   Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
@@ -147,19 +147,20 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   and every parcel they owned part of.
 - **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
   after their cycle (chicken 3 game-minutes, cow 6, sheep 8); click the pen (or **Collect**) to pick up eggs, milk and wool.
-- **Processing:** build a Feed Mill, Dairy, Bakery, Loom, Malthouse, Brewery or Tailor, open it and pick a recipe.
+- **Processing:** build a Feed Mill, Dairy, Bakery, Loom, Blacksmith, Malthouse, Brewery or Tailor, open it and pick a recipe.
   Inputs are taken at once; up to 3 jobs queue and run one at a time (feed 2 game-minutes, butter 4, bread 5,
-  malt 5, cheese 8, linen 8, cloth 10, ale 10, clothes 10). The longer chains:
+  malt 5, tools 6, cheese 8, linen 8, cloth 10, ale 10, clothes 10). The longer chains:
 
   | Building | Level | Size | Recipes |
   | --- | --- | --- | --- |
   | 🧵 Loom | 5 | 2×2 | 2 wool → 1 cloth ($75); 3 flax → 1 linen ($60, from level 6, when flax unlocks) |
+  | 🔨 Blacksmith | 5 | 2×2 | 1 iron + 1 wood → 1 🛠️ tools ($40 at the Market, which never sells them): farmers use them. Costs $280 + 10 wood + 10 stone (no iron). **⚙️ Keep making** stops once the store holds (counting batches under way) as many tools as the farm has farmers: "Enough tools in store (8/8)" |
   | 🫘 Malthouse | 6 | 2×2 | 3 barley → 2 malt ($12) |
   | 🍺 Brewery | 7 | 3×2 | 2 malt → 1 ale ($90): families drink it |
   | 👕 Tailor | 8 | 2×2 | 2 cloth → 1 clothes, or 2 linen → 1 clothes ($150): families wear them |
 
-  So barley → malt → ale and wool → cloth or flax → linen → clothes. Goals at the end of the list: "Malt barley into
-  10 malt", "Brew 5 ale", "Sew 3 clothes".
+  So barley → malt → ale, wool → cloth or flax → linen → clothes, and mine → blacksmith → farmers. Goals: "Malt barley
+  into 10 malt", "Brew 5 ale", "Sew 3 clothes", then (the last two in the list) "Build a blacksmith" and "Forge 5 tools".
   Click the building (or **Collect**) to pick up finished goods.
 - **Orders:** 📋 Orders shows 3 customer orders for goods you have had before. Fulfil hands over the goods
   for a reward above today's market value; the HUD badge counts orders you can fulfil now. A fulfilled slot
@@ -217,8 +218,21 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
     you tap: an unassigned workplace works by hand, and any free farmer does the job (one without a workplace first).
     When work appears at their own workplace again, they go back after their current job. When every farmer is busy,
     tapped work is refused until one is free.
+  - **Tools** (from the blacksmith, level 5; rules in `src/logic/tools.ts`, numbers in `src/data/tools.ts`): every
+    farmer has a tool slot. A farmer setting off on a job with an empty slot takes a set of 🛠️ tools from the
+    storehouse if there is one. With tools, the work of building, ploughing, sowing, harvesting, spreading manure,
+    feeding, collecting, starting a batch, cutting wood, quarrying and mining takes 1/1.25 of the time (25% faster,
+    multiplying with perks such as Master builder); a resource cycle and a site's finish come that much sooner too.
+    Walking (Good boots), hauling (the ox), processing batches (Quick hands) and animal cycles don't change. A set
+    lasts **30 jobs**: each job started with it uses one, and at 0 it breaks as that job ends; the next job takes a new
+    set if there is one. Without tools in store farmers work at their normal speed; nothing is ever refused for lack
+    of tools. The 👨‍🌾 Farmers sheet shows "Tools: 6 of 8 farmers equipped · 3 in store" and each farmer's "🛠️ 18/30"
+    or "no tools"; when tools break with none left in store, a toast (at most once a game day) says "Tools are
+    wearing out: forge more at the blacksmith". An 8-farmer farm keeping everyone equipped burns about 1.5 iron a
+    season, half of what one mine digs (`src/logic/balance.test.ts`).
   - The work runs on game time, so speed ×60 and offline catch-up give the same farm; the welcome-back summary
-    reports what the farmers harvested, sowed, collected, made, produced and built while you were away.
+    reports what the farmers harvested, sowed, collected, made, produced and built while you were away, and the tools
+    forged and worn out.
 - **Families:** every farmer is a family living in a home: the farmhouse houses the first, each **🛖 Cottage** (2×2,
   $80 + 8 wood, level 1, built by a farmer like any site) one more. There is no hiring for cash. When a home is free
   and approval is at least 50%, a family moves in half a day after the home became free (at most one a day); its
@@ -391,12 +405,15 @@ ale that day and the ale drunk, null before the brewery is unlocked) or null bef
 yield waiting for room in the granary, `nextAt` the game time of its next daily yield (null while it has no finished
 home).
 `window.farm.workers` is `{ farmers, free, list, assignments, plans, recipes, sites }`: `list[i]` is
-`{ farmer, workplace, job, carrying, activity }` (workplace: object id or null; job: the running job's kind or null;
+`{ farmer, workplace, job, carrying, activity, tool }` (workplace: object id or null; job: the running job's kind or null;
 carrying: what they carry now, `sack`, `basket`, `bucket`, `logs` or `stone`, or null while working, resting or walking
-empty-handed; activity: the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
+empty-handed; activity: the text the Farmers sheet shows; tool: the jobs left in their tools, or null without any), `assignments` maps workplace id → farmer, `plans` field id → crop plan
 (`best`, `none` for Fallow, or a crop id), `recipes` building id → "Keep making" recipe, and `sites` lists the construction sites
 oldest first (`{ id, type, x, y, workMs, paid, builder: { farmer, progress } | null }`). A placed object that is still a
 site carries `site: { workMs, paid }` in `window.farm.objects`.
+`window.farm.tools` is `{ inStore, equipped, usesPerTool, factor }`: tools in the storehouse, farmers with tools, the
+jobs a set lasts (30) and the speed-up it gives (1.25). Test ids: `farmers-tools` (the sheet's tools line),
+`farmer-tool-<i>`.
 `window.farm.soil` is `{ at(x, y), band(x, y), quality, overlay }`: `at` gives a tile's soil quality (95 rich, 70
 normal, 45 poor), `overlay` whether the Soil overlay is on. Each field in `window.farm.objects` carries
 `state.fertility` (points when it began resting, or while a crop grows), `state.restingSince` (game ms, null while a
@@ -440,7 +457,8 @@ src/
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
     families.ts        families: homes, daily meals / firewood / ale / clothes, approval, arrivals and departures (slice `families`)
     perks.ts           perks: perkFactor, seeded offers, choices and the slice `perks`; the Perks class on Game
-    workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
+    workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes, tool slots (state slice `workers`)
+    tools.ts           farmers' tools: taking a set at job start, the speed-up (`toolFactor`), wear and breaking, the blacksmith's stop
     work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
@@ -457,6 +475,7 @@ src/
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
     families.ts        the Cottage buildable, foods, needs per family, approval points, arrival and leaving thresholds
     perks.ts           the perk pool: name, what it does, its factor and what it is about
+    tools.ts           tools: jobs a set lasts, the speed-up, the jobs they work on
     resourceBuildings.ts woodcutter's lodge, quarry and mine buildables: costs, yields, cycle times
     haul.ts            the Ox Barn buildable, the ox price, cart capacity, ox speed, load times, yard size
     resources.ts       resource categories (resource bar, stock piles), item → category / pile
@@ -484,7 +503,7 @@ src/
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
-    processing/        feed mill, dairy, bakery, loom, malthouse, brewery, tailor (data: src/data/processing.ts, logic: src/logic/processing.ts)
+    processing/        feed mill, dairy, bakery, loom, blacksmith, malthouse, brewery, tailor (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
     soil/              the Soil overlay and its Build-menu toggle, the field ghost's soil tint, the field panel's
                        soil block and Spread manure action, `window.farm.soil` (data: src/data/soil.ts)
@@ -506,7 +525,8 @@ src/
     gardens/           vegetable patch, hen run (two hens) and orchard (two apple trees): panel, the free homes
                        outlined on the build ghost, the garden line of home panels, `window.farm.gardens`
                        (data: src/data/gardens.ts, logic: src/logic/gardens.ts)
-    workers/           👨‍🌾 Farmers HUD button, workplace sheet (with the families block), farmers at work on the map, `window.farm.workers`
+    workers/           👨‍🌾 Farmers HUD button, workplace sheet (with the tools and the families block), farmers at work on the map,
+                       the worn-out tools toast, `window.farm.workers`, `window.farm.tools`
                        (data: src/data/workers.ts, logic: src/logic/workers.ts and work.ts; hand work goes through
                        `withFarmer`, workplace panels get their farmer block from `workplacePanel`, src/game/workers.ts)
     land/              "For sale" signs on parcels next to owned land, buy dialog
@@ -649,6 +669,7 @@ Version 11 added the map layer: an older save gets one generated around what it 
 with a full deposit under every quarry and mine and a grove of about 8 trees in reach of every lodge.
 Version 13 added oxcart hauling: a resource building's `waiting` output (from older saves: what waited for storehouse
 room) stays, now as its yard, so nothing is lost; jobs gain an optional `haul` trip and ox barns their own state.
+Version 14 added tools: every farmer of an older save gets an empty tool slot (`workers.tools`).
 
 - **Home screen:** the page opens on a "Farmer" title over the dimmed, paused farm (its seasonal look, or a fresh
   farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the

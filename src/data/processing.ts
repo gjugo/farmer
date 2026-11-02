@@ -2,7 +2,7 @@ import { registerBuildable } from './buildables';
 import type { KnownItemId } from './items';
 import type { MaterialCost } from './materials';
 
-export type ProcessorType = 'feed-mill' | 'dairy' | 'bakery' | 'loom' | 'malthouse' | 'brewery' | 'tailor';
+export type ProcessorType = 'feed-mill' | 'dairy' | 'bakery' | 'loom' | 'malthouse' | 'brewery' | 'tailor' | 'blacksmith';
 
 export interface RecipeDef {
   /** Unique across all buildings. */
@@ -134,6 +134,20 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
       { id: 'clothes-from-cloth', inputs: { cloth: 2 }, output: { item: 'clothes', qty: 1 }, durationMs: 600_000 },
       { id: 'clothes-from-linen', inputs: { linen: 2 }, output: { item: 'clothes', qty: 1 }, durationMs: 600_000 },
     ],
+  },
+  // Iron's steady use besides buildings: tools make farmers work faster and wear out (see `src/logic/tools.ts`). Its
+  // own cost takes no iron, so building it never competes with the first tools.
+  blacksmith: {
+    id: 'blacksmith',
+    name: 'Blacksmith',
+    icon: '🔨',
+    cost: 280,
+    materials: { wood: 10, stone: 10 },
+    footprint: { w: 2, h: 2 },
+    description: 'Forges iron and wood into tools: farmers with tools work 25% faster.',
+    unlockLevel: 5,
+    anim: 'smoke',
+    recipes: [{ id: 'tools', inputs: { iron: 1, wood: 1 }, output: { item: 'tools', qty: 1 }, durationMs: 360_000 }],
   },
 };
 
