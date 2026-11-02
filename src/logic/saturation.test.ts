@@ -10,6 +10,7 @@ import {
   dailyPrice,
   DROP_PER_UNIT,
   droppedPrice,
+  farmSellPrice,
   MAX_DROP,
   marketOf,
   marketPrices,
@@ -21,6 +22,7 @@ import {
   sellAll,
 } from './market';
 import { catchUp } from './offline';
+import { perksOf } from './perks';
 import { deserialize, serialize } from './save';
 import { maxLevelState } from './test-utils';
 
@@ -201,6 +203,16 @@ describe('market saturation', () => {
     for (let t = 0; t < (2 * DAY_MS) / 60; t += 250) fast.tick(250);
     expect(fast.now).toBe(slow.now);
     expect(marketOf(fast.state)).toEqual(marketOf(slow.state));
+  });
+
+  it('applies after the Haggler perk: the drop comes off the boosted price', () => {
+    const game = gameOnDay(8);
+    perksOf(game.state).taken = [{ level: 2, id: 'haggler' }];
+    const boosted = farmSellPrice(game.state, 8, 'cheese')!;
+    expect(boosted).toBeGreaterThan(dailyPrice(8, 'cheese')!);
+    stock(game, 'cheese', 23);
+    sell(game, 'cheese'); // 20 past the allowance
+    expect(currentPrice(game.state, 'cheese')).toBe(droppedPrice(boosted, 2000));
   });
 
   it('clears every drop for the debug button', () => {

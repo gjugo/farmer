@@ -248,6 +248,24 @@ describe('seasonal art', () => {
     }
   });
 
+  it('frosts the winter crop (cabbage) in winter only, each stage with its own winter sprite the same size', () => {
+    for (const stage of ['seeded', 'sprout', 'growing', 'ripe']) {
+      const name = cropArt('cabbage', stage)!;
+      expect(seasonalArt(name, 'winter')).toBe(`${name}_winter`);
+      for (const season of ['spring', 'summer', 'autumn'] as const) expect(seasonalArt(name, season)).toBe(name);
+      expect(baseArt(`${name}_winter`)).toBe(name);
+      expect(usedArt()).toContain(`${name}_winter`);
+      expect(assets.get(`${name}_winter`)?.category, name).toBe('crops');
+      // Drawn on the same spots: the winter sprite stands on the tile's top corner like the base one.
+      for (const res of ['1x', '2x'] as const) {
+        expect(assets.get(`${name}_winter`)!.footprint).toEqual(assets.get(name)!.footprint);
+        expect(assets.get(`${name}_winter`)!.res[res].anchor[0]).toBeCloseTo(assets.get(name)!.res[res].anchor[0], -1);
+      }
+    }
+    // Other crops have no winter art: they never stand in the field in winter unless left ripe.
+    for (const crop of ['wheat', 'potato', 'pumpkin']) expect(seasonalArt(cropArt(crop, 'ripe')!, 'winter')).toBe(cropArt(crop, 'ripe'));
+  });
+
   it('finds the base art again', () => {
     for (const name of [...SEASONAL_ART, 'farmhouse', 'granary_2', 'field', 'tree_oak_shadow']) {
       for (const season of SEASONS) expect(baseArt(seasonalArt(name, season))).toBe(name);

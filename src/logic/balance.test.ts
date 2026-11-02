@@ -357,11 +357,16 @@ describe('level curve balance', () => {
   // goal now counts a coop built before it shows (it blocked a goal slot for good). With level 5 at 6000 XP the casual
   // player missed it (≈5900 XP in 3 h), at 5500 reached it at 183 min; at 5000: casual L2 9.0, L5 171.0; relaxed
   // L2 9.0, L5 159.0; busy L2 9.0, L5 153.7.
+  // More crops (potato at level 3, barley at 4; "Best in season" sows potato before corn comes): casual L2 9.0, L5 158.0;
+  // relaxed L2 9.5, L5 151.0; busy L2 9.2, L5 137.4.
+  // (The next numbers, for saturation and traders, were measured before more crops came in.)
   // Market saturation (each item's price falls past ~$150 a day of it, recovering a quarter a day) and travelling
   // traders from level 3. Selling everything at once as before: casual L5 174.0, relaxed 176.0, busy 146.8. It now
   // sells each item only up to the day's allowance and 10 more (unless the granary is half full), and its wanted goods to
   // a trader first: casual L2 9.0, L5 156.0; relaxed L2 9.5, L5 172.5; busy L2 9.2, L5 119.3 (trader seed 79; over
   // seeds 1-5 relaxed L5 172.5-178.5, casual 162-173, the same as before saturation: relaxed 172.5, casual 174.0).
+  // Both with more crops: casual L2 9.0, L5 152.0; relaxed L2 9.5, L5 158.0; busy L2 9.2, L5 133.8 (trader seeds 1-3:
+  // casual 152-158, relaxed 152-158, busy 116-141).
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });

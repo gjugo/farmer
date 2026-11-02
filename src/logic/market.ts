@@ -4,6 +4,7 @@ import type { ActivityEvents } from './activity';
 import { dayOf } from './clock';
 import { DAY_MS } from './constants';
 import type { Emitter } from './events';
+import { perkFactor } from './perks';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { ClockState, GameState, ItemId } from './types';
 
@@ -59,6 +60,24 @@ export function buyPrice(day: number, itemId: ItemId): number | null {
   const unit = (priceFactor(day, itemId) - PRICE_MIN_FACTOR) / (PRICE_MAX_FACTOR - PRICE_MIN_FACTOR);
   const price = Math.round(item.price * (BUY_MIN_FACTOR + (BUY_MAX_FACTOR - BUY_MIN_FACTOR) * unit));
   return Math.max(Math.floor(item.price * PRICE_MAX_FACTOR) + 1, price);
+}
+
+/**
+ * What the Market pays for one unit on `day` with a sell bonus of `bonus` (Haggler: 1.1), in whole dollars, or null
+ * for items outside the catalogue. Building materials get no bonus, and nothing ever sells for as much as the Market
+ * charges for it (`buyPrice`), so buying and selling back never makes money.
+ */
+export function sellPrice(day: number, itemId: ItemId, bonus = 1): number | null {
+  const price = dailyPrice(day, itemId);
+  if (price === null || bonus === 1 || isMaterial(itemId)) return price;
+  const boosted = Math.round(price * bonus);
+  const buy = buyPrice(day, itemId);
+  return buy === null ? boosted : Math.min(boosted, buy - 1);
+}
+
+/** Today's sell price on this farm (with Haggler when taken). */
+export function farmSellPrice(state: Pick<GameState, 'ext'>, day: number, itemId: ItemId): number | null {
+  return sellPrice(day, itemId, perkFactor(state, 'haggler'));
 }
 
 /** -1 below the base price, 0 at it, 1 above it. */
@@ -149,9 +168,12 @@ export function droppedPrice(dayPrice: number, bp: number): number {
   return Math.max(1, Math.round((dayPrice * (10_000 - bp)) / 10_000));
 }
 
-/** What one unit of the item fetches at the Market right now (the day's price less its drop), or null when it has no price. */
+/**
+ * What one unit of the item fetches at the Market right now: the farm's price for the day (with Haggler when taken)
+ * less its drop, or null when it has no price. Saturation applies after the perk.
+ */
 export function currentPrice(state: GameState, itemId: ItemId): number | null {
-  const price = dailyPrice(dayOf(state.clock), itemId);
+  const price = farmSellPrice(state, dayOf(state.clock), itemId);
   return price === null ? null : droppedPrice(price, marketOf(state).drops[itemId] ?? 0);
 }
 
@@ -175,7 +197,7 @@ export interface SaleQuote {
 
 /** Prices a sale without changing anything; null when the item has no price. */
 export function quoteSale(state: GameState, itemId: ItemId, qty: number): SaleQuote | null {
-  const price = dailyPrice(dayOf(state.clock), itemId);
+  const price = farmSellPrice(state, dayOf(state.clock), itemId);
   if (price === null) return null;
   const market = marketOf(state);
   const n = Math.max(0, Math.floor(qty));

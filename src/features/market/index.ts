@@ -17,6 +17,7 @@ import {
   sell,
   sellAll,
 } from '../../logic/market';
+import { perkFactor } from '../../logic/perks';
 import { fullMessage, storageInfo } from '../../logic/storage';
 import { formatMoney, h } from '../../ui/dom';
 import { itemIcon, withIcons } from '../../ui/icons';
@@ -196,7 +197,8 @@ function marketSheet(ctx: FarmContext): SheetSpec {
   return {
     id: 'market',
     title: () => '🏪 Market',
-    signature: () => `${game.day}|${game.level}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}|${JSON.stringify(marketOf(game.state).drops)}`,
+    signature: () =>
+      `${game.day}|${game.level}|${perkFactor(game.state, 'haggler')}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}|${JSON.stringify(marketOf(game.state).drops)}`,
     render: (body) => {
       const day = game.day;
       body.append(

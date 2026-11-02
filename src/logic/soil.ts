@@ -113,14 +113,20 @@ export function restedFertility(fertility: number, restingSince: number | null, 
   return Math.min(quality, f + (FALLOW_GAIN_PER_DAY * (now - restingSince)) / DAY_MS);
 }
 
-/** Harvest yield of a crop of `harvestQty` from a field at `fertility`: ×0.5 on bare soil up to ×1.25 at 100%. */
-export function yieldAt(harvestQty: number, fertility: number): number {
-  return Math.round(harvestQty * (YIELD_BASE + (YIELD_PER_FERTILITY * clampFertility(fertility)) / 100));
+/**
+ * Harvest yield of a crop of `harvestQty` from a field at `fertility`: ×0.5 on bare soil up to ×1.25 at 100%, times
+ * `bonus` (Green thumb).
+ */
+export function yieldAt(harvestQty: number, fertility: number, bonus = 1): number {
+  return Math.round(harvestQty * bonus * (YIELD_BASE + (YIELD_PER_FERTILITY * clampFertility(fertility)) / 100));
 }
 
-/** Points a harvest of a crop that drains `drain` takes from a field whose last harvest was `lastCrop`: double for the same crop again. */
-export function drainOf(cropId: string, drain: number, lastCrop: string | null): number {
-  return cropId === lastCrop ? drain * SAME_CROP_DRAIN : drain;
+/**
+ * Points a harvest of a crop that drains `drain` takes from a field whose last harvest was `lastCrop`: double for the
+ * same crop again, times `factor` (Rich soil).
+ */
+export function drainOf(cropId: string, drain: number, lastCrop: string | null, factor = 1): number {
+  return (cropId === lastCrop ? drain * SAME_CROP_DRAIN : drain) * factor;
 }
 
 /** Fertility after a harvest drained it. */

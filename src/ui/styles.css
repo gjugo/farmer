@@ -1074,6 +1074,113 @@ button {
   font-weight: 700;
 }
 
+/* Perks: the cards of a level-up choice, the ⭐ badge on the level, and the list in the Goals sheet */
+
+.dialog.levelup {
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+}
+
+.perk-cards {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  text-align: left;
+}
+
+.perk-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 2px solid var(--wood);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.perk-card:hover,
+.perk-card:focus-visible {
+  background: var(--paper-dark);
+  border-color: var(--green-dark);
+  outline: 3px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.perk-icon {
+  flex: none;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.perk-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.perk-name {
+  font-weight: 800;
+}
+
+.perk-desc {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.perk-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 2px solid var(--wood);
+  border-radius: 15px;
+  background: var(--gold);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 24px;
+  cursor: pointer;
+  animation: badge-pop 0.4s ease-out;
+  z-index: 1;
+}
+
+.perk-badge[hidden] {
+  display: none;
+}
+
+.perk-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.perk-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 2px solid var(--paper-dark);
+  border-radius: 8px;
+}
+
+.perk-list .perk-level {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
 /* Locked content and goals ----------------------------------------------------- */
 
 .build-item.locked {

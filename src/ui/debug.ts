@@ -174,6 +174,20 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
       {
         type: 'button',
         class: 'btn',
+        'data-testid': 'debug-reset-perks',
+        // Forgets every perk taken; every level reached gets its choice back (the ⭐ badge reopens them).
+        onclick: () => {
+          game.perks.reset();
+          ctx.ui.toast(`Perks reset: ${game.perks.pending.length} to choose`, 'success');
+        },
+      },
+      'Reset perks',
+    ),
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn',
         'data-testid': 'debug-refresh-orders',
         onclick: () => {
           refreshOrders(game.state);

@@ -1,6 +1,5 @@
 import { getBuildable, type BuildableDef } from '../data/buildables';
 import { materialEntries, type MaterialCost, type MaterialId } from '../data/materials';
-import { buildWorkMs } from '../data/workers';
 import type { ActivityEvents } from './activity';
 import { dayOf, gameDelta } from './clock';
 import { DEMOLISH_REFUND } from './constants';
@@ -10,6 +9,7 @@ import * as inventory from './inventory';
 import { setOwned } from './land';
 import { clearUnder, mapOf, type MapLayer } from './maplayer';
 import { canPlace, objectAt, type Footprint, type PlacementResult } from './placement';
+import { buildTime, materialsCost, Perks, type PerksState } from './perks';
 import { Progression, type GoalView } from './progression';
 import { createNewGame } from './state';
 import { capacity, excessWithout, spaceFor, used } from './storage';
@@ -34,6 +34,8 @@ export interface GameEvents {
   levelUp: { level: number; bonus: number; unlocks: Unlock[] };
   /** Active goals or their progress changed. */
   goals: GoalView[];
+  /** A perk choice opened (level-up) or was made, or the perks were reset. */
+  perks: PerksState;
   /** Trees or deposits on the map changed (felled, used, cleared). Regrowth needs no event: it follows the clock. */
   map: MapLayer;
   /** The whole state was replaced (new game). Re-read everything. */
@@ -77,10 +79,10 @@ export function refundOf(obj: PlacedObject): number {
   return obj.site ? obj.site.paid : demolishRefund(getBuildable(obj.type));
 }
 
-/** Materials demolishing the object gives back: all of them for an unfinished site, else part. */
-export function materialsRefundOf(obj: PlacedObject): MaterialCost {
+/** Materials demolishing the object gives back: all those paid for an unfinished site (fewer with Thrifty), else part. */
+export function materialsRefundOf(obj: PlacedObject, state: Pick<GameState, 'ext'>): MaterialCost {
   const def = getBuildable(obj.type);
-  return obj.site ? { ...def?.materials } : demolishMaterialsRefund(def);
+  return obj.site ? materialsCost(state, def?.materials) : demolishMaterialsRefund(def);
 }
 
 export interface PlaceOptions {
@@ -100,6 +102,7 @@ export class Game {
   /** What the player did (harvests, sales, ...), reported by feature logic. Drives goals and XP. */
   readonly activity = new Emitter<ActivityEvents>();
   readonly progression: Progression;
+  readonly perks: Perks;
   private _state: GameState;
   private lastDay: number;
   /** While true (home screen, pause menu) the clock stands still: `tick` moves nothing. Not saved. */
@@ -109,6 +112,8 @@ export class Game {
     this._state = state;
     this.lastDay = dayOf(state.clock);
     this.progression = new Progression(this);
+    // After progression: a level-up opens its perk choice before anyone else (the HUD) hears of it.
+    this.perks = new Perks(this);
   }
 
   /** The live state. Read freely; mutate only through Game methods (or `touch` after editing `obj.state`). */
@@ -205,7 +210,12 @@ export class Game {
   /** Can the farm pay for building `type` (money and materials)? */
   canPayFor(type: string): boolean {
     const def = getBuildable(type);
-    return !!def && this.canAfford(def.cost) && this.missingMaterials(def.materials).length === 0;
+    return !!def && this.canAfford(def.cost) && this.missingMaterials(this.materialsFor(type)).length === 0;
+  }
+
+  /** The materials building `type` takes on this farm (Thrifty needs fewer). */
+  materialsFor(type: string): MaterialCost {
+    return materialsCost(this._state, getBuildable(type)?.materials);
   }
 
   // Land ----------------------------------------------------------------------
@@ -247,9 +257,10 @@ export class Game {
     const check = this.checkPlacement(type, x, y);
     if (!check.ok) return check;
     if (!this.canAfford(def.cost)) return { ok: false, reason: 'money' };
-    if (this.missingMaterials(def.materials).length) return { ok: false, reason: 'materials' };
+    const materials = this.materialsFor(type);
+    if (this.missingMaterials(materials).length) return { ok: false, reason: 'materials' };
     this.spend(def.cost);
-    for (const [id, qty] of materialEntries(def.materials)) this.removeItem(id, qty);
+    for (const [id, qty] of materialEntries(materials)) this.removeItem(id, qty);
     const object: PlacedObject = {
       id: `o${this._state.nextObjectId++}`,
       type,
@@ -257,7 +268,7 @@ export class Game {
       y,
       state: def.initialState?.({ x, y, now: this._state.clock.elapsed }) ?? {},
     };
-    const workMs = options.site ? buildWorkMs(type) : 0;
+    const workMs = options.site ? buildTime(this._state, type) : 0;
     if (workMs > 0) object.site = { workMs, paid: def.cost };
     this._state.objects.push(object);
     // Building over stumps (or a used-up deposit) clears them for good.
@@ -282,7 +293,7 @@ export class Game {
     let room = Math.max(0, capacity(this._state, 'materials', id) - used(this._state, 'materials'));
     const materials: MaterialCost = {};
     const lost: MaterialCost = {};
-    for (const [item, qty] of materialEntries(materialsRefundOf(object))) {
+    for (const [item, qty] of materialEntries(materialsRefundOf(object, this._state))) {
       const back = Math.min(qty, room);
       room -= back;
       if (back > 0) materials[item] = back;

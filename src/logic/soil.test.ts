@@ -130,7 +130,7 @@ describe('field fertility', () => {
     f.state.fertility = 40;
     plant(game, f, 'corn');
     game.state.clock.elapsed += CROPS.corn.growMs;
-    expect(harvestYield(game.state.clock, f)).toBe(10); // 12 × 0.8 = 9.6
+    expect(harvestYield(game.state, f)).toBe(10); // 12 × 0.8 = 9.6
     expect(harvest(game, f)).toMatchObject({ ok: true, qty: 10 });
     expect(game.count('corn')).toBe(10);
   });

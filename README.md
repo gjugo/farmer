@@ -55,7 +55,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   orders and starting processing jobs free room at once. Time away only moves goods into pens and buildings, as
   always. Saves from before storage keep everything, even above capacity, but nothing new comes into an over-full
   pool until it is back under; a one-time toast suggests building a granary.
-- **Resource bar:** under the top bar, one chip per category with its total: 🌾 crops (wheat, carrot, corn), 🥚 animal
+- **Resource bar:** under the top bar, one chip per category with its total: 🌾 crops (wheat, carrot, potato, corn, barley, flax, cabbage, pumpkin), 🥚 animal
   products (egg, milk, wool), feed, 🧀 goods (cheese, butter, bread, cloth) and 🪵 materials (wood, stone, iron), plus the
   room used in each pool (goods `used/capacity` after the four goods chips, materials after Materials), green, amber
   from 90% and red when full, like 🎒 Inventory. Hover a chip (mouse) or tap it for each item's icon and count; Esc or a
@@ -137,9 +137,23 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Orders:** 📋 Orders shows 3 customer orders for goods you have had before. Fulfil hands over the goods
   for a reward above today's market value; the HUD badge counts orders you can fulfil now. A fulfilled slot
   gets a new order after 8 game-minutes, a discarded one after 20.
-- **Crops:** tap an empty field → pick wheat, carrot or corn (paid in money). Each takes a real part of its season:
-  wheat 8 game-minutes (10 wheat), carrot 10 (10 carrots), corn 16 (12 corn) on normal soil. Tap a growing field for
-  its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
+- **Crops:** tap an empty field → pick a crop (paid in money). Each takes a real part of its season; yields are on
+  normal soil:
+
+  | Crop | Level | Sown in | Grows | Yield | Drain | Notes |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 🌾 Wheat | 1 | spring, summer, autumn | 8 min | 10 | 8 | food; bakery and feed mill |
+  | 🥕 Carrot | 2 | spring, autumn | 10 min | 10 | 5 | food |
+  | 🥔 Potato | 3 | spring, summer | 12 min | 14 | 15 | food; drains the soil hard |
+  | 🌽 Corn | 4 | spring, summer | 16 min | 12 | 12 | food; feed mill |
+  | 🌿 Barley | 4 | spring, summer | 9 min | 10 | 6 | feed mill (2 barley → 4 feed) |
+  | 🪻 Flax | 6 | spring, summer | 14 min | 8 | 10 | sold for now |
+  | 🥬 Cabbage | 6 | autumn (grows into winter) | 35 min | 10 | 9 | food; **the winter crop** |
+  | 🎃 Pumpkin | 7 | summer, autumn | 25 min | 6 | 13 | food; the best price |
+
+  Tap a growing field for its progress; tap a ripe (swaying, sparkling) field to harvest into the inventory.
+  Goals, after "Weave 2 cloth": "Harvest 30 potatoes", "Harvest cabbage in winter" (only a winter harvest counts) and
+  "Grow 10 pumpkins".
 - **Soil:** the ground's quality differs across the map, in blobs: **rich** (95%), **normal** (70%) and **poor** (45%).
   It is the same on every load (worked out from a fixed seed, never saved). Rich ground grows lusher grass in every
   season; the starting land has one rich patch, under and in front of the starting fields, and is mostly normal
@@ -147,7 +161,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   placing a field its ghost is tinted the same way, tile by tile.
   - **Fertility** (0–100%): a new field starts at the average soil quality of its tiles. A harvest yields
     `round(qty × (0.5 + 0.75 × fertility))`: about ×1.0 on normal soil, ×1.2 rich, ×0.85 poor, ×0.5 when spent.
-    Each harvest drains the crop's own amount (wheat 8, carrot 5, corn 12 points), **twice that when it is the same crop
+    Each harvest drains the crop's own amount ("Drain" above, e.g. wheat 8, carrot 5, corn 12 points), **twice that when it is the same crop
     as the field's last harvest**: rotate. An empty field rests and regains 6 points per game day (winter counts), up to
     its soil quality. The field panel shows the fertility bar, the soil, the last crop and a hint.
   - **Fallow:** the crop plan **Fallow (rest the soil)** (formerly "None") leaves an assigned field empty to recover.
@@ -184,8 +198,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   farmer starts free, without a workplace, and sets out from the farmhouse door like everyone. When approval stays
   below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; never the last
   family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
-  storage: each eats **2 food** from the granary (wheat, carrot, corn, egg, milk, bread, cheese, butter; never feed,
-  wool or cloth), spread across the kinds in stock; on **winter** days each occupied home burns **1 wood**; once the
+  storage: each eats **2 food** from the granary (wheat, carrot, corn, potato, cabbage, pumpkin, egg, milk, bread,
+  cheese, butter; never feed, barley, flax, wool or cloth), spread across the kinds in stock; on **winter** days each occupied home burns **1 wood**; once the
   loom is unlocked (level 5) each family takes **1 cloth** at the start of winter and stays clothed until the next.
   **Approval** (0–100%) comes from that day: base 50, +5 per food kind eaten beyond the first (up to +20), −20 short of
   food, −50 with nothing to eat, up to +10 when every family is clothed, and in winter +10 when every home is warm or up
@@ -209,8 +223,11 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   the day and a toast announces each new one. A field must be **ploughed** ($5) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
   which turns every empty field back to unploughed (faded soil); in winter nothing can be ploughed or sown.
-  Each crop is sown only in its seasons (wheat: spring–autumn, carrot: spring and autumn, corn: spring and summer),
-  and only while it will be ripe before they end. A ripe crop keeps in the field, even into winter.
+  Each crop is sown only in its seasons (see **Crops** above), and only while it will be ripe before they end. A ripe
+  crop keeps in the field, even into winter. **Cabbage** is the winter crop: its seasons are autumn and winter, so it is
+  sown in autumn (only while it can ripen before winter ends) and ripens in winter. The frost only unploughs empty
+  fields, so a cabbage field stands through it (drawn with frost and snow) and is harvested in winter, by hand or by its
+  farmer.
   The new farm's two starting fields come ploughed.
 - **Seasonal look:** the farm looks like its season. Spring is bright green with flowers and blossoming trees, summer a
   deep warm green with dry patches, autumn ochre grass, fallen leaves and orange, red and yellow trees, winter snow on
@@ -224,6 +241,20 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
   Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
   (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
+- **Perks:** every level-up from level 2 to 10 offers **3 perks** as cards in the "Level N!" dialog; pick one and it
+  lasts for good. **Decide later** (or Esc) keeps the choice open: a ⭐ badge on the HUD level reopens it, and several
+  open choices stack, oldest first. The cards are buttons (Tab or the arrow keys, Enter). The offer is fixed by the
+  level and a seed saved with the farm, so a reload never rerolls it; it never repeats a perk already taken, and
+  Husbandry, Quick hands and Prospector only turn up once the farm has a pen, a processing building or a resource
+  building. The pool (`src/data/perks.ts`): Green thumb (harvests +15%), Good boots (farmers walk 25% faster), Haggler
+  (the Market pays 10% more for goods, not materials, and never as much as it charges), Husbandry (animals produce 20%
+  faster), Master builder (building work 30% faster), Big barns (granaries and storehouses hold 20% more), Thrifty
+  (buildings need 20% fewer materials, rounded up, at least 1), Warm hearths (half the winter firewood), Good neighbours
+  (approval +10, its own line in the breakdown, from the next day), Rich soil (harvests drain the soil 30% less),
+  Prospector (lodges, quarries and mines yield 25% more, rounded up) and Quick hands (processing batches 20% faster).
+  Each is read through `perkFactor(state, id)` (`src/logic/perks.ts`) at one place in the rules, so live play, ×60 and
+  the offline catch-up agree. The perks taken are listed under **⭐ Perks** in the 🎯 Goals sheet, with a button for
+  the open choices. A save from before perks gets one open choice per level it has already reached.
 
 ### Debug mode (QA)
 
@@ -232,10 +263,11 @@ Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed *
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary),
 **+1 family** (fills an empty home at once), **Next day** (jumps to the next day boundary, where the families settle
 their needs), **Refresh orders** (fills every order slot now), **Regrow all trees** (every stump grows back at
-once), **Trader now** (a trader parks by the farmhouse at once, whatever the level and schedule, and leaves at the end
-of the day) and **Clear market drops** (every flooded price back to the day's price). **+10** adds only what the
-granaries or storehouses have room for. **Next day** and **Next season** are not time away: a trader due on the way
-arrives as in play.
+once), **Reset perks** (forgets every perk taken; every level reached gets its choice back), **Trader now** (a trader
+parks by the farmhouse at once, whatever the level and schedule, and leaves at the end of the day) and **Clear market
+drops** (every flooded price back to the day's price). Setting a higher level opens a choice for each level on the way.
+**+10** adds only what the granaries or storehouses have room for. **Next day** and **Next season** are not time away:
+a trader due on the way arrives as in play.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
@@ -284,6 +316,10 @@ normal, 45 poor), `overlay` whether the Soil overlay is on. Each field in `windo
 `state.fertility` (points when it began resting, or while a crop grows), `state.restingSince` (game ms, null while a
 crop grows) and `state.lastCrop`; the field panel shows the current fertility (`panel-meter-fertility`), and the
 Build menu's toggle is `build-toggle-soil` (`aria-pressed`).
+`window.farm.perks` is `{ taken, pending, offer(level) }`: `taken` lists `{ level, id }` of the perks taken,
+`pending` the levels whose choice is still open (oldest first) and `offer(level)` the ids of that level's cards. Test
+ids: `levelup-dialog`, `perk-card-<id>`, `perk-later`, `levelup-ok`, `hud-perk-badge`, `perks-section`, `perk-<id>`,
+`perks-choose`, `debug-reset-perks`.
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
@@ -310,6 +346,7 @@ src/
     crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure, starting fields
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
     families.ts        families: homes, daily meals / firewood / clothes, approval, arrivals and departures (slice `families`)
+    perks.ts           perks: perkFactor, seeded offers, choices and the slice `perks`; the Perks class on Game
     workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
     work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
@@ -324,6 +361,7 @@ src/
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
     families.ts        the Cottage buildable, foods, needs per family, approval points, arrival and leaving thresholds
+    perks.ts           the perk pool: name, what it does, its factor and what it is about
     resourceBuildings.ts woodcutter's lodge, quarry and mine buildables: costs, yields, cycle times
     resources.ts       resource categories (resource bar, stock piles), item → category / pile
     buildables.ts      build menu registry (+ the core Path)
@@ -481,10 +519,14 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 - **Work that needs a farmer:** wrap it in `withFarmer(ctx, kind, obj, durationMs, () => didIt)` from
   `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the farmhouse to the
   site, and sends a farmer along the path only if the action succeeded.
-- **Selling:** `sell(game, itemId, qty?)` / `currentPrice(game.state, itemId)` (the day's price less its drop) /
-  `quoteSale(game.state, itemId, qty)` from `src/logic/market.ts`.
+- **Selling:** `sell(game, itemId, qty?)` / `currentPrice(game.state, itemId)` (today's price with the farm's perks,
+  less its saturation drop; `farmSellPrice` is it before the drop, `dailyPrice` the plain one) / `quoteSale(game.state,
+  itemId, qty)` from `src/logic/market.ts`.
+- **Perks:** add one to `PERKS` in `src/data/perks.ts` (its `value` and `neutral`, and `subjects` if it is about a kind
+  of building) and read it with `perkFactor(state, id)` at the one place in the rules it changes.
 - **Buying materials:** `buy(game, itemId, qty)` / `buyPrice(game.day, itemId)` from `src/logic/market.ts`;
-  `game.missingMaterials(def.materials)` and `game.canPayFor(type)` say whether a building can be paid for.
+  `game.missingMaterials(game.materialsFor(type))` and `game.canPayFor(type)` say whether a building can be paid for
+  (`materialsFor` is the cost with the farm's perks).
 - **Items coming in:** always `game.addItem(itemId, qty)`. It takes only what the storage pools have room for and
   returns how many went in; check `game.spaceFor(itemId)` first for all-or-nothing intake (like a harvest), and
   leave what didn't fit where it was (in the pen, the building, the field). Rules: `src/logic/storage.ts`.
@@ -501,6 +543,8 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 Autosaved to `localStorage` (`farmer.save`) every 10 s and when the tab is hidden or closed.
 Saves are versioned (`SAVE_VERSION` in `src/logic/save.ts`). Missing fields fall back to
 defaults, so adding state needs no migration; restructuring does (add one to `migrations`).
+The `perks` slice (seed, perks taken, open choices) is purely additive, so it needed no version bump: a save without
+it gets a seed on load and one open choice per level it has reached.
 Version 11 added the map layer: an older save gets one generated around what it has built (never on top of it),
 with a full deposit under every quarry and mine and a grove of about 8 trees in reach of every lodge.
 

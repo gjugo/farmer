@@ -64,7 +64,7 @@ export function stockDisplay(state: GameState): StockShown[] {
     }
     for (const obj of state.objects) {
       if (obj.site || !isStorageType(obj.type) || STORAGE[obj.type].pool !== pool) continue;
-      const room = capacityOfObject(obj);
+      const room = capacityOfObject(obj, state);
       const held = take(room);
       const fill = room > 0 ? held / room : 0;
       const piles: Record<string, PileStage> = {};

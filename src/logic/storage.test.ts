@@ -236,7 +236,7 @@ describe('collecting', () => {
     for (let i = 0; i < 3; i++) expect(startJob(game, dairy, 'cheese').ok).toBe(true);
     game.state.inventory.wheat = 29;
     game.state.clock.elapsed += 60 * 60_000;
-    settle(game.state.clock, dairy);
+    settle(game.state, dairy);
     const total = holdings(game.state);
     expect(collectOutput(game, dairy)).toEqual({ cheese: 1 });
     expect(outputReady(dairy)).toBe(2);
