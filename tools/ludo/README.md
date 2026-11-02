@@ -59,6 +59,8 @@ git (or rerun the commands below) after running it.
 | `orchard`, `orchard_winter` (the pad; its two trees are `tree_apple` in its seasons, drawn by the game) | `orchard_raw.png`, `orchard_winter_raw.png` | all |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
 | `trader_wagon`, `trader_wagon_winter` (the travelling trader with his wagon) | `trader_wagon_raw.png`, `trader_wagon_winter_raw.png`; see **Trader's wagon** below | all |
+| `trading_post`, `trading_post_winter` (2×2) | `trading_post_raw.png`, `trading_post_winter_raw.png`; see **Main road and trading post** below | all |
+| `road_*` (16 pieces like the paths), `fringe_road_<edge>` | `road_raw.png`, `road_winter_raw.png` (`road_tiles.py`); fringes from `fringes.py`; see **Main road and trading post** below | all |
 
 ## Generating in Ludo
 
@@ -1120,6 +1122,59 @@ for n in trader_wagon trader_wagon_winter; do
   $P $L/install_prop.py /tmp/props $n
 done
 ```
+
+## Main road and trading post
+
+**Road tiles: `road_tiles.py`.** The road's earth is a Ludo map tile: `createImage` (Cel-Shaded, Isometric, `tile`, n=4)
+"Isometric map tile, flat diamond, top surface only: a broad rutted country cart road of packed brown earth, two
+darker wheel ruts running along it, small grey cobble stones and pebbles pressed into the dirt, a few tufts of grass",
+then `editImage` on the fourth (n=3) to take out its ruts and grass, which would run one way only once wrapped: "Keep
+this exact isometric map tile ... Change only the top surface: remove the wheel ruts and the grass; the whole top is
+evenly packed light-brown cart-road earth with small grey cobble stones and pebbles scattered evenly all over it, no
+lines, no stripes, no direction." (the second: `road_raw.png`). Winter is `editImage` on that (n=2): "... Make it winter:
+the earth is covered in trampled, packed grey-white snow with brown mud showing through in places and the grey stones
+peeking out of the snow, no lines, no direction." (the first: `road_winter_raw.png`). About 6.5 credits.
+
+`road_tiles.py` makes the 16 pieces the way `ground_tiles.py` makes the paths: the earth wrapped as a seamless texture, a
+band 0.37 tiles half-wide (a path's is 0.22) with arms to the neighbouring road or path tiles, two dark wheel ruts along
+the middle of each arm, a darker rim and a thin cel outline; the grass margin is the season's `grass_0` tile sampled at
+the same tile coordinates, so it continues the ground. Autumn has the autumn grass, winter the snow and the snowy road.
+The game draws the pieces in the ground's Blitter (`FarmScene.paintTile`), tinted like the grass there. The road's
+fringes are `fringes.py`'s `road` kind (a narrower core: the road leaves less grass margin).
+
+```bash
+mkdir -p /tmp/road/2x /tmp/road/1x /tmp/fringes/2x /tmp/fringes/1x
+$P $L/road_tiles.py /tmp/road $L/source/road_raw.png $L/source/road_winter_raw.png
+$P $L/fringes.py /tmp/fringes public/assets/farm/2x/tiles road
+for d in /tmp/road /tmp/fringes; do cp $d/2x/*.png public/assets/farm/2x/tiles/; cp $d/1x/*.png public/assets/farm/1x/tiles/; done
+# Manifest entries (only once), shaped like the path pieces:
+N=(); for f in /tmp/road/2x/road_*.png; do N+=($(basename $f .png)); done
+$P $L/add_asset.py path_single "${N[@]}" "--notes=main road piece (Ludo.ai, cel-shaded; tools/ludo/road_tiles.py)"
+N=(); for e in ne se sw nw; do for s in "" _spring _summer _autumn _winter; do N+=(fringe_road_${e}$s); done; done
+$P $L/add_asset.py fringe_path_ne "${N[@]}" "--notes=grass fringe strip over a main-road edge"
+```
+
+**Trading post.** `createImage` (Cel-Shaded, Isometric, `sprite`, n=4; the cottage image could not be sent as a style
+reference from here, so the prompt carries the buildings' framing instead): "A small farming-game village trading post on
+a square grass pad of exactly 2 by 2 tiles. Isometric 2:1 view, south corner of the pad toward the viewer, a
+straight-edged diamond pad with no thickness. An open-fronted timber market stall with a sloped plank awning on wooden
+posts, a counter with goods, wooden crates of vegetables, oak barrels and burlap grain sacks stacked beside it, and a
+wooden hitching rail for horses in front. Warm brown wood, cream canvas, bright cheerful colours, dark outlines,
+cel-shaded, no people, no shadow outside the pad." (the first). Winter: `editImage` on it (n=2): "Keep the same trading
+post exactly ...; make it winter: a thick layer of white snow on the canvas awning and the wooden roof beams, a little
+snow on the barrels, crates, sacks and hitching rail, small icicles along the awning edge, and cover the whole grass pad
+in white snow. Do not move or resize anything." (the first). About 3 credits.
+
+```bash
+$P $L/add_asset.py cottage trading_post "--notes=trading post, 2x2: ..."
+$P $L/add_asset.py cottage_winter trading_post_winter "--notes=trading post in winter: ..."
+$P $L/fit_building.py $L/source/trading_post_raw.png /tmp/props trading_post 2 2 42 417 726 422 389 590.5
+$P $L/fit_building.py $L/source/trading_post_winter_raw.png /tmp/props trading_post_winter 2 2 41 425 725 417 375 592
+for n in trading_post trading_post_winter; do $P $L/install_prop.py /tmp/props $n; done
+```
+
+The merchants on the road are the ox barn's oxcart (`ox` and `cart_<facing>`) with a load from the stock piles; no art
+of their own.
 
 ## Removed: the "For sale" sign
 

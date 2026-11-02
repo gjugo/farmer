@@ -97,13 +97,31 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   farmhouse store fills first, then each finished granary or storehouse in placement order, up to its room (purely
   visual, `stockDisplay` in `src/logic/stockpiles.ts`). In a building the biggest pile shows how full it is and the
   others are scaled to it, so a full building looks full. Construction sites show none.
+- **Main road:** every map has one main road (`src/logic/mainroad.ts`), laid from a seed with the map: it enters at one
+  map edge near a corner and leaves at the other end of one side (picked from the seed), in a band 2–7 tiles in from
+  that edge, winding gently. It never comes near the starting land (on the 64×48 map it ends up about 13–20 tiles from
+  the farmhouse on the north and south sides, 21–30 on the east and west), goes round ponds, deposits and anything
+  built, and cuts a corridor through forests (those trees are gone for good). Its tiles count as path for walking,
+  farmers, oxcarts and the "a path from the farmhouse reaches it" rule; nothing can be built on it and it is never
+  demolished (laying a path on it does nothing). It is drawn as a broad rutted cart road with stones in the paths' 16
+  shapes and 4 seasons, joining paths where they meet, with grass fringes along its edges. **Merchants'** oxcarts
+  travel it edge to edge now and then, facing their way: scenery only, timed from the game clock and the road's seed
+  (nothing saved), never more than two at once.
+- **🏪 Trading post (trade gating):** a 2×2 building under 📦 Storage ($60 + 10 🪵, level 1, built by a farmer). It is
+  **linked** when it is finished and the path network from the farmhouse reaches both it and a main-road tile. Until a
+  post is linked the whole ⚖️ Trade window is closed: Market selling and buying, Orders and the Trader each show "Build a
+  🏪 trading post and link it to the main road with a path" (with the reason once a post exists) and a button that
+  opens its build card, and the logic refuses every sale, purchase and delivery. The post's panel, its build ghost and
+  the open Trade tabs show **🛣️ Linked to the main road ✅/❌**; making or breaking the link (e.g. demolishing the path
+  that joins the road) says so in a toast. One post is enough; a second adds nothing. Older farms get no free post.
 - **Market:** 🏪 Market sells anything in the inventory at today's price (**Sell everything** keeps building
   materials, manure and the blacksmith's tools; tools sell for about $40, but the Market never sells them). Its **Buy building materials** section sells wood, stone and (from level 3) iron: **Buy 1/5/10**, or
   pick any amount with the − / + stepper. It shows the storehouse room left; a purchase is capped at that room
   ("Bought only 5 …") and refused when there is none. Buy prices change daily like sell prices and are always above anything the
   Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
-  purchase is refused with a toast. New farms start without materials; the goal "Buy 10 wood" comes just before
-  "Build a cottage" and "Build a chicken coop". "House 4 families" follows "Reach level 3".
+  purchase is refused with a toast. New farms start without materials (wood comes from a woodcutter's lodge until a
+  trading post is linked); the goal "Build a trading post" comes just before "Build a cottage" and "Build a chicken
+  coop", after "Sell 20 wheat at the trading post". "House 4 families" follows "Reach level 3".
 - **Market rules (saturation):** the Market takes each item's daily allowance, worth about $150 at its base price
   (`floor(150 / base)`: 37 wheat, 15 eggs, 3 cheese), at the day's price. Every unit sold past it lowers that item's
   price by 1%, down to 50% of the day's price; each new day takes a quarter of the drop away (exact integer basis
@@ -111,8 +129,10 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   (`ext.market`). The sell list shows the current price with a blue **Flooded −N%** mark; **Sell all** and **Sell
   everything** ask first when the sale would flood, with the total at the falling prices. Selling never pays more than
   the Market's buy price. Orders board rewards and the travelling trader are not affected.
-- **Travelling traders:** from level 3, about twice a season (one day in each half of a season) a trader's wagon parks
-  for one game day on a free tile next to the farmhouse door (or the nearest path tile). He is announced the day
+- **Travelling traders:** from level 3, about twice a season (one day in each half of a season) a trader comes along the
+  main road and his wagon parks for one game day on a free tile next to the linked trading post (or a path tile next to
+  it). Without a linked post he drives through without stopping: no wagon, no trading, and his banner says **🛒 Trader
+  passing by · …** and why. He is announced the day
   before with a toast and a **🛒 Trader tomorrow** banner under the level, which becomes **🛒 Trader here** while he
   stays; tapping the banner or the wagon opens his tab in ⚖️ Trade. He buys 2–3 goods the farm can already make (its unlocked crops,
   animals' products and processed goods) at +40–80% of base price, each up to a set quantity (about $240 worth), with no
@@ -417,9 +437,9 @@ game keeps running, nothing is dimmed and nothing is blocked.
   1. Look around → the camera moved or zoomed. 2. Assign a farmer to a starting field → a field has a farmer.
   3. Speed (⏩ ⏭, keys 1–3, ⏸/Space) → the speed or pause changed. 4. Sow the other field by hand (🌾 Wheat) → a field
   without a farmer has a crop. 5. ⭐ the level → the Development window opened. 6. Build a field → a field placed.
-  7. Harvest → `harvested`. 8. Sell at the Market → `sold`. 9. Wood: buy it, or build a woodcutter's lodge → wood
-  bought or a lodge placed. 10. A granary → placed. 11. A cottage → placed. 12. You're set (Almanac, perks, Settings)
-  → **Finish**.
+  7. Harvest → `harvested`. 8. Wood: build a woodcutter's lodge (or buy it) → a lodge placed or wood bought.
+  9. Build a trading post and link it to the main road → a post linked. 10. Sell at the trading post → `sold`.
+  11. A granary → placed. 12. A cottage → placed. 13. You're set (Almanac, perks, Settings) → **Finish**.
   Each step finishes on its event or with Next. One whose event came earlier, or whose result is already on the farm
   (a farmer on a field, a granary, a cottage, a lodge, crops in store, a third field), is skipped when it comes up, so
   steps can be done in any order.
@@ -441,7 +461,7 @@ their needs), **Drought now** (a drought until the end of the current season), *
 growing field now), **Fox now** (a fox comes to a coop now), **Harsh winter next** (the coming winter, or this one, is
 harsh, with its warning), **Refresh orders** (fills every order slot now), **Regrow all trees** (every stump grows back
 at once), **Reset perks** (forgets every perk taken; every level reached gets its choice back), **Trader now** (a trader
-parks by the farmhouse at once, whatever the level and schedule, and leaves at the end of the day) and **Clear market
+comes at once (parked by the linked trading post, or passing by without one), whatever the level and schedule, and leaves at the end of the day) and **Clear market
 drops** (every flooded price back to the day's price). Setting a higher level opens a choice for each level on the way.
 The hazard buttons skip the rolls, the level and the season, but defences still work and a fox still never takes the
 last chicken; when nothing can happen (no growing field, fewer than 2 chickens) a toast says why. **+10** adds only
@@ -452,11 +472,20 @@ the way arrives as in play.
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
 `refill: { start, duration }` with `reason: 'fulfilled' | 'discarded'`).
 `window.farm.market` is, per priced item, `{ price, drop }`: what one unit fetches now and how far it is down from the
-day's price (0 to 0.5). `window.farm.trader` is `{ here, arrivesAt, leavesAt, wants: [{ item, price, left }], sells:
+day's price (0 to 0.5). `window.farm.trader` is `{ here, passing, wagon, arrivesAt, leavesAt, wants: [{ item, price, left }], sells:
 [{ item | animal, price, left }] }`: `arrivesAt` and `leavesAt` are game times (`window.farm.clock.elapsed`) of the
 trader here, else of the next one due (null below level 3); `wants` and `sells` are empty while none is here. The saved
 state is `window.farm.ext.trader` (with `visit.tile`, where the wagon stands) and `window.farm.ext.market`.
-`window.farm.lastCatchUp.traders.missed` counts traders that came while the player was away.
+`window.farm.lastCatchUp.traders.missed` counts traders that came while the player was away. (`passing`: here today but
+driving through, no linked post; `wagon`: the tile his wagon stands on, or null.)
+`window.farm.road` is `{ side: 'north' | 'east' | 'south' | 'west', tiles: [{ x, y }], entry, exit, merchants }`: the
+main road's tiles from the entry edge to the exit edge, and the carts on it now as `{ id, x, y, dx, dy, reverse,
+progress }` (grid point, heading, 0..1 along the road). The saved state is `window.farm.ext.road` (`{ seed, side, tiles,
+pending }`). `window.farm.trade` is `{ post: { id, x, y, site } | null, connected, reason }` with `reason` one of
+`'no-post' | 'building' | 'no-path' | 'no-road'` (null when linked), and `window.farm.tradeGhost` is `{ x, y, linked }`
+while a trading post's build ghost is shown (else null). Test ids: `trade-link` (the link line, `data-ok`),
+`trade-closed` (a Trade tab's closed message), `trade-closed-reason`, `trade-build-post` (its button),
+`build-trading-post` (the build card), `panel-check-trade-link` (the post panel's link line), `trader-passing`.
 `window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
@@ -649,7 +678,11 @@ src/
     seasons/           season-change toasts, the seasonal look (art swap, colour grade, crossfade), weather
                        particles and their setting, `window.farm.season`
     market/            🏪 Market tab (⚖️ Trade): sell panel (flooded marks, confirm before flooding) and Buy section
-    trader/            🛒 travelling trader: the wagon by the farmhouse, his banner and ⚖️ Trade tab (logic: src/logic/trader.ts)
+    trader/            🛒 travelling trader: the wagon by the trading post, his banner and ⚖️ Trade tab (logic: src/logic/trader.ts)
+    trade/             🏪 trading post: panel, the build ghost's link line, link toasts, the old-save notice,
+                       `window.farm.trade`; gate.ts: the Trade tabs' closed message (logic: src/logic/tradepost.ts)
+    road/              the merchants' carts on the main road, `window.farm.road` (logic: src/logic/mainroad.ts; the road
+                       itself is drawn with the ground in src/scenes/FarmScene.ts, its fringes by fringes/)
     storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade, the 📦 Storage tab,
                        `window.farm.storage`, the one-time notice for old saves; stock piles in the yards
                        (piles.ts, `window.farm.stockpiles`)
@@ -821,6 +854,11 @@ with a full deposit under every quarry and mine and a grove of about 8 trees in 
 Version 13 added oxcart hauling: a resource building's `waiting` output (from older saves: what waited for storehouse
 room) stays, now as its yard, so nothing is lost; jobs gain an optional `haul` trip and ox barns their own state.
 Version 14 added tools: every farmer of an older save gets an empty tool slot (`workers.tools`).
+Version 16 added the main road and the trading post: an older save gets its road on load from a seed it already holds
+(the trader's, else its clock), routed through free tiles in the band round everything built, ponds and deposits (trees
+and bushes on it are cleared; the band widens when there is no way through). Its active "Buy 10 wood at the Market"
+goal becomes "Build a trading post" (same slot and reward), a guide in progress keeps its place, and a one-time toast
+says trade now needs a trading post linked to the main road (`ext.trade.pendingNotice`).
 
 - **Home screen:** the page opens on a "Farmer" title over the dimmed, paused farm (its seasonal look, or a fresh
   farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the
