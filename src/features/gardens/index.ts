@@ -170,7 +170,11 @@ function panel(ctx: FarmContext, obj: PlacedObject<GardenState>): PanelSpec {
   if (home) lines.push(`Tended by the family of ${homeName(game, obj)} in its spare time: no farmer or path needed.`);
   else if (homeId) lines.push('Its home is still being built: the garden starts once a family can live there.');
   else lines.push('No home beside it: it makes nothing until a cottage stands against it.');
-  if (obj.state.waiting > 0) lines.push(`Waiting for room in the granary: ${obj.state.waiting} ${label}. ${fullMessage('goods')}`);
+  lines.push(
+    obj.state.waiting > 0
+      ? `Waiting for room in the granary: ${obj.state.waiting} ${label}. ${fullMessage('goods')}`
+      : 'Nothing waiting: every yield went into the granary.',
+  );
   const next = nextYieldAt(obj);
   if (next !== null) {
     const n = def.perDay[seasonAt(next - 1)] ?? 0;

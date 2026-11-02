@@ -37,7 +37,10 @@ git (or rerun the commands below) after running it.
 | `pond` (base, `_spring`, `_summer`, `_autumn`, `_winter`, frozen) | `pond_raw.png`, `pond_{autumn,winter}_raw.png` (spring and summer are the base image) | all |
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
 | `wheat`, `carrot`, `corn` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe, `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none (nothing grows in winter) |
-| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| `veg_patch` (base, `_spring`, `_summer`, `_autumn`, `_winter`: bare) | `veg_patch_raw.png`, `veg_patch_{spring,autumn,winter}_raw.png`; see **House gardens** below | all |
+| `hen_run`, `hen_run_winter` (the two hens are the `chicken` sheet, drawn by the game) | `hen_run_raw.png`, `hen_run_winter_raw.png` | all |
+| `orchard`, `orchard_winter` (the pad; its two trees are `tree_apple` in its seasons, drawn by the game) | `orchard_raw.png`, `orchard_winter_raw.png` | all |
+| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `apple`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
 
 ## Generating in Ludo
@@ -144,6 +147,40 @@ the pad). Some code points into a building's 2x sprite and needs updating with i
 `src/features/resources/index.ts`, a grid point on the footprint). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
 its own bounds, so pieces fitted with the same corners share one canvas and anchor.
+
+## House gardens
+
+`generateWithStyle` with the Ludo cottage as `style_image`, `sprite`, n=2: "a small family vegetable garden ... a
+straight-edged flat diamond pad of 2-by-2 tiles with no thickness: dark tilled soil beds in neat rows ..., leafy green
+carrot tops showing orange shoulders, a few round green cabbages and lettuces, and a low woven wattle fence of thin
+sticks around the edges of the pad. No building" and "a small backyard hen run ... a tiny wooden hen hut ... on the
+back corner of the pad; a low wooden post-and-wire fence runs around the pad's edges ... No chickens". The orchard pad
+used the chosen hen run as `style_image`: "an empty small orchard plot ... short green grass ... a low rustic wooden
+split-rail fence along the two back edges only; a small wooden ladder ... and a wicker apple basket at the left
+corner. The middle of the pad is open grass ... No trees". The seasons are `editImage` on the chosen summer image
+("keep the same ... exactly: same pad, same shape, size, position, fence and outlines" + young seedlings and
+flowers for spring, golden grass and pumpkins for autumn, bare snowy furrows with the fence kept for winter, snow on
+the hut, run and pad for the hen run and orchard). The vegetable patch is seasonal like the ground (`veg_patch_<season>`,
+listed in `GARDEN_SEASONAL_ART` in `src/scenes/art.ts`); its spring, summer and autumn entries are in category
+`props` so only `veg_patch` counts as a building with a winter twin. The hens (`HEN_AREA`) and the orchard's two
+trees (`TREES`, at 0.85 scale) are placed by `src/features/gardens/index.ts`. Edits on the same canvas size as the
+summer image are fitted with the summer corners, so the seasons line up; the hen run's winter came back on a
+different canvas and has its own.
+
+```bash
+$P $L/fit_building.py $L/source/veg_patch_raw.png /tmp/props veg_patch 2 2 42 255 724 254 382 425
+for s in spring autumn winter; do
+  $P $L/fit_building.py $L/source/veg_patch_${s}_raw.png /tmp/props veg_patch_$s 2 2 42 255 724 254 382 425
+done
+$P $L/fit_building.py $L/source/hen_run_raw.png /tmp/props hen_run 2 2 41 297 726 296 382.5 467.8
+$P $L/fit_building.py $L/source/hen_run_winter_raw.png /tmp/props hen_run_winter 2 2 56 292 704 289 377 452.5
+$P $L/fit_building.py $L/source/orchard_raw.png /tmp/props orchard 2 2 43 272 728 272 385.5 443.2
+$P $L/fit_building.py $L/source/orchard_winter_raw.png /tmp/props orchard_winter 2 2 43 272 728 272 385.5 443.2
+$P $L/install_prop.py /tmp/props veg_patch veg_patch_summer
+for n in veg_patch_spring veg_patch_autumn veg_patch_winter hen_run hen_run_winter orchard orchard_winter; do
+  $P $L/install_prop.py /tmp/props $n
+done
+```
 
 ## Feed mill: `mill_sails.py`
 
@@ -333,7 +370,7 @@ large brown hen's egg ... / a small steel farm milk churn ... / a fluffy round b
 wool ... / a plump burlap sack of animal feed ... / a round wheel of yellow cheese with a wedge cut out ... / a
 pale yellow block of butter ... on a small round wooden board / a golden-brown crusty loaf ... / a bolt of woven
 blue cloth ... / a sheaf of ripe golden wheat ... / a fat orange carrot with a bushy green top ... / a ripe ear of
-yellow corn with its husks peeled back / a small stack of three chopped logs ... / two chunky grey cut stone
+yellow corn with its husks peeled back / a single shiny ripe red apple with a short brown stem and one green leaf (with the egg icon as `style_image`) / a small stack of three chopped logs ... / two chunky grey cut stone
 blocks ... / three dark blue-grey iron ingots ... / a small wooden bucket filled with dark brown manure ... / a
 small stack of shiny gold coins ...; front three-quarter view. Bold simple silhouette that reads at small size,
 chunky shapes, cozy cartoon style with soft cel shading and a thick dark brown outline, lit from the top left.
@@ -344,7 +381,7 @@ Only the item, centered; no ground, no shadow, no text, no frame."
 centre. Check them at 24 px before installing.
 
 ```bash
-for n in egg milk wool feed cheese butter bread cloth wheat carrot corn wood stone iron manure coins; do
+for n in egg milk wool feed cheese butter bread cloth wheat carrot corn apple wood stone iron manure coins; do
   $P $L/fit_icon.py $L/source/icon_${n}_raw.png /tmp/props $n && $P $L/install_prop.py /tmp/props $n
 done
 ```
