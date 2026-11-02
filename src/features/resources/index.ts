@@ -6,7 +6,7 @@ import { registerBehavior } from '../../game/hooks';
 import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
 import { mapOf, treeStatus, treesInRange } from '../../logic/maplayer';
-import { areaOf, collect, cycleProgress, defOf, depositOf, idleReason, nextTreeAt, sanitize, todayYield, type IdleReason, type ResourceState } from '../../logic/resources';
+import { areaOf, collect, cycleProgress, cycleYield, defOf, depositOf, idleReason, nextTreeAt, sanitize, todayYield, type IdleReason, type ResourceState } from '../../logic/resources';
 import { fullMessage } from '../../logic/storage';
 import { footprintLocal } from '../../scenes/iso';
 import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
@@ -188,7 +188,7 @@ function panel(ctx: FarmContext, obj: PlacedObject<ResourceState>): PanelSpec {
   const clock = game.state.clock;
   const out = itemLabel(def.output);
   const winter = Math.round(def.cycleMs * (SLOW_SEASONS.winter ?? 1));
-  const lines = [`Makes ${def.yield} ${out} every ${minutes(def.cycleMs)} of work${winter !== def.cycleMs ? ` (${minutes(winter)} in winter)` : ''}.`];
+  const lines = [`Makes ${cycleYield(game.state, def)} ${out} every ${minutes(def.cycleMs)} of work${winter !== def.cycleMs ? ` (${minutes(winter)} in winter)` : ''}.`];
   lines.push(...sourceLines(ctx, obj));
   const idle = idleReason(game, obj);
   if (idle) lines.push(IDLE_TEXT[idle](obj, ctx));
@@ -204,7 +204,7 @@ function panel(ctx: FarmContext, obj: PlacedObject<ResourceState>): PanelSpec {
       cycle && progress !== null
         ? {
             value: progress,
-            label: game.now < cycle.start ? 'The farmer is on the way' : `${def.yield} ${out} · ${formatDuration(timerRemaining(clock, cycle))} left`,
+            label: game.now < cycle.start ? 'The farmer is on the way' : `${cycleYield(game.state, def)} ${out} · ${formatDuration(timerRemaining(clock, cycle))} left`,
           }
         : undefined,
     actions:

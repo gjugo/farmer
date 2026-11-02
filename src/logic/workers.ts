@@ -6,6 +6,7 @@ import { RESOURCES } from '../data/resourceBuildings';
 import { MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Game } from './game';
+import { perkFactor } from './perks';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { Route, Tile } from './roads';
 import type { ClockState, GameState } from './types';
@@ -104,13 +105,16 @@ function keepStrings(v: unknown, keep: (id: string) => boolean): Record<string, 
   return ok.length === entries.length ? (v as Record<string, string>) : Object.fromEntries(ok);
 }
 
-/** Game ms to walk a route: from the bench to the door (one tile), along the path, then to the work spot. */
-export function walkMs(route: Route): number {
+/**
+ * Game ms to walk a route: from the bench to the door (one tile), along the path, then to the work spot; times `factor`
+ * (Good boots).
+ */
+export function walkMs(route: Route, factor = 1): number {
   if (route.tiles.length === 0) return 0;
   const points = [...route.tiles.map((t) => ({ x: t.x + 0.5, y: t.y + 0.5 })), route.work];
   let tiles = 1;
   for (let i = 1; i < points.length; i++) tiles += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
-  return Math.round(tiles * WALK_MS_PER_TILE);
+  return Math.round(tiles * WALK_MS_PER_TILE * factor);
 }
 
 /** Which part of the job is under way, and how far into that part (0..1). */
@@ -191,7 +195,7 @@ export function assignJob(game: Game, kind: JobKind, x: number, y: number, durat
   const farmer = options.farmer ?? pickFreeFarmer(state);
   if (farmer < 0 || farmer >= w.farmers || jobsByFarmer(state.clock, w)[farmer]) return false;
   w.jobs = activeJobs(state.clock, w);
-  const walk = route ? walkMs(route) : 0;
+  const walk = route ? walkMs(route, perkFactor(state, 'good-boots')) : 0;
   const at = route?.tiles.length ? route.work : { x, y };
   const job: Job = { kind, x: at.x, y: at.y, timer: startTimer(state.clock, durationMs + 2 * walk), farmer, route: route?.tiles ?? [], walkMs: walk };
   if (options.target) job.target = options.target;

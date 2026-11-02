@@ -221,6 +221,20 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
   Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
   (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
+- **Perks:** every level-up from level 2 to 10 offers **3 perks** as cards in the "Level N!" dialog; pick one and it
+  lasts for good. **Decide later** (or Esc) keeps the choice open: a ⭐ badge on the HUD level reopens it, and several
+  open choices stack, oldest first. The cards are buttons (Tab or the arrow keys, Enter). The offer is fixed by the
+  level and a seed saved with the farm, so a reload never rerolls it; it never repeats a perk already taken, and
+  Husbandry, Quick hands and Prospector only turn up once the farm has a pen, a processing building or a resource
+  building. The pool (`src/data/perks.ts`): Green thumb (harvests +15%), Good boots (farmers walk 25% faster), Haggler
+  (the Market pays 10% more for goods, not materials, and never as much as it charges), Husbandry (animals produce 20%
+  faster), Master builder (building work 30% faster), Big barns (granaries and storehouses hold 20% more), Thrifty
+  (buildings need 20% fewer materials, rounded up, at least 1), Warm hearths (half the winter firewood), Good neighbours
+  (approval +10, its own line in the breakdown, from the next day), Rich soil (harvests drain the soil 30% less),
+  Prospector (lodges, quarries and mines yield 25% more, rounded up) and Quick hands (processing batches 20% faster).
+  Each is read through `perkFactor(state, id)` (`src/logic/perks.ts`) at one place in the rules, so live play, ×60 and
+  the offline catch-up agree. The perks taken are listed under **⭐ Perks** in the 🎯 Goals sheet, with a button for
+  the open choices. A save from before perks gets one open choice per level it has already reached.
 
 ### Debug mode (QA)
 
@@ -228,8 +242,9 @@ Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed *
 (at ×60 a season passes in 32 real seconds, at ×300 in under 7 and a whole year in under half a minute),
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary),
 **+1 family** (fills an empty home at once), **Next day** (jumps to the next day boundary, where the families settle
-their needs), **Refresh orders** (fills every order slot now) and **Regrow all trees** (every stump grows back at
-once). **+10** adds only what the granaries or storehouses have room for.
+their needs), **Refresh orders** (fills every order slot now), **Regrow all trees** (every stump grows back at
+once) and **Reset perks** (forgets every perk taken; every level reached gets its choice back). Setting a higher level
+opens a choice for each level on the way. **+10** adds only what the granaries or storehouses have room for.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
@@ -276,6 +291,10 @@ normal, 45 poor), `overlay` whether the Soil overlay is on. Each field in `windo
 `state.fertility` (points when it began resting, or while a crop grows), `state.restingSince` (game ms, null while a
 crop grows) and `state.lastCrop`; the field panel shows the current fertility (`panel-meter-fertility`), and the
 Build menu's toggle is `build-toggle-soil` (`aria-pressed`).
+`window.farm.perks` is `{ taken, pending, offer(level) }`: `taken` lists `{ level, id }` of the perks taken,
+`pending` the levels whose choice is still open (oldest first) and `offer(level)` the ids of that level's cards. Test
+ids: `levelup-dialog`, `perk-card-<id>`, `perk-later`, `levelup-ok`, `hud-perk-badge`, `perks-section`, `perk-<id>`,
+`perks-choose`, `debug-reset-perks`.
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
 keys played (e.g. `plant`, `coins`, `levelup`, `cluck`), so you can check which sounds fire without hearing them.
 
@@ -301,6 +320,7 @@ src/
     crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure, starting fields
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
     families.ts        families: homes, daily meals / firewood / clothes, approval, arrivals and departures (slice `families`)
+    perks.ts           perks: perkFactor, seeded offers, choices and the slice `perks`; the Perks class on Game
     workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes (state slice `workers`)
     work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
@@ -315,6 +335,7 @@ src/
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
     storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
     families.ts        the Cottage buildable, foods, needs per family, approval points, arrival and leaving thresholds
+    perks.ts           the perk pool: name, what it does, its factor and what it is about
     resourceBuildings.ts woodcutter's lodge, quarry and mine buildables: costs, yields, cycle times
     resources.ts       resource categories (resource bar, stock piles), item → category / pile
     buildables.ts      build menu registry (+ the core Path)
@@ -473,9 +494,13 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 - **Work that needs a farmer:** wrap it in `withFarmer(ctx, kind, obj, durationMs, () => didIt)` from
   `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the farmhouse to the
   site, and sends a farmer along the path only if the action succeeded.
-- **Selling:** `sell(game, itemId, qty?)` / `dailyPrice(game.day, itemId)` from `src/logic/market.ts`.
+- **Selling:** `sell(game, itemId, qty?)` / `farmSellPrice(game.state, game.day, itemId)` (today's price with the
+  farm's perks; `dailyPrice` is the plain one) from `src/logic/market.ts`.
+- **Perks:** add one to `PERKS` in `src/data/perks.ts` (its `value` and `neutral`, and `subjects` if it is about a kind
+  of building) and read it with `perkFactor(state, id)` at the one place in the rules it changes.
 - **Buying materials:** `buy(game, itemId, qty)` / `buyPrice(game.day, itemId)` from `src/logic/market.ts`;
-  `game.missingMaterials(def.materials)` and `game.canPayFor(type)` say whether a building can be paid for.
+  `game.missingMaterials(game.materialsFor(type))` and `game.canPayFor(type)` say whether a building can be paid for
+  (`materialsFor` is the cost with the farm's perks).
 - **Items coming in:** always `game.addItem(itemId, qty)`. It takes only what the storage pools have room for and
   returns how many went in; check `game.spaceFor(itemId)` first for all-or-nothing intake (like a harvest), and
   leave what didn't fit where it was (in the pen, the building, the field). Rules: `src/logic/storage.ts`.
@@ -492,6 +517,8 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 Autosaved to `localStorage` (`farmer.save`) every 10 s and when the tab is hidden or closed.
 Saves are versioned (`SAVE_VERSION` in `src/logic/save.ts`). Missing fields fall back to
 defaults, so adding state needs no migration; restructuring does (add one to `migrations`).
+The `perks` slice (seed, perks taken, open choices) is purely additive, so it needed no version bump: a save without
+it gets a seed on load and one open choice per level it has reached.
 Version 11 added the map layer: an older save gets one generated around what it has built (never on top of it),
 with a full deposit under every quarry and mine and a grove of about 8 trees in reach of every lodge.
 

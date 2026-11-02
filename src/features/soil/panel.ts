@@ -3,6 +3,7 @@ import { FERTILISE_WORK_MS } from '../../data/workers';
 import type { FarmContext, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
 import { withFarmer } from '../../game/workers';
 import { checkFertilise, cropStage, fertilise, fertilityOf, fieldCrop, fieldSoil, lastCropOf, type FieldState } from '../../logic/crops';
+import { perkFactor } from '../../logic/perks';
 import { drainOf, soilBand } from '../../logic/soil';
 
 /** The fertility bar is green at a good level, yellow when worn, red when spent. */
@@ -26,7 +27,7 @@ export function soilPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Requ
   const crop = fieldCrop(obj.state);
   let hint = 'Same crop again drains twice as fast.';
   if (crop && cropStage(clock, obj.state) !== 'empty') {
-    const drain = drainOf(crop.id, crop.soilDrain, obj.state.lastCrop ?? null);
+    const drain = +drainOf(crop.id, crop.soilDrain, obj.state.lastCrop ?? null, perkFactor(ctx.game.state, 'rich-soil')).toFixed(1);
     hint = crop.id === last?.id ? `${crop.name} again: this harvest drains twice as fast (−${drain}%).` : `This harvest takes ${drain}%. ${hint}`;
   } else if (fertility < soil) {
     hint = `Resting: +${FALLOW_GAIN_PER_DAY}% a day back to ${pct(soil)}. ${hint}`;

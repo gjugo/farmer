@@ -6,7 +6,9 @@ import { ToolState, type FarmContext } from './game/context';
 import { readDebugInfo } from './game/hooks';
 import { Game, type FarmSnapshot } from './logic/game';
 import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
+import type { PerkId } from './data/perks';
 import { ordersOf, type OrdersState } from './logic/orders';
+import type { TakenPerk } from './logic/perks';
 import { loadSave, saveToStorage, serialize, type SaveStorage } from './logic/save';
 import { listSlots, readSlot, STORAGE_FULL, summarize, type SlotSummary } from './logic/slots';
 import { createNewGame } from './logic/state';
@@ -39,6 +41,8 @@ declare global {
         menu: MenuMode | null;
         /** The autosave and the three manual save slots, as the Load screen lists them. */
         slots: readonly SlotSummary[];
+        /** Perks taken (level, id), levels whose choice is still open (oldest first), and the cards a level's choice shows. */
+        perks: { taken: readonly TakenPerk[]; pending: readonly number[]; offer(level: number): PerkId[] };
         /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
         iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
       }
@@ -195,6 +199,11 @@ Object.defineProperty(window, 'farm', {
       lastSavedAt,
       lastCatchUp: lastCatchUp && Object.freeze(structuredClone(lastCatchUp)),
       menu: menu.current,
+      perks: Object.freeze({
+        taken: Object.freeze(game.perks.taken.map((t) => Object.freeze({ ...t }))),
+        pending: Object.freeze([...game.perks.pending]),
+        offer: (level: number) => game.perks.offer(level).map((p) => p.id),
+      }),
       slots: Object.freeze(listSlots(storage).map((s) => Object.freeze(s))),
       iso,
     });

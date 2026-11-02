@@ -4,7 +4,8 @@ import { startTimer, timerDone, timerProgress, type Timer } from './clock';
 import type { Game } from './game';
 import * as inventory from './inventory';
 import { isPlainObject } from './slices';
-import type { ClockState, Inventory, ItemId, PlacedObject } from './types';
+import { perkFactor } from './perks';
+import type { ClockState, GameState, Inventory, ItemId, PlacedObject } from './types';
 
 /** One queued batch. Only the head of the queue has a timer: jobs are worked one at a time. */
 export interface Job {
@@ -48,7 +49,7 @@ export function hasInputs(inv: Inventory, recipe: RecipeDef): boolean {
  * Repairs state from a save (or an older shape): drops jobs of unknown recipes,
  * malformed timers and bad counts, and makes sure the head job is running.
  */
-export function sanitize(obj: PlacedObject<ProcessorState>, clock: ClockState): void {
+export function sanitize(obj: PlacedObject<ProcessorState>, state: FarmTime): void {
   const s = obj.state as unknown as Record<string, unknown>;
   const rawQueue = Array.isArray(s.queue) ? s.queue : [];
   const queue: Job[] = [];
@@ -68,7 +69,15 @@ export function sanitize(obj: PlacedObject<ProcessorState>, clock: ClockState): 
     for (const [id, n] of Object.entries(s.ready)) if (Number.isInteger(n) && (n as number) > 0) ready[id] = n as number;
   }
   obj.state = { queue, ready };
-  if (queue[0] && !queue[0].timer) queue[0].timer = startTimer(clock, recipeOf(obj, queue[0]).durationMs);
+  if (queue[0] && !queue[0].timer) queue[0].timer = startTimer(state.clock, batchMs(state, recipeOf(obj, queue[0])));
+}
+
+/** The game clock and the farm's perks: what timing a batch needs. */
+export type FarmTime = Pick<GameState, 'clock' | 'ext'>;
+
+/** Game ms a batch of `recipe` takes on this farm (Quick hands makes it faster). */
+export function batchMs(state: FarmTime, recipe: RecipeDef): number {
+  return Math.round(recipe.durationMs * perkFactor(state, 'quick-hands'));
 }
 
 function recipeOf(obj: PlacedObject<ProcessorState>, job: Job): RecipeDef {
@@ -87,13 +96,13 @@ export function checkStart(game: Game, obj: PlacedObject<ProcessorState>, recipe
 
 /** Takes the inputs from the inventory at once and queues the job. Nothing changes when it fails. */
 export function startJob(game: Game, obj: PlacedObject<ProcessorState>, recipeId: string): StartResult {
-  settle(game.state.clock, obj);
+  settle(game.state, obj);
   const check = checkStart(game, obj, recipeId);
   if (!check.ok) return check;
   const recipe = recipeOf(obj, { recipe: recipeId, timer: null });
   for (const [item, qty] of inputsOf(recipe)) game.removeItem(item, qty);
   const first = obj.state.queue.length === 0;
-  obj.state.queue.push({ recipe: recipeId, timer: first ? startTimer(game.state.clock, recipe.durationMs) : null });
+  obj.state.queue.push({ recipe: recipeId, timer: first ? startTimer(game.state.clock, batchMs(game.state, recipe)) : null });
   game.touch(obj);
   game.activity.emit('jobStarted', { recipe: recipeId });
   return { ok: true };
@@ -103,7 +112,8 @@ export function startJob(game: Game, obj: PlacedObject<ProcessorState>, recipeId
  * Moves finished jobs' output to `ready` and starts the next job where the previous
  * one ended, so a big clock jump finishes several jobs exactly. Returns how many finished.
  */
-export function settle(clock: ClockState, obj: PlacedObject<ProcessorState>): number {
+export function settle(state: FarmTime, obj: PlacedObject<ProcessorState>): number {
+  const { clock } = state;
   const { queue, ready } = obj.state;
   let finished = 0;
   while (queue[0]?.timer && timerDone(clock, queue[0].timer)) {
@@ -112,7 +122,7 @@ export function settle(clock: ClockState, obj: PlacedObject<ProcessorState>): nu
     inventory.add(ready, recipe.output.item, recipe.output.qty);
     finished++;
     const next = queue[0];
-    if (next) next.timer = { start: done.timer!.start + done.timer!.duration, duration: recipeOf(obj, next).durationMs };
+    if (next) next.timer = { start: done.timer!.start + done.timer!.duration, duration: batchMs(state, recipeOf(obj, next)) };
   }
   return finished;
 }
@@ -136,7 +146,7 @@ export function readyCount(obj: PlacedObject<ProcessorState>): number {
  * the building (see `readyCount`). Returns what was collected.
  */
 export function collect(game: Game, obj: PlacedObject<ProcessorState>): Inventory {
-  settle(game.state.clock, obj);
+  settle(game.state, obj);
   const got: Inventory = {};
   for (const [item, qty] of Object.entries(obj.state.ready)) {
     const n = game.addItem(item, qty);

@@ -2,13 +2,13 @@ import type Phaser from 'phaser';
 import { getItem, ITEM_LIST } from '../../data/items';
 import { formatMaterials, needsMaterialsMessage } from '../../data/materials';
 import { FARMHOUSE_STORE, MAX_STORAGE_LEVEL, STORAGE, type StorageType } from '../../data/storage';
-import { buildWorkMs } from '../../data/workers';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo } from '../../game/hooks';
 import { withFarmer } from '../../game/workers';
 import {
   capacity,
   capacityOfObject,
+  storageRoom,
   checkUpgrade,
   levelOf,
   nextLevel,
@@ -21,6 +21,7 @@ import {
   used,
   type StorageState,
 } from '../../logic/storage';
+import { buildTime, materialsCost } from '../../logic/perks';
 import { ART_RES, ART_SCALE, SHADOW, storageArt } from '../../scenes/art';
 import { packAsset, textureKey } from '../../scenes/sprites';
 import { formatMoney } from '../../ui/dom';
@@ -86,13 +87,13 @@ function stockLine(ctx: FarmContext, type: StorageType): string {
 
 function doUpgrade(ctx: FarmContext, obj: PlacedObject<StorageState>): void {
   const def = STORAGE[obj.type as StorageType];
-  withFarmer(ctx, 'build', obj, buildWorkMs(obj.type), () => {
+  withFarmer(ctx, 'build', obj, buildTime(ctx.game.state, obj.type), () => {
     const r = upgrade(ctx.game, obj);
     if (!r.ok) {
       ctx.ui.toast(upgradeRefusal(ctx, obj) ?? 'Cannot upgrade', 'error');
       return false;
     }
-    ctx.ui.toast(`${def.name} upgraded to level ${r.level}: holds ${capacityOfObject(obj)} ${def.pool}`, 'success');
+    ctx.ui.toast(`${def.name} upgraded to level ${r.level}: holds ${capacityOfObject(obj, ctx.game.state)} ${def.pool}`, 'success');
     return true;
   });
 }
@@ -109,10 +110,11 @@ function upgradeRefusal(ctx: FarmContext, obj: PlacedObject<StorageState>): stri
       return `Needs ${formatMoney(next!.upgrade.cost)}`;
     case 'materials': {
       // More than the storehouses can hold at once: buying won't do, they need more room first.
-      const total = Object.values(next!.upgrade.materials).reduce((sum, n) => sum + (n ?? 0), 0);
+      const cost = materialsCost(ctx.game.state, next!.upgrade.materials);
+      const total = Object.values(cost).reduce((sum, n) => sum + (n ?? 0), 0);
       const room = capacity(ctx.game.state, 'materials');
       if (total > room) return `Needs ${total} materials at once, more than the ${room} your storehouses hold: build or upgrade a storehouse`;
-      return needsMaterialsMessage(ctx.game.missingMaterials(next!.upgrade.materials));
+      return needsMaterialsMessage(ctx.game.missingMaterials(cost));
     }
     default:
       return 'Cannot upgrade';
@@ -127,8 +129,8 @@ function panel(ctx: FarmContext, obj: PlacedObject<StorageState>): PanelSpec {
   const pool = def.pool;
   const cap = capacity(game.state, pool);
   const have = used(game.state, pool);
-  const others = cap - FARMHOUSE_STORE[pool] - capacityOfObject(obj);
-  const parts = [`this ${def.name.toLowerCase()} ${capacityOfObject(obj)}`, ...(others > 0 ? [`other ${def.name.toLowerCase()}s ${others}`] : []), `farmhouse ${FARMHOUSE_STORE[pool]}`];
+  const others = cap - FARMHOUSE_STORE[pool] - capacityOfObject(obj, game.state);
+  const parts = [`this ${def.name.toLowerCase()} ${capacityOfObject(obj, game.state)}`, ...(others > 0 ? [`other ${def.name.toLowerCase()}s ${others}`] : []), `farmhouse ${FARMHOUSE_STORE[pool]}`];
   const lines = [
     `Level ${level} of ${MAX_STORAGE_LEVEL}`,
     `${pool === 'goods' ? 'Goods' : 'Materials'}: ${have} / ${cap} (${parts.join(' + ')})`,
@@ -140,11 +142,11 @@ function panel(ctx: FarmContext, obj: PlacedObject<StorageState>): PanelSpec {
   const actions: PanelAction[] = [];
   const next = nextLevel(obj);
   if (next) {
-    const materials = formatMaterials(next.upgrade.materials);
+    const materials = formatMaterials(materialsCost(game.state, next.upgrade.materials));
     const why = upgradeRefusal(ctx, obj);
     if (why) lines.push(`Upgrade: ${why}`);
     actions.push({
-      label: `⬆️ Upgrade to level ${next.level} · ${formatMoney(next.upgrade.cost)}${materials ? ` + ${materials}` : ''} → holds ${next.capacity}`,
+      label: `⬆️ Upgrade to level ${next.level} · ${formatMoney(next.upgrade.cost)}${materials ? ` + ${materials}` : ''} → holds ${storageRoom(game.state, next.capacity)}`,
       disabled: why !== null,
       onClick: () => doUpgrade(ctx, obj),
     });

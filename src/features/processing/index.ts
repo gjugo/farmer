@@ -5,6 +5,7 @@ import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } fr
 import { registerBehavior } from '../../game/hooks';
 import { timerRemaining } from '../../logic/clock';
 import {
+  batchMs,
   checkStart,
   collect,
   currentProgress,
@@ -66,7 +67,7 @@ function outputLabel(recipe: RecipeDef): string {
 }
 
 function create(ctx: FarmContext, obj: PlacedObject<ProcessorState>, view: ObjectView): void {
-  sanitize(obj, ctx.game.state.clock);
+  sanitize(obj, ctx.game.state);
   const scene = ctx.scene;
   const def = PROCESSORS[obj.type as ProcessorType];
   const art = artFor(def.id);
@@ -182,7 +183,7 @@ function panel(ctx: FarmContext, obj: PlacedObject<ProcessorState>): PanelSpec {
       .map(([id, need]) => `${itemIcon(id)} ${game.count(id)}/${need}`)
       .join(' + ');
     actions.push({
-      label: `Make ${outputLabel(recipe)} · ${inputs} · ${formatTime(recipe.durationMs)}`,
+      label: `Make ${outputLabel(recipe)} · ${inputs} · ${formatTime(batchMs(ctx.game.state, recipe))}`,
       variant: 'secondary',
       disabled: !checkStart(game, obj, recipe.id).ok,
       onClick: () => {
@@ -215,7 +216,7 @@ for (const type of Object.keys(PROCESSORS) as ProcessorType[]) {
     create,
     refresh,
     update(ctx, obj, view) {
-      const finished = settle(ctx.game.state.clock, obj);
+      const finished = settle(ctx.game.state, obj);
       if (finished > 0) {
         ctx.game.touch(obj);
         ctx.game.activity.emit('jobsFinished', { count: finished });
