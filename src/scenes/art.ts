@@ -379,20 +379,141 @@ export function sceneryArt(x: number, y: number): string | null {
   return hash(x, y, 13) % 1000 < POND_PER_MILLE ? POND : null;
 }
 
+/** The decorative willows beside each pond: 1 or 2 (`count`), on the first of `spots` that are free, best first. */
+export function pondWillows(x: number, y: number): { count: number; spots: { x: number; y: number }[] } {
+  const spots: { x: number; y: number; k: number }[] = [];
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (dx || dy) spots.push({ x: x + dx, y: y + dy, k: hash(x + dx, y + dy, 61) });
+  spots.sort((a, b) => a.k - b.k);
+  return { count: 1 + (hash(x, y, 67) % 2), spots: spots.map(({ x, y }) => ({ x, y })) };
+}
+
+/** The art of a pond's decorative willow (a grown willow, drawn with `treeLook`). */
+export const POND_WILLOW = 'tree_willow';
+
 // Map resources (src/logic/maplayer.ts, drawn by src/features/nature) ----------------------
 
-/** Grown trees: mostly oaks and pines, the odd apple tree. */
-export const TREE_ART = ['tree_oak', 'tree_pine', 'tree_oak', 'tree_pine', 'tree_apple'] as const;
+/** The kinds of tree on the map. Looks only: every one gives the same wood. Which grows where: `treeSpecies`. */
+export const TREE_SPECIES = ['oak', 'pine', 'apple', 'birch', 'beech', 'spruce', 'willow'] as const;
+export type TreeSpecies = (typeof TREE_SPECIES)[number];
+export const CONIFERS: readonly TreeSpecies[] = ['pine', 'spruce'];
+/** Grown trees, one sprite per species. */
+export const TREE_ART = TREE_SPECIES.map((s) => `tree_${s}`);
 export const STUMP_ART = 'tree_stump';
+/** A felled tree's sapling, broadleaf or conifer after its species. */
+export const SAPLING_ART = { broadleaf: 'tree_sapling_broadleaf', conifer: 'tree_sapling_conifer' } as const;
 /** Deposit tiles, full (a variant per tile) and used up. */
 export const DEPOSIT_ART = {
   stone: { full: ['outcrop_0', 'outcrop_1', 'outcrop_2'], spent: 'outcrop_spent' },
   iron: { full: ['vein_0', 'vein_1'], spent: 'vein_spent' },
 } as const;
 
-/** The sprite of a tree tile: which kind of tree stands there is fixed by the tile; a stump once felled. */
-export function treeArt(x: number, y: number, stump: boolean): string {
-  return stump ? STUMP_ART : TREE_ART[hash(x, y, 17) % TREE_ART.length];
+/** The sprite of a tree of `species` at a stage of growing back: a young tree is the grown sprite, drawn smaller. */
+export function treeArt(species: TreeSpecies, stage: 'stump' | 'sapling' | 'young' | 'grown'): string {
+  if (stage === 'stump') return STUMP_ART;
+  if (stage === 'sapling') return CONIFERS.includes(species) ? SAPLING_ART.conifer : SAPLING_ART.broadleaf;
+  return `tree_${species}`;
+}
+
+/** Scale of a young tree (two thirds of the way back) against the grown one. */
+export const YOUNG_TREE_SCALE = 0.6;
+
+export type WoodMix = 'conifer' | 'broadleaf' | 'mixed';
+/** Square of tiles sharing one wood mix off the parcels (the parcels cover the whole map, so only a fallback). */
+const WOOD_CELL = 12;
+
+/**
+ * The kind of wood `area` (the parcel a tile lies in: one forest is generated per parcel) is, from a coarse hash of
+ * it: conifer woods of pine and spruce, broadleaf woods of oak and beech, or mixed.
+ */
+export function woodMix(area: { x: number; y: number } | undefined, x: number, y: number): WoodMix {
+  const h = area ? hash(area.x, area.y, 23) : hash(Math.floor(x / WOOD_CELL), Math.floor(y / WOOD_CELL), 29);
+  return (['conifer', 'broadleaf', 'mixed'] as const)[h % 3];
+}
+
+/** Willows grow only this close (in tiles, either way) to a pond site. */
+export const WILLOW_POND_REACH = 3;
+
+/** Is there a pond site (`sceneryArt` is POND) within `WILLOW_POND_REACH` tiles of (x, y)? */
+export function nearPond(x: number, y: number): boolean {
+  for (let dy = -WILLOW_POND_REACH; dy <= WILLOW_POND_REACH; dy++) {
+    for (let dx = -WILLOW_POND_REACH; dx <= WILLOW_POND_REACH; dx++) if (sceneryArt(x + dx, y + dy) === POND) return true;
+  }
+  return false;
+}
+
+/** Where a tree stands, as far as its species goes. */
+export interface TreeSite {
+  x: number;
+  y: number;
+  /** The mix of the wood it is in (`woodMix`). */
+  mix: WoodMix;
+  /** At the forest's edge: fewer than 6 of its 8 neighbours are tree tiles. */
+  edge: boolean;
+  /** In the grove on the starting land. */
+  start: boolean;
+  /** Within reach of a pond site (`nearPond`). */
+  pond: boolean;
+}
+
+/** Percent of trees by a pond that are willows, of edge trees that are birches, and of apples (start grove, edges). */
+export const SPECIES_ODDS = { willow: 55, edgeBirch: 35, startApple: 12, edgeApple: 6 } as const;
+
+/** Each wood mix's species, in percent (they add up to 100). */
+const MIX_SPECIES: Record<WoodMix, [TreeSpecies, number][]> = {
+  conifer: [
+    ['pine', 55],
+    ['spruce', 45],
+  ],
+  broadleaf: [
+    ['oak', 55],
+    ['beech', 45],
+  ],
+  mixed: [
+    ['oak', 25],
+    ['pine', 25],
+    ['beech', 15],
+    ['spruce', 15],
+    ['birch', 20],
+  ],
+};
+
+/**
+ * Which tree grows at a site: fixed by where it is, so nothing is saved. Willows only by ponds; birches favour the
+ * forest's edge; apples are rare (the start grove and edges); everything else follows the wood's mix.
+ */
+export function treeSpecies(site: TreeSite): TreeSpecies {
+  const { x, y } = site;
+  if (site.pond && hash(x, y, 31) % 100 < SPECIES_ODDS.willow) return 'willow';
+  const apple = site.start ? SPECIES_ODDS.startApple : site.edge ? SPECIES_ODDS.edgeApple : 0;
+  if (hash(x, y, 37) % 100 < apple) return 'apple';
+  if (site.edge && hash(x, y, 41) % 100 < SPECIES_ODDS.edgeBirch) return 'birch';
+  let r = hash(x, y, 17) % 100;
+  for (const [species, share] of MIX_SPECIES[site.mix]) {
+    if (r < share) return species;
+    r -= share;
+  }
+  return MIX_SPECIES[site.mix][0][0];
+}
+
+/** Size, facing and tint of one tree, so neighbours differ. */
+export interface TreeLook {
+  flip: boolean;
+  /** 0.85 to 1.15, about the base of the trunk. */
+  scale: number;
+  /** A multiply tint at most 6% off white, toward yellow-green (less blue) or blue-green (less red). */
+  tint: number;
+}
+
+export const TREE_SCALE = [0.85, 1.15] as const;
+export const TREE_TINT = 0.06;
+
+/** A tile's tree look, from its position (not saved). */
+export function treeLook(x: number, y: number): TreeLook {
+  const flip = hash(x, y, 43) % 2 === 1;
+  const scale = TREE_SCALE[0] + ((hash(x, y, 47) % 1001) / 1000) * (TREE_SCALE[1] - TREE_SCALE[0]);
+  const off = Math.round(255 * TREE_TINT * ((hash(x, y, 53) % 1001) / 1000));
+  const tint = hash(x, y, 59) % 2 === 0 ? 0xffff00 | (255 - off) : ((255 - off) << 16) | 0xffff;
+  return { flip, scale, tint };
 }
 
 /** The sprite of a deposit tile, e.g. `outcrop_1`, or the used-up rubble. */
@@ -408,7 +529,7 @@ export const ORCHARD_TREE = 'tree_apple';
 
 /** Every map-resource sprite, each in four seasons. */
 export const MAP_ART: readonly string[] = [
-  ...new Set<string>([...TREE_ART, STUMP_ART, ...Object.values(DEPOSIT_ART).flatMap((d) => [...d.full, d.spent])]),
+  ...new Set<string>([...TREE_ART, STUMP_ART, ...Object.values(SAPLING_ART), ...Object.values(DEPOSIT_ART).flatMap((d) => [...d.full, d.spent])]),
 ];
 
 // Seasons -----------------------------------------------------------------------

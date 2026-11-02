@@ -15,7 +15,7 @@ import { depositAt, mapOf, treeAt } from '../logic/maplayer';
 import { farmhouseOf } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, grassArt, groundTint, sceneryArt, seasonalArt, unownedArt } from './art';
+import { ART_RES, ART_SCALE, CURSOR, grassArt, groundTint, POND, POND_WILLOW, pondWillows, sceneryArt, seasonalArt, treeLook, unownedArt } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
 import {
@@ -266,7 +266,7 @@ export class FarmScene extends Phaser.Scene {
   }
 
   /**
-   * A few bushes and ponds on locked land, scattered from a fixed seed (not saved), away from the farm's edge and
+   * A few bushes and ponds (with a willow or two beside each) on locked land, scattered from a fixed seed (not saved), away from the farm's edge and
    * the map's trees and deposits. They go when their land is bought. (Trees and rocks are real and saved: see
    * `src/features/nature`.)
    */
@@ -282,14 +282,34 @@ export class FarmScene extends Phaser.Scene {
       return false;
     };
     const layer = mapOf(this.farm.state);
+    const clear = (x: number, y: number) =>
+      x >= 0 && y >= 0 && x < land.width && y < land.height && !isOwned(land, x, y) && !nearOwned(x, y) && !treeAt(layer, x, y) && !depositAt(layer, x, y);
+    const willows = new Set<string>();
+    const place = (x: number, y: number, art: string) => {
+      const at = gridToWorld(x, y);
+      const img = addArt(this, at.x, at.y, art);
+      this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img });
+      const shadow = addShadow(this, at.x, at.y, art);
+      if (shadow) this.sceneryShadows.add(shadow);
+      return img;
+    };
     for (let y = 0; y < land.height; y++) {
       for (let x = 0; x < land.width; x++) {
         const art = sceneryArt(x, y);
-        if (!art || isOwned(land, x, y) || nearOwned(x, y) || treeAt(layer, x, y) || depositAt(layer, x, y)) continue;
-        const at = gridToWorld(x, y);
-        this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img: addArt(this, at.x, at.y, art) });
-        const shadow = addShadow(this, at.x, at.y, art);
-        if (shadow) this.sceneryShadows.add(shadow);
+        if (!art || !clear(x, y)) continue;
+        place(x, y, art);
+        if (art !== POND) continue;
+        // A willow or two beside the pond: decoration like the pond, not a tree of the map (never felled or saved).
+        const { count, spots } = pondWillows(x, y);
+        for (const s of spots.filter((s) => clear(s.x, s.y) && !sceneryArt(s.x, s.y) && !willows.has(`${s.x},${s.y}`)).slice(0, count)) {
+          willows.add(`${s.x},${s.y}`);
+          const look = treeLook(s.x, s.y);
+          place(s.x, s.y, POND_WILLOW)
+            .setName('pond-willow')
+            .setFlipX(look.flip)
+            .setTint(look.tint)
+            .setScale(ART_SCALE * look.scale);
+        }
       }
     }
     this.depthsDirty = true;

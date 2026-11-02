@@ -15,7 +15,8 @@ import type { GameState, LandState } from './types';
  * The map layer: forests and deposits that are really there, generated from a seed on a new game and saved.
  * Woodcutter's lodges fell the trees around them, quarries stand on stone outcrops and mines on iron veins.
  *
- * - A tree tile is grown or a stump, with the game time it was felled. A stump grows back `REGROW_MS` later.
+ * - A tree tile is grown or a stump, with the game time it was felled. A stump grows back `REGROW_MS` later
+ *   (showing as a sapling, then a young tree, on the way: `treeStage`).
  *   Nothing is stored for that: grown or not is worked out from `felledAt` and the clock, so ×60, ×1 and
  *   offline catch-up give the same map. A lodge starting a cycle claims its tree at once (`felledAt` is the end of
  *   the cycle): it stands until then, and no other lodge takes it.
@@ -148,6 +149,32 @@ export function regrowAt(tree: Tree): number | null {
 /** Grown (a tree still being felled stands until the cycle ends), or a stump. */
 export function treeStatus(tree: Tree, now: number): TreeStatus {
   return tree.felledAt === null || now < tree.felledAt || now >= tree.felledAt + REGROW_MS ? 'grown' : 'stump';
+}
+
+/**
+ * How far a tree has grown back, for the look: a stump, a sapling from a third of `REGROW_MS`, a young tree from
+ * two thirds, grown again at `REGROW_MS`. Only from `felledAt` and the clock, so ×1, ×60 and offline catch-up agree.
+ * Anything short of grown is a stump to the rules (`treeStatus`): a lodge fells only grown trees.
+ */
+export type TreeStage = 'stump' | 'sapling' | 'young' | 'grown';
+
+/** Game time (after `felledAt`) each regrowth stage begins. */
+export const TREE_STAGE_AT = { sapling: REGROW_MS / 3, young: (2 * REGROW_MS) / 3, grown: REGROW_MS } as const;
+
+export function treeStage(tree: Tree, now: number): TreeStage {
+  if (tree.felledAt === null || now < tree.felledAt) return 'grown';
+  const since = now - tree.felledAt;
+  if (since >= TREE_STAGE_AT.grown) return 'grown';
+  if (since >= TREE_STAGE_AT.young) return 'young';
+  return since >= TREE_STAGE_AT.sapling ? 'sapling' : 'stump';
+}
+
+/** The next game time after `now` the tree's look changes (it falls, or reaches the next stage); null when grown for good. */
+export function nextStageAt(tree: Tree, now: number): number | null {
+  if (tree.felledAt === null) return null;
+  if (now < tree.felledAt) return tree.felledAt;
+  for (const at of Object.values(TREE_STAGE_AT)) if (tree.felledAt + at > now) return tree.felledAt + at;
+  return null;
 }
 
 /** A grown tree no lodge is felling: one a lodge may take. */
