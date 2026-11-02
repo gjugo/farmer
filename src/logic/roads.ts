@@ -1,6 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { CAMP } from '../data/camp';
-import { COTTAGE } from '../data/families';
+import { COTTAGE, COTTAGE_DOOR } from '../data/families';
 import { FARMHOUSE, FARMHOUSE_DOOR, PATH } from '../data/farmhouse';
 import { campFront, campOf } from './camp';
 import { START_LAYOUT } from './constants';
@@ -41,8 +41,11 @@ export interface Route {
   work: { x: number; y: number };
 }
 
-/** Where a farm from before the farmhouse was a building of its own had it: right of its starting fields. */
-export const STARTING_FARMHOUSE: Tile = { x: START_LAYOUT.x + 6, y: START_LAYOUT.y };
+/**
+ * Where a farm from before the farmhouse was a building of its own had it: right of its starting fields (the 3×3 one
+ * row further back than the old 2×2, so the tile in front of its door is where it always was).
+ */
+export const STARTING_FARMHOUSE: Tile = { x: START_LAYOUT.x + 6, y: START_LAYOUT.y - 1 };
 
 const key = (x: number, y: number) => `${x},${y}`;
 const STEPS = [
@@ -61,9 +64,15 @@ export function farmhouseOf(state: GameState): PlacedObject | undefined {
   return state.objects.find((o) => o.type === FARMHOUSE);
 }
 
-/** The tile in front of a 2×2 house's door (the farmhouse's, a cottage's). */
-export function doorOf(house: Tile): Tile {
-  return { x: house.x + FARMHOUSE_DOOR.x, y: house.y + FARMHOUSE_DOOR.y };
+/** The tile in front of the door of a farmhouse whose top-left tile is `at`. */
+export function farmhouseDoor(at: Tile): Tile {
+  return { x: at.x + FARMHOUSE_DOOR.x, y: at.y + FARMHOUSE_DOOR.y };
+}
+
+/** The tile in front of a house's door: the 3×3 farmhouse's, or a 2×2 cottage's. */
+export function doorOf(house: PlacedObject): Tile {
+  const d = house.type === COTTAGE ? COTTAGE_DOOR : FARMHOUSE_DOOR;
+  return { x: house.x + d.x, y: house.y + d.y };
 }
 
 /** The village centre: where farmers set out from and rest, and where every road starts. */
@@ -263,7 +272,7 @@ export function wayLength(points: Point[]): number {
 }
 
 /** Lays free paths over empty tiles so the door reaches `site`, reusing paths already there. Returns the new paths, or null when there is no way. */
-function layRoad(state: GameState, door: Tile | Tile[], site: Area): PlacedObject[] | null {
+export function layRoad(state: GameState, door: Tile | Tile[], site: Area): PlacedObject[] | null {
   const at = occupancy(state);
   const tiles = search(door, site, (x, y) => {
     if (!inBounds(state.land, x, y)) return null;
@@ -327,7 +336,7 @@ export function keepRoadsJoined(game: Game, before: CentreSnapshot): void {
 /** Can the farmhouse stand at (x, y) with a free (or path) tile in the map in front of its door? */
 function farmhouseFits(state: GameState, x: number, y: number): boolean {
   if (!canPlace(state, getBuildable(FARMHOUSE)!.footprint, x, y, footprintOf, FARMHOUSE).ok) return false;
-  const door = doorOf({ x, y });
+  const door = farmhouseDoor({ x, y });
   if (!inBounds(state.land, door.x, door.y)) return false;
   const there = occupancy(state).get(key(door.x, door.y));
   return !there || there.type === PATH;

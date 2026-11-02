@@ -13,7 +13,7 @@ export type StoragePool = 'goods' | 'materials';
 
 export const STORAGE_POOLS: readonly StoragePool[] = ['goods', 'materials'];
 
-/** Room at the farmhouse in each pool, once it is built (`src/data/farmhouse.ts`). */
+/** Room at a level 1 farmhouse in each pool, once it is built (each level's is `FARMHOUSE_DEF.levels`, `src/data/farmhouse.ts`). */
 export const FARMHOUSE_STORE: Readonly<Record<StoragePool, number>> = { goods: 50, materials: 50 };
 
 /**

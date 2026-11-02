@@ -23,10 +23,13 @@ describe('version 6 saves on the bigger map', () => {
     expect([START_LAND.x - 11, START_LAND.y - 8]).toEqual([13, 10]);
     expect(state.land).toMatchObject({ width: MAP_WIDTH, height: MAP_HEIGHT });
     const old = SAVE_V6.state.objects;
-    expect(state.objects.map((o) => [o.id, o.type, o.x, o.y])).toEqual(old.map((o) => [o.id, o.type, o.x + 13, o.y + 10]));
-    // Nothing else about them changes (but fields getting their soil's fertility, see save.test.ts); no farmhouse or road is added.
+    // The 2×2 farmhouse grows to the 3×3 one row further back, its door where it was (see farmhouse.test.ts).
+    const back = (o: { type: string }) => (o.type === FARMHOUSE ? 1 : 0);
+    expect(state.objects.map((o) => [o.id, o.type, o.x, o.y])).toEqual(old.map((o) => [o.id, o.type, o.x + 13, o.y + 10 - back(o)]));
+    // Nothing else about them changes (but fields getting their soil's fertility, see save.test.ts, and the farmhouse
+    // its level); no farmhouse or road is added.
     const withoutSoil = ({ fertility: _f, restingSince: _r, lastCrop: _l, ...rest }: Record<string, unknown>) => rest;
-    expect(state.objects.map((o) => (o.type === 'field' ? withoutSoil(o.state) : o.state))).toEqual(old.map((o) => o.state));
+    expect(state.objects.map((o) => (o.type === 'field' ? withoutSoil(o.state) : o.state))).toEqual(old.map((o) => (o.type === FARMHOUSE ? { ...o.state, level: 1 } : o.state)));
     expect(state.nextObjectId).toBe(SAVE_V6.state.nextObjectId);
   });
 

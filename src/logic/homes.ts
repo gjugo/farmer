@@ -1,6 +1,6 @@
 import { CAMP } from '../data/camp';
-import { COTTAGE, COTTAGE_DEF, FARMHOUSE_HOMES, MAX_COTTAGE_LEVEL } from '../data/families';
-import { FARMHOUSE } from '../data/farmhouse';
+import { COTTAGE, COTTAGE_DEF, MAX_COTTAGE_LEVEL } from '../data/families';
+import { FARMHOUSE, FARMHOUSE_DEF, MAX_FARMHOUSE_LEVEL, type FarmhouseLevel } from '../data/farmhouse';
 import { campOf, tentFamilies } from './camp';
 import type { GameState, PlacedObject } from './types';
 
@@ -21,15 +21,31 @@ export function builtFarmhouse(state: GameState): PlacedObject | undefined {
   return state.objects.find((o) => o.type === FARMHOUSE && !o.site);
 }
 
-/** Families the farmhouse houses: `FARMHOUSE_HOMES` once it is built, else none. */
-export function farmhouseRoom(state: GameState): number {
-  return builtFarmhouse(state) ? FARMHOUSE_HOMES : 0;
+/** `obj.state.level` within 1..max (1 for a save without one), repaired if a save holds something odd. */
+export function levelWithin(obj: PlacedObject, max: number): number {
+  const level = obj.state.level;
+  return typeof level === 'number' && Number.isInteger(level) ? Math.max(1, Math.min(max, level)) : 1;
 }
 
 /** A cottage's level (1 for anything else, or a save without one), repaired if a save holds something odd. */
 export function cottageLevel(obj: PlacedObject): number {
-  const level = obj.state.level;
-  return typeof level === 'number' && Number.isInteger(level) ? Math.max(1, Math.min(MAX_COTTAGE_LEVEL, level)) : 1;
+  return levelWithin(obj, MAX_COTTAGE_LEVEL);
+}
+
+/** A farmhouse's level (1 for a save without one; it counts while still a site, too). */
+export function farmhouseLevel(obj: PlacedObject): number {
+  return levelWithin(obj, MAX_FARMHOUSE_LEVEL);
+}
+
+/** What the built farmhouse's level gives (room, store, approval), or null while there is none. */
+export function farmhouseNow(state: GameState): FarmhouseLevel | null {
+  const house = builtFarmhouse(state);
+  return house ? FARMHOUSE_DEF.levels[farmhouseLevel(house) - 1] : null;
+}
+
+/** Families the farmhouse houses: its level's room once it is built, else none. */
+export function farmhouseRoom(state: GameState): number {
+  return farmhouseNow(state)?.room ?? 0;
 }
 
 /** Families a finished cottage houses (none while it is being built, and none for anything that isn't a cottage). */
@@ -76,7 +92,7 @@ export function homeList(state: GameState, families: number): HomeInfo[] {
   const tent = Math.min(tentFamilies(state), Math.max(0, families));
   if (camp && tent > 0) homes.push({ id: camp.id, type: CAMP, level: 1, room: tent, families: 0 });
   const farmhouse = builtFarmhouse(state);
-  if (farmhouse) homes.push({ id: farmhouse.id, type: FARMHOUSE, level: 1, room: FARMHOUSE_HOMES, families: 0 });
+  if (farmhouse) homes.push({ id: farmhouse.id, type: FARMHOUSE, level: farmhouseLevel(farmhouse), room: farmhouseRoom(state), families: 0 });
   for (const o of finishedCottages(state)) homes.push({ id: o.id, type: COTTAGE, level: cottageLevel(o), room: cottageRoom(o), families: 0 });
   let left = Math.max(0, families);
   for (const h of homes) {

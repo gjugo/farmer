@@ -35,7 +35,7 @@ export function initialProgression(xp = 0): ProgressionState {
 
 registerStateSlice<ProgressionState>(PROGRESSION, () => initialProgression());
 
-const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'reach-level', 'families', 'protected-coops']);
+const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'reach-level', 'building-level', 'families', 'protected-coops']);
 
 export function isStateGoal(def: GoalDef): boolean {
   return STATE_KINDS.has(def.kind);
@@ -53,6 +53,8 @@ export function stateGoalValue(state: GameState, def: GoalDef): number {
       }, 0);
     case 'reach-level':
       return levelForXp(getSlice<ProgressionState>(state, PROGRESSION).xp);
+    case 'building-level':
+      return state.objects.reduce((n, o) => (o.type === def.type && !o.site ? Math.max(n, typeof o.state.level === 'number' ? o.state.level : 1) : n), 0);
     case 'families':
       return workersOf(state).farmers;
     case 'protected-coops':

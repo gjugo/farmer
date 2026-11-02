@@ -260,7 +260,7 @@ describe('the farmhouse', () => {
       cost: 400,
       materials: { wood: 30, stone: 20, iron: 4 },
       unlockLevel: FARMHOUSE_LEVEL,
-      footprint: { w: 2, h: 2 },
+      footprint: { w: 3, h: 3 },
       unique: true,
       permanent: true,
     });
@@ -292,7 +292,7 @@ describe('the farmhouse', () => {
     expect(villageInfo(game.state).farmhouse).toBeNull();
     game.advance(DAY_MS / 2);
     expect(house.site).toBeUndefined();
-    expect(villageCentre(game.state)).toEqual({ type: FARMHOUSE, id: house.id, x: house.x + 1, y: house.y + 2 });
+    expect(villageCentre(game.state)).toEqual({ type: FARMHOUSE, id: house.id, x: house.x + 1, y: house.y + 3 });
     expect(villageInfo(game.state).farmhouse).toBe(house.id);
     expect(houseRoom(game.state)).toBe(1);
     // Its store of 50 + 50 takes over from the settlers' yard.

@@ -95,7 +95,8 @@ describe('map generation', () => {
     const grove = layer.trees.filter((t) => inside(START_LAND, t.x, t.y));
     expect(grove.length).toBeGreaterThanOrEqual(8);
     expect(grove.length).toBeLessThanOrEqual(12);
-    for (const o of state.objects) for (const t of grove) expect(near(footprint(o), t.x, t.y, 2), `${o.type} by ${t.x},${t.y}`).toBe(false);
+    // Never on or next to them (the generator keeps a tile's margin round what is built).
+    for (const o of state.objects) for (const t of grove) expect(near(footprint(o), t.x, t.y, 1), `${o.type} by ${t.x},${t.y}`).toBe(false);
   });
 
   it.each(SEEDS)('seed %i: a stone outcrop on the starting land, more out in the wild', (seed) => {
@@ -147,12 +148,13 @@ describe('map generation', () => {
   });
 
   it('lays out the same map for a seed as it always has (trees, deposits and the scenery between them)', () => {
-    // Digests of the layouts these seeds made before the whole map was open: farms' maps never move.
+    // Digests of the layouts these seeds make round the test's classic farm: farms' maps never move. (Re-taken when the
+    // classic farm's farmhouse became 3×3; a real new farm has no farmhouse, and a saved farm keeps its saved map.)
     const digest = (v: unknown) => createHash('sha1').update(JSON.stringify(v)).digest('hex').slice(0, 12);
     const expected: Record<number, { map: string; scenery: string }> = {
-      1: { map: 'c9f3221a18fd', scenery: '730a4a0c6bb3' },
-      42: { map: 'ee5f5a927fd2', scenery: 'c81149b74af4' },
-      20261031: { map: '2386ca00f59e', scenery: '9d0ebe6cf900' },
+      1: { map: '2c79bcacc3d9', scenery: '6e94381119e8' },
+      42: { map: '43558c9afcc6', scenery: 'f197735eee92' },
+      20261031: { map: '053d270e1d82', scenery: '5e53ee8ad0f1' },
     };
     for (const [seed, want] of Object.entries(expected)) {
       const layer = newMapLayer(noCamp(createNewGame()), Number(seed));

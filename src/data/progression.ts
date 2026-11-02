@@ -58,6 +58,8 @@ export type GoalTask =
   | { kind: 'own-buildings'; type: string; count: number }
   | { kind: 'own-animals'; animal?: AnimalKind; count: number }
   | { kind: 'reach-level'; count: number }
+  /** Have a finished `type` (a home with levels) at level `count` or higher. */
+  | { kind: 'building-level'; type: string; count: number }
   /** Have `count` families (farmers) living on the farm. */
   | { kind: 'families'; count: number }
   /** Have `count` coops with a kennel in reach (see `src/logic/hazards.ts`). */
@@ -120,6 +122,8 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'forge-tools', title: 'Forge 5 tools', icon: '🛠️', kind: 'make', item: 'tools', count: 5, reward: { money: 250, xp: 120 } },
   { id: 'upgrade-cottage', title: 'Upgrade a cottage', icon: '🏡', kind: 'upgrade', type: 'cottage', count: 1, reward: { money: 150, xp: 75 } },
   { id: 'build-farmhouse', title: 'Build the farmhouse', icon: '🏠', kind: 'own-buildings', type: 'farmhouse', count: 1, reward: { money: 200, xp: 100 } },
+  { id: 'manor-house', title: 'Upgrade the farmhouse to a manor house', icon: '🏡', kind: 'building-level', type: 'farmhouse', count: 2, reward: { money: 400, xp: 200 } },
+  { id: 'manor-hall', title: 'Raise the manor hall', icon: '🏰', kind: 'building-level', type: 'farmhouse', count: 3, reward: { money: 600, xp: 300 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

@@ -3,14 +3,14 @@ import { ANIMALS, PENS } from '../data/animals';
 import { listBuildables, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, CROPS, FIELD, getCrop } from '../data/crops';
 import { PROCESSORS, recipeUnlockLevel } from '../data/processing';
-import { ACTIVE_GOALS, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL } from '../data/progression';
+import { ACTIVE_GOALS, getGoal, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL } from '../data/progression';
 import { buyAnimal, collect as collectAnimals, feedAll, type PenState } from './animals';
 import { START_LAND } from './constants';
 import { harvest, plant, type FieldState } from './crops';
 import { Game } from './game';
 import { sell } from './market';
 import { inputsOf } from './processing';
-import { PROGRESSION, type ProgressionState } from './progression';
+import { PROGRESSION, stateGoalValue, type ProgressionState } from './progression';
 import { deserialize, serialize } from './save';
 import { getSlice } from './slices';
 import { addStartingObject, createNewGame } from './state';
@@ -334,6 +334,8 @@ describe('goals', () => {
       'forge-tools',
       'upgrade-cottage',
       'build-farmhouse',
+      'manor-house',
+      'manor-hall',
     ]);
   });
 
@@ -363,9 +365,27 @@ describe('goals', () => {
     ]);
   });
 
-  it('"Upgrade a cottage" counts cottage upgrades; "Build the farmhouse" comes last and counts the farmhouse, a site too', () => {
-    expect(GOALS.at(-2)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
-    expect(GOALS.at(-1)).toMatchObject({ id: 'build-farmhouse', kind: 'own-buildings', type: 'farmhouse', count: 1 });
+  it('"Upgrade a cottage" counts cottage upgrades; "Build the farmhouse" counts the farmhouse, a site too; its levels come last', () => {
+    expect(GOALS.at(-4)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
+    expect(GOALS.at(-3)).toMatchObject({ id: 'build-farmhouse', kind: 'own-buildings', type: 'farmhouse', count: 1 });
+    expect(GOALS.at(-2)).toMatchObject({ id: 'manor-house', title: 'Upgrade the farmhouse to a manor house', kind: 'building-level', type: 'farmhouse', count: 2 });
+    expect(GOALS.at(-1)).toMatchObject({ id: 'manor-hall', title: 'Raise the manor hall', kind: 'building-level', type: 'farmhouse', count: 3 });
+  });
+
+  it('the farmhouse level goals look at the finished farmhouse’s level: one upgrade never completes both', () => {
+    const game = new Game(maxLevelState());
+    const data = getSlice<ProgressionState>(game.state, PROGRESSION);
+    data.goals = [
+      { id: 'manor-house', progress: 0 },
+      { id: 'manor-hall', progress: 0 },
+    ];
+    const house = game.state.objects.find((o) => o.type === 'farmhouse')!;
+    expect(stateGoalValue(game.state, getGoal('manor-house')!)).toBe(1);
+    house.state.level = 2;
+    expect(stateGoalValue(game.state, getGoal('manor-house')!)).toBe(2);
+    expect(stateGoalValue(game.state, getGoal('manor-hall')!)).toBe(2);
+    house.site = { workMs: 1, paid: 0 };
+    expect(stateGoalValue(game.state, getGoal('manor-house')!)).toBe(0);
   });
 
   it('haul goals count goods unloaded by cart', () => {
