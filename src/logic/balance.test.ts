@@ -377,9 +377,12 @@ describe('level curve balance', () => {
   // goal now counts a coop built before it shows (it blocked a goal slot for good). With level 5 at 6000 XP the casual
   // player missed it (≈5900 XP in 3 h), at 5500 reached it at 183 min; at 5000: casual L2 9.0, L5 171.0; relaxed
   // L2 9.0, L5 159.0; busy L2 9.0, L5 153.7.
+  // More crops (potato at level 3, barley at 4; "Best in season" sows potato before corn comes): casual L2 9.0, L5 158.0;
+  // relaxed L2 9.5, L5 151.0; busy L2 9.2, L5 137.4.
   // Hazards (harsh winters, droughts, crows, foxes), with scarecrows and wells from level 2 and a kennel from level 3
-  // (no losses after them) and the harsh winter's wood stocked: casual L2 9.0, L5 173.0; relaxed L2 9.5, L5 161.0;
-  // busy L2 9.2, L5 150.5. Without the defences a casual or relaxed player could miss level 5 in 3 h.
+  // (no losses after them) and the harsh winter's wood stocked, on top of the new crops: casual L2 9.0, L5 174.0;
+  // relaxed L2 9.5, L5 158.5; busy L2 9.2, L5 149.2 (seeds 1–8: casual L5 at most 175.0). Without the defences a casual
+  // or relaxed player could miss level 5 in 3 h.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });

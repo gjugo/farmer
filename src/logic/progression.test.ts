@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ANIMALS, PENS } from '../data/animals';
 import { listBuildables, listBuildMenu } from '../data/buildables';
-import { CROP_LIST, FIELD, getCrop } from '../data/crops';
+import { CROP_LIST, CROPS, FIELD, getCrop } from '../data/crops';
 import { PROCESSORS } from '../data/processing';
 import { ACTIVE_GOALS, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL } from '../data/progression';
 import { buyAnimal, collect as collectAnimals, feedAll, type PenState } from './animals';
@@ -15,7 +15,8 @@ import { PROGRESSION, type ProgressionState } from './progression';
 import { deserialize, serialize } from './save';
 import { getSlice } from './slices';
 import { addStartingObject, createNewGame } from './state';
-import { bareMap, stockMaterials } from './test-utils';
+import { SEASON_MS } from './seasons';
+import { bareMap, maxLevelState, stockMaterials } from './test-utils';
 import type { PlacedObject } from './types';
 import { itemUnlockLevel, levelForXp, requiredLevel, unlocksAt, xpForLevel } from './unlocks';
 
@@ -181,8 +182,23 @@ describe('unlocks', () => {
   });
 
   it('lists what each level unlocks', () => {
-    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Kennel', 'Pasture']);
+    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Kennel', 'Pasture', 'Potato']);
+    expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
+    // The later levels unlock crops: flax and the winter cabbage at 6, pumpkin at 7.
+    expect(unlocksAt(6)).toEqual([
+      { icon: '🪻', name: 'Flax' },
+      { icon: '🥬', name: 'Cabbage' },
+    ]);
+    expect(unlocksAt(7)).toEqual([{ icon: '🎃', name: 'Pumpkin' }]);
+  });
+
+  it('each new crop unlocks at its level, and so does its item', () => {
+    const levels = { potato: 3, barley: 4, flax: 6, cabbage: 6, pumpkin: 7 } as const;
+    for (const [id, level] of Object.entries(levels)) {
+      expect(CROPS[id as keyof typeof CROPS].unlockLevel, id).toBe(level);
+      expect(itemUnlockLevel(id), id).toBe(level);
+    }
   });
 });
 
@@ -285,6 +301,35 @@ describe('goals', () => {
     }
     expect(game.progression.goals()).toEqual([]);
     expect(game.progression.allDone).toBe(true);
+  });
+
+  it('new goals go at the end, after the goals saves already know by index: the crop goals, then the hazard goals', () => {
+    const cloth = GOALS.findIndex((g) => g.id === 'weave-cloth');
+    expect(GOALS.slice(cloth + 1).map((g) => g.id)).toEqual([
+      'harvest-potatoes',
+      'winter-cabbage',
+      'grow-pumpkins',
+      'build-well',
+      'guard-coop',
+    ]);
+  });
+
+  it('harvest cabbage in winter counts only a winter harvest', () => {
+    const game = new Game(maxLevelState());
+    const data = getSlice<ProgressionState>(game.state, PROGRESSION);
+    data.goals = [
+      { id: 'winter-cabbage', progress: 0 },
+      { id: 'harvest-potatoes', progress: 0 },
+    ];
+    game.state.clock.elapsed = 2 * SEASON_MS + 1000; // autumn
+    game.activity.emit('harvested', { item: 'cabbage', qty: 8 });
+    expect(game.progression.goals()[0].progress).toBe(0);
+    game.state.clock.elapsed = 3 * SEASON_MS + 1000; // winter
+    game.activity.emit('harvested', { item: 'cabbage', qty: 8 });
+    expect(game.progression.goals()[0].complete).toBe(true);
+    // A harvest goal without a season counts in any season.
+    game.activity.emit('harvested', { item: 'potato', qty: 14 });
+    expect(game.progression.goals()[1].progress).toBe(14);
   });
 
   it('has about 15 goals with unique ids', () => {

@@ -48,7 +48,7 @@ export const DEFENCES: Record<DefenceType, DefenceDef> = {
   scarecrow: {
     id: SCARECROW,
     name: 'Scarecrow',
-    icon: '🎃',
+    icon: '👒',
     cost: 15,
     materials: { wood: 2 },
     footprint: { w: 1, h: 1 },

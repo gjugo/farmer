@@ -4,6 +4,7 @@ import { START_LAND } from './constants';
 import type { Game } from './game';
 import { isProtected } from './hazards';
 import { FARM_PARCELS, parcelsBought } from './parcels';
+import { seasonOf } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState } from './types';
 import { levelForXp, unlocksAt, xpForLevel } from './unlocks';
@@ -129,7 +130,10 @@ export class Progression {
       this.count((d) => d.kind === 'earn', amount);
       this.addXp(amount);
     });
-    activity.on('harvested', ({ item, qty }) => this.count((d) => d.kind === 'harvest' && d.item === item, qty));
+    activity.on('harvested', ({ item, qty }) => {
+      const season = seasonOf(game.state.clock);
+      this.count((d) => d.kind === 'harvest' && d.item === item && (!d.season || d.season === season), qty);
+    });
     activity.on('collected', ({ item, qty }) => this.count((d) => d.kind === 'collect' && d.item === item, qty));
     activity.on('made', ({ item, qty }) => this.count((d) => d.kind === 'make' && d.item === item, qty));
     activity.on('produced', ({ item, qty }) => this.count((d) => d.kind === 'produce' && d.item === item, qty));
