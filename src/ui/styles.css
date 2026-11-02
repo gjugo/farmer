@@ -1699,3 +1699,53 @@ body[data-menu] .tool-banner {
 .families-needs {
   font-size: 13px;
 }
+
+/* Hazards: the debug buttons wrap two to a row on a phone. */
+.debug-hazards {
+  flex-wrap: wrap;
+}
+
+.debug-hazards .btn {
+  flex: 1 1 calc(50% - 6px);
+}
+
+/* The Almanac (hazards): what is on, what is coming, threats with their defences, recent losses. */
+.almanac-section {
+  margin: 0 0 12px;
+}
+
+.almanac-list,
+.almanac-threats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.almanac-list li {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.almanac-list li:nth-child(odd) {
+  background: var(--paper-dark);
+}
+
+.almanac-threats li {
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.almanac-threats li:nth-child(odd) {
+  background: var(--paper-dark);
+}
+
+.almanac-guard {
+  color: var(--green-dark);
+  font-weight: 600;
+}

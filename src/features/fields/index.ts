@@ -24,12 +24,14 @@ import {
   type CropStage,
   type FieldState,
 } from '../../logic/crops';
+import { isParched } from '../../logic/hazards';
 import { nextSeasonAt, nextSeasonIn, seasonOf } from '../../logic/seasons';
 import { yieldAt } from '../../logic/soil';
 import { fullMessage, poolOf } from '../../logic/storage';
 import { ART_SCALE, cropArt, SHADOW } from '../../scenes/art';
 import { footprintLocal } from '../../scenes/iso';
 import { addArt, textureKey } from '../../scenes/sprites';
+import { protectionLine } from '../hazards';
 import { manureAction, soilPanel } from '../soil/panel';
 import './textures';
 
@@ -60,9 +62,16 @@ const SWAY = 1.06;
 /** Unploughed soil is the tilled tiles faded into the grass, like an overgrown plot. */
 const UNPLOUGHED_ALPHA = 0.35;
 
+/** A parched field (a drought, and no well in reach): dry soil and crops, with cracks over them. */
+const PARCHED_SOIL = 0xe8c48a;
+const PARCHED_PLANTS = 0xd8c07a;
+
 interface FieldView {
   stage: CropStage | null;
   ploughed: boolean | null;
+  parched: boolean | null;
+  /** Cracked earth, shown while the field is parched. */
+  cracks: Phaser.GameObjects.Image;
   /** The tilled soil: dry while empty or ripe, watered while growing. */
   soil: Phaser.GameObjects.Image;
   /** One crop sprite per tile, back to front, and their shadows. */
@@ -102,9 +111,14 @@ function syncView(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
   const stage = cropStage(clock, obj.state);
   // A crop stands in ploughed soil; the frost only shows once it is harvested.
   const ploughed = stage !== 'empty' || isPloughed(clock, obj.state);
-  if (stage === fv.stage && ploughed === fv.ploughed) return;
+  const parched = isParched(ctx.game.state, obj, clock.elapsed);
+  if (stage === fv.stage && ploughed === fv.ploughed && parched === fv.parched) return;
   fv.stage = stage;
   fv.ploughed = ploughed;
+  fv.parched = parched;
+  fv.cracks.setVisible(parched);
+  fv.soil.setTint(parched ? PARCHED_SOIL : 0xffffff);
+  fv.plants.forEach((p) => p.setTint(parched ? PARCHED_PLANTS : 0xffffff));
   const art = obj.state.crop ? cropArt(obj.state.crop, stage) : null;
   fv.soil.setTexture(textureKey(ctx.scene, art && stage !== 'ripe' ? 'field-watered' : 'field'));
   fv.soil.setAlpha(ploughed ? 1 : UNPLOUGHED_ALPHA);
@@ -152,9 +166,12 @@ function seasonLine(ctx: FarmContext): string {
 /** Adds the soil block (fertility bar, soil, last crop, hint) to a field panel, and the manure action to an empty one. */
 function withSoil(ctx: FarmContext, obj: PlacedObject<FieldState>, spec: PanelSpec, empty: boolean): PanelSpec {
   const soil = soilPanel(ctx, obj);
+  const guard = protectionLine(ctx.game, obj);
+  const parched = isParched(ctx.game.state, obj, ctx.game.now) ? ['☀️ Drought: this field is drying out. Crops grow at half speed and yield 30% less.'] : [];
+  const pecked = obj.state.pecked ? ['🐦‍⬛ Crows ate 30% of this crop.'] : [];
   return {
     ...spec,
-    lines: [...soil.lines, ...(spec.lines ?? [])],
+    lines: [...soil.lines, ...(spec.lines ?? []), ...parched, ...pecked, ...(guard ? [guard] : [])],
     meters: soil.meters,
     hint: soil.hint,
     actions: empty ? [...(spec.actions ?? []), manureAction(ctx, obj)] : spec.actions,
@@ -249,7 +266,9 @@ registerBehavior<FieldState>(FIELD, {
     });
     view.container.add([...plants, ...sparkles]);
     view.shadows.add(shadows);
-    fieldViews.set(obj.id, { stage: null, ploughed: null, soil: view.sprite, plants, shadows, sparkles, tweens: [] });
+    const cracks = scene.add.image(view.top.x, view.top.y, 'field-cracks').setVisible(false).setName('field-cracks');
+    view.ground.add(cracks);
+    fieldViews.set(obj.id, { stage: null, ploughed: null, parched: null, cracks, soil: view.sprite, plants, shadows, sparkles, tweens: [] });
     syncView(ctx, obj);
   },
   update(ctx, obj) {

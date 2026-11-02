@@ -151,7 +151,8 @@ interface Rect {
   h: number;
 }
 
-function areaOf(obj: PlacedObject): Rect {
+/** The tiles an object stands on. */
+export function areaOf(obj: PlacedObject): Rect {
   return { x: obj.x, y: obj.y, ...(getBuildable(obj.type)?.footprint ?? { w: 1, h: 1 }) };
 }
 
@@ -172,6 +173,13 @@ export function defendersOf(state: GameState, type: DefenceType, area: Rect): Pl
 export function isProtected(state: GameState, obj: PlacedObject, kind: HazardKind): boolean {
   const type = DEFENCE_FOR[kind];
   return !!type && defendersOf(state, type, areaOf(obj)).length > 0;
+}
+
+/** The finished fields (or, for a kennel, coops) a defence of `type` standing on `area` would guard. */
+export function guardedBy(state: GameState, type: DefenceType, area: Rect): PlacedObject[] {
+  const def = DEFENCES[type];
+  const target = def.against === 'fox' ? 'coop' : FIELD;
+  return state.objects.filter((o) => o.type === target && !o.site && reaches(area, def.range, areaOf(o)));
 }
 
 /** The defences covering tile (x, y), e.g. `['well', 'scarecrow']`: for `window.farm.hazards.coverage`. */

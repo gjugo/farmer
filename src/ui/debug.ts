@@ -2,7 +2,9 @@ import { ITEM_LIST } from '../data/items';
 import { MAX_LEVEL } from '../data/progression';
 import type { FarmContext } from '../game/context';
 import { DAY_MS } from '../logic/constants';
+import type { HazardKind } from '../data/hazards';
 import { addFamily } from '../logic/families';
+import { triggerHazard } from '../logic/hazards';
 import { mapOf, regrowAll } from '../logic/maplayer';
 import { catchUpGame } from '../logic/offline';
 import { refreshOrders } from '../logic/orders';
@@ -149,6 +151,33 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
           onclick: () => catchUpGame(game, (Math.floor(game.now / DAY_MS) + 1) * DAY_MS - game.now),
         },
         'Next day',
+      ),
+    ),
+    // Hazards on demand (skipping the rolls, level and season); defences still work, a fox never takes the last chicken.
+    h(
+      'div',
+      { class: 'debug-row debug-hazards', role: 'group', 'aria-label': 'Hazards' },
+      (
+        [
+          ['drought', 'debug-drought', 'Drought now'],
+          ['crows', 'debug-crows', 'Crows now'],
+          ['fox', 'debug-fox', 'Fox now'],
+          ['harsh-winter', 'debug-harsh-winter', 'Harsh winter next'],
+        ] as [HazardKind, string, string][]
+      ).map(([kind, testid, label]) =>
+        h(
+          'button',
+          {
+            type: 'button',
+            class: 'btn',
+            'data-testid': testid,
+            onclick: () => {
+              const r = triggerHazard(game, kind);
+              if (!r.ok) ctx.ui.toast(r.reason, 'error');
+            },
+          },
+          label,
+        ),
       ),
     ),
     h(
