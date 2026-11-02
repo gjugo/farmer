@@ -304,8 +304,13 @@ describe('goals', () => {
   });
 
   it('the new crop goals come last, after the goals saves already know by index', () => {
-    expect(GOALS.slice(-3).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
-    expect(GOALS.findIndex((g) => g.id === 'weave-cloth')).toBe(GOALS.length - 4);
+    const cloth = GOALS.findIndex((g) => g.id === 'weave-cloth');
+    expect(GOALS.slice(cloth + 1, cloth + 4).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
+  });
+
+  it('the trader goal comes last, after every goal saves already know by index', () => {
+    expect(GOALS[GOALS.length - 1].id).toBe('trade-trader');
+    expect(GOALS.findIndex((g) => g.id === 'grow-pumpkins')).toBe(GOALS.length - 2);
   });
 
   it('harvest cabbage in winter counts only a winter harvest', () => {

@@ -76,6 +76,23 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   Market pays, so buying and selling back loses money (and selling materials gives no XP). Too little money: the
   purchase is refused with a toast. New farms start without materials; the goal "Buy 10 wood" comes just before
   "Build a cottage" and "Build a chicken coop". "House 4 families" follows "Reach level 3".
+- **Market rules (saturation):** the Market takes each item's daily allowance, worth about $150 at its base price
+  (`floor(150 / base)`: 37 wheat, 15 eggs, 3 cheese), at the day's price. Every unit sold past it lowers that item's
+  price by 1%, down to 50% of the day's price; each new day takes a quarter of the drop away (exact integer basis
+  points, so live play, ×60 and offline catch-up give the same prices) and the allowance starts again. Drops are saved
+  (`ext.market`). The sell list shows the current price with a blue **Flooded −N%** mark; **Sell all** and **Sell
+  everything** ask first when the sale would flood, with the total at the falling prices. Selling never pays more than
+  the Market's buy price. Orders board rewards and the travelling trader are not affected.
+- **Travelling traders:** from level 3, about twice a season (one day in each half of a season) a trader's wagon parks
+  for one game day on a free owned tile next to the farmhouse door (or the nearest path tile). He is announced the day
+  before with a toast and a **🛒 Trader tomorrow** chip in the HUD, which becomes **🛒 Trader here** while he stays;
+  tapping the chip or the wagon opens his panel. He buys 2–3 goods the farm can already make (its unlocked crops,
+  animals' products and processed goods) at +40–80% of base price, each up to a set quantity (about $240 worth), with no
+  saturation; and sells 2–3 offers, each with stock: a building material below the Market's buy price (never below what
+  the Market pays for it), an unlocked animal at −25% (into a pen with room), and bulk feed. Purchases are capped at the
+  storage room left, like the Market. The schedule and offers follow from a saved farm seed (`ext.trader.seed`) and the
+  day, so reloads never reroll them; a trader due while the player is away comes and goes without trading, and the
+  welcome-back summary says so. The last goal is "Trade with a travelling trader".
 - **Wood, stone and iron from the farm:** the **🪓 Woodcutter's Lodge** (level 1, $80) makes 4 🪵 wood, the **⛏️ Quarry**
   (level 2, $120 + 10 🪵) 3 🪨 stone and the **⚒️ Mine** (level 4, $140 + 15 🪵 + 10 🪨, never iron) 1 🔩 iron per cycle
   of work: 4, 5 and 6 game-minutes, a quarter longer in winter. Nothing is made without an assigned farmer
@@ -246,12 +263,21 @@ Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed *
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary),
 **+1 family** (fills an empty home at once), **Next day** (jumps to the next day boundary, where the families settle
 their needs), **Refresh orders** (fills every order slot now), **Regrow all trees** (every stump grows back at
-once) and **Reset perks** (forgets every perk taken; every level reached gets its choice back). Setting a higher level
-opens a choice for each level on the way. **+10** adds only what the granaries or storehouses have room for.
+once), **Reset perks** (forgets every perk taken; every level reached gets its choice back), **Trader now** (a trader
+parks by the farmhouse at once, whatever the level and schedule, and leaves at the end of the day) and **Clear market
+drops** (every flooded price back to the day's price). Setting a higher level opens a choice for each level on the way.
+**+10** adds only what the granaries or storehouses have room for. **Next day** and **Next season** are not time away:
+a trader due on the way arrives as in play.
 `window.farm` always returns a frozen, read-only snapshot of the game state (plus `day`), e.g.
 `window.farm.money`, `window.farm.inventory`, `window.farm.objects`. `window.farm.orders` holds the
 orders board: `known` goods and `slots[i]` (`order: { customer, items: [{ itemId, qty }], reward }` or
 `refill: { start, duration }` with `reason: 'fulfilled' | 'discarded'`).
+`window.farm.market` is, per priced item, `{ price, drop }`: what one unit fetches now and how far it is down from the
+day's price (0 to 0.5). `window.farm.trader` is `{ here, arrivesAt, leavesAt, wants: [{ item, price, left }], sells:
+[{ item | animal, price, left }] }`: `arrivesAt` and `leavesAt` are game times (`window.farm.clock.elapsed`) of the
+trader here, else of the next one due (null below level 3); `wants` and `sells` are empty while none is here. The saved
+state is `window.farm.ext.trader` (with `visit.tile`, where the wagon stands) and `window.farm.ext.market`.
+`window.farm.lastCatchUp.traders.missed` counts traders that came while the player was away.
 `window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
@@ -311,7 +337,8 @@ src/
     placement.ts       canPlace / objectAt
     clock.ts           game clock, Day N, game-time timers
     seasons.ts         seasons from the game clock (2 days each), season runs for ploughing and sowing windows
-    market.ts          daily sell prices (base × 0.8–1.2 by day + item id), sell / sellAll; material buy prices, buy
+    market.ts          daily sell prices (base × 0.8–1.2 by day + item id), saturation (drops), sell / sellAll; material buy prices, buy
+    trader.ts          travelling traders: the seeded schedule, offers, parking by the farmhouse door, trading
     parcels.ts         land parcels, adjacency, parcel prices ($1,000, ×1.25), buyParcel
     save.ts            versioned save/load + migrations + defaults
     slots.ts           manual save slots, strict import validation
@@ -367,7 +394,8 @@ src/
                        soil block and Spread manure action, `window.farm.soil` (data: src/data/soil.ts)
     seasons/           season-change toasts, the seasonal look (art swap, colour grade, crossfade), weather
                        particles and their setting, `window.farm.season`
-    market/            🏪 Market HUD button: sell panel and Buy section for building materials
+    market/            🏪 Market HUD button: sell panel (flooded marks, confirm before flooding) and Buy section
+    trader/            🛒 travelling trader: the wagon by the farmhouse, the HUD chip, his panel (logic: src/logic/trader.ts)
     storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade,
                        `window.farm.storage`, the one-time notice for old saves; stock piles in the yards
                        (piles.ts, `window.farm.stockpiles`)
@@ -478,7 +506,8 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 ### Other extension points
 
 - **HUD button** (e.g. Market): `registerHudButton({ id, label, icon, onClick: (ctx) => ctx.ui.openPanel(...) })`.
-  Add `badge: (ctx) => n` to show a count on the button (hidden at 0).
+  Add `badge: (ctx) => n` to show a count on the button (hidden at 0), `visible: (ctx) => bool` to show it only at
+  times (the trader's chip) and `className` for its look (`hud-chip`).
 - **Global feature state** (e.g. market prices): `registerStateSlice('market', () => ({ ... }))`
   and `getSlice(game.state, 'market')`. Defaults are merged into old saves. A slice that saves tile coordinates passes
   a third argument, `(saved, dx, dy) => moved`, so save migrations that move the farm on the map move them too.
@@ -490,8 +519,9 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 - **Work that needs a farmer:** wrap it in `withFarmer(ctx, kind, obj, durationMs, () => didIt)` from
   `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the farmhouse to the
   site, and sends a farmer along the path only if the action succeeded.
-- **Selling:** `sell(game, itemId, qty?)` / `farmSellPrice(game.state, game.day, itemId)` (today's price with the
-  farm's perks; `dailyPrice` is the plain one) from `src/logic/market.ts`.
+- **Selling:** `sell(game, itemId, qty?)` / `currentPrice(game.state, itemId)` (today's price with the farm's perks,
+  less its saturation drop; `farmSellPrice` is it before the drop, `dailyPrice` the plain one) / `quoteSale(game.state,
+  itemId, qty)` from `src/logic/market.ts`.
 - **Perks:** add one to `PERKS` in `src/data/perks.ts` (its `value` and `neutral`, and `subjects` if it is about a kind
   of building) and read it with `perkFactor(state, id)` at the one place in the rules it changes.
 - **Buying materials:** `buy(game, itemId, qty)` / `buyPrice(game.day, itemId)` from `src/logic/market.ts`;

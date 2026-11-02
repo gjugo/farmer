@@ -9,6 +9,7 @@ import { Game } from './game';
 import * as inventory from './inventory';
 import { sanitize, settle, type ProcessorState } from './processing';
 import * as resources from './resources';
+import { updateTrader } from './trader';
 import type { GameState, Inventory, PlacedObject } from './types';
 import { runWork } from './work';
 
@@ -49,6 +50,8 @@ export interface CatchUpResult {
   work: FarmerWork;
   /** Families that moved in and moved away. */
   families: { arrived: number; left: number };
+  /** Travelling traders that came while the player was away (they left, or stay today, without trading). */
+  traders: { missed: number };
   dayBefore: number;
   dayAfter: number;
   /** Ids of objects whose state changed, so their views can refresh. */
@@ -68,7 +71,15 @@ function endOf(timer: Timer): number {
  * way: the work scheduler (`runWork`) steps from one event to the next, exactly as it
  * does while playing. This also gathers the summary.
  */
-export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult {
+export interface CatchUpOptions {
+  /**
+   * The player was away (default): traders arriving meanwhile come and go without trading. The debug "Next day" and
+   * "Next season" jumps pass false, so a trader due then arrives as in play.
+   */
+  away?: boolean;
+}
+
+export function catchUp(target: Game | GameState, awayMs: number, { away = true }: CatchUpOptions = {}): CatchUpResult {
   const game = target instanceof Game ? target : new Game(target);
   const state = game.state;
   const clock = state.clock;
@@ -83,6 +94,7 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     jobsFinished: 0,
     work: { harvested: {}, sown: {}, collected: {}, made: {}, built: {}, materials: {} },
     families: { arrived: 0, left: 0 },
+    traders: { missed: 0 },
     dayBefore: dayOf(clock),
     dayAfter: dayOf(clock),
     changed: [],
@@ -118,7 +130,11 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
     result.jobsFinished += finished;
     changed.add(obj.id);
   };
+  // Away, the trader is brought up to the moment the player left, then every arrival on the way counts as missed.
+  // A debug jump leaves him to the next frame, as in play (so his arrival and departure are announced).
+  if (away) updateTrader(game);
   runWork(game, from + appliedMs, { onSettled: settled });
+  if (away) result.traders.missed = updateTrader(game, { away }).missed;
   listening.forEach((off) => off());
   const to = clock.elapsed;
   const endedAway = (timer: Timer | null) => !!timer && endOf(timer) > from && endOf(timer) <= to;
@@ -158,8 +174,8 @@ export function catchUp(target: Game | GameState, awayMs: number): CatchUpResult
 }
 
 /** Runs `catchUp` on a live game and tells the HUD, the scene and features about it. */
-export function catchUpGame(game: Game, awayMs: number): CatchUpResult {
-  const result = catchUp(game, awayMs);
+export function catchUpGame(game: Game, awayMs: number, options: CatchUpOptions = {}): CatchUpResult {
+  const result = catchUp(game, awayMs, options);
   // A zero tick moves nothing but announces a new day.
   game.tick(0);
   for (const id of result.changed) {

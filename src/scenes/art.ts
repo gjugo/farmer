@@ -171,6 +171,7 @@ export const TEXTURE_ART: Record<string, string> = {
   bakery: 'bakery',
   loom: 'weaving_hut',
   'sale-sign': 'for_sale_sign',
+  'trader-wagon': 'trader_wagon',
   farmhouse: 'farmhouse',
   granary: 'granary_1',
   storehouse: 'storehouse_1',

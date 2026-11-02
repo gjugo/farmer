@@ -139,6 +139,7 @@ export class Progression {
     activity.on('placed', ({ type }) => this.count((d) => d.kind === 'build' && d.type === type, 1));
     activity.on('upgraded', ({ type }) => this.count((d) => d.kind === 'upgrade' && d.type === type, 1));
     activity.on('fertilised', () => this.count((d) => d.kind === 'fertilise', 1));
+    activity.on('traded', () => this.count((d) => d.kind === 'trade', 1));
     for (const e of ['objectAdded', 'objectRemoved', 'objectChanged', 'land'] as const) events.on(e, () => this.refreshStateGoals());
     for (const e of ['familyArrived', 'familyLeft'] as const) activity.on(e, () => this.refreshStateGoals());
     events.on('reset', () => this.init());

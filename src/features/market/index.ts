@@ -1,8 +1,22 @@
 import { getItem, ITEM_LIST } from '../../data/items';
-import { isStoredMaterial, MATERIAL_IDS, type MaterialId } from '../../data/materials';
+import { MATERIAL_IDS, type MaterialId } from '../../data/materials';
 import type { FarmContext, SheetSpec } from '../../game/context';
 import { registerHudButton } from '../../game/hooks';
-import { buy, buyPrice, buyUnlockLevel, farmSellPrice, msUntilNextDay, priceTrend, sell, sellAll } from '../../logic/market';
+import {
+  allowance,
+  buy,
+  buyPrice,
+  buyUnlockLevel,
+  currentPrice,
+  marketOf,
+  msUntilNextDay,
+  priceDrop,
+  priceTrend,
+  quoteSale,
+  quoteSellAll,
+  sell,
+  sellAll,
+} from '../../logic/market';
 import { perkFactor } from '../../logic/perks';
 import { fullMessage, storageInfo } from '../../logic/storage';
 import { formatMoney, h } from '../../ui/dom';
@@ -10,7 +24,8 @@ import { itemIcon, withIcons } from '../../ui/icons';
 
 /**
  * The Market: sell anything in the inventory at today's price, and buy building
- * materials. Prices change every in-game day (see `src/logic/market.ts`).
+ * materials. Prices change every in-game day, and fall while an item is flooded:
+ * sold past its daily allowance (see `src/logic/market.ts`).
  */
 
 /** Quick amounts for buying materials; the stepper does any other amount. */
@@ -37,6 +52,47 @@ function stockedItems(ctx: FarmContext): string[] {
 
 function sold(ctx: FarmContext, what: string, earned: number): void {
   if (earned > 0) ctx.ui.toast(`Sold ${what} for ${formatMoney(earned)}`, 'success');
+}
+
+/** "−12%" for a drop of 0.12. */
+function dropText(drop: number): string {
+  return `−${Math.max(1, Math.round(drop * 100))}%`;
+}
+
+/**
+ * Sell all of an item. When the sale floods the Market (goes past the day's allowance) it first says what the whole
+ * lot fetches at the falling prices and where the price ends up, and asks.
+ */
+async function sellAllOf(ctx: FarmContext, id: string, name: string): Promise<void> {
+  const { game } = ctx;
+  const qty = game.count(id);
+  const quote = quoteSale(game.state, id, qty);
+  if (!quote || qty <= 0) return;
+  if (quote.floods) {
+    const ok = await ctx.ui.confirm(
+      `Sell ${qty} ${name} for ${formatMoney(quote.total)}?`,
+      `The Market takes about ${allowance(id)} ${name} a day. Past that the price falls with every one sold${quote.priceAfter < quote.priceNow ? `: from ${formatMoney(quote.priceNow)} to ${formatMoney(quote.priceAfter)}` : `, and it is already down to ${formatMoney(quote.priceNow)}`} (${dropText(quote.dropAfter / 10_000)}). It recovers a quarter of the drop each day.`,
+      { confirmLabel: `Sell for ${formatMoney(quote.total)}`, variant: 'primary' },
+    );
+    if (!ok) return;
+  }
+  sold(ctx, `${game.count(id)} ${name}`, sell(game, id, qty));
+}
+
+/** Sell everything, asking first (with the total at the falling prices) when any item would flood. */
+async function sellEverything(ctx: FarmContext): Promise<void> {
+  const { game } = ctx;
+  const quote = quoteSellAll(game.state);
+  if (quote.floods.length) {
+    const names = quote.floods.map((id) => getItem(id)?.name ?? id).join(', ');
+    const ok = await ctx.ui.confirm(
+      `Sell everything for ${formatMoney(quote.total)}?`,
+      `That floods the Market with ${names}: their prices fall with every one sold past the day's allowance. ${formatMoney(quote.total)} is the total at the falling prices.`,
+      { confirmLabel: `Sell for ${formatMoney(quote.total)}`, variant: 'primary' },
+    );
+    if (!ok) return;
+  }
+  sold(ctx, 'everything', sellAll(game));
 }
 
 /** Buys `qty` of a material and says how it went. */
@@ -141,7 +197,8 @@ function marketSheet(ctx: FarmContext): SheetSpec {
   return {
     id: 'market',
     title: () => '🏪 Market',
-    signature: () => `${game.day}|${game.level}|${perkFactor(game.state, 'haggler')}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}`,
+    signature: () =>
+      `${game.day}|${game.level}|${perkFactor(game.state, 'haggler')}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}|${JSON.stringify(marketOf(game.state).drops)}`,
     render: (body) => {
       const day = game.day;
       body.append(
@@ -161,14 +218,15 @@ function marketSheet(ctx: FarmContext): SheetSpec {
         return;
       }
       // "Sell everything" keeps building materials (see `sellAll`).
-      const total = ids.filter((id) => !isStoredMaterial(id)).reduce((sum, id) => sum + game.count(id) * (farmSellPrice(game.state, day, id) ?? 0), 0);
+      const total = quoteSellAll(game.state).total;
       body.append(
         h(
           'ul',
           { class: 'market-list', 'data-testid': 'market-list' },
           ids.map((id) => {
             const item = getItem(id);
-            const price = farmSellPrice(game.state, day, id);
+            const price = currentPrice(game.state, id);
+            const drop = priceDrop(game.state, id);
             const count = game.count(id);
             const dir = priceTrend(day, id);
             const trend = TREND[dir];
@@ -186,10 +244,14 @@ function marketSheet(ctx: FarmContext): SheetSpec {
                       class: `market-price trend-${dir}`,
                       'data-testid': `market-price-${id}`,
                       'data-price': price,
-                      title: `Base price ${formatMoney(item!.price)} — today is ${trend.label} base`,
+                      'data-drop': drop,
+                      title: `Base price ${formatMoney(item!.price)} — today is ${trend.label} base${drop > 0 ? `; flooded, ${dropText(drop)}` : ''}`,
                     },
                     `${formatMoney(price)} `,
                     h('span', { class: 'trend', 'aria-label': `${trend.label} base price ${formatMoney(item!.price)}` }, trend.arrow),
+                    drop > 0
+                      ? h('span', { class: 'flooded', 'data-testid': `market-flooded-${id}`, title: 'Sold past what the Market takes in a day: the price falls, and recovers a quarter of the drop each day' }, `Flooded ${dropText(drop)}`)
+                      : null,
                   ),
               h(
                 'span',
@@ -214,7 +276,7 @@ function marketSheet(ctx: FarmContext): SheetSpec {
                     disabled: price === null,
                     'data-testid': `sell-all-${id}`,
                     'aria-label': `Sell all ${name}`,
-                    onclick: () => sold(ctx, `${game.count(id)} ${name}`, sell(game, id)),
+                    onclick: () => void sellAllOf(ctx, id, name),
                   },
                   'Sell all',
                 ),
@@ -232,7 +294,7 @@ function marketSheet(ctx: FarmContext): SheetSpec {
               class: 'btn',
               disabled: total <= 0,
               'data-testid': 'sell-everything',
-              onclick: () => sold(ctx, 'everything', sellAll(game)),
+              onclick: () => void sellEverything(ctx),
             },
             `Sell everything (${formatMoney(total)})`,
           ),
