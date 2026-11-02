@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { ANIMALS, PENS, type AnimalKind, type PenType } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
@@ -10,7 +10,7 @@ import { Game } from './game';
 import { allowance, buy, buyPrice, buyUnlockLevel, marketOf, sell } from './market';
 import { sellToTrader, traderHere, traderOf, updateTrader } from './trader';
 import { START_LAND } from './constants';
-import { connectToFarmhouse, doorOf, farmhouseOf } from './roads';
+import { connectToFarmhouse, startTiles, villageCentre } from './roads';
 import { inBounds } from './land';
 import { capacity, checkUpgrade, nextLevel, upgrade, used } from './storage';
 import type { GameState, PlacedObject } from './types';
@@ -30,16 +30,18 @@ import { addDeposit, depositsUnder, MAP_SLICE, mapOf, newMapLayer, treesInRange 
 import { ruleBlock } from './placement';
 import { createNewGame } from './state';
 import { RESOURCES } from '../data/resourceBuildings';
+import { TRADING_POST } from '../data/trade';
+import { ensureMainRoad, ROAD_SLICE, roadTiles } from './mainroad';
 import { addFarmer, assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, setKeepMaking, workerAt, workersOf } from './workers';
-import { maxLevelState, noCamp } from './test-utils';
-import { addCamp, campInfo } from './camp';
+import { maxLevelState, useClassicStart } from './test-utils';
+import { campInfo, campOf } from './camp';
 
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
- * against the real prices. It looks at the farm every `reactMs` (no instant clicks) and,
+ * against the real prices. A new game is only the camp, with two families in its tent: no fields, paths or farmhouse. It looks at the farm every `reactMs` (no instant clicks) and,
  * like a Manor Lords lord, assigns farmers instead of doing the work: every field (crop plan
  * "Best in season", which rotates crops; it never spreads manure) and pen gets a farmer. With none to spare it builds a cottage, one at a time, for a family to
- * move into, and meanwhile has a free farmer work an unstaffed field by hand (a tap). It feeds the families its own
+ * move into (and one for the tent's families once the camp's supplies are used up), and meanwhile has a free farmer work an unstaffed field by hand (a tap). It feeds the families its own
  * crops: a day's meals in store, and from autumn into early spring enough to last the winter (no new cottage until
  * that is in store); with firewood for every home bought from autumn. It sells the rest,
  * buys feed, builds up to `maxFields` fields (construction sites the free farmers build, with a path
@@ -51,12 +53,11 @@ import { addCamp, campInfo } from './camp';
  * the purchase doesn't need first). From level 2 it builds a woodcutter's lodge, then a quarry with the lodge's wood;
  * it staffs them in winter with the farmers whose fields are frozen, and sends them back to the fields in spring, so it
  * hires nobody for them and buys only the materials they haven't made. It sells materials beyond 10 of each. It never uses processing
- * buildings, never builds where it would wall off land the farmhouse reaches, and buys land only when it runs out
- * of room, so a real player who does more should level at least as fast. Hazards are on at their normal rates: from
+ * buildings, never builds the farmhouse, never builds where it would wall off land the village reaches, so a real player who does more should level at least as fast. Hazards are on at their normal rates: from
  * level 2 it builds scarecrows and wells where they guard fields nothing guards yet, from level 3 a kennel by the coop,
  * and for a harsh winter it stocks the wood the warning asks for.
  */
-/** Tiles reachable from the farmhouse door over tiles that pass `walkable` (given what stands there), as "x,y" keys. */
+/** Tiles reachable from the village centre over tiles that pass `walkable` (given what stands there), as "x,y" keys. */
 function reachable(state: GameState, walkable: (o: PlacedObject | undefined, x: number, y: number) => boolean): Set<string> {
   const at = new Map<string, PlacedObject>();
   for (const o of state.objects) {
@@ -64,9 +65,8 @@ function reachable(state: GameState, walkable: (o: PlacedObject | undefined, x: 
     for (let y = o.y; y < o.y + h; y++) for (let x = o.x; x < o.x + w; x++) at.set(`${x},${y}`, o);
   }
   const ok = (x: number, y: number) => inBounds(state.land, x, y) && walkable(at.get(`${x},${y}`), x, y);
-  const door = doorOf(farmhouseOf(state)!);
   const seen = new Set<string>();
-  const queue = ok(door.x, door.y) ? [door] : [];
+  const queue = startTiles(state).filter((t) => ok(t.x, t.y));
   for (const t of queue) {
     const k = `${t.x},${t.y}`;
     if (seen.has(k)) continue;
@@ -83,16 +83,26 @@ function touches(tiles: Set<string>, a: { x: number; y: number; w: number; h: nu
   return false;
 }
 
+/** A lodge spot with this many trees in range is as good as any: of those, the bot takes the nearest. */
+const LODGE_TREES = 8;
+
 /** The new game's map: any seed gives a start grove and outcrop, this one keeps the runs repeatable. */
 const MAP_SEED = 20261031;
+/** Money it keeps back when buying firewood, to plough and sow (spending it all starved a farm of seed). */
+const FIREWOOD_RESERVE = 60;
+/** The main road's seed, fixed so the runs repeat. */
+const ROAD_SEED = 1;
 /** The travelling traders' schedule and offers, fixed so the runs repeat. */
 const TRADER_SEED = 79;
 
 function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number; maxFields: number; minutes: number; hazardSeed: number }): Sim {
-  // As a new game does: the map first, then the camp goes up beside the farmhouse, clear of trees and rocks.
-  const state = noCamp(createNewGame());
+  // A new game: only the camp (two families in its tent) and the path in front of it, the map generated around them.
+  const state = createNewGame();
+  if (!campOf(state) || state.objects.length !== 2) throw new Error('not a new start');
   state.ext[MAP_SLICE] = newMapLayer(state, MAP_SEED);
-  if (!addCamp(state)) throw new Error('no room for the camp');
+  // The main road from a fixed seed too (a new game's is random), laid on this map.
+  state.ext[ROAD_SLICE] = { seed: ROAD_SEED, side: null, tiles: [], pending: true };
+  ensureMainRoad(state);
   hazardsOf(state).seed = hazardSeed;
   traderOf(state).seed = TRADER_SEED;
   const game = new Game(state);
@@ -142,15 +152,15 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     return game.missingMaterials(materials).length === 0;
   };
 
-  // Like a player, it builds next to a path when it can, else lays one from the farmhouse (free here: paths cost next to nothing).
+  // Like a player, it builds next to a path when it can, else lays one from the village (free here: paths cost next to nothing).
   const build = (type: string, reserve: number): PlacedObject | null => {
     const def = getBuildable(type)!;
     if (!game.isUnlocked(def.unlockLevel)) return null;
     const { width, height } = game.state.land;
     const spots: { x: number; y: number }[] = [];
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (game.checkPlacement(type, x, y).ok) spots.push({ x, y });
-    // The whole map is open: like a player, it builds close to the farmhouse first.
-    const door = doorOf(farmhouseOf(game.state)!);
+    // The whole map is open: like a player, it builds close to the village centre first.
+    const door = villageCentre(game.state)!;
     spots.sort((a, b) => Math.abs(a.x - door.x) + Math.abs(a.y - door.y) - (Math.abs(b.x - door.x) + Math.abs(b.y - door.y)));
     const area = (s: { x: number; y: number }) => ({ ...s, ...def.footprint });
     // Same as trying findRoute, then connectToFarmhouse, on each spot, but one flood fill each instead of one per spot.
@@ -159,7 +169,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const free = (o: PlacedObject | undefined, x: number, y: number) =>
       inBounds(game.state.land, x, y) && (o ? o.type === PATH : !ruleBlock(game.state, { w: 1, h: 1 }, x, y, PATH));
     const onLand = reachable(game.state, free);
-    // Nor does it wall off its own land: every tile the farmhouse reaches now stays reachable around the new building.
+    // Nor does it wall off its own land: every tile the village reaches now stays reachable around the new building.
     const walls = (a: { x: number; y: number; w: number; h: number }) => {
       const inside = (x: number, y: number) => x >= a.x && x < a.x + a.w && y >= a.y && y < a.y + a.h;
       const after = reachable(game.state, (o, x, y) => !inside(x, y) && free(o, x, y));
@@ -174,7 +184,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const defence = DEFENCES[type as DefenceType];
     const unguarded = (s: { x: number; y: number }) => guardedBy(game.state, defence.id, area(s)).filter((o) => !isProtected(game.state, o, defence.against)).length;
     const worth = (s: { x: number; y: number }) =>
-      defence ? unguarded(s) : res?.range ? treesInRange(layer, area(s), res.range).length : res?.deposit ? depositsUnder(layer, area(s), res.deposit).length * 100 - overhang(s) : 0;
+      defence ? unguarded(s) : res?.range ? Math.min(LODGE_TREES, treesInRange(layer, area(s), res.range).length) : res?.deposit ? depositsUnder(layer, area(s), res.deposit).length * 100 - overhang(s) : 0;
     const overhang = (s: { x: number; y: number }) => {
       let n = 0;
       for (let y = s.y; y < s.y + def.footprint.h; y++) for (let x = s.x; x < s.x + def.footprint.w; x++) n += layer.deposits.some((d) => x >= d.x && y >= d.y && x < d.x + d.w && y < d.y + d.h) ? 0 : 1;
@@ -183,7 +193,8 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     if (res || defence) spots.sort((a, b) => worth(b) - worth(a));
     // A defence where it guards nothing new is money wasted.
     if (defence) spots.splice(spots.findIndex((s) => worth(s) === 0) >>> 0);
-    const spot = spots.find((s) => fits(s, onPaths)) ?? spots.find((s) => fits(s, onLand));
+    // A lodge, quarry or mine goes to its best spot even if a new path must lead there; the rest by a path when it can.
+    const spot = res ? spots.find((s) => fits(s, onLand)) : (spots.find((s) => fits(s, onPaths)) ?? spots.find((s) => fits(s, onLand)));
     // The whole map is open: no room left means nowhere a path reaches.
     if (!spot) return null;
     if (!shop(def.cost, def.materials, reserve)) return null;
@@ -214,6 +225,13 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     if (goals.has('build-granary') || goals.has('upgrade-granary')) makeRoom('goods');
     // The camp's wood means it needn't buy any for its first buildings, but it follows the goal that asks for it.
     if (goals.has('buy-wood') && game.money >= 10 * buyPrice(game.day, 'wood')! + 100) buy(game, 'wood', 10);
+    // It follows the goal for a trading post too: a path from the village out to the nearest stretch of the main road
+    // (free here, like all its paths), then the post by it.
+    if (goals.has('build-trading-post') && game.objectsOfType(TRADING_POST).length === 0 && game.money >= getBuildable(TRADING_POST)!.cost + 100) {
+      const centre = villageCentre(game.state)!;
+      const near = [...roadTiles(game.state)].sort((a, b) => Math.abs(a.x - centre.x) + Math.abs(a.y - centre.y) - (Math.abs(b.x - centre.x) + Math.abs(b.y - centre.y)))[0];
+      if (near && connectToFarmhouse(game.state, { ...near, w: 1, h: 1 })) build(TRADING_POST, 100);
+    }
     // Food for the families (the camp's bread and carrots first): its cheap crops (wheat, carrots, corn); the
     // dearer eggs and milk are sold. A day's meals, and from autumn until the first spring harvest (a crop sown in
     // spring can take two days) enough for winter and those days, split across the kinds (meals are spread across them).
@@ -282,6 +300,11 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // Only when the pantry holds its reserve: a family it can't feed would leave again.
     const pantry = PANTRY.reduce((n, id) => n + game.count(id), 0);
     if (unstaffed > 0 && comingHomes <= 0 && pantry >= (keepFood - 1) * foodKinds) build(COTTAGE, 40);
+    // The camp's supplies are used up and its families wait for homes: a cottage for them (one site at a time), when
+    // the pantry holds its reserve.
+    const cottageSites = game.objectsOfType(COTTAGE).filter((o) => o.site).length;
+    const waiting = campInfo(game.state)?.waiting ?? 0;
+    if (waiting > 0 && cottageSites === 0 && pantry >= (keepFood - 1) * foodKinds) build(COTTAGE, 40);
     // While a family is on its way, a field nobody works gets a tap: a free farmer ploughs, sows or harvests it by hand.
     for (const f of fields) {
       if (f.site || workerAt(game.state, f.id) !== null || freeFarmers(game.state) === 0) continue;
@@ -323,8 +346,8 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     }
     if (stocked) guard('kennel', pens('coop'));
     // Firewood for a whole winter (after building, which may have used wood), bought from autumn on if its own lodge
-    // hasn't made it: in fives, as far as the money goes.
-    for (let i = 0; winterSoon && i < 10 && game.count('wood') < firewood && game.money >= 5 * buyPrice(game.day, 'wood')!; i++) {
+    // hasn't made it: in fives, as far as the money goes, keeping enough to plough and sow.
+    for (let i = 0; winterSoon && i < 10 && game.count('wood') < firewood && game.money >= 5 * buyPrice(game.day, 'wood')! + FIREWOOD_RESERVE; i++) {
       if (used(game.state, 'materials') + 5 > capacity(game.state, 'materials')) makeRoom('materials');
       buyingFirewood = true;
       const ok = buy(game, 'wood', 5).ok;
@@ -371,6 +394,9 @@ const HAZARD_SEED = 4;
 setHazardsEnabled(true);
 
 describe('level curve balance', () => {
+  // A real new start: the camp only (the test setup lays other tests' farms out the classic way).
+  useClassicStart(false);
+  afterAll(() => useClassicStart(true));
   // At the time of tuning: casual L2 2.5 min, L5 28.5 min; relaxed L2 2.0, L5 22.0; busy L2 1.3, L5 15.9.
   // With seasons (winter from minute 24 to 32 grows nothing): casual L5 32.0; relaxed 21.5; busy L2 1.4, L5 15.7.
   // With assigned farmers (hired at $150, ×1.2), construction sites and paths: casual L2 4.5, L5 41.0;
@@ -421,6 +447,19 @@ describe('level curve balance', () => {
   // The starting camp (40 wood, 20 stone, 15 bread, 15 carrots; no provisions grace), with the bot keeping the supplies
   // for building and meals and following the "Buy 10 wood" goal: casual L2 9.0, L5 159.0; relaxed L2 9.0, L5 177.0;
   // busy L2 9.0, L5 157.8.
+  // No farmhouse at the start (#110): only the camp and two families in its tent, no fields or paths; the bot builds its
+  // first fields, a granary and cottages (one for the tent's families once the supplies are used up), and a lodge goes
+  // by the nearest stand of 8+ trees a path can reach. A settlers' yard of 20 materials until the farmhouse is built
+  // (without it, spending the camp's wood before a storehouse locked the Market's materials out): casual L2 13.0,
+  // L5 170.0; relaxed L2 12.5, L5 164.5; busy L2 12.5, L5 144.8.
+  // Merged with the main road and the trading post (#108), the bot following the "Build a trading post" goal (a free
+  // path from the village to the nearest stretch of road, the post by it): casual L2 13.0, L5 158.0; relaxed L2 12.5,
+  // L5 158.0; busy L2 13.0, L5 just past 190 min in this run (about 150 in runs with extra logging: the busy bot
+  // overbuilds fields and runs on little money, so it swings either side of 3 h).
+  // With the main road's seed fixed (a new game's is random, so CI and local runs differed) and the bot keeping $60
+  // back when buying winter firewood (spending it all left the relaxed player unable to sow, so it never built its
+  // quarry or reached L5 on some roads): casual L2 13.0, L5 173.0; relaxed L2 12.5, L5 158.0; busy L2 13.0, L5 161.2
+  // (road seeds 1–5: casual L5 158–173, relaxed 158–174, busy 137–161).
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });
@@ -471,6 +510,19 @@ describe('level curve balance', () => {
     // A good share of its materials are its own, not bought.
     const total = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0);
     expect(total(sim.produced)).toBeGreaterThanOrEqual(0.3 * (total(sim.produced) + total(sim.bought)));
+  });
+
+  it.each([
+    ['casual', casual],
+    ['relaxed', relaxed],
+    ['busy', busy],
+  ])('the %s player leaves no family waiting in the tent for a home', (_name, sim) => {
+    const camp = campInfo(sim.game.state)!;
+    const sites = sim.game.objectsOfType(COTTAGE).filter((o) => o.site).length;
+    expect(camp.waiting).toBeLessThanOrEqual(sites);
+    // Packed away (its families in cottages, the oldest one the centre), or some supplies are still kept.
+    if (camp.packed) expect(villageCentre(sim.game.state)?.type).toBe('cottage');
+    else expect(Object.keys(camp.left).length + sites).toBeGreaterThan(0);
   });
 
   it.each([

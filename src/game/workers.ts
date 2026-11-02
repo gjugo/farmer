@@ -52,21 +52,21 @@ export interface WorkSite {
   y: number;
 }
 
-export const NO_ROAD_MESSAGE = 'No path leads there. Lay a path from the farmhouse door so a farmer can walk to it.';
+export const NO_ROAD_MESSAGE = 'No path leads there from the village. Lay a path from the camp (or the farmhouse, once built) so a farmer can walk to it.';
 
 /** The work site's tiles. */
 export function siteArea(site: WorkSite) {
   return { x: site.x, y: site.y, ...(getBuildable(site.type)?.footprint ?? { w: 1, h: 1 }) };
 }
 
-/** Can a farmer walk from the farmhouse to `site` along paths? */
+/** Can a farmer walk from the village centre to `site` along paths? */
 export function reachable(ctx: FarmContext, site: WorkSite): boolean {
   return findRoute(ctx.game.state, siteArea(site)) !== null;
 }
 
 /**
  * Runs farm work that needs a farmer: refuses with a toast when every farmer is busy or no
- * path leads from the farmhouse to `site`, otherwise runs `action` and, when it succeeded,
+ * path leads from the village centre to `site`, otherwise runs `action` and, when it succeeded,
  * sends a farmer along the path to `site` to work for `durationMs` of game time (and back).
  * Returns whether the action ran and succeeded.
  */
@@ -164,7 +164,7 @@ function cartNote(game: Game, trip: HaulTrip): string {
 
 const PHASE_NOTE: Record<JobPhase, string> = { out: ' (on the way)', work: '', back: ' (heading home)' };
 
-/** What farmer `i` is doing now, e.g. "🧺 Harvesting at 🟫 Field 2 (on the way)" or "Free · resting at the farmhouse". */
+/** What farmer `i` is doing now, e.g. "🧺 Harvesting at 🟫 Field 2 (on the way)" or "Free · resting in the village". */
 export function farmerActivity(game: Game, farmer: number): string {
   const { state } = game;
   const w = workersOf(state);
@@ -177,7 +177,7 @@ export function farmerActivity(game: Game, farmer: number): string {
   }
   const id = w.workplaces[farmer];
   const workplace = id ? game.getObject(id) : undefined;
-  if (!workplace) return 'Free · resting at the farmhouse';
+  if (!workplace) return 'Free · resting in the village';
   if (findRoute(state, siteArea(workplace)) === null) return 'Free · no path leads to the workplace';
   const next = workplaceNext(game, workplace);
   return `Free · ${'task' in next ? 'work is waiting' : waitText(game, next).toLowerCase()}`;

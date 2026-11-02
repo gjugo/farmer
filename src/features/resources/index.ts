@@ -148,7 +148,7 @@ const IDLE_TEXT: Record<IdleReason, (obj: PlacedObject<ResourceState>, ctx: Farm
   },
   exhausted: (obj) => `Deposit used up: no more ${defOf(obj).output} here. Demolish it, or buy ${defOf(obj).output} at the Market.`,
   'no-farmer': (obj) => `Idle: no farmer works here. Assign one to ${defOf(obj).verb}.`,
-  'no-path': () => 'Idle: no path leads here from the farmhouse door.',
+  'no-path': () => 'Idle: no path leads here from the village (the camp, later the farmhouse).',
   'storehouse-full': () => `Idle: the yard is full. ${fullMessage('materials')}`,
 };
 

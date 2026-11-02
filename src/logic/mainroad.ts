@@ -13,7 +13,7 @@ import type { GameState } from './types';
  * map edge to map edge, winding gently. Merchants' carts travel it, and trade needs a trading post linked to it by the
  * farm's own paths (`src/logic/tradepost.ts`).
  *
- * - Its tiles count as path: farmers, carts and "a path from the farmhouse reaches it" walk it (`src/logic/roads.ts`).
+ * - Its tiles count as path: farmers, carts and "a path from the village reaches it" walk it (`src/logic/roads.ts`).
  * - Nothing is built on it and it is never demolished: placing anything (a path too) on it is refused (`road`).
  * - It goes round ponds, deposits, buildings and the starting land, and cuts through forests (those trees are gone).
  *
@@ -287,7 +287,7 @@ export function ensureMainRoad(state: GameState): boolean {
   return true;
 }
 
-// A new farm's road: after the map is laid out and the starting fields and farmhouse stand (whatever loaded first).
+// A new farm's road: after the map is laid out round the camp (whatever loaded first).
 onNewGame((state) => void ensureMainRoad(state), { late: true });
 
 // Merchants ------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { FARMHOUSE } from '../../data/farmhouse';
+import { FARMHOUSE, FARMHOUSE_APPROVAL } from '../../data/farmhouse';
+import { FARMHOUSE_STORE } from '../../data/storage';
 import { TOOL_SPEED, TOOL_USES } from '../../data/tools';
 import type { FarmContext, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
@@ -8,7 +9,7 @@ import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
 import type { Game } from '../../logic/game';
 import { cartPose } from '../../logic/haul';
-import { farmhouseOf } from '../../logic/roads';
+import { villageCentre, villageInfo } from '../../logic/roads';
 import { onToolsWornOut, toolOf, toolsSummary } from '../../logic/tools';
 import { siteProgress, sitesOf } from '../../logic/work';
 import {
@@ -33,11 +34,12 @@ import { familiesBlock, familiesSignature } from '../families';
 import { homeGardenLine } from '../gardens';
 
 /**
- * Farmers: every job sends a farmer from the farmhouse along the paths to the work, a few
- * seconds of it, and back. A farmer assigned to a field, pen or processing building does its
+ * Farmers: every job sends a farmer from the village centre (the camp's tent, later the farmhouse) along the paths to
+ * the work, a few seconds of it, and back. A farmer assigned to a field, pen or processing building does its
  * work by themselves; free farmers take hand-ordered jobs and build construction sites. Idle
- * farmers rest at the farmhouse. The farm starts with one; more come as families moving into cottages
- * (`src/features/families`).
+ * farmers rest at the centre: in front of the tent (or the oldest cottage), on the farmhouse bench once it is built.
+ * The farm starts with two; more come as families moving into cottages (`src/features/families`).
+ * `window.farm.village` is `{ centre: { type, id, x, y }, farmhouse: id | null }`.
  * Rules live in `src/logic/workers.ts` (state, hiring, assignments), `src/logic/work.ts` (the
  * scheduler) and `src/logic/roads.ts`, numbers in `src/data/workers.ts`; hand-ordered work goes
  * through `withFarmer` and object panels get their farmer block from `workplacePanel` (`src/game/workers.ts`).
@@ -109,7 +111,7 @@ function farmersSheet(ctx: FarmContext): SheetSpec {
         h(
           'p',
           { class: 'muted farmers-intro' },
-          'Give a farmer a workplace and they do its work by themselves: plough, sow and harvest a field, feed and collect a pen, keep a building making its recipe. Free farmers (no workplace, or nothing to do there) build construction sites and do what you tap. Farmers walk from the farmhouse along paths.',
+          'Give a farmer a workplace and they do its work by themselves: plough, sow and harvest a field, feed and collect a pen, keep a building making its recipe. Free farmers (no workplace, or nothing to do there) build construction sites and do what you tap. Farmers walk from the village centre (the camp, later the farmhouse) along paths.',
         ),
         h(
           'p',
@@ -280,6 +282,21 @@ function seatOf(i: number): (typeof SEATS)[number] {
   return { x: -0.35 - (k % 3) * 0.32, y: 0.4 + Math.floor(k / 3) * 0.45, anim: 'idle', facing: 'se' };
 }
 
+/**
+ * Where idle farmer `i` waits: on the farmhouse bench (see `seatOf`) once it is built, else standing about the tile in
+ * front of the tent (or the oldest cottage's door). Null on a farm without a centre.
+ */
+function restSpot(game: Game, i: number): (typeof SEATS)[number] | null {
+  const centre = villageCentre(game.state);
+  if (!centre) return null;
+  const house = centre.type === FARMHOUSE ? game.getObject(centre.id) : undefined;
+  if (house) {
+    const seat = seatOf(i);
+    return { ...seat, x: house.x + seat.x, y: house.y + seat.y };
+  }
+  return { x: centre.x + 0.2 + (i % 3) * 0.3, y: centre.y + 0.2 + Math.floor(i / 3) * 0.3, anim: 'idle', facing: i % 2 ? 'sw' : 'se' };
+}
+
 /** How far beside the cart its carter walks (tiles). */
 const CARTER_BESIDE = 0.45;
 
@@ -324,10 +341,9 @@ function along(line: Point[], t: number): { at: Point; dir: Point } {
 
 /** Where farmer `i` is, what they do and which way they face right now. */
 function farmerPose(game: Game, i: number, job: Job | undefined): { at: Point; anim: FarmerAnim; facing: Facing; progress: number | null } | null {
-  const house = farmhouseOf(game.state);
-  const seat = seatOf(i);
-  const home = house ? { x: house.x + seat.x, y: house.y + seat.y } : null;
-  if (!job) return home && { at: home, anim: seat.anim, facing: seat.facing, progress: null };
+  const seat = restSpot(game, i);
+  const home = seat && { x: seat.x, y: seat.y };
+  if (!job) return seat && { at: { x: seat.x, y: seat.y }, anim: seat.anim, facing: seat.facing, progress: null };
   const route = job.route ?? [];
   const line: Point[] = [...(home && route.length ? [home] : []), ...route.map((t) => ({ x: t.x + 0.5, y: t.y + 0.5 })), { x: job.x, y: job.y }];
   const { phase, t } = jobPhase(game.state.clock, job);
@@ -353,6 +369,7 @@ function farmerPose(game: Game, i: number, job: Job | undefined): { at: Point; a
 
 onGameStart((ctx) => {
   current = ctx.game;
+  registerDebugInfo('village', () => villageInfo(ctx.game.state));
   onToolsWornOut(ctx.game, () => ctx.ui.toast(TOOLS_WORN_MESSAGE, 'info'));
   const scene = ctx.scene;
   const sprites: FarmerSprite[] = [];
@@ -394,8 +411,9 @@ registerBehavior<Record<string, unknown>>(FARMHOUSE, {
       title: 'Farmhouse',
       icon: '🏠',
       lines: [
-        `Home of your ${farmers === 1 ? 'farmer' : `${farmers} farmers`}; ${free} resting on the bench out front.`,
+        `The heart of the farm: home of a family, and your ${farmers === 1 ? 'farmer rests' : `${farmers} farmers rest`} on the bench out front (${free} now).`,
         'Farmers walk out of the door along paths. Lay a path from the door to every field, pen and building you want worked.',
+        `+${FARMHOUSE_APPROVAL}% approval: it oversees the farm. It stores ${FARMHOUSE_STORE.goods} goods and ${FARMHOUSE_STORE.materials} materials.`,
         'Give farmers a workplace in 👪 Farm → 👨‍🌾 Farmers or from the workplace itself.',
       ],
       hint: homeGardenLine(ctx.game, obj),

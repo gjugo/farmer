@@ -1,5 +1,5 @@
 import { getBuildable } from '../data/buildables';
-import { FIELD, getCrop, type CropDef } from '../data/crops';
+import { getCrop, type CropDef } from '../data/crops';
 import { PLOUGH_COST, PLOUGH_SEASONS, type Season } from '../data/seasons';
 import { MANURE_GAIN, MANURE_PER_SPREAD, MAX_FERTILITY } from '../data/soil';
 import { startTimer, timerDone, timerProgress, timerRemaining, type Timer } from './clock';
@@ -9,7 +9,6 @@ import { perkFactor } from './perks';
 import { nextSeasonIn, seasonRunEnd } from './seasons';
 import { droughtGrowMs, harvestShare } from './hazards';
 import { afterHarvest, areaSoil, drainOf, restedFertility, yieldAt } from './soil';
-import { addStartingObject, onNewGame } from './state';
 import type { ClockState, GameState, PlacedObject } from './types';
 
 /** Per-field state, saved with the object. */
@@ -41,19 +40,14 @@ export type CropStage = 'empty' | 'seeded' | 'sprout' | 'growing' | 'ripe';
 /** Growth progress at which each stage begins. Ripe is progress 1. */
 export const STAGE_STARTS = { seeded: 0, sprout: 0.25, growing: 0.6 } as const;
 
-/** Where the starting fields go: two 2×2 fields at the start of the new farm's layout. */
+/**
+ * Where farms from before the camp start had their two ploughed starting fields (a new farm has none; tests lay them
+ * out with `classicFarm`, `src/logic/test-utils.ts`).
+ */
 export const STARTING_FIELDS = [
   { x: START_LAYOUT.x, y: START_LAYOUT.y },
   { x: START_LAYOUT.x + 3, y: START_LAYOUT.y },
 ] as const;
-
-onNewGame((state) => {
-  for (const { x, y } of STARTING_FIELDS) {
-    // Starting fields come ploughed, so the first crop can go in straight away.
-    const field = addStartingObject(state, FIELD, x, y);
-    if (field) (field.state as FieldState).ploughedAt = state.clock.elapsed;
-  }
-});
 
 /** The planted crop, if its id is still known. */
 export function fieldCrop(field: FieldState): CropDef | undefined {

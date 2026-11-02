@@ -78,23 +78,23 @@ describe('capacity', () => {
   it("is the farmhouse store on a new farm, for goods and for materials, plus the camp's supplies", () => {
     const game = new Game(createNewGame());
     // 15 bread and 15 carrots, 40 wood and 20 stone: the camp makes room for exactly what it brought.
-    expect(storageInfo(game.state)).toEqual({ goods: { used: 30, capacity: 60 }, materials: { used: 60, capacity: 90 } });
-    expect(storageInfo(noCamp(game.state))).toEqual({ goods: { used: 0, capacity: 30 }, materials: { used: 0, capacity: 30 } });
-    expect(FARMHOUSE_STORE).toEqual({ goods: 30, materials: 30 });
+    expect(storageInfo(game.state)).toEqual({ goods: { used: 30, capacity: 80 }, materials: { used: 60, capacity: 110 } });
+    expect(storageInfo(noCamp(game.state))).toEqual({ goods: { used: 0, capacity: 50 }, materials: { used: 0, capacity: 50 } });
+    expect(FARMHOUSE_STORE).toEqual({ goods: 50, materials: 50 });
   });
 
   it('sums every building of the pool plus the farmhouse, by level', () => {
     const game = farm();
     build(game, 'granary', fx, fy);
-    expect(capacity(game.state, 'goods')).toBe(30 + 100);
+    expect(capacity(game.state, 'goods')).toBe(50 + 100);
     const second = build(game, 'granary', fx + 2, fy);
-    expect(capacity(game.state, 'goods')).toBe(30 + 100 + 100);
+    expect(capacity(game.state, 'goods')).toBe(50 + 100 + 100);
     second.state.level = 3;
-    expect(capacity(game.state, 'goods')).toBe(30 + 100 + 500);
+    expect(capacity(game.state, 'goods')).toBe(50 + 100 + 500);
     // A storehouse only adds room for materials.
     build(game, 'storehouse', fx + 4, fy);
-    expect(capacity(game.state, 'goods')).toBe(630);
-    expect(capacity(game.state, 'materials')).toBe(30 + 60);
+    expect(capacity(game.state, 'goods')).toBe(650);
+    expect(capacity(game.state, 'materials')).toBe(50 + 60);
   });
 
   it('a granary still being built holds nothing and cannot be upgraded; once finished it does', () => {
@@ -102,11 +102,11 @@ describe('capacity', () => {
     const r = game.place('granary', fx, fy, { site: true });
     if (!r.ok) throw new Error(r.reason);
     expect(r.object.site).toBeDefined();
-    expect(capacity(game.state, 'goods')).toBe(30);
+    expect(capacity(game.state, 'goods')).toBe(50);
     expect(checkUpgrade(game, r.object)).toEqual({ ok: false, reason: 'site' });
     expect(excessWithout(game.state, r.object)).toBe(0);
     delete r.object.site;
-    expect(capacity(game.state, 'goods')).toBe(130);
+    expect(capacity(game.state, 'goods')).toBe(150);
     expect(checkUpgrade(game, r.object)).toEqual({ ok: true, level: 2 });
   });
 
@@ -116,23 +116,23 @@ describe('capacity', () => {
     const game = farm({ wheat: 10, egg: 5, wood: 7 });
     expect(used(game.state, 'goods')).toBe(15);
     expect(used(game.state, 'materials')).toBe(7);
-    expect(spaceFor(game.state, 'milk')).toBe(15);
-    expect(spaceFor(game.state, 'iron')).toBe(23);
+    expect(spaceFor(game.state, 'milk')).toBe(35);
+    expect(spaceFor(game.state, 'iron')).toBe(43);
   });
 
   it('a level saved with junk counts as level 1, and a level above the top as the top', () => {
     const game = farm();
     const g = build(game, 'granary', fx, fy);
     g.state.level = 'x';
-    expect(capacity(game.state, 'goods')).toBe(130);
+    expect(capacity(game.state, 'goods')).toBe(150);
     g.state.level = 9;
-    expect(capacity(game.state, 'goods')).toBe(530);
+    expect(capacity(game.state, 'goods')).toBe(550);
   });
 });
 
 describe('adding items', () => {
   it('takes what fits and says how many went in (debug +10 included)', () => {
-    const game = farm({ wheat: 25 });
+    const game = farm({ wheat: 45 });
     expect(game.addItem('egg', 10)).toBe(5);
     expect(game.count('egg')).toBe(5);
     expect(game.addItem('egg', 10)).toBe(0);
@@ -142,7 +142,7 @@ describe('adding items', () => {
   });
 
   it('frees room at once when selling or when processing takes inputs', () => {
-    const game = farm({ wheat: 26, egg: 4 });
+    const game = farm({ wheat: 46, egg: 4 });
     const bakery = build<ProcessorState>(game, 'bakery', fx, fy);
     expect(spaceFor(game.state, 'milk')).toBe(0);
     expect(startJob(game, bakery, 'bread').ok).toBe(true);
@@ -159,7 +159,7 @@ describe('upgrades', () => {
     const cost = STORAGE.granary.levels[1].upgrade!;
     expect(upgrade(game, g)).toEqual({ ok: true, level: 2 });
     expect(g.state.level).toBe(2);
-    expect(capacity(game.state, 'goods')).toBe(30 + 250);
+    expect(capacity(game.state, 'goods')).toBe(50 + 250);
     expect(game.money).toBe(1000 - cost.cost);
     expect(game.state.inventory).toEqual({ wood: 20 - cost.materials.wood!, stone: 12 - cost.materials.stone! });
   });
@@ -171,7 +171,7 @@ describe('upgrades', () => {
     expect(upgrade(game, g)).toEqual({ ok: false, reason: 'materials' });
     game.state.inventory.iron = 4;
     expect(upgrade(game, g)).toEqual({ ok: true, level: 3 });
-    expect(capacity(game.state, 'goods')).toBe(530);
+    expect(capacity(game.state, 'goods')).toBe(550);
     expect(checkUpgrade(game, g)).toEqual({ ok: false, reason: 'max' });
   });
 
@@ -197,7 +197,7 @@ describe('upgrades', () => {
 
 describe('harvest', () => {
   it('is refused while the granary is full: the crop stays ripe and nothing changes; after selling it works', () => {
-    const game = farm({ egg: 28 });
+    const game = farm({ egg: 48 });
     const field = ripeWheat(game);
     const before = structuredClone(game.state);
     expect(harvest(game, field)).toEqual({ ok: false, reason: 'full' });
@@ -208,7 +208,7 @@ describe('harvest', () => {
     sell(game, 'egg', 10);
     expect(harvest(game, field).ok).toBe(true);
     expect(game.count('wheat')).toBe(12);
-    expect(used(game.state, 'goods')).toBe(30);
+    expect(used(game.state, 'goods')).toBe(50);
   });
 });
 
@@ -218,7 +218,7 @@ describe('collecting', () => {
     const coop = build<PenState>(game, 'coop', fx, fy);
     for (let i = 0; i < 5; i++) buyAnimal(game, coop, 'chicken');
     expect(feedAll(game, coop)).toBe(5);
-    game.state.inventory = { wheat: 28 };
+    game.state.inventory = { wheat: 48 };
     game.state.clock.elapsed += 10 * 60_000;
     expect(readyCount(game.state.clock, coop)).toBe(5);
 
@@ -226,7 +226,7 @@ describe('collecting', () => {
     expect(game.count('egg')).toBe(2);
     expect(readyCount(game.state.clock, coop)).toBe(3);
     expect(collect(game, coop)).toEqual({});
-    sell(game, 'wheat', 28);
+    sell(game, 'wheat', 48);
     expect(collect(game, coop)).toEqual({ egg: 3 });
     expect(readyCount(game.state.clock, coop)).toBe(0);
     expect(game.count('egg')).toBe(5);
@@ -236,7 +236,7 @@ describe('collecting', () => {
     const game = farm({ milk: 6 });
     const dairy = build<ProcessorState>(game, 'dairy', fx, fy);
     for (let i = 0; i < 3; i++) expect(startJob(game, dairy, 'cheese').ok).toBe(true);
-    game.state.inventory.wheat = 29;
+    game.state.inventory.wheat = 49;
     game.state.clock.elapsed += 60 * 60_000;
     settle(game.state, dairy);
     const total = holdings(game.state);
@@ -251,7 +251,7 @@ describe('collecting', () => {
 
 describe('buying', () => {
   it('feed is refused when the whole pack does not fit, and no money is taken', () => {
-    const game = farm({ wheat: 30 - FEED_PACK.qty + 1 }, 1000);
+    const game = farm({ wheat: 50 - FEED_PACK.qty + 1 }, 1000);
     expect(buyFeed(game)).toEqual({ ok: false, reason: 'full' });
     expect(game.money).toBe(1000);
     expect(game.count('feed')).toBe(0);
@@ -261,7 +261,7 @@ describe('buying', () => {
   });
 
   it('materials are capped at the room left, charging only for what was bought', () => {
-    const game = farm({ wood: 25 }, 1000);
+    const game = farm({ wood: 45 }, 1000);
     const r = buy(game, 'stone', 10);
     if (!r.ok) throw new Error(r.reason);
     expect(r.qty).toBe(5);
@@ -277,16 +277,16 @@ describe('demolishing', () => {
   it('refunds materials only as far as they fit; the confirm can say what is lost', () => {
     const game = farm({}, 1000);
     const coop = build(game, 'coop', fx, fy); // 8 wood: 4 come back
-    game.state.inventory = { stone: 28 };
+    game.state.inventory = { stone: 48 };
     expect(game.checkDemolish(coop.id)).toEqual({ ok: true, money: demolishRefund(getBuildable('coop')), materials: { wood: 2 }, lost: { wood: 2 } });
     game.demolish(coop.id);
-    expect(game.state.inventory).toEqual({ stone: 28, wood: 2 });
+    expect(game.state.inventory).toEqual({ stone: 48, wood: 2 });
   });
 
   it('a granary is refused while its stock would not fit without it, and goes once enough is sold', () => {
     const game = farm({}, 1000);
     const g = build(game, 'granary', fx, fy);
-    game.state.inventory = { wheat: 70 };
+    game.state.inventory = { wheat: 90 };
     expect(excessWithout(game.state, g)).toBe(40);
     expect(game.checkDemolish(g.id)).toEqual({ ok: false, reason: 'storage', excess: 40 });
     const before = structuredClone(game.state);
@@ -300,19 +300,19 @@ describe('demolishing', () => {
   it('a storehouse refund fits in what is left once it is gone', () => {
     const game = farm({}, 1000);
     const s = build(game, 'storehouse', fx, fy); // 8 wood + 8 stone: 4 + 4 come back
-    game.state.inventory = { iron: 26 };
+    game.state.inventory = { iron: 46 };
     expect(game.checkDemolish(s.id)).toMatchObject({ ok: true, materials: { wood: 4 }, lost: { stone: 4 } });
     game.demolish(s.id);
-    expect(used(game.state, 'materials')).toBe(30);
+    expect(used(game.state, 'materials')).toBe(50);
   });
 });
 
 describe('offline catch-up', () => {
   it('puts nothing in the inventory: goods wait in pens and buildings, even with the granary full', () => {
-    const game = farm({ wheat: 30, milk: 2 });
+    const game = farm({ wheat: 50, milk: 2 });
     const dairy = build<ProcessorState>(game, 'dairy', fx, fy);
     startJob(game, dairy, 'cheese');
-    game.state.inventory.wheat = 30;
+    game.state.inventory.wheat = 50;
     const g = new Game(game.state);
     const added: string[] = [];
     g.events.on('inventory', ({ itemId, delta }) => delta > 0 && added.push(itemId));
@@ -320,7 +320,7 @@ describe('offline catch-up', () => {
     expect(r.produced).toEqual({ cheese: 1 });
     // Only the family's meals left the store; nothing came in.
     expect(added).toEqual([]);
-    expect(game.state.inventory.wheat).toBe(30 - 2 * 7);
+    expect(game.state.inventory.wheat).toBe(50 - 2 * 7);
     expect(outputReady(dairy)).toBe(1);
   });
 });
@@ -338,14 +338,14 @@ describe('old saves', () => {
   }
 
   it('keep everything they hold above capacity, but nothing new comes in until the pool is back under', () => {
-    const game = new Game(deserialize(oldSave({ wheat: 50, wood: 40 })));
-    expect(game.state.inventory).toEqual({ wheat: 50, wood: 40 });
-    expect(storageInfo(game.state)).toEqual({ goods: { used: 50, capacity: 30 }, materials: { used: 40, capacity: 30 } });
+    const game = new Game(deserialize(oldSave({ wheat: 70, wood: 60 })));
+    expect(game.state.inventory).toEqual({ wheat: 70, wood: 60 });
+    expect(storageInfo(game.state)).toEqual({ goods: { used: 70, capacity: 50 }, materials: { used: 60, capacity: 50 } });
     expect(game.addItem('egg', 1)).toBe(0);
     expect(buy(game, 'stone', 1)).toEqual({ ok: false, reason: 'full' });
     const field = ripeWheat(game);
     expect(harvest(game, field)).toEqual({ ok: false, reason: 'full' });
-    sell(game, 'wheat', 22); // 28 left: room for 2
+    sell(game, 'wheat', 22); // 48 left: room for 2
     expect(harvest(game, field)).toEqual({ ok: false, reason: 'full' });
     expect(game.addItem('egg', 5)).toBe(2);
     sell(game, 'wheat', 10);
@@ -353,9 +353,9 @@ describe('old saves', () => {
   });
 
   it('tell the player once to build a granary; new farms are not told', () => {
-    const state = deserialize(oldSave({ wheat: 50 }));
+    const state = deserialize(oldSave({ wheat: 70 }));
     expect(storageNoticeMessage(state)).toContain('build a 🌾 Granary');
-    expect(storageNoticeMessage(state)).toContain('goods (50/30)');
+    expect(storageNoticeMessage(state)).toContain('goods (70/50)');
     expect(takeStorageNotice(state)).toBe(true);
     expect(takeStorageNotice(state)).toBe(false);
     // Saved and loaded again: still told only once.
@@ -386,6 +386,6 @@ describe('save and load', () => {
     const loaded = new Game(deserialize(serialize(game.state)));
     expect(loaded.getObject(g.id)?.state.level).toBe(2);
     expect(storageInfo(loaded.state)).toEqual(storageInfo(game.state));
-    expect(storageInfo(loaded.state).goods.capacity).toBe(280);
+    expect(storageInfo(loaded.state).goods.capacity).toBe(300);
   });
 });

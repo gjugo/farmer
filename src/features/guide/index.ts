@@ -18,7 +18,7 @@ import {
   type GuideSignal,
 } from '../../logic/guide';
 import type { PlacedObject } from '../../logic/types';
-import { doorOf, farmhouseOf } from '../../logic/roads';
+import { villageCentre } from '../../logic/roads';
 import { workerAt } from '../../logic/workers';
 import type { FarmScene } from '../../scenes/FarmScene';
 import { h } from '../../ui/dom';
@@ -61,9 +61,9 @@ function findTarget(root: HTMLElement, step: GuideStepDef): HTMLElement | null {
 /** The tile (centre, in tile coordinates) a step's map marker stands on, or null. */
 function markerTile(ctx: FarmContext, target: GuideMapTarget): { x: number; y: number } | null {
   const { game } = ctx;
-  if (target === 'door') {
-    const house = farmhouseOf(game.state);
-    return house ? doorOf(house) : null;
+  if (target === 'centre') {
+    const centre = villageCentre(game.state);
+    return centre && { x: centre.x + 0.5, y: centre.y + 0.5 };
   }
   const fields = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
   const free = (f: PlacedObject) => workerAt(game.state, f.id) === null;
@@ -187,8 +187,8 @@ export function mountGuide(root: HTMLElement, ctx: FarmContext): void {
     } else delete ring.dataset.target;
     ring.hidden = !target;
     const scene = ctx.scene as FarmScene | undefined;
-    // The door stays marked while paths are laid; fields only while nothing covers the map.
-    const free = step.map === 'door' ? !hud?.build.open : normal && !hud?.sheet && !hud?.build.open;
+    // The village centre stays marked while paths are laid; fields only while nothing covers the map.
+    const free = step.map === 'centre' ? !hud?.build.open : normal && !hud?.sheet && !hud?.build.open;
     const at = markerAt && free ? scene?.tileToScreen?.(markerAt.x, markerAt.y) : null;
     if (at) marker.style.transform = `translate(${Math.round(at.x)}px, ${Math.round(at.y)}px)`;
     marker.hidden = !at;
@@ -263,7 +263,7 @@ export function offerGuide(): void {
       h(
         'p',
         {},
-        ...withIcons('You start with $500, one farmer, a farmhouse and two ploughed fields. A short guide can show you around: it points the way, and the game keeps running.'),
+        ...withIcons('You start with $500 and two families in a ⛺ camp with the supplies they brought: no fields or houses yet. A short guide can show you around: it points the way, and the game keeps running.'),
       ),
       h(
         'div',

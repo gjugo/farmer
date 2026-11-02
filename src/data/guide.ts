@@ -5,16 +5,17 @@
 
 export type GuideStepId =
   | 'look'
+  | 'camp'
+  | 'field'
   | 'assign'
   | 'speed'
+  | 'granary'
   | 'sow'
   | 'develop'
-  | 'field'
   | 'harvest'
   | 'materials'
   | 'post'
   | 'sell'
-  | 'granary'
   | 'cottage'
   | 'done';
 
@@ -27,10 +28,10 @@ export type GuideStepId =
 export type GuideRingTarget = string;
 
 /**
- * Where a step's map marker stands: the farmhouse door, a field without a farmer, an empty field without a farmer, a
- * ripe field.
+ * Where a step's map marker stands: the village centre (in front of the camp's tent on a new farm), a field without a
+ * farmer, an empty field without a farmer, a ripe field.
  */
-export type GuideMapTarget = 'door' | 'field-free' | 'field-empty' | 'field-ripe';
+export type GuideMapTarget = 'centre' | 'field-free' | 'field-empty' | 'field-ripe';
 
 export interface GuideStepDef {
   id: GuideStepId;
@@ -52,9 +53,22 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
     ring: ['hud-overview'],
   },
   {
+    id: 'camp',
+    title: 'Your camp',
+    text: 'Two families live in the ⛺ tent. Its supplies of food, 🪵 wood and 🪨 stone feed them and pay for your first buildings: tap the tent to see what is left.',
+    ring: [],
+    map: 'centre',
+  },
+  {
+    id: 'field',
+    title: 'Build a field',
+    text: '🔨 Build (B) → 🌾 Farming → Field. The ghost turns green where a path from the camp reaches it: lay one from the path in front of the tent with 🛤️ Paths (P).',
+    ring: ['build-field', 'build-cat-farming', 'btn-build'],
+  },
+  {
     id: 'assign',
-    title: 'Put your farmer to work',
-    text: 'Tap a starting field, then 👨‍🌾 Assign a farmer: they plough, sow (🌱 Best in season) and harvest it by themselves.',
+    title: 'Put a farmer to work',
+    text: 'A free farmer builds the field. Tap it, then 👨‍🌾 Assign a farmer: they plough, sow (🌱 Best in season) and harvest it by themselves.',
     ring: ['action:Assign a farmer'],
     map: 'field-free',
   },
@@ -65,9 +79,15 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
     ring: ['speed-12'],
   },
   {
+    id: 'granary',
+    title: 'Build a granary',
+    text: 'The camp only holds its own supplies: your harvest needs a 🌾 Granary (🔨 → 📦 Storage), room for 100 goods. A free farmer builds the site.',
+    ring: ['build-granary', 'build-cat-storage', 'btn-build'],
+  },
+  {
     id: 'sow',
     title: 'Sow a field yourself',
-    text: 'Tap the other field and pick 🌾 Wheat. A free farmer walks over and sows it; if yours is busy, try again in a moment.',
+    text: 'Build a second field, tap it and pick 🌾 Wheat. Your other farmer walks over and sows it; if both are busy, try again in a moment.',
     ring: ['action:Wheat ·'],
     map: 'field-empty',
     ringUnless: 'works here ·',
@@ -79,15 +99,9 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
     ring: ['btn-level'],
   },
   {
-    id: 'field',
-    title: 'Build a field',
-    text: '🔨 Build (B) → 🌾 Farming → Field. The ghost turns green where a path from the farmhouse reaches it: lay one with 🛤️ Paths (P).',
-    ring: ['build-field', 'build-cat-farming', 'btn-build'],
-  },
-  {
     id: 'harvest',
     title: 'Bring in the harvest',
-    text: 'Your farmer harvests ripe wheat (or tap it → Harvest). The resource bar shows it; the farmhouse holds only 30 goods.',
+    text: 'Your farmer harvests ripe wheat (or tap it → Harvest) and stores it in the granary. The resource bar shows what you hold.',
     ring: ['action:Harvest', 'hud-resources'],
     map: 'field-ripe',
   },
@@ -100,7 +114,7 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
   {
     id: 'post',
     title: 'Build a trading post',
-    text: 'Trade needs a 🏪 Trading Post (🔨 → 📦 Storage) linked to the 🛣️ main road near the map’s edge: lay 🛤️ Paths from the farmhouse to the post and on to the road.',
+    text: 'Trade needs a 🏪 Trading Post (🔨 → 📦 Storage) linked to the 🛣️ main road near the map’s edge: lay 🛤️ Paths from the camp (or the farmhouse) to the post and on to the road.',
     ring: ['build-trading-post', 'build-cat-storage', 'btn-build'],
   },
   {
@@ -110,21 +124,15 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
     ring: ['sell-all-*', 'btn-trade'],
   },
   {
-    id: 'granary',
-    title: 'Build a granary',
-    text: '🔨 Build → 📦 Storage → Granary: room for 100 goods. A free farmer builds the site.',
-    ring: ['build-granary', 'build-cat-storage', 'btn-build'],
-  },
-  {
     id: 'cottage',
-    title: 'More farmers',
-    text: 'Farmers come as families into 🛖 Cottages (🔨 → 🏠 Homes). Approval of 50% or more (food, firewood in winter) brings them: 👪 Farm (F) → Families.',
+    title: 'Homes for your families',
+    text: 'The tent is packed away once its supplies are used up and its families have room in 🛖 Cottages (🔨 → 🏠 Homes). Approval of 50% or more (food, firewood in winter) brings more families: 👪 Farm (F) → Families.',
     ring: ['build-cottage', 'build-cat-homes', 'btn-build'],
   },
   {
     id: 'done',
     title: 'You’re set!',
-    text: '📖 Almanac (H) warns of hazards, every level-up offers a perk, and ⚙️ Menu → Settings restarts this guide.',
+    text: 'At level 4 you can build the 🏠 Farmhouse, the heart of the farm: more storage, a home and approval. 📖 Almanac (H) warns of hazards, every level-up offers a perk, and ⚙️ Menu → Settings restarts this guide.',
     ring: ['btn-almanac'],
   },
 ];

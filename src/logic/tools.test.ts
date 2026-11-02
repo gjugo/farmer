@@ -306,10 +306,10 @@ describe('tools', () => {
     expect(tools(away)).toEqual(tools(live));
     expect(fast.state).toEqual(live.state);
     expect(away.state.objects).toEqual(live.state.objects);
-    // The four worn sets broke, both sets in store were taken.
+    // The four worn sets broke, both sets in store were taken: each is still in a farmer's hands or wore out since.
     expect(live.count('tools')).toBe(0);
     expect(broke).toBeGreaterThanOrEqual(4);
-    expect(workersOf(live.state).tools.filter((t) => t !== null)).toHaveLength(2);
+    expect(workersOf(live.state).tools.filter((t) => t !== null).length + (broke - 4)).toBe(2);
     expect(result.tools.wornOut).toBe(broke);
   });
 

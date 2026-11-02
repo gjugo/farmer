@@ -26,7 +26,7 @@ registerBehavior(TRADING_POST, {
           : ok
             ? 'Another trading post is linked: one is enough.'
             : `Trade is closed: ${LINK_TEXT[link.reason ?? 'no-path']}.`,
-        'Lay 🛤️ paths so the farmhouse reaches this post and the 🛣️ main road near the map’s edge.',
+        'Lay 🛤️ paths so the village (the camp, later the farmhouse) reaches this post and the 🛣️ main road near the map’s edge.',
       ],
       checklist: [{ id: 'trade-link', ok, text: linkLine(link) }],
     };
@@ -40,7 +40,7 @@ onGameStart((ctx) => {
   // Older farms are told once that trade needs a post now (the version 16 save migration).
   const notice = () => {
     if (takeTradeNotice(game.state)) {
-      ctx.ui.toast('🏪 Trade now needs a trading post linked to the 🛣️ main road: build one (🔨 → 📦 Storage) and lay a path from the farmhouse to it and on to the road.', 'info');
+      ctx.ui.toast('🏪 Trade now needs a trading post linked to the 🛣️ main road: build one (🔨 → 📦 Storage) and lay a path from the village to it and on to the road.', 'info');
     }
   };
   notice();

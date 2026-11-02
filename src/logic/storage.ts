@@ -4,6 +4,7 @@ import { isStoredMaterial, type MaterialCost } from '../data/materials';
 import {
   FARMHOUSE_STORE,
   isStorageType,
+  SETTLERS_YARD,
   MAX_STORAGE_LEVEL,
   POOL_BUILDING,
   STORAGE,
@@ -12,6 +13,7 @@ import {
   type StoragePool,
 } from '../data/storage';
 import { campRoom } from './camp';
+import { builtFarmhouse } from './homes';
 import { materialsCost, perkFactor } from './perks';
 import { getSlice, registerStateSlice } from './slices';
 import type { Game } from './game';
@@ -56,13 +58,23 @@ export function storageRoom(state: Pick<GameState, 'ext'>, base: number): number
   return Math.floor(base * perkFactor(state, 'big-barns') + 1e-9);
 }
 
+/** The farmhouse's store in `pool`: `FARMHOUSE_STORE` once it is built, else none. */
+export function farmhouseStore(state: GameState, pool: StoragePool): number {
+  return builtFarmhouse(state) ? FARMHOUSE_STORE[pool] : 0;
+}
+
+/** The settlers' yard in `pool`: `SETTLERS_YARD` until the farmhouse is built, then none (its store takes over). */
+export function settlersYard(state: GameState, pool: StoragePool): number {
+  return builtFarmhouse(state) ? 0 : SETTLERS_YARD[pool];
+}
+
 /**
- * A pool's room: the farmhouse store, what is left of the starting camp's supplies in that pool (it shrinks as they
+ * A pool's room: the farmhouse store once it is built (the small settlers' yard before), what is left of the starting camp's supplies in that pool (it shrinks as they
  * go, so nothing new is ever stored there) and every finished storage building of that pool (construction sites hold
  * nothing yet), optionally leaving one out.
  */
 export function capacity(state: GameState, pool: StoragePool, without?: string): number {
-  let total = FARMHOUSE_STORE[pool] + campRoom(state, pool);
+  let total = farmhouseStore(state, pool) + settlersYard(state, pool) + campRoom(state, pool);
   for (const o of state.objects) if (o.id !== without && !o.site && isStorageType(o.type) && STORAGE[o.type].pool === pool) total += capacityOfObject(o, state);
   return total;
 }

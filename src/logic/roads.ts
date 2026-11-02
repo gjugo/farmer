@@ -1,20 +1,25 @@
 import { getBuildable } from '../data/buildables';
+import { CAMP } from '../data/camp';
+import { COTTAGE } from '../data/families';
 import { FARMHOUSE, FARMHOUSE_DOOR, PATH } from '../data/farmhouse';
+import { campFront, campOf } from './camp';
 import { START_LAYOUT } from './constants';
-// The starting fields' new-game setup must run before ours, which lays the road to them.
-import './crops';
+import { finishedCottages } from './homes';
 import { inBounds } from './land';
 // The main road's tiles are path to walk on.
 import { roadTiles } from './mainroad';
-import { canPlace, ruleBlock } from './placement';
-import { addStartingObject, onNewGame } from './state';
+import { canPlace, registerPlacementRule, ruleBlock } from './placement';
+import { addStartingObject } from './state';
+import type { Game } from './game';
 import type { GameState, PlacedObject } from './types';
 
 /**
- * Roads: farmers leave the farmhouse door and walk along paths to their work, so a field,
- * pen or building gets worked only when a path joins it to the door. Every farm has a
- * farmhouse: new farms start with one and a road to the starting fields, and saves from
- * before farmhouses get one (and roads to what is already built) when they load.
+ * Roads: farmers leave the village centre and walk along paths to their work, so a field, pen or building gets worked
+ * only when a path joins it to the centre. The centre (`villageCentre`) is the farmhouse once it is built; before that
+ * the camp's tent, and once the camp is packed away the oldest finished cottage. Farmers step out of the centre
+ * building onto any path along its edges. New farms start with only the camp and a path in front of its tent; saves
+ * from before the farmhouse was a building of its own that lack one get one (and roads to what is already built) when
+ * they load (`ensureFarmhouse`).
  */
 
 export interface Tile {
@@ -30,13 +35,13 @@ export interface Area extends Tile {
 
 /** How a farmer gets to a work site. */
 export interface Route {
-  /** Path tiles walked, from the farmhouse door to the one next to the site. Empty when there is no farmhouse. */
+  /** Path tiles walked, from the one by the village centre to the one next to the site. Empty when there is no centre. */
   tiles: Tile[];
   /** Grid point where the farmer works: the middle of the site tile next to the last path tile. */
   work: { x: number; y: number };
 }
 
-/** Right of the starting fields, door onto the lane in front of them. */
+/** Where a farm from before the farmhouse was a building of its own had it: right of its starting fields. */
 export const STARTING_FARMHOUSE: Tile = { x: START_LAYOUT.x + 6, y: START_LAYOUT.y };
 
 const key = (x: number, y: number) => `${x},${y}`;
@@ -51,13 +56,50 @@ function footprintOf(obj: PlacedObject): { w: number; h: number } {
   return getBuildable(obj.type)?.footprint ?? { w: 1, h: 1 };
 }
 
+/** The farmhouse, finished or still a construction site. */
 export function farmhouseOf(state: GameState): PlacedObject | undefined {
   return state.objects.find((o) => o.type === FARMHOUSE);
 }
 
-/** The tile in front of the farmhouse door, where every road starts. */
+/** The tile in front of a 2×2 house's door (the farmhouse's, a cottage's). */
 export function doorOf(house: Tile): Tile {
   return { x: house.x + FARMHOUSE_DOOR.x, y: house.y + FARMHOUSE_DOOR.y };
+}
+
+/** The village centre: where farmers set out from and rest, and where every road starts. */
+export interface VillageCentre {
+  type: typeof FARMHOUSE | typeof CAMP | typeof COTTAGE;
+  /** The building's id. */
+  id: string;
+  /** The tile in front of its door (the tent's front for the camp). */
+  x: number;
+  y: number;
+}
+
+/**
+ * The farmhouse's door once it is built; before that the tile in front of the camp's tent; once the camp is packed away
+ * (and still no farmhouse) the oldest finished cottage's door. Null on a farm with none of them.
+ */
+export function villageCentre(state: GameState): VillageCentre | null {
+  const house = farmhouseOf(state);
+  if (house && !house.site) return { type: FARMHOUSE, id: house.id, ...doorOf(house) };
+  const camp = campOf(state);
+  if (camp) return { type: CAMP, id: camp.id, ...campFront(camp) };
+  const cottage = finishedCottages(state)[0];
+  if (cottage) return { type: COTTAGE, id: cottage.id, ...doorOf(cottage) };
+  return null;
+}
+
+/** `window.farm.village`: the centre (null on an empty farm) and the farmhouse's id once it is built. */
+export function villageInfo(state: GameState): { centre: VillageCentre | null; farmhouse: string | null } {
+  const house = farmhouseOf(state);
+  return { centre: villageCentre(state), farmhouse: house && !house.site ? house.id : null };
+}
+
+/** The centre building's tiles. */
+function centreArea(state: GameState, centre: VillageCentre): Area | null {
+  const obj = state.objects.find((o) => o.id === centre.id);
+  return obj ? { x: obj.x, y: obj.y, ...footprintOf(obj) } : null;
 }
 
 function inside(a: Area, x: number, y: number): boolean {
@@ -86,18 +128,15 @@ function occupancy(state: GameState): Map<string, PlacedObject> {
 }
 
 /**
- * Every path tile (the main road's too) the farmhouse door reaches along paths, as "x,y" keys; empty when the farm has
- * no farmhouse or no path at its door.
+ * Every path tile (the main road's too) the village centre reaches along paths, as "x,y" keys; empty when the farm has
+ * no centre or no path where its roads start (see `startTiles`).
  */
 export function pathNetwork(state: GameState): Set<string> {
-  const house = farmhouseOf(state);
   const seen = new Set<string>();
-  if (!house) return seen;
   const at = occupancy(state);
   const isPath = (x: number, y: number) => at.get(key(x, y))?.type === PATH;
-  const door = doorOf(house);
-  const queue: Tile[] = isPath(door.x, door.y) ? [door] : [];
-  if (queue.length) seen.add(key(door.x, door.y));
+  const queue: Tile[] = startTiles(state).filter((t) => isPath(t.x, t.y));
+  for (const t of queue) seen.add(key(t.x, t.y));
   for (let i = 0; i < queue.length; i++) {
     const t = queue[i];
     for (const [dx, dy] of STEPS) {
@@ -160,14 +199,30 @@ function search(door: Tile | Tile[], site: Area, cost: (x: number, y: number) =>
 }
 
 /**
- * The way from the farmhouse door to `site` along paths, or null when no path joins them. On a farm
- * without a farmhouse (never after loading) there is nothing to walk: the farmer works in the site's middle.
+ * Where roads start: the tile in front of the centre's door first, then every other tile along the centre building's
+ * edges (farmers step out onto any path there). Empty without a centre.
+ */
+export function startTiles(state: GameState): Tile[] {
+  const centre = villageCentre(state);
+  if (!centre) return [];
+  const starts: Tile[] = [{ x: centre.x, y: centre.y }];
+  const a = centreArea(state, centre);
+  if (!a) return starts;
+  for (let x = a.x; x < a.x + a.w; x++) starts.push({ x, y: a.y + a.h }, { x, y: a.y - 1 });
+  for (let y = a.y; y < a.y + a.h; y++) starts.push({ x: a.x + a.w, y }, { x: a.x - 1, y });
+  return starts;
+}
+
+/**
+ * The way from the village centre to `site` along paths, or null when no path joins them. On a farm without a centre
+ * (a test farm with nothing on it; a real farm always keeps one: the camp, a cottage or the farmhouse, and the last
+ * cottage can't be demolished while it is the centre) there is nothing to walk: the farmer works in the site's middle.
  */
 export function findRoute(state: GameState, site: Area): Route | null {
-  const house = farmhouseOf(state);
-  if (!house) return { tiles: [], work: { x: site.x + site.w / 2, y: site.y + site.h / 2 } };
+  const starts = startTiles(state);
+  if (!starts.length) return { tiles: [], work: { x: site.x + site.w / 2, y: site.y + site.h / 2 } };
   const at = occupancy(state);
-  const tiles = search(doorOf(house), site, (x, y) => (at.get(key(x, y))?.type === PATH ? 0 : null));
+  const tiles = search(starts, site, (x, y) => (at.get(key(x, y))?.type === PATH ? 0 : null));
   if (!tiles) return null;
   const last = tiles[tiles.length - 1];
   const t = touching(site, last.x, last.y)!;
@@ -207,8 +262,8 @@ export function wayLength(points: Point[]): number {
   return n;
 }
 
-/** Lays free paths over empty tiles so the door reaches `site`, reusing paths already there. */
-function layRoad(state: GameState, door: Tile, site: Area): boolean {
+/** Lays free paths over empty tiles so the door reaches `site`, reusing paths already there. Returns the new paths, or null when there is no way. */
+function layRoad(state: GameState, door: Tile | Tile[], site: Area): PlacedObject[] | null {
   const at = occupancy(state);
   const tiles = search(door, site, (x, y) => {
     if (!inBounds(state.land, x, y)) return null;
@@ -217,15 +272,56 @@ function layRoad(state: GameState, door: Tile, site: Area): boolean {
     // A grown tree, a deposit or a pond is in the way.
     return ruleBlock(state, { w: 1, h: 1 }, x, y, PATH) ? null : 1;
   });
-  if (!tiles) return false;
-  for (const t of tiles) if (!at.has(key(t.x, t.y))) addStartingObject(state, PATH, t.x, t.y);
-  return true;
+  if (!tiles) return null;
+  const added: PlacedObject[] = [];
+  for (const t of tiles) {
+    if (at.has(key(t.x, t.y))) continue;
+    const path = addStartingObject(state, PATH, t.x, t.y);
+    if (path) added.push(path);
+  }
+  return added;
 }
 
-/** Lays free paths (no money, no events) from the farmhouse door to `site`; false when there is no way over free land. For new-game setups and tests. */
+/**
+ * Lays free paths (no money, no events) from the village centre to `site`; false when there is no centre or no way over
+ * free land. For setups and tests.
+ */
 export function connectToFarmhouse(state: GameState, site: Area): boolean {
-  const house = farmhouseOf(state);
-  return !!house && layRoad(state, doorOf(house), site);
+  const starts = startTiles(state);
+  return starts.length > 0 && layRoad(state, starts, site) !== null;
+}
+
+/** Where the village centre is and the tiles its roads start from, taken before something that may move it. */
+export interface CentreSnapshot {
+  id: string | null;
+  starts: Tile[];
+}
+
+export function centreSnapshot(state: GameState): CentreSnapshot {
+  return { id: villageCentre(state)?.id ?? null, starts: startTiles(state) };
+}
+
+/**
+ * After the village centre moved (the camp packed away, the farmhouse finished, the centre cottage demolished): paths
+ * that started at the old centre may have been joined only through its building. Free paths join each of them to the
+ * new centre again, over the old building's freed tiles where it is gone. Returns the paths laid.
+ */
+export function rejoinRoads(state: GameState, before: CentreSnapshot): PlacedObject[] {
+  const centre = villageCentre(state);
+  if (!centre || centre.id === before.id) return [];
+  const added: PlacedObject[] = [];
+  for (const t of before.starts) {
+    if (occupancy(state).get(key(t.x, t.y))?.type !== PATH) continue;
+    const tile = { x: t.x, y: t.y, w: 1, h: 1 };
+    if (findRoute(state, tile)) continue;
+    added.push(...(layRoad(state, startTiles(state), tile) ?? []));
+  }
+  return added;
+}
+
+/** `rejoinRoads` for a running game: the new paths are announced, so they are drawn. */
+export function keepRoadsJoined(game: Game, before: CentreSnapshot): void {
+  for (const path of rejoinRoads(game.state, before)) game.events.emit('objectAdded', path);
 }
 
 /** Can the farmhouse stand at (x, y) with a free (or path) tile in the map in front of its door? */
@@ -240,6 +336,8 @@ function farmhouseFits(state: GameState, x: number, y: number): boolean {
 /**
  * Gives a farm without a farmhouse one: at `preferred` when it fits there, else on the free spot of
  * the map nearest to it. Then lays paths from its door to everything already built that has none.
+ * Only for saves from before the farmhouse was a building of its own (`src/logic/save.ts`) and test setups: a farm
+ * now starts with the camp and builds its farmhouse later.
  */
 export function ensureFarmhouse(state: GameState, preferred: Tile = STARTING_FARMHOUSE): void {
   if (farmhouseOf(state)) return;
@@ -260,5 +358,5 @@ export function ensureFarmhouse(state: GameState, preferred: Tile = STARTING_FAR
   if (!occupancy(state).has(key(door.x, door.y))) addStartingObject(state, PATH, door.x, door.y);
 }
 
-// Late: the roads go to the starting fields (and anything else a setup placed), whichever module loaded first.
-onNewGame((state) => ensureFarmhouse(state), { late: true });
+// One farmhouse per farm (and any other unique buildable): a second one can't be placed.
+registerPlacementRule((state, _fp, _x, _y, type) => (type && getBuildable(type)?.unique && state.objects.some((o) => o.type === type) ? 'built' : null));

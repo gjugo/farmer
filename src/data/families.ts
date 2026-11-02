@@ -3,8 +3,8 @@ import type { KnownItemId } from './items';
 import type { MaterialCost } from './materials';
 
 /**
- * Families: every farmer is a family living in a home. The farmhouse houses the first one, each cottage one more (two
- * once upgraded to level 2).
+ * Families: every farmer is a family living in a home. The starting families live in the camp's tent; each cottage
+ * houses one more (two once upgraded to level 2), and the farmhouse one once it is built.
  * Families eat from the granary, burn firewood in winter, want clothes once the loom is unlocked and enjoy ale once
  * the brewery is; how well the farm meets those needs is their approval, and approval decides whether new families
  * move in or old ones leave.
@@ -13,7 +13,7 @@ import type { MaterialCost } from './materials';
 
 export const COTTAGE = 'cottage';
 
-/** Room besides the cottages: the farmhouse houses the starting family. */
+/** Room besides the cottages: the farmhouse houses a family once it is built. */
 export const FARMHOUSE_HOMES = 1;
 
 /** What families eat, in the order they reach for it. Never feed, wool, cloth or the brewery's malt and ale. */

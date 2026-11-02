@@ -125,7 +125,7 @@ export class BuildMenu {
     const defs = listBuildCategory(this._category);
     const sig = `${this._category}|${game.level}|${artSeason()}|${!!this.ctx.scene}|${listBuildMenuToggles()
       .map((t) => t.isOn(this.ctx))
-      .join(',')}|${defs.map((b) => `${b.id}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(game.materialsFor(b.id)))}`).join('|')}`;
+      .join(',')}|${defs.map((b) => `${b.id}:${this.built(b)}:${game.canAfford(b.cost)}:${JSON.stringify(game.missingMaterials(game.materialsFor(b.id)))}`).join('|')}`;
     if (sig === this.sig) return;
     this.sig = sig;
     for (const [id, btn] of this.catButtons) {
@@ -153,9 +153,19 @@ export class BuildMenu {
     this.cards.scrollLeft = scroll;
   }
 
+  /** A one-per-farm buildable (the farmhouse) the farm already has, finished or being built. */
+  private built(b: BuildableDef): boolean {
+    return !!b.unique && this.ctx.game.objectsOfType(b.id).length > 0;
+  }
+
   /** What a card says on hover, or in its line on a touch screen. */
-  private describe(b: BuildableDef): TipContent & { lines: string[]; needs: string | null; locked: number | null } {
+  private describe(b: BuildableDef): TipContent & { lines: string[]; needs: string | null; locked: number | null; built: boolean } {
     const { game } = this.ctx;
+    const built = this.built(b);
+    if (built) {
+      const lines = ['Built', ...(b.description ? [b.description] : [])];
+      return { title: `${b.icon ?? ''} ${b.name}`.trim(), lines, needs: null, locked: null, built };
+    }
     const unlockLevel = buildableUnlockLevel(b.id);
     const locked = game.isUnlocked(unlockLevel) ? null : unlockLevel;
     const missing = game.missingMaterials(game.materialsFor(b.id));
@@ -168,21 +178,22 @@ export class BuildMenu {
     if (locked) lines.push(`🔒 Unlocks at level ${locked}`);
     else if (needs) lines.push(needs);
     if (b.description) lines.push(b.description);
-    return { title: `${b.icon ?? ''} ${b.name}`.trim(), lines, needs, locked };
+    return { title: `${b.icon ?? ''} ${b.name}`.trim(), lines, needs, locked, built };
   }
 
   private card(b: BuildableDef): HTMLElement {
     const d = this.describe(b);
     const url = picture(this.ctx, b);
-    const unavailable = d.locked !== null || d.needs !== null;
+    const unavailable = d.built || d.locked !== null || d.needs !== null;
     const card = h(
       'button',
       {
         type: 'button',
         role: 'listitem',
-        class: `build-card${d.locked !== null ? ' locked' : ''}${d.needs ? ' short' : ''}`,
+        class: `build-card${d.locked !== null ? ' locked' : ''}${d.needs ? ' short' : ''}${d.built ? ' built' : ''}`,
         'data-testid': `build-${b.id}`,
         'data-locked': d.locked !== null ? String(d.locked) : undefined,
+        'data-built': d.built ? 'true' : undefined,
         'aria-disabled': unavailable ? 'true' : undefined,
         'aria-label': `${b.name}, ${d.lines[0]}${d.locked !== null ? `, unlocks at level ${d.locked}` : d.needs ? `, ${d.needs}` : ''}`,
       },

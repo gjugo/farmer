@@ -3,6 +3,9 @@
 A cheerful 2D farming game for the browser, built with **Phaser 4**, **Vite** and **TypeScript**.
 Grow the farm, build fields and pastures, raise animals, turn crops and animal products into
 milk, cheese, eggs and more, and sell them to expand.
+A new farm starts like Manor Lords: only a ⛺ camp, with two families living in its tent and the supplies they
+brought. Build fields, a granary and cottages around it; the 🏠 farmhouse comes later (level 4), as a big building of
+its own, like the manor.
 
 ## Running it
 
@@ -55,7 +58,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   window; with nothing open it opens the pause menu.
 - **Pan:** drag the map, or WASD / arrow keys. **Zoom:** mouse wheel or pinch.
 - **Build:** 🔨 Build → a category → a card → click/tap a tile. A green ghost means the spot is valid (and a path from the
-  farmhouse reaches it). Esc, right-click or **Cancel** leaves build mode. Each item shows its money cost and the
+  village centre reaches it: the camp's tent on a new farm, the farmhouse once built; see **Village centre**). Esc, right-click or **Cancel** leaves build mode. Each item shows its money cost and the
   **building materials** it takes (🪵 wood, 🪨 stone, 🔩 iron); what you can't pay for is greyed out with what is missing
   ("Needs 4 more 🪵 Wood"), its ghost turns red, and placing it says to buy the rest at the 🏪 Market.
   Paths, fields and the woodcutter's lodge cost money only; coops, pastures and processing buildings need wood and/or
@@ -68,7 +71,9 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   materials only as far as the storehouses have room: the confirm says what would be lost (demolish mode asks first too when something would be lost).
   A granary or storehouse can't be demolished while its stock wouldn't fit without it ("Sell or use 40 goods first").
 - **Storage:** everything the farm holds needs room. **Goods** (crops, eggs, milk, wool, feed, cheese, bread, …) go
-  in **granaries**, **materials** (wood, stone, iron) in **storehouses**; the farmhouse holds 30 of each on top, and a
+  in **granaries**, **materials** (wood, stone, iron) in **storehouses**. Until the farmhouse is built, a small
+  **settlers' yard** holds 20 materials (enough to buy a storehouse's wood and stone, so a farm that spent the camp's
+  supplies first is never locked out); once built, the farmhouse holds 50 of each instead. A
   new farm's ⛺ **camp** adds room for what is left of its starting supplies (see **Starting camp**), so they fit from
   the start and that room shrinks as they are used (nothing new is ever stored there). A
   granary holds 100 / 250 / 500 goods at level 1 / 2 / 3 ($30 + 5 🪵 to build), a storehouse 60 / 150 / 300 materials
@@ -94,24 +99,26 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   falls into one by its `category`, so new items need no change there.
 - **Stock in the world:** what the farm holds is stacked in the yards: logs, stone blocks and iron bars in front of a
   storehouse; sacks and baskets of crops, egg baskets, milk churns and wool bales, feed sacks and crates of cheese,
-  bread and cloth in front of a granary; a small pile of goods and one of materials beside the farmhouse; logs, stone,
+  bread and cloth in front of a granary; a small pile of goods and one of materials beside the farmhouse (once it is
+  built); logs, stone,
   crop sacks and bread crates around the camp's tent, each shrinking from full as that supply is used. Each pile has
   4 fill stages (a quarter … full) and none when empty. Stock is one pool per kind, so the display splits it: the
-  camp shows what is left of its supplies, the farmhouse store fills first with the rest, then each finished granary or storehouse in placement order, up to its room (purely
+  camp shows what is left of its supplies, the settlers' yard keeps its share (drawn nowhere) until the farmhouse is
+  built and the farmhouse store fills first after that, then each finished granary or storehouse in placement order, up to its room (purely
   visual, `stockDisplay` in `src/logic/stockpiles.ts`). In a building the biggest pile shows how full it is and the
   others are scaled to it, so a full building looks full. Construction sites show none.
 - **Main road:** every map has one main road (`src/logic/mainroad.ts`), laid from a seed with the map: it enters at one
   map edge near a corner and leaves at the other end of one side (picked from the seed), in a band 2–7 tiles in from
   that edge, winding gently. It never comes near the starting land (on the 64×48 map it ends up about 13–20 tiles from
-  the farmhouse on the north and south sides, 21–30 on the east and west), goes round ponds, deposits and anything
+  the camp on the north and south sides, 21–30 on the east and west), goes round ponds, deposits and anything
   built, and cuts a corridor through forests (those trees are gone for good). Its tiles count as path for walking,
-  farmers, oxcarts and the "a path from the farmhouse reaches it" rule; nothing can be built on it and it is never
+  farmers, oxcarts and the "a path from the village reaches it" rule; nothing can be built on it and it is never
   demolished (laying a path on it does nothing). It is drawn as a broad rutted cart road with stones in the paths' 16
   shapes and 4 seasons, joining paths where they meet, with grass fringes along its edges. **Merchants'** oxcarts
   travel it edge to edge now and then, facing their way: scenery only, timed from the game clock and the road's seed
   (nothing saved), never more than two at once.
 - **🏪 Trading post (trade gating):** a 2×2 building under 📦 Storage ($60 + 10 🪵, level 1, built by a farmer). It is
-  **linked** when it is finished and the path network from the farmhouse reaches both it and a main-road tile. Until a
+  **linked** when it is finished and the path network from the village centre reaches both it and a main-road tile. Until a
   post is linked the whole ⚖️ Trade window is closed: Market selling and buying, Orders and the Trader each show "Build a
   🏪 trading post and link it to the main road with a path" (with the reason once a post exists) and a button that
   opens its build card, and the logic refuses every sale, purchase and delivery. The post's panel, its build ghost and
@@ -148,7 +155,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Wood, stone and iron from the farm:** the **🪓 Woodcutter's Lodge** (level 1, $80) makes 4 🪵 wood, the **⛏️ Quarry**
   (level 2, $120 + 10 🪵) 3 🪨 stone and the **⚒️ Mine** (level 4, $140 + 15 🪵 + 10 🪨, never iron) 1 🔩 iron per cycle
   of work: 4, 5 and 6 game-minutes, a quarter longer in winter. Nothing is made without an assigned farmer
-  (**👨‍🌾 Assign a farmer to cut wood**, … to quarry stone, … to mine iron) and a path from the farmhouse: the farmer
+  (**👨‍🌾 Assign a farmer to cut wood**, … to quarry stone, … to mine iron) and a path from the village centre: the farmer
   walks there, works one cycle (chips or dust fly by the building) and the yield lands in the building's **yard**, a
   pile of logs, stone or iron at the building that grows as it fills. **The yard rule:** a yard holds 3 cycles' yield
   (12 wood, 9 stone, 3 iron). An ox barn's cart hauls it away (see **Oxcarts**); once the yard is full, the
@@ -163,9 +170,9 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   earlier counts).
 - **Oxcarts:** the **🐂 Ox Barn** (level 3, 3×2, $250 + 30 🪵 + 15 🪨; several allowed) hauls goods by oxcart. Buy an
   ox in its panel (**🐂 Buy an ox**, $300; the ox needs no feed) and assign one farmer as the carter (**👨‍🌾 Assign a
-  carter**, one farmer per workplace). The carter walks from the farmhouse to the barn, then the cart leaves along the
+  carter**, one farmer per workplace). The carter walks from the village centre to the barn, then the cart leaves along the
   paths to the **fullest yard** (or the processing building with the most finished goods), loads up to **20** units,
-  drives to the **nearest granary, storehouse or farmhouse store** with room for them, unloads, and drives back to the
+  drives to the **nearest granary, storehouse or farmhouse store** (once it is built) with room for them, unloads, and drives back to the
   barn; the carter walks home. The ox pulls the cart at 0.6 game-s a tile (a farmer walks at 0.4); loading and
   unloading take 10 s each. The goods are counted where they are: in the yard until loaded, on the cart until
   unloaded (the resource bar rises on unload), and what didn't fit stays on the cart, parked in the barn, until a
@@ -203,7 +210,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   and ponds (*A pond is in the way*). Bushes give way: building on a bush's tile is fine, and the bush stops showing
   until the building is demolished (a pond's decorative willows likewise). The game opens on the farm (the starting
   land and every building beyond it) with about 2 tiles around it (on a phone it stays close enough that a tile is at
-  least 40 px wide, centred on the farmhouse); zooming out goes as far as the whole map. Saves from before the map grew
+  least 40 px wide, centred on the village centre: the camp on a new farm); zooming out goes as far as the whole map. Saves from before the map grew
   load in the middle of the bigger map with their farm unchanged; saves from when land was bought (version 14 and
   older) load with the whole map open, nothing moved and nothing refunded.
 - **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
@@ -245,7 +252,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   "Grow 10 pumpkins".
 - **Soil:** the ground's quality differs across the map, in blobs: **rich** (95%), **normal** (70%) and **poor** (45%).
   It is the same on every load (worked out from a fixed seed, never saved). Rich ground grows lusher grass in every
-  season; the starting land has one rich patch, under and in front of the starting fields, and is mostly normal
+  season; the starting land has one rich patch, left of and in front of the camp (where older farms had their starting
+  fields), and is mostly normal
   elsewhere. Tick **🌱 Soil** above the 🔨 Build menu's cards to see the quality over your land (green, yellow, red); while
   placing a field its ghost is tinted the same way, tile by tile.
   - **Fertility** (0–100%): a new field starts at the average soil quality of its tiles. A harvest yields
@@ -263,7 +271,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Farmers:** building, ploughing, planting, harvesting, spreading manure, feeding, collecting, starting a batch and a resource cycle each keep a farmer
   busy for a while: ploughing a field 40 game-seconds, sowing 30 s, harvesting 40 s, spreading manure 20 s, feeding a pen 20 s, collecting or
   starting a batch 20 s, building 15 s per footprint tile (30 s–3 min; paths need no farmer), plus the walk there and
-  back. The farm starts with one farmer; more come as families moving into cottages (below), up to 20.
+  back. The farm starts with two farmers, the families in the camp's tent; more come as families moving into cottages
+  (and the farmhouse once it is built; below), up to 20.
   - **Workplaces:** fields, coops, pastures, processing and resource buildings take one farmer each. Assign one with
     **👨‍🌾 Assign a farmer** in the object's panel (or **Unassign**), or pick each farmer's workplace in 👪 Farm → 👨‍🌾 Farmers
     sheet, which lists every farmer with their workplace and what they are doing now. A farmer works at one place.
@@ -294,12 +303,14 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   - The work runs on game time, so speed ×60 and offline catch-up give the same farm; the welcome-back summary
     reports what the farmers harvested, sowed, collected, made, produced and built while you were away, and the tools
     forged and worn out.
-- **Families:** every farmer is a family living in a home: the farmhouse houses the first, each **🛖 Cottage** (2×2,
-  $80 + 8 wood, level 1, built by a farmer like any site) one more. There is no hiring for cash. When a home is free
-  and approval is at least 50%, a family moves in half a day after the home became free (at most one a day); its
-  farmer starts free, without a workplace, and sets out from the farmhouse door like everyone. When approval stays
-  below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; never the last
-  family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
+- **Families:** every farmer is a family living in a home. A new farm's two families live in the camp's ⛺ tent (it
+  never takes newcomers); each **🛖 Cottage** (2×2, $80 + 8 wood, level 1, built by a farmer like any site) houses one
+  more, and the 🏠 farmhouse one once it is built. There is no hiring for cash. When a house (cottage or farmhouse) has
+  free room and approval is at least 50%, a family moves in half a day after the room became free (at most one a day);
+  its farmer starts free, without a workplace, and sets out from the village centre like everyone. Once the camp's
+  supplies are used up its families come first: newcomers wait until they have moved out of the tent. When approval
+  stays below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; one of the
+  tent's while it stands; never the last family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
   storage: each eats **2 food** from the granary (wheat, carrot, corn, potato, cabbage, pumpkin, apple, egg, milk, bread,
   cheese, butter; never feed, barley, flax, wool, cloth, malt or ale), spread across the kinds in stock; on **winter** days each family burns **1 wood** at its own hearth (a full level 2 cottage burns 2); once the
   loom is unlocked (level 5) each family takes **1 clothes** from the tailor at the start of winter if any are in stock,
@@ -309,8 +320,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   food, −50 with nothing to eat, up to +10 when every family is clothed in cloth (+15 in clothes; mixed, by share), up to
   +10 when every family had ale (by share), and in winter +10 when every home is warm or up
   to −60 when homes are cold (by the share of cold homes); from level 2, up to +5 when every home has a house garden
-  (a share of it when some do). A new farm's families eat the bread and carrots of the starting camp (about 5 days
-  for the first three families), so nobody goes hungry before the first harvest; there is no other grace. The overview chip (😊 62%) opens
+  (a share of it when some do), and +10 once the farmhouse stands ("A farmhouse oversees the farm"). A new farm's two
+  families eat the bread and carrots of the starting camp (about 7 days), so nobody goes hungry before the first harvest; there is no other grace. The overview chip (😊 62%) opens
   **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood, ale and clothes, and when the
   next family comes ("Build a 🛖 cottage, or upgrade one, to house another family"); the 👨‍🌾 Farmers sheet shows the
   same block. A cottage puffs chimney smoke on winter days while it has firewood (one chimney per family living there).
@@ -322,10 +333,11 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   (the cost is paid as the farmer is sent, as for a granary). A level 2 cottage is drawn bigger (its own art in every
   season, with an "Lv 2" badge and a second chimney) and houses **2 families**: the 🏠 chip shows one more room and a
   second family moves in at approval ≥ 50%. Clothes aren't asked for (a later level 3 could ask for more foods and
-  clothes). A cottage never goes down a level when needs lapse later. **Room** (families that fit: the farmhouse 1 +
-  each finished cottage's room) drives arrivals, the 🏠 chip, supplies and firewood; **home buildings** (one per
-  farmhouse or cottage, whatever its level) count for gardens, so a 2-family cottage with a garden counts as
-  gardened. Families fill the homes in build order after the farmhouse, each up to its room ("Home of 2 families" /
+  clothes). A cottage never goes down a level when needs lapse later. **House room** (the built farmhouse 1 + each
+  finished cottage's room) drives arrivals; **room** (house room plus the families in the tent) the 🏠 chip, supplies
+  and firewood; **home buildings** (the built farmhouse and every cottage, whatever its level) count for gardens, so a
+  2-family cottage with a garden counts as gardened. The tent's families live in the tent; the others fill the houses
+  in build order, the farmhouse first, each up to its room ("Home of 2 families" /
   "1 family, room for 1 more" / "Empty, room for 2"). Demolishing an upgraded cottage (or granary or storehouse) gives
   back 50% of its build plus its upgrades. Goal: "Upgrade a cottage", after "Forge 5 tools". Arrivals and departures are toasted and listed in
   the welcome-back summary. All of it runs inside the work scheduler on game time, so ×60, ×1 and offline catch-up
@@ -334,7 +346,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **House gardens:** a 2×2 backyard plot the family works in its spare time: the **🥬 Vegetable Patch** (level 2,
   $20 + 2 wood) grows 1 🥕 carrot a day in spring, summer and autumn and rests in winter, the **🐓 Hen Run** (level 3,
   $30 + 3 wood) lays 1 🥚 egg a day all year (no feed: the hens live on scraps), the **🍎 Orchard** (level 4, $40 +
-  3 wood) gives 4 🍎 apples a day in autumn. A garden must touch a home (the farmhouse or a cottage) along an edge, and
+  3 wood) gives 4 🍎 apples a day in autumn. A garden must touch a home (a cottage, or the farmhouse once it is built) along an edge, and
   each home has at most one; the build ghost outlines the homes still free for one and is red elsewhere ("A garden
   must touch a home along an edge", "That home already has a garden"). It needs no farmer and no path and is laid out
   at once. A day after it is built, and every day after, its yield goes into the granary; what doesn't fit waits in
@@ -344,26 +356,45 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   makes, this season's yield, what waits and the next yield; the cottage and farmhouse panels name their garden, or
   "No garden yet". **🍎 Apple** is a new food (a crop, sells for $7). Goals "Plant a vegetable patch" and "Gather 20
   apples" come last.
-- **Farmhouse and roads:** every farm has a farmhouse (it can't be built or demolished). Idle farmers rest on its bench;
-  for a job a farmer walks out of the door **along paths** to the work (0.4 game-s per tile), works there (hoeing,
+- **Village centre and roads:** farmers set out from and rest at the **village centre**: the tile in front of the camp's
+  tent on a new farm, the farmhouse's door once it is built, and in between (camp packed away, no farmhouse yet) the
+  oldest finished cottage's door (`villageCentre` in `src/logic/roads.ts`). Idle farmers stand about in front of the
+  tent (or the cottage), and sit on the farmhouse's bench once it stands. For a job a farmer steps out of the centre
+  building onto a path along its edges and walks **along paths** to the work (0.4 game-s per tile), works there (hoeing,
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. On the way they carry what the job moves:
   a sack home from a harvest or a workshop and out to feed, spread manure or load a batch, a basket of eggs, a bucket
   of milk, a sack of wool, logs or stone from the lodge, quarry or mine, and logs (or stone) out to a construction
   site; ploughing, sowing and hauling trips are empty-handed (a carter's goods ride on the oxcart). It is only the look: the goods moved when the job started
   (`CARRY` in `src/scenes/art.ts`). Work on a field, pen or building is refused
-  until a path joins it to the door ("No path leads there"), and the build ghost turns red where no path reaches.
-  New farms start with a road from the door to both fields; older saves get a farmhouse and roads to what they built.
-- **Starting camp:** a new game starts like Manor Lords: the settlers arrive with supplies, shown as a ⛺ **camp**
-  (3×3: a patched tent with a campfire on the back tiles, the supply piles scattered in front) beside the farmhouse,
-  next to the path, on the side away from the fields. It holds **40 🪵 wood, 20 🪨 stone, 15 🍞 bread and 15 🥕 carrots**
-  (`CAMP_SUPPLIES` in `src/data/camp.ts`): enough for a granary, a cottage and a storehouse or coop, and about 5 days
-  of food for the first families. They are ordinary stock: the resource bar shows them and building, meals, selling
+  until a path joins it to the village centre ("No path leads there from the village"), and the build ghost turns red
+  where no path reaches. A new farm starts with one path, on the tile in front of the tent. When the centre moves (the
+  camp packed away, the farmhouse finished, the centre cottage demolished), free paths join every road that met at the
+  old centre to the new one, over the old building's freed tiles where it is gone, so nothing is cut off. The
+  travelling trader parks by the centre; the game opens on it.
+- **The farmhouse, built later** (like Manor Lords' manor): **🏠 Farmhouse** in 🔨 → 🏠 Homes from **level 4**, **$400 +
+  30 🪵 + 20 🪨 + 4 🔩**, 2×2, a construction site that takes twice a cottage's work (2 game-minutes). One per farm: once
+  placed (even as a site) its card says **Built** and a second one is refused ("Already built: a farm has only one").
+  Its site can be cancelled; the finished farmhouse can't be demolished. Once finished it is the village centre, houses
+  1 family, stores **50 goods + 50 materials** (its piles show beside it; it replaces the settlers' yard) and adds
+  **+10 approval** ("A farmhouse oversees the farm", in the 👪 breakdown). Gardens can touch it. Goal: "Build the
+  farmhouse", last. Saves from before this change keep their farmhouse, fields and roads (save version 17); a save of
+  that age that somehow has no farmhouse gets one with roads to what it built, as before. A newer save without a
+  farmhouse is normal and stays that way.
+- **Starting camp:** a new game starts like Manor Lords: **only the camp**, no farmhouse, fields or roads. The
+  settlers arrive with supplies, shown as a ⛺ **camp** (3×3: a patched tent with a campfire on the back tiles, the
+  supply piles scattered in front) in the middle of the starting land, with one path on the tile in front of the tent,
+  and **two families live in the tent** (the farm's two farmers set out from in front of it). The map is generated
+  around it. It holds **40 🪵 wood, 20 🪨 stone, 15 🍞 bread and 15 🥕 carrots** (`CAMP_SUPPLIES` in `src/data/camp.ts`):
+  enough for a granary, a cottage and a storehouse or coop, and about 7 days of food for the two families. They are ordinary stock: the resource bar shows them and building, meals, selling
   and orders use them as any other. The camp records what is `left` of each; after every change to the stock
   `left = min(left, stock)`, so whatever is spent, sold or eaten comes out of the camp first and new harvests,
   purchases or lodge wood never refill it (`src/logic/camp.ts`). Orders don't learn goods from the camp's supplies.
-  Tapping the camp shows "Starting supplies: 32 🪵 · 20 🪨 · 12 🍞 · 15 🥕 left". It isn't in the build menu and
-  can't be demolished or built over. Once every supply is used up the tent fades away, a toast says "Your camp is
-  packed away: the starting supplies are used up", and its tiles are free to build on. Campfire smoke rises on winter
+  Tapping the camp shows "Starting supplies: 32 🪵 · 20 🪨 · 12 🍞 · 15 🥕 left" and "Home of 2 families". It isn't in
+  the build menu and can't be demolished or built over. It packs away once every supply is used up **and** its
+  families have room in the cottages (or the farmhouse); until then the empty tent stays, its panel saying "Waiting
+  for homes for 2 families". Then the tent fades away, its families move into the free cottage room, a toast says "Your
+  camp is packed away: the starting supplies are used up and its families have moved into their homes", and its tiles
+  are free to build on. Campfire smoke rises on winter
   days. Saves from before the camp have none and keep their stock.
 - **Seasons:** a game day lasts 8 real minutes at ×1 and each season 4 days, about 30 minutes (days 1–4 spring,
   5–8 summer, 9–12 autumn, 13–16 winter, then round again), so a year takes about 2 hours. The pace is slow on
@@ -377,7 +408,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   sown in autumn (only while it can ripen before winter ends) and ripens in winter. The frost only unploughs empty
   fields, so a cabbage field stands through it (drawn with frost and snow) and is harvested in winter, by hand or by its
   farmer.
-  The new farm's two starting fields come ploughed.
+  A new farm has no fields: its first one has to be built and ploughed.
 - **Seasonal look:** the farm looks like its season. Spring is bright green with flowers and blossoming trees, summer a
   deep warm green with dry patches, autumn ochre grass, fallen leaves and orange, red and yellow trees, winter snow on
   the ground, paths, roofs and rocks, bare snowy trees, frozen fields and frozen ponds (a few small ponds lie out in
@@ -450,15 +481,18 @@ game keeps running, nothing is dimmed and nothing is blocked.
   **marker** stands on the map when the step means a field. Card and ring sit under dialogs and the menu; Esc never
   closes them.
 - **Steps** (texts and ring targets in `src/data/guide.ts`, what finishes each in `src/logic/guide.ts`):
-  1. Look around → the camera moved or zoomed. 2. Assign a farmer to a starting field → a field has a farmer.
-  3. Speed (⏩ ⏭, keys 1–3, ⏸/Space) → the speed or pause changed. 4. Sow the other field by hand (🌾 Wheat) → a field
-  without a farmer has a crop. 5. ⭐ the level → the Development window opened. 6. Build a field → a field placed.
-  7. Harvest → `harvested`. 8. Wood: the camp's supplies come first; then build a woodcutter's lodge (or buy it) → a
-  lodge placed or wood bought. 9. Build a trading post and link it to the main road → a post linked. 10. Sell at the
-  trading post → `sold`. 11. A granary → placed. 12. A cottage → placed. 13. You're set (Almanac, perks, Settings) →
+  The guide walks a new farm, which has only the camp: no starting fields and no farmhouse store.
+  1. Look around → the camera moved or zoomed. 2. Your camp: the two families in the tent and its supplies (a marker
+  on the tent's front) → Next. 3. Build a field, with a path from the camp → a field placed. 4. Assign a farmer to it →
+  a field has a farmer. 5. Speed (⏩ ⏭, keys 1–3, ⏸/Space) → the speed or pause changed. 6. A granary (the camp only
+  holds its own supplies) → placed. 7. Sow a second field by hand (🌾 Wheat) → a field without a farmer has a crop.
+  8. ⭐ the level → the Development window opened. 9. Harvest → `harvested`. 10. Wood: the camp's supplies come first;
+  then build a woodcutter's lodge (or buy it) → a lodge placed or wood bought. 11. Build a trading post and link it to
+  the main road → a post linked. 12. Sell at the trading post → `sold`. 13. Homes: cottages for the tent's families
+  and newcomers → a cottage placed. 14. You're set: the farmhouse comes at level 4 (Almanac, perks, Settings) →
   **Finish**.
   Each step finishes on its event or with Next. One whose event came earlier, or whose result is already on the farm
-  (a farmer on a field, a granary, a cottage, a lodge, crops in store beyond the camp's carrots, a third field), is skipped when it comes up, so
+  (a field, a farmer on a field, a granary, a cottage, a lodge, crops in store beyond the camp's carrots), is skipped when it comes up, so
   steps can be done in any order.
 - **State:** saved per farm in `ext.guide` (`{ started, step, finished, skipped, done }`, `done` = steps whose event
   came early); a reload resumes the step. Purely additive: no `SAVE_VERSION` bump; a save without it has the guide off.
@@ -506,10 +540,17 @@ while a trading post's build ghost is shown (else null). Test ids: `trade-link` 
 `window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
-`window.farm.camp` is `{ id, left, room, packed }`: the camp's object id, what is left of each supply, the room it adds
-to each pool (`{ goods, materials }`) and whether it is packed away (then `left` is empty and the object is gone); null
-on saves from before the camp. Its object is type `camp` in `window.farm.objects`, its slice `window.farm.ext.camp`
-(`{ id, packed }`). The camp panel's lines have test ids `camp-supplies` and `camp-note`.
+`window.farm.camp` is `{ id, left, room, packed, families, waiting }`: the camp's object id, what is left of each
+supply, the room it adds to each pool (`{ goods, materials }`), whether it is packed away (then `left` is empty and the
+object is gone), the families living in the tent (2 on a new farm, 0 once packed and on saves from before the tent
+housed any) and how many of them wait for homes (only once the supplies are used up; the tent packs away when that is
+0); null on saves from before the camp. Its object is type `camp` in `window.farm.objects`, its slice
+`window.farm.ext.camp` (`{ id, packed, families }`). The camp panel's lines have test ids `camp-supplies`,
+`camp-families`, `camp-waiting` ("Waiting for homes for N families") and `camp-note`.
+`window.farm.village` is `{ centre: { type, id, x, y }, farmhouse: id | null }`: the village centre (`type` `camp`,
+`cottage` or `farmhouse`, the building's id and the tile farmers set out from: in front of the tent or the door; null
+on a farm with none of them) and the farmhouse's id once it is built (null while there is none or it is a site). The
+🏠 Farmhouse card in 🔨 → 🏠 Homes is `build-farmhouse`, with `data-built="true"` once one is placed.
 `window.farm.storage` is `{ goods: { used, capacity }, materials: { used, capacity } }`; each storage building's
 level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`). A `woodcutter`, `quarry`
 or `mine` entry has `state: { cycle, waiting, day, today }`: the cycle being worked (`{ start, duration }` or null),
@@ -534,8 +575,8 @@ the map: never felled or saved, hidden while something is built on their tile). 
 `art` the frame drawn (e.g. `grass_flowers_summer`), `tint` the multiply it is drawn with (`0xRRGGBB` as a number:
 colour patches × soil × zone shade) and `zone` `'meadow' | 'forest' | 'wet'` (forest within 1 tile of a tree
 or stump, wet within 2 tiles of a pond).
-`window.farm.stockpiles` is `{ buildings, sprites }`: `buildings` lists every storing building (farmhouse, finished
-granaries and storehouses) in placement order as `{ id, type, pools, piles, drawn }`, where `pools[pool]` is
+`window.farm.stockpiles` is `{ buildings, sprites }`: `buildings` lists every storing building (the farmhouse once built, finished
+granaries and storehouses, and the camp while it stands) in placement order as `{ id, type, pools, piles, drawn }`, where `pools[pool]` is
 `{ held, capacity }` (its share of the pool's stock), `piles` maps each pile (`crops`, `animal`, `feed`, `goods`, `wood`,
 `stone`, `iron`, `house_goods`, `house_materials`) to its stage 0–4, and `drawn` lists the pile sprites shown (e.g.
 `pile_wood_3`); `sprites` counts the pile images in the scene (fixed per building, hidden when empty). The resource bar's
@@ -562,7 +603,8 @@ tailor's clothes and plain cloth, null before the loom is unlocked; `ale`: `{ fa
 ale that day and the ale drunk, null before the brewery is unlocked) or null before the first day, and
 `nextArrivalAt` is the game time (`window.farm.clock.elapsed`) the next family is due, null while no home is free.
 `homes` is the room (families that fit); `homeList` lists every home as `{ id, type, level, room, families }` (the
-farmhouse first, then finished cottages in build order, each filled up to its room), and `upgrade(id)` gives a
+camp's tent with its families while it stands, then the built farmhouse, then finished cottages in build order, each
+filled up to its room), and `upgrade(id)` gives a
 cottage's upgrade checklist `{ level, fuel, food, cost, ok, next, blocked }` (each line `{ ok, text }`; `blocked` is
 `'site'`, `'max'` or null), or null for anything that isn't a cottage. A cottage's level is `state.level` of its entry
 in `window.farm.objects` (missing in old saves = 1); a level 2 cottage's roof badge is a container named
@@ -631,23 +673,24 @@ src/
     clock.ts           game clock, Day N, game-time timers
     seasons.ts         seasons from the game clock (2 days each), season runs for ploughing and sowing windows
     market.ts          daily sell prices (base × 0.8–1.2 by day + item id), saturation (drops), sell / sellAll; material buy prices, buy
-    trader.ts          travelling traders: the seeded schedule, offers, parking by the farmhouse door, trading
+    trader.ts          travelling traders: the seeded schedule, offers, parking by the village centre, trading
     save.ts            versioned save/load + migrations + defaults
     slots.ts           manual save slots, strict import validation
     slices.ts          feature-owned global state (GameState.ext)
-    crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure, starting fields
+    crops.ts           ploughing, planting (in season), growth stages, harvest, fertility and manure
     soil.ts            the soil-quality layer (fixed seed), fertility recovery, yield and drain
     families.ts        families: daily meals / firewood / ale / clothes, approval, arrivals and departures (slice `families`)
-    homes.ts           homes: room (families that fit) vs home buildings, cottage levels, who lives where
+    homes.ts           homes: the tent, the built farmhouse and cottages; house room vs room vs home buildings, who lives where
     cottages.ts        cottage upgrades: the requirements checklist (farm level, fuel, food, cost) and the upgrade
     perks.ts           perks: perkFactor, seeded offers, choices and the slice `perks`; the Perks class on Game
     workers.ts         farmers: adding and removing them, jobs that keep a farmer busy, workplaces, crop plans, recipes, tool slots (state slice `workers`)
     tools.ts           farmers' tools: taking a set at job start, the speed-up (`toolFactor`), wear and breaking, the blacksmith's stop
     work.ts            the work scheduler: assigned farmers work their workplace, free ones build sites; steps on game time
-    roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
+    roads.ts           the village centre and paths: the route a farmer walks to a site, rejoining roads when the
+                       centre moves, the one-farmhouse rule; a farmhouse for old saves without one
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
     storage.ts         goods/materials pools: capacity, used, spaceFor (Game.addItem takes only what fits), upgrades
-    camp.ts            the starting camp: where it goes, what is left (trimmed after every removeItem), its room, packing away (slice `camp`)
+    camp.ts            the starting camp: where it goes, what is left (trimmed after every removeItem), its room, its families, packing away once they have homes (slice `camp`)
     resources.ts       woodcutter, quarry, mine: production cycles, the yard (3 cycles' yield), idle reasons
     haul.ts            ox barns and oxcarts: buying the ox, planning a trip (fullest pickup, nearest store), the legs
                        and their timing, loading / unloading / parking as scheduler events, `cartsOf`
@@ -657,7 +700,7 @@ src/
   data/              Content as data
     items.ts           item catalogue (ids shared by every feature)
     materials.ts       building materials (wood, stone, iron): ids, the level the Market sells each from, cost text
-    storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store
+    storage.ts         granary and storehouse buildables, levels and capacities, the farmhouse store and settlers' yard
     camp.ts            the starting camp buildable (3×3, fixed) and its supplies
     families.ts        the Cottage buildable and its levels, foods, needs per family, approval points, arrival and leaving thresholds
     perks.ts           the perk pool: name, what it does, its factor and what it is about
@@ -846,7 +889,7 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 - **Panel drop-downs:** a `PanelSpec` may have `choices: [{ id, label, value, options, onChange }]`, rendered as
   `<select data-testid="panel-choice-<id>">` above the actions (e.g. the crop plan).
 - **Work that needs a farmer:** wrap it in `withFarmer(ctx, kind, obj, durationMs, () => didIt)` from
-  `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the farmhouse to the
+  `src/game/workers.ts`; it refuses with a toast when every farmer is busy or no path leads from the village centre to the
   site, and sends a farmer along the path only if the action succeeded.
 - **Selling:** `sell(game, itemId, qty?)` / `currentPrice(game.state, itemId)` (today's price with the farm's perks,
   less its saturation drop; `farmSellPrice` is it before the drop, `dailyPrice` the plain one) / `quoteSale(game.state,
@@ -865,7 +908,12 @@ Use `game.advance(ms)` to move time in tests (it runs the work scheduler); setti
 - **Startup logic:** `onGameStart((ctx) => { ... })`.
 - **New-game content:** `onNewGame((state) => addStartingObject(state, 'field', x, y))` from
   `src/logic/state.ts` (runs only for brand-new farms, not loaded saves). Setups run in import order;
-  `onNewGame(setup, { late: true })` runs after all the others (the farmhouse lays its roads to what they placed).
+  `onNewGame(setup, { early: true })` runs before all the others (the camp, which the map is generated around) and
+  `{ late: true }` after them.
+- **Tests and the new start:** a new game is only the camp, but most rule tests were written for a farm with a built
+  farmhouse, two ploughed starting fields and a road. In tests (`src/test-setup.ts`) a new game is laid out that way
+  (`classicFarm` in `src/logic/test-utils.ts`); a test of the new start turns it off with `useClassicStart(false)` and
+  back on after (see `src/logic/village.test.ts`, the guide and balance tests).
 
 ## Save data
 
@@ -880,12 +928,16 @@ Version 13 added oxcart hauling: a resource building's `waiting` output (from ol
 room) stays, now as its yard, so nothing is lost; jobs gain an optional `haul` trip and ox barns their own state.
 Version 14 added tools: every farmer of an older save gets an empty tool slot (`workers.tools`).
 The starting camp needed no version bump either: it is an object (type `camp`, its `left` in `state`) plus the
-additive `camp` slice (`{ id, packed }`); a save without them simply has no camp.
+additive `camp` slice (`{ id, packed, families }`); a save without them simply has no camp, and one without
+`families` has nobody in the tent.
 Version 16 added the main road and the trading post: an older save gets its road on load from a seed it already holds
 (the trader's, else its clock), routed through free tiles in the band round everything built, ponds and deposits (trees
 and bushes on it are cleared; the band widens when there is no way through). Its active "Buy 10 wood at the Market"
 goal becomes "Build a trading post" (same slot and reward), a guide in progress keeps its place, and a one-time toast
 says trade now needs a trading post linked to the main road (`ext.trade.pendingNotice`).
+Version 17 made the farmhouse a later building: nothing in a save changes (a guide in progress keeps its step in the
+reordered list), but only saves from before version 17 that lack a farmhouse get one (with roads to what they built)
+when they load; from version 17 on a farm without a farmhouse is normal.
 
 - **Home screen:** the page opens on a "Farmer" title over the dimmed, paused farm (its seasonal look, or a fresh
   farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getBuildable } from '../data/buildables';
 import { APPROVAL, ARRIVAL_DELAY_DAYS, ARRIVE_APPROVAL, COTTAGE, FOODS, LEAVE_APPROVAL, MEAL_PER_FAMILY } from '../data/families';
 import { FIELD } from '../data/crops';
+import { FARMHOUSE_APPROVAL } from '../data/farmhouse';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS, START_LAYOUT } from './constants';
 import { addFamily, approvalOf, familiesOf, mealFrom, YEAR_MS, type DayNeeds } from './families';
@@ -208,8 +209,8 @@ describe('families on the farm', () => {
     game.advance(DAY_MS - 1);
     expect(workersOf(game.state).farmers).toBe(1);
     stock(game, 'wheat', 10);
-    game.advance(1); // the next day: fed, approval back to 50
-    expect(familiesOf(game.state).approval).toBe(50);
+    game.advance(1); // the next day: fed, approval back to 50, plus the farmhouse's 10
+    expect(familiesOf(game.state).approval).toBe(APPROVAL.base + FARMHOUSE_APPROVAL);
     expect(workersOf(game.state).farmers).toBe(2);
   });
 
@@ -219,7 +220,7 @@ describe('families on the farm', () => {
     game.advance(2 * DAY_MS);
     expect(workersOf(game.state).farmers).toBe(2); // arrived half a day in, on the starting approval
     // Bread and carrots from the camp: two kinds of food, no hunger.
-    expect(familiesOf(game.state).approval).toBe(APPROVAL.base + APPROVAL.perExtraFood);
+    expect(familiesOf(game.state).approval).toBe(APPROVAL.base + APPROVAL.perExtraFood + FARMHOUSE_APPROVAL);
     expect(familiesOf(game.state).breakdown.find((p) => p.id === 'food')).toBeUndefined();
     for (const id of ['bread', 'carrot']) delete game.state.inventory[id];
     game.advance(DAY_MS); // the granary is empty: there is no grace any more
@@ -246,18 +247,18 @@ describe('families on the farm', () => {
     const w = workersOf(game.state);
     const field = game.objectsOfType(FIELD)[0];
     expect(assignFarmer(game, field.id, 2).ok).toBe(true);
-    game.state.inventory.wood = 4; // one day of firewood for three homes, and one stick over
+    game.state.inventory.wood = 3; // one day of firewood for three homes
     stock(game, 'wheat', 100);
     stock(game, 'carrot', 100);
     const left: (string | null)[] = [];
     game.activity.on('familyLeft', ({ workplace }) => left.push(workplace));
 
     game.advance(1); // winter day 1
-    expect(game.count('wood')).toBe(1);
+    expect(game.count('wood')).toBe(0);
     expect(familiesOf(game.state).lastDay).toMatchObject({ firewood: 3 });
     expect(familiesOf(game.state).approval).toBeGreaterThanOrEqual(ARRIVE_APPROVAL);
 
-    game.advance(DAY_MS); // winter day 2: one stick for three homes
+    game.advance(DAY_MS); // winter day 2: no wood for three homes
     expect(game.count('wood')).toBe(0);
     expect(familiesOf(game.state).approval).toBeLessThan(LEAVE_APPROVAL);
     expect(w.farmers).toBe(3);

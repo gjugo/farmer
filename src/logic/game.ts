@@ -1,4 +1,4 @@
-import { getBuildable, type BuildableDef } from '../data/buildables';
+import { demolishable, getBuildable, type BuildableDef } from '../data/buildables';
 import { COTTAGE, COTTAGE_DEF } from '../data/families';
 import { materialEntries, type MaterialCost, type MaterialId } from '../data/materials';
 import { isStorageType, STORAGE } from '../data/storage';
@@ -22,6 +22,7 @@ import { createNewGame } from './state';
 import { capacity, excessWithout, spaceFor, used } from './storage';
 import type { GameState, ItemId, PlacedObject } from './types';
 import { buildableUnlockLevel, isUnlocked, type Unlock } from './unlocks';
+import { centreSnapshot, keepRoadsJoined, villageCentre } from './roads';
 import { runWork } from './work';
 
 export interface GameEvents {
@@ -59,6 +60,8 @@ export type MissingMaterials = [MaterialId, number][];
 export type DemolishCheck =
   | { ok: true; money: number; materials: MaterialCost; lost: MaterialCost }
   | { ok: false; reason: 'missing' | 'fixed' }
+  /** The last finished cottage while the camp is packed away and no farmhouse stands: the farm's village centre. */
+  | { ok: false; reason: 'centre' }
   /** A storage building whose stock wouldn't fit without it: `excess` items too many. */
   | { ok: false; reason: 'storage'; excess: number };
 
@@ -301,11 +304,15 @@ export class Game {
     };
     const workMs = options.site ? buildTime(this._state, type) : 0;
     if (workMs > 0) object.site = { workMs, paid: def.cost };
+    const centre = centreSnapshot(this._state);
     this._state.objects.push(object);
     // Building over stumps (or a used-up deposit) clears them for good.
     if (clearUnder(mapOf(this._state), { x, y, ...def.footprint }, this.now, type)) this.mapChanged();
     this.events.emit('objectAdded', object);
     this.activity.emit('placed', { type });
+    // A finished farmhouse (debug, tests) is the new village centre; a finished home may be the room the camp waits for.
+    keepRoadsJoined(this, centre);
+    if (!object.site) settleCamp(this);
     return { ok: true, object };
   }
 
@@ -317,8 +324,11 @@ export class Game {
   checkDemolish(id: string): DemolishCheck {
     const object = this.getObject(id);
     if (!object) return { ok: false, reason: 'missing' };
-    const def = getBuildable(object.type);
-    if (def?.fixed) return { ok: false, reason: 'fixed' };
+    if (!demolishable(object)) return { ok: false, reason: 'fixed' };
+    // A farm never loses its village centre (farmers set out from it, and every path starts there).
+    if (villageCentre(this._state) && !villageCentre({ ...this._state, objects: this._state.objects.filter((o) => o !== object) })) {
+      return { ok: false, reason: 'centre' };
+    }
     const excess = excessWithout(this._state, object);
     if (excess > 0) return { ok: false, reason: 'storage', excess };
     let room = Math.max(0, capacity(this._state, 'materials', id) - used(this._state, 'materials'));
@@ -341,11 +351,14 @@ export class Game {
   demolish(id: string): number | null {
     const check = this.checkDemolish(id);
     if (!check.ok) return null;
+    const centre = centreSnapshot(this._state);
     const i = this._state.objects.findIndex((o) => o.id === id);
     const [object] = this._state.objects.splice(i, 1);
     // Goods parked on an ox barn's cart go into the stores (beyond their room if need be): nothing is lost.
     releaseCargo(this, object);
     this.events.emit('objectRemoved', object);
+    // The centre cottage gone: the next one is the centre, joined to the roads.
+    keepRoadsJoined(this, centre);
     this.earn(check.money);
     for (const [item, qty] of materialEntries(check.materials)) this.addItem(item, qty);
     return check.money;

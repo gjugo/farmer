@@ -7,8 +7,14 @@ import { getBuildable } from './buildables';
  * does its work by themselves; with nothing to do there they build construction sites.
  */
 
-/** A new farm starts with this many farmers: the family in the farmhouse. More move into cottages (`src/data/families.ts`). */
-export const STARTING_FARMERS = 1;
+/**
+ * A new farm starts with this many farmers: the families in the camp's tent (`src/data/camp.ts`). More move into
+ * cottages and the farmhouse (`src/data/families.ts`).
+ */
+export const STARTING_FARMERS = 2;
+
+/** The last family never leaves; saves from before the camp started with one. */
+export const MIN_FARMERS = 1;
 
 /** The most farmers a farm can employ. */
 export const MAX_FARMERS = 20;
@@ -61,6 +67,8 @@ export const NO_FARMER_BUILDABLES: readonly string[] = ['path', 'veg-patch', 'he
 /** How long building `type` keeps a farmer busy; 0 when it needs no farmer. */
 export function buildWorkMs(type: string): number {
   if (NO_FARMER_BUILDABLES.includes(type)) return 0;
-  const fp = getBuildable(type)?.footprint ?? { w: 1, h: 1 };
+  const def = getBuildable(type);
+  if (def?.buildWorkMs) return def.buildWorkMs;
+  const fp = def?.footprint ?? { w: 1, h: 1 };
   return Math.min(BUILD_WORK_MAX_MS, Math.max(BUILD_WORK_MIN_MS, fp.w * fp.h * BUILD_WORK_PER_TILE_MS));
 }

@@ -28,7 +28,7 @@ import { formatMoney, h } from '../../ui/dom';
 import { itemIcon } from '../../ui/icons';
 
 /**
- * The travelling trader: his wagon by the farmhouse, a HUD banner and a ⚖️ Trade tab the day before and while he is
+ * The travelling trader: his wagon in the village (by the camp, later the farmhouse), a HUD banner and a ⚖️ Trade tab the day before and while he is
  * here, and his panel.
  * Logic (schedule, offers, trading) lives in `src/logic/trader.ts`.
  */

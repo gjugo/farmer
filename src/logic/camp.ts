@@ -1,12 +1,14 @@
 import { getBuildable } from '../data/buildables';
-import { CAMP, CAMP_FOOTPRINT, CAMP_SUPPLIES } from '../data/camp';
-import { FARMHOUSE, PATH } from '../data/farmhouse';
+import { CAMP, CAMP_FAMILIES, CAMP_FOOTPRINT, CAMP_SUPPLIES } from '../data/camp';
+import { PATH } from '../data/farmhouse';
 import { isStoredMaterial } from '../data/materials';
 import type { StoragePool } from '../data/storage';
+import { START_LAYOUT } from './constants';
 import type { Game } from './game';
-// The farmhouse and its road are laid out first (its late setup registers before ours); the camp goes beside them.
-import { farmhouseOf } from './roads';
+import { houseRoom } from './homes';
+import { inBounds } from './land';
 import { canPlace } from './placement';
+import { centreSnapshot, keepRoadsJoined } from './roads';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import { addStartingObject, onNewGame } from './state';
 import type { GameState, Inventory, PlacedObject } from './types';
@@ -15,9 +17,12 @@ import type { GameState, Inventory, PlacedObject } from './types';
  * The starting camp (see `src/data/camp.ts`). Its supplies are ordinary stock in `state.inventory`; the camp only
  * records how much of each is `left`. After every change to the inventory `left[item]` drops to what the farm still
  * holds, so whatever is spent, sold or eaten comes out of the camp first and nothing new ever refills it. The camp adds
- * its `left` to each storage pool's room, and once every `left` is 0 it is packed away: the object goes, its tiles
- * are free, and the slice remembers that it was (so a reload doesn't bring it back). Saves from before the camp have
- * none.
+ * its `left` to each storage pool's room. The starting families live in its tent (it never takes newcomers), and the
+ * village centre is the tile in front of it until the farmhouse is built (`villageCentre`, `src/logic/roads.ts`).
+ * Once every `left` is 0 *and* its families have room in the cottages or the farmhouse it is packed away: the object
+ * goes, its tiles are free, its families move into the houses, and the slice remembers that it was (so a reload
+ * doesn't bring it back). Until then the empty tent waits for homes. Saves from before the camp have none, and saves
+ * from before the camp housed families have none in it.
  */
 
 export type CampState = {
@@ -30,17 +35,54 @@ export interface CampSlice {
   id: string | null;
   /** True once the supplies were used up and the camp packed away. */
   packed: boolean;
+  /** Families living in the tent while it stands (0 once packed, and in saves from before the tent housed any). */
+  families: number;
 }
 
 export const CAMP_SLICE = 'camp';
 
-registerStateSlice<CampSlice>(CAMP_SLICE, () => ({ id: null, packed: false }));
+registerStateSlice<CampSlice>(CAMP_SLICE, () => ({ id: null, packed: false, families: 0 }));
 
 export function campSlice(state: GameState): CampSlice {
   const s = getSlice<CampSlice>(state, CAMP_SLICE);
   if (typeof s.id !== 'string') s.id = null;
   s.packed = s.packed === true;
+  s.families = Number.isInteger(s.families) && s.families > 0 ? Math.min(s.families, CAMP_FAMILIES) : 0;
   return s;
+}
+
+/** The farm's farmers (one per family), read without the workers module (which needs this one). */
+function farmers(state: GameState): number {
+  const n = getSlice<{ farmers?: unknown }>(state, 'workers')?.farmers;
+  return typeof n === 'number' && Number.isInteger(n) && n > 0 ? n : 1;
+}
+
+/** Families living in the tent now: its starting families, as far as they are still on the farm; 0 once it is gone. */
+export function tentFamilies(state: GameState): number {
+  return campOf(state) ? Math.min(campSlice(state).families, farmers(state)) : 0;
+}
+
+/**
+ * Families of the tent with first claim on free house room: all of them once the supplies are used up (newcomers wait
+ * until they have moved out), none before.
+ */
+export function tentClaims(state: GameState): number {
+  const camp = campOf(state);
+  return camp && Object.keys(campLeft(camp)).length === 0 ? tentFamilies(state) : 0;
+}
+
+/** Families the tent's packing waits for: those in it the houses have no room for yet. */
+export function waitingFamilies(state: GameState): number {
+  const tent = tentFamilies(state);
+  if (tent === 0) return 0;
+  const housed = farmers(state) - tent;
+  return Math.max(0, tent - Math.max(0, houseRoom(state) - housed));
+}
+
+/** A family left the farm: while the tent stands it is one of the tent's (the poorest home goes first). */
+export function familyLeftCamp(state: GameState): void {
+  const s = campSlice(state);
+  if (campOf(state) && s.families > 0) s.families--;
 }
 
 /** The camp object, while it stands. */
@@ -85,10 +127,11 @@ export function trimCamp(state: GameState): boolean {
 }
 
 /**
- * Runs after every inventory change that takes something out (`Game.removeItem`): trims `left`, and packs the camp
- * away once the supplies are used up. Packing removes the object (with an `objectRemoved` event, which the camp's view
- * turns into a fade and a toast) and marks the slice `packed`. The objects array is replaced rather than spliced, so
- * a loop over it that took the last supplies carries on safely.
+ * Runs after every inventory change that takes something out (`Game.removeItem`) and at every scheduler step (a home
+ * may have been finished): trims `left`, and packs the camp away once the supplies are used up and its families have
+ * room in the houses. Packing removes the object (with an `objectRemoved` event, which the camp's view turns into a
+ * fade and a toast), moves its families into the houses and marks the slice `packed`. The objects array is replaced
+ * rather than spliced, so a loop over it that took the last supplies carries on safely.
  */
 export function settleCamp(game: Game): void {
   const { state } = game;
@@ -96,94 +139,97 @@ export function settleCamp(game: Game): void {
   if (!camp) return;
   const before = JSON.stringify(camp.state.left);
   const empty = trimCamp(state);
-  if (empty) {
+  if (empty && waitingFamilies(state) === 0) {
+    const centre = centreSnapshot(state);
     state.objects = state.objects.filter((o) => o !== camp);
     const s = campSlice(state);
     s.id = camp.id;
     s.packed = true;
+    s.families = 0;
     game.events.emit('objectRemoved', camp);
+    // The village centre moves to the oldest cottage (or the farmhouse): the roads that met at the tent stay joined.
+    keepRoadsJoined(game, centre);
   } else if (JSON.stringify(camp.state.left) !== before) game.touch(camp);
 }
 
-/** `window.farm.camp`: the camp's id, what is left, the room it adds and whether it is packed away; null on old saves. */
+/**
+ * `window.farm.camp`: the camp's id, what is left, the room it adds, whether it is packed away, the families in the
+ * tent and how many of them wait for homes before it can be packed (only once the supplies are used up); null on old
+ * saves.
+ */
 export interface CampInfo {
   id: string;
   left: Inventory;
   room: Record<StoragePool, number>;
   packed: boolean;
+  families: number;
+  waiting: number;
 }
 
 export function campInfo(state: GameState): CampInfo | null {
   const camp = campOf(state);
-  if (camp) return { id: camp.id, left: { ...campLeft(camp) }, room: { goods: campRoom(state, 'goods'), materials: campRoom(state, 'materials') }, packed: false };
+  if (camp) {
+    const left = { ...campLeft(camp) };
+    const waiting = Object.keys(left).length === 0 ? waitingFamilies(state) : 0;
+    return { id: camp.id, left, room: { goods: campRoom(state, 'goods'), materials: campRoom(state, 'materials') }, packed: false, families: tentFamilies(state), waiting };
+  }
   const s = campSlice(state);
-  return s.packed && s.id ? { id: s.id, left: {}, room: { goods: 0, materials: 0 }, packed: true } : null;
+  return s.packed && s.id ? { id: s.id, left: {}, room: { goods: 0, materials: 0 }, packed: true, families: 0, waiting: 0 } : null;
 }
 
 // New game -------------------------------------------------------------------------------
 
-/** True when the w × h area at (x, y) shares an edge with a path tile. */
-function besidePath(state: GameState, x: number, y: number, w: number, h: number): boolean {
-  const paths = new Set(state.objects.filter((o) => o.type === PATH).map((o) => `${o.x},${o.y}`));
-  for (let tx = x; tx < x + w; tx++) if (paths.has(`${tx},${y - 1}`) || paths.has(`${tx},${y + h}`)) return true;
-  for (let ty = y; ty < y + h; ty++) if (paths.has(`${x - 1},${ty}`) || paths.has(`${x + w},${ty}`)) return true;
-  return false;
+/** Where a new farm's camp stands: in the middle of the starting land, with room for fields on the rich soil to its left. */
+export const START_CAMP = { x: START_LAYOUT.x + 6, y: START_LAYOUT.y } as const;
+
+/** The tile in front of the tent, where its families set out from (relative to the camp's top-left tile). */
+export const CAMP_FRONT = { x: 1, y: CAMP_FOOTPRINT.h } as const;
+
+/** The tile in front of a camp standing at (x, y). */
+export function campFront(at: { x: number; y: number }): { x: number; y: number } {
+  return { x: at.x + CAMP_FRONT.x, y: at.y + CAMP_FRONT.y };
 }
 
 /**
- * Where a new farm's camp goes: free owned tiles near the farmhouse, beside a path, on the side away from the
- * starting fields (the spot nearest to a point two and a half tiles past the farmhouse on that side). Null when
- * nothing fits.
+ * Where a new farm's camp goes: `START_CAMP`, or else the free spot nearest to it (clear of trees and rocks) with a
+ * free tile in the map in front of the tent. Null when nothing fits.
  */
 export function campSpot(state: GameState): { x: number; y: number } | null {
-  const house = farmhouseOf(state);
-  if (!house) return null;
-  const hf = getBuildable(FARMHOUSE)!.footprint;
-  const hx = house.x + hf.w / 2;
-  const hy = house.y + hf.h / 2;
-  const others = state.objects.filter((o) => o.type !== PATH && o.type !== FARMHOUSE);
-  const centre = (o: PlacedObject) => {
-    const fp = getBuildable(o.type)?.footprint ?? { w: 1, h: 1 };
-    return { x: o.x + fp.w / 2, y: o.y + fp.h / 2 };
-  };
-  let dx = 1;
-  let dy = 0;
-  if (others.length) {
-    const fx = others.reduce((n, o) => n + centre(o).x, 0) / others.length - hx;
-    const fy = others.reduce((n, o) => n + centre(o).y, 0) / others.length - hy;
-    const len = Math.hypot(fx, fy) || 1;
-    [dx, dy] = [-fx / len, -fy / len];
-  }
-  const { w, h } = CAMP_FOOTPRINT;
-  const reach = (hf.w + w) / 2 + 0.5;
-  const want = { x: hx + dx * reach, y: hy + dy * reach };
-  const spots: { x: number; y: number; d: number }[] = [];
-  for (let y = house.y - 8; y <= house.y + 8; y++) {
-    for (let x = house.x - 8; x <= house.x + 8; x++) {
-      const d = Math.hypot(x + w / 2 - want.x, y + h / 2 - want.y) + (besidePath(state, x, y, w, h) ? 0 : 4);
-      spots.push({ x, y, d });
-    }
-  }
-  spots.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
   const footprintOf = (o: PlacedObject) => getBuildable(o.type)?.footprint ?? { w: 1, h: 1 };
-  return spots.find((s) => canPlace(state, CAMP_FOOTPRINT, s.x, s.y, footprintOf, CAMP).ok) ?? null;
+  const fits = (x: number, y: number) => {
+    if (!canPlace(state, CAMP_FOOTPRINT, x, y, footprintOf, CAMP).ok) return false;
+    const front = campFront({ x, y });
+    return inBounds(state.land, front.x, front.y) && canPlace(state, { w: 1, h: 1 }, front.x, front.y, footprintOf, PATH).ok;
+  };
+  const spots: { x: number; y: number; d: number }[] = [];
+  for (let y = 0; y < state.land.height; y++) for (let x = 0; x < state.land.width; x++) spots.push({ x, y, d: Math.abs(x - START_CAMP.x) + Math.abs(y - START_CAMP.y) });
+  spots.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
+  const spot = spots.find((s) => fits(s.x, s.y));
+  return spot ? { x: spot.x, y: spot.y } : null;
 }
 
-/** Sets up a new farm's camp with its supplies (also put into the inventory). Returns the camp, or null when it didn't fit. */
+/**
+ * Sets up a new farm's camp: the tent with its supplies (also put into the inventory), a path on the tile in front of
+ * it, and its families (the farm's starting farmers). Returns the camp, or null when it didn't fit.
+ */
 export function addCamp(state: GameState): PlacedObject<CampState> | null {
   const spot = campSpot(state);
   const camp = spot && (addStartingObject(state, CAMP, spot.x, spot.y) as PlacedObject<CampState> | null);
   if (!camp) return null;
   for (const [id, n] of Object.entries(CAMP_SUPPLIES)) if (n) state.inventory[id] = (state.inventory[id] ?? 0) + n;
-  campSlice(state).id = camp.id;
+  const front = campFront(camp);
+  addStartingObject(state, PATH, front.x, front.y);
+  const s = campSlice(state);
+  s.id = camp.id;
+  s.families = CAMP_FAMILIES;
+  getSlice<{ farmers: number }>(state, 'workers').farmers = Math.max(farmers(state), CAMP_FAMILIES);
   return camp;
 }
 
-// Late, like the farmhouse (and after it: roads is imported first), so the fields, the map and the farmhouse with its
-// road are all there; the spot keeps clear of trees and rocks.
+// Early: a new farm is only the camp, and the map is generated around it (clear of trees and rocks).
 onNewGame(
   (state) => {
     addCamp(state);
   },
-  { late: true },
+  { early: true },
 );

@@ -15,13 +15,17 @@ const paths = (state: GameState) => state.objects.filter((o) => o.type === PATH)
 const isNeighbour = (a: Tile, b: Tile) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
 
 describe('farmhouse and roads', () => {
-  it('a new farm has a farmhouse with a road from its door to both starting fields', () => {
+  it('a classic farm has a farmhouse with a road from its door to both starting fields', () => {
     const state = createNewGame();
     const house = farmhouseOf(state)!;
     expect(house).toMatchObject({ type: FARMHOUSE, ...STARTING_FARMHOUSE });
+    const along = { x: house.x - 1, y: house.y - 1, w: 4, h: 4 };
+    const inside = (t: Tile, a: { x: number; y: number; w: number; h: number }) => t.x >= a.x && t.y >= a.y && t.x < a.x + a.w && t.y < a.y + a.h;
+    expect(paths(state).some((p) => p.x === doorOf(house).x && p.y === doorOf(house).y)).toBe(true);
     for (const f of STARTING_FIELDS) {
       const route = findRoute(state, field(f))!;
-      expect(route.tiles[0]).toEqual(doorOf(house));
+      // Farmers step out of the house onto the road: the door's tile or another one along its edges.
+      expect(inside(route.tiles[0], along) && !inside(route.tiles[0], { ...house, w: 2, h: 2 })).toBe(true);
       route.tiles.slice(1).forEach((t, i) => expect(isNeighbour(t, route.tiles[i])).toBe(true));
       // The farmer works on the field tile next to the last path tile.
       const last = route.tiles[route.tiles.length - 1];
@@ -34,14 +38,17 @@ describe('farmhouse and roads', () => {
     }
   });
 
-  it('the roads reach the starting fields whichever module loads first (the browser loads src/game/workers first)', async () => {
+  it('a new farm is its camp and the path in front of it, whichever module loads first (the browser loads src/game/workers first)', async () => {
     vi.resetModules();
     await import('../game/workers');
     const roads = await import('./roads');
-    const crops = await import('./crops');
+    const camp = await import('./camp');
     const { createNewGame: fresh } = await import('./state');
+    // A fresh module graph: no classic start from the test setup.
     const state = fresh();
-    for (const f of crops.STARTING_FIELDS) expect(roads.findRoute(state, field(f))).not.toBeNull();
+    expect(state.objects.map((o) => o.type).sort()).toEqual(['camp', PATH]);
+    expect(roads.villageCentre(state)).toMatchObject({ type: 'camp', ...camp.campFront(camp.campOf(state)!) });
+    expect(roads.farmhouseOf(state)).toBeUndefined();
   });
 
   it('there is no route to a site no path touches, until one is built', () => {
@@ -67,10 +74,13 @@ describe('farmhouse and roads', () => {
     expect(findRoute(game.state, site)).toBeNull();
   });
 
-  it('the road must start at the door', () => {
+  it('the road must start at the farmhouse: with no path along its edges nothing is reached', () => {
     const game = new Game();
-    const door = doorOf(farmhouseOf(game.state)!);
-    game.demolish(game.objectAt(door.x, door.y)!.id);
+    const house = farmhouseOf(game.state)!;
+    for (const p of paths(game.state)) {
+      const along = p.x >= house.x - 1 && p.x <= house.x + 2 && p.y >= house.y - 1 && p.y <= house.y + 2;
+      if (along) game.demolish(p.id);
+    }
     for (const f of STARTING_FIELDS) expect(findRoute(game.state, field(f))).toBeNull();
   });
 

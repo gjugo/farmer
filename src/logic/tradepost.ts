@@ -8,11 +8,11 @@ import type { GameState, PlacedObject } from './types';
 
 /**
  * The trading post and its link to the main road. Trade is open while a finished trading post is **connected**: the
- * path network from the farmhouse door (the main road counts as path) reaches both the post and a main-road tile.
+ * path network from the village centre (the camp's tent, later the farmhouse door; the main road counts as path) reaches both the post and a main-road tile.
  * Breaking the link later closes trade again until it is mended.
  */
 
-/** Why trade is closed: no post yet, its site still being built, no path from the farmhouse to it, or none on to the road. */
+/** Why trade is closed: no post yet, its site still being built, no path from the village centre to it, or none on to the road. */
 export type TradeLinkReason = 'no-post' | 'building' | 'no-path' | 'no-road';
 
 export interface TradeLink {
@@ -66,7 +66,7 @@ export function wouldLink(state: GameState, x: number, y: number): boolean {
 export const LINK_TEXT: Record<TradeLinkReason, string> = {
   'no-post': 'Build a 🏪 trading post and link it to the main road with a path',
   building: 'The 🏪 trading post is still being built',
-  'no-path': 'No path from the farmhouse reaches the 🏪 trading post',
+  'no-path': 'No path from the village (the camp, later the farmhouse) reaches the 🏪 trading post',
   'no-road': 'No path joins the 🏪 trading post to the 🛣️ main road',
 };
 

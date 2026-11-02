@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { getBuildable } from '../data/buildables';
+import { demolishable, getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { splitIcons } from '../data/items';
 import { formatMaterials, needsMaterialsMessage } from '../data/materials';
@@ -16,7 +16,7 @@ import { START_LAND } from '../logic/constants';
 import { inBounds } from '../logic/land';
 import { isRoadTile } from '../logic/mainroad';
 import { mapOf, treeAt } from '../logic/maplayer';
-import { farmhouseOf } from '../logic/roads';
+import { villageCentre } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
 import { ART_RES, ART_SCALE, CURSOR, neighbourMask, POND, POND_WILLOW, pondWillows, roadPiece, sceneryArt, sceneryClear, treeLook } from './art';
@@ -68,6 +68,9 @@ const SITE_BAR_W = 64;
 const FLOAT_FONT = Math.round(ISO_H * 0.45);
 
 
+/** Why the last cottage can't go before the farmhouse is built. */
+const CENTRE_MESSAGE = 'This cottage is your village centre: farmers set out from it. Build another cottage or the farmhouse first';
+
 const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string> = {
   money: 'Not enough money',
   materials: 'Not enough building materials',
@@ -82,6 +85,7 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
   'needs-home': 'A garden must touch a home along an edge',
   'home-has-garden': 'That home already has a garden',
   pond: 'A pond is in the way',
+  built: 'Already built: a farm has only one',
   road: 'The main road runs here',
 };
 
@@ -561,12 +565,13 @@ export class FarmScene extends Phaser.Scene {
 
   /**
    * The opening view: the farm (the starting land and everything built beyond it) with a little land around it,
-   * zoomed out as far as tiles stay easy to tap (on a phone that is closer, centred on the farmhouse).
+   * zoomed out as far as tiles stay easy to tap (on a phone that is closer, centred on the village centre: the camp
+   * on a new farm, the farmhouse once it is built).
    */
   private focusFarm(): void {
     const area = farmArea(this.farm.state.objects);
-    const house = farmhouseOf(this.farm.state);
-    const focus = house ? { x: house.x + 1, y: house.y + 1 } : { x: area.x + area.w / 2, y: area.y + area.h / 2 };
+    const centre = villageCentre(this.farm.state);
+    const focus = centre ? { x: centre.x + 0.5, y: centre.y - 0.5 } : { x: area.x + area.w / 2, y: area.y + area.h / 2 };
     const cam = this.cameras.main;
     const view = openingView(area, cam.width, cam.height, focus);
     cam.setZoom(Phaser.Math.Clamp(view.zoom, this.minZoom, MAX_ZOOM));
@@ -766,7 +771,7 @@ export class FarmScene extends Phaser.Scene {
         ui.toast('Nothing to demolish here', 'error');
         return;
       }
-      if (getBuildable(obj.type)?.fixed) {
+      if (!demolishable(obj)) {
         ui.toast(`The ${getBuildable(obj.type)!.name.toLowerCase()} stays`, 'error');
         return;
       }
@@ -799,7 +804,7 @@ export class FarmScene extends Phaser.Scene {
         : (behavior?.panel?.(this.ctx, obj) ?? { title: def?.name ?? obj.type, lines: def?.description ? [def.description] : [] });
       const work = workplacePanel(this.ctx, obj);
       const refund = refundOf(obj);
-      if (def?.fixed) return spec;
+      if (!demolishable(obj)) return spec;
       return {
         ...spec,
         lines: [...(spec.lines ?? []), ...(work?.lines ?? [])],
@@ -829,6 +834,7 @@ export class FarmScene extends Phaser.Scene {
     const check = game.checkDemolish(obj.id);
     if (!check.ok) {
       if (check.reason === 'storage') ui.toast(demolishBlockedMessage(obj, check.excess), 'error');
+      if (check.reason === 'centre') ui.toast(CENTRE_MESSAGE, 'error');
       return;
     }
     const losing = Object.keys(check.lost).length > 0;

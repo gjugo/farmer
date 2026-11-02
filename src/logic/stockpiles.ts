@@ -1,15 +1,15 @@
 import { CAMP_SUPPLIES } from '../data/camp';
-import { FARMHOUSE } from '../data/farmhouse';
 import { GRANARY_PILES, PILE_STAGES, pileOf, STOREHOUSE_PILES, type PileStage } from '../data/resources';
-import { FARMHOUSE_STORE, isStorageType, STORAGE, STORAGE_POOLS, type StoragePool } from '../data/storage';
+import { isStorageType, STORAGE, STORAGE_POOLS, type StoragePool } from '../data/storage';
 import { campLeft, campOf } from './camp';
-import { capacityOfObject, poolOf, used } from './storage';
+import { builtFarmhouse } from './homes';
+import { capacityOfObject, farmhouseStore, poolOf, settlersYard, used } from './storage';
 import type { GameState } from './types';
 
 /**
  * Which stock piles each building shows. Stock is one shared pool per kind, so the display splits it: the
  * starting camp shows what is left of its supplies (one pile per item, shrinking from full as it goes), the
- * farmhouse store fills first with the rest, then each finished granary (goods) or storehouse (materials) in placement
+ * farmhouse store (once it is built) fills first with the rest, then each finished granary (goods) or storehouse (materials) in placement
  * order, up to its room. Purely visual: no rule reads this.
  */
 
@@ -64,20 +64,22 @@ export function stockDisplay(state: GameState): StockShown[] {
     const totals = pileTotals(state, pool, kinds);
     if (camp) for (const [id, n] of Object.entries(campLeft(camp))) if (poolOf(id) === pool) totals[pileOf(id)] = Math.max(0, (totals[pileOf(id)] ?? 0) - n);
     const biggest = Math.max(0, ...Object.values(totals));
-    // The camp's supplies are drawn at the camp; the rest is shared out from the farmhouse on.
+    // The camp's supplies are drawn at the camp; the rest is shared out from the farmhouse (once built) on.
     let left = used(state, pool) - campHeld[pool];
     const take = (room: number) => {
       const held = Math.min(left, room);
       left -= held;
       return held;
     };
-    // The farmhouse store fills first (even with no farmhouse on the map, its room is there).
-    const houseHeld = take(FARMHOUSE_STORE[pool]);
-    const house = state.objects.find((o) => o.type === FARMHOUSE);
+    // Until the farmhouse is built the settlers' yard keeps a little (drawn nowhere); then its store fills first.
+    take(settlersYard(state, pool));
+    const house = builtFarmhouse(state);
     if (house) {
+      const room = farmhouseStore(state, pool);
+      const houseHeld = take(room);
       const entry = shown.get(house.id) ?? { id: house.id, type: house.type, pools: {}, piles: {} };
-      entry.pools[pool] = { held: houseHeld, capacity: FARMHOUSE_STORE[pool] };
-      entry.piles[HOUSE_PILES[pool]] = pileStage(houseHeld / FARMHOUSE_STORE[pool]);
+      entry.pools[pool] = { held: houseHeld, capacity: room };
+      entry.piles[HOUSE_PILES[pool]] = pileStage(houseHeld / room);
       shown.set(house.id, entry);
     }
     for (const obj of state.objects) {
