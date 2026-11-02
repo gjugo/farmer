@@ -4,12 +4,13 @@ import '../data/storage';
 import './roads'; // gives a new farm its farmhouse
 import { HOUSE_PILES, pileStage, stockDisplay, type StockShown } from './stockpiles';
 import { createNewGame } from './state';
+import { noCamp } from './test-utils';
 import { storageInfo } from './storage';
 import type { GameState } from './types';
 
-/** A new farm (with its farmhouse) holding exactly `inventory`. */
+/** A new farm (with its farmhouse, without the camp) holding exactly `inventory`. */
 function farm(inventory: Record<string, number> = {}): GameState {
-  const state = createNewGame();
+  const state = noCamp(createNewGame());
   state.inventory = { ...inventory };
   return state;
 }

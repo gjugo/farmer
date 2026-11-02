@@ -59,6 +59,7 @@ git (or rerun the commands below) after running it.
 | `orchard`, `orchard_winter` (the pad; its two trees are `tree_apple` in its seasons, drawn by the game) | `orchard_raw.png`, `orchard_winter_raw.png` | all |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
 | `trader_wagon`, `trader_wagon_winter` (the travelling trader with his wagon) | `trader_wagon_raw.png`, `trader_wagon_winter_raw.png`; see **Trader's wagon** below | all |
+| `camp`, `camp_winter` (the starting camp's tent and campfire, 3×3) | `camp_raw.png`, `camp_winter_raw.png`; see **Starting camp** below | all |
 
 ## Generating in Ludo
 
@@ -1096,6 +1097,31 @@ existing entries); the game draws `trader_wagon_winter` in winter.
 ```bash
 for n in trader_wagon trader_wagon_winter; do
   $P $L/fit_prop.py $L/source/${n}_raw.png /tmp/props $n 420 600 0.4 --shadow=100
+  $P $L/install_prop.py /tmp/props $n
+done
+```
+
+## Starting camp
+
+`generateWithStyle` with `cottage_raw.png` as the style image (Cel-Shaded, sprite, 4 results): a small settlers' camp
+seen from the south corner at 2:1, a ridge tent of patched off-white canvas on wooden poles with guy ropes, its open
+flap to the front-left, and at its front-right a ring of grey stones round a campfire with a black cooking pot on a
+wooden tripod; no ground, pad, shadow or people. Winter is `editImage` on the chosen one ("keep the same ... exactly;
+add fresh snow on the ridge and canvas, on the stones and the tripod, small icicles along the lower edge; the fire
+still burns"). Both are 768×608, so they fit with the same BASE and SCALE.
+
+It is fitted with `fit_prop.py` (BASE in the middle of the tent and fire's ground), then its anchor is moved so BASE
+lands on grid point (1.15, 1.0) of the 3×3 footprint (the back tiles) instead of a 1×1 tile's centre: 19 px left and
+74 px up at 2x. The game draws the supply piles on the front tiles (`SLOTS.camp` in `src/features/storage/piles.ts`,
+reusing the `pile_wood_N`, `pile_stone_N`, `pile_crops_N` and `pile_goods_N` sprites) and the campfire smoke
+(`FIRE_AT` in `src/features/camp`). The `buildings` entries in `manifest.json` (footprint `[3, 3]`) were added by hand
+first, as for the trader's wagon.
+
+```bash
+for n in camp camp_winter; do
+  $P $L/fit_prop.py $L/source/${n}_raw.png /tmp/props $n 384 420 0.74 --shadow=210
+  # BASE onto grid (1.15, 1.0) of the 3x3 footprint: 2x anchor (-19, +64 - 138).
+  $P -c "import json,sys; p='/tmp/props/$n.json'; a=json.load(open(p)); x,y=a['2x']; a['2x']=[x-19,y-74]; a['1x']=[(x-19)/2,(y-74)/2]; json.dump(a,open(p,'w'))"
   $P $L/install_prop.py /tmp/props $n
 done
 ```

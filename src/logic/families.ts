@@ -11,7 +11,6 @@ import {
   FOODS,
   LEAVE_APPROVAL,
   MEAL_PER_FAMILY,
-  PROVISION_DAYS,
 } from '../data/families';
 import { GARDEN_APPROVAL, GARDENS } from '../data/gardens';
 import { PROCESSORS } from '../data/processing';
@@ -67,8 +66,6 @@ export interface DayNeeds {
   aleDrunk?: number;
   /** Homes that day and how many had a garden; null until gardens are unlocked. Missing in saves from before gardens. */
   gardens?: { homes: number; gardened: number } | null;
-  /** One of the new farm's first days (`PROVISION_DAYS`): what the granary lacked, provisions made up. */
-  provisions?: boolean;
 }
 
 export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'ale' | 'firewood' | 'gardens' | 'neighbours';
@@ -187,10 +184,9 @@ function plural(n: number, one: string, many = `${one}s`): string {
 /** Approval (0..100) for a day's results, with the breakdown the Families sheet shows; `neighbours`: Good neighbours' points. */
 export function approvalOf(day: DayNeeds, neighbours = 0): Approval {
   const parts: ApprovalPart[] = [{ id: 'base', label: 'Base', points: APPROVAL.base }];
-  if (day.eaten < day.meal && day.provisions) parts.push({ id: 'food', label: 'Living on the provisions they brought', points: 0 });
-  else if (day.eaten === 0) parts.push({ id: 'food', label: 'No food in the granary', points: APPROVAL.noFood });
+  if (day.eaten === 0) parts.push({ id: 'food', label: 'No food in the granary', points: APPROVAL.noFood });
   if (day.eaten > 0) {
-    if (day.eaten < day.meal && !day.provisions) parts.push({ id: 'food', label: `Short of food (${day.eaten} of ${day.meal})`, points: APPROVAL.shortMeal });
+    if (day.eaten < day.meal) parts.push({ id: 'food', label: `Short of food (${day.eaten} of ${day.meal})`, points: APPROVAL.shortMeal });
     const variety = Math.min(APPROVAL.maxVariety, Math.max(0, day.variety - 1) * APPROVAL.perExtraFood);
     parts.push({ id: 'variety', label: `${plural(day.variety, 'kind')} of food`, points: variety });
   }
@@ -341,7 +337,6 @@ function settleDay(game: Game, day: number): void {
     aleDrunk,
     gardens,
   };
-  if (day <= PROVISION_DAYS) needs.provisions = true;
   const { approval, breakdown } = approvalOf(needs, perkFactor(state, 'good-neighbours'));
   Object.assign(s, { settledDay: day, approval, breakdown, lastDay: needs });
   game.activity.emit('familiesSettled', { approval });

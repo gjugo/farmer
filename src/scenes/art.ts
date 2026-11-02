@@ -178,6 +178,7 @@ export const TEXTURE_ART: Record<string, string> = {
   'hen-run': 'hen_run',
   orchard: 'orchard',
   oxbarn: 'ox_barn',
+  camp: 'camp',
 };
 
 /** The crows that eat on a field (see `src/features/hazards`): two frames, head up and pecking. */

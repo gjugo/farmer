@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getBuildable } from '../data/buildables';
-import { APPROVAL, ARRIVAL_DELAY_DAYS, ARRIVE_APPROVAL, COTTAGE, FOODS, LEAVE_APPROVAL, MEAL_PER_FAMILY, PROVISION_DAYS } from '../data/families';
+import { APPROVAL, ARRIVAL_DELAY_DAYS, ARRIVE_APPROVAL, COTTAGE, FOODS, LEAVE_APPROVAL, MEAL_PER_FAMILY } from '../data/families';
 import { FIELD } from '../data/crops';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS, START_LAYOUT } from './constants';
@@ -11,7 +11,7 @@ import { catchUp } from './offline';
 import { connectToFarmhouse } from './roads';
 import { parseSave, serialize } from './save';
 import { SEASON_MS } from './seasons';
-import { bareMap, maxLevelState, stockMaterials } from './test-utils';
+import { bareMap, maxLevelState, noCamp, stockMaterials } from './test-utils';
 import type { GameState } from './types';
 import { addFarmer, assignFarmer, workersOf } from './workers';
 
@@ -203,7 +203,7 @@ describe('families on the farm', () => {
 
   it('no family moves in while approval is below 50%; one comes once it recovers', () => {
     const game = farm();
-    startAt(game, PROVISION_DAYS * DAY_MS); // past the new farm's provisions
+    noCamp(game.state);
     game.advance(DAY_MS); // nothing to eat: approval 0
     expect(familiesOf(game.state).approval).toBeLessThan(ARRIVE_APPROVAL);
     cottages(game, 1);
@@ -215,14 +215,16 @@ describe('families on the farm', () => {
     expect(workersOf(game.state).farmers).toBe(2);
   });
 
-  it("a new farm's families live on their provisions for the first days, so nobody starves before the first harvest", () => {
-    const game = farm();
+  it("a new farm's families eat the camp's food, so nobody starves before the first harvest; with none left they go hungry", () => {
+    const game = farm({ max: false });
     cottages(game, 1);
-    game.advance(PROVISION_DAYS * DAY_MS);
+    game.advance(2 * DAY_MS);
     expect(workersOf(game.state).farmers).toBe(2); // arrived half a day in, on the starting approval
-    expect(familiesOf(game.state).approval).toBe(50);
-    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'food')?.label).toMatch(/provisions/);
-    game.advance(DAY_MS); // provisions gone, granary empty
+    // Bread and carrots from the camp: two kinds of food, no hunger.
+    expect(familiesOf(game.state).approval).toBe(APPROVAL.base + APPROVAL.perExtraFood);
+    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'food')).toBeUndefined();
+    for (const id of ['bread', 'carrot']) delete game.state.inventory[id];
+    game.advance(DAY_MS); // the granary is empty: there is no grace any more
     expect(familiesOf(game.state).approval).toBeLessThan(LEAVE_APPROVAL);
   });
 

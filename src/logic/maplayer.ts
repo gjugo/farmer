@@ -4,7 +4,8 @@ import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { createLand, inBounds, isOwned, type Rect } from './land';
 import { FARM_PARCELS, type Parcel } from './parcels';
 import { registerPlacementRule } from './placement';
-// The starting fields and farmhouse are laid out first; the map is generated around them.
+// The starting fields, farmhouse and camp are laid out first; the map is generated around them.
+import './camp';
 import './roads';
 import { SEASON_MS } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
@@ -502,8 +503,10 @@ export function generateMapLayer(land: LandState, occupants: readonly Occupant[]
 
   // The start: a grove at the back left of the starting land, a stone outcrop at the front right.
   const S = START_LAND;
-  const groveAt = spots(1, 1, (x, y) => owned(x, y) && free(x, y), S, { x: S.x + 2.5, y: S.y + S.h - 2.5 })[0];
-  if (groveAt) grove(groveAt, GEN.startGrove, (x, y) => owned(x, y) && free(x, y));
+  // The grove keeps two tiles off what is built (fields, paths, the farmhouse and the camp), so their edges stay open.
+  const roomy = (x: number, y: number) => occupants.every((o) => x < o.x - 2 || y < o.y - 2 || x >= o.x + o.w + 2 || y >= o.y + o.h + 2);
+  const groveAt = spots(1, 1, (x, y) => owned(x, y) && free(x, y) && roomy(x, y), S, { x: S.x + 2.5, y: S.y + S.h - 2.5 })[0];
+  if (groveAt) grove(groveAt, GEN.startGrove, (x, y) => owned(x, y) && free(x, y) && roomy(x, y));
   for (const t of layer.trees) markNear({ x: t.x, y: t.y, w: 1, h: 1 }, 1);
   const startRock =
     spots(2, 2, (x, y) => owned(x, y) && free(x, y), S, { x: S.x + S.w - 3, y: S.y + S.h - 2.5 })[0] ??

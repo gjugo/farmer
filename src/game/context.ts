@@ -44,7 +44,8 @@ export interface PanelSpec {
   title: string;
   /** Optional emoji / short text shown before the title. */
   icon?: string;
-  lines?: string[];
+  /** Status lines; a `{ text, testId }` line gets `data-testid="<testId>"` for QA. */
+  lines?: (string | PanelLine)[];
   progress?: { value: number; label?: string };
   /** Labelled bars shown under the lines, e.g. a field's fertility. */
   meters?: PanelMeter[];
@@ -53,6 +54,11 @@ export interface PanelSpec {
   /** Drop-downs shown above the actions. */
   choices?: PanelChoice[];
   actions?: PanelAction[];
+}
+
+export interface PanelLine {
+  text: string;
+  testId?: string;
 }
 
 export type PanelBuilder = () => PanelSpec | null;
