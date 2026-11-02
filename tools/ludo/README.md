@@ -45,6 +45,9 @@ git (or rerun the commands below) after running it.
 | `vein_0`, `vein_1`, `vein_spent` (iron deposits; base, `_spring`, `_summer`, `_autumn`, `_winter`) | `vein_raw.png`, `vein_b_raw.png`, `vein_spent_raw.png` and their `_winter_raw.png` (spring to autumn are the base image) | all |
 | `bush`, `bush_berry` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `bush_raw.png`, `bush_berry_raw.png`, each with `_{spring,autumn,winter}_raw.png` | all |
 | `pond` (base, `_spring`, `_summer`, `_autumn`, `_winter`, frozen) | `pond_raw.png`, `pond_{autumn,winter}_raw.png` (spring and summer are the base image) | all |
+| `decor_tuft_0`, `decor_tuft_1`, `decor_stones_0`, `decor_stones_1` (ground decorations, all year; base, `_spring`, `_summer`, `_autumn`, `_winter`) | `decor_tuft_{0,1}_raw.png`, `decor_stones_{0,1}_raw.png` and their `_winter_raw.png` (the tufts' autumn is recoloured); see **Ground decorations** below | all |
+| `decor_daisies`, `decor_buttercups`, `decor_cornflowers`, `decor_puddle` (spring), `decor_tallgrass_0/1`, `decor_poppies` (summer), `decor_mushrooms_0/1`, `decor_leaves_0/1` (autumn), `decor_twigs_0/1`, `decor_snowdrift` (winter) | `<name>_raw.png` | one season each |
+| `fern_0`, `fern_1`, `fallen_log` (undergrowth at forest edges; base, `_spring`, `_summer`, `_autumn`, `_winter`) | `fern_{0,1}_raw.png`, `fern_{0,1}_{autumn,winter}_raw.png`, `fallen_log_raw.png`, `fallen_log_winter_raw.png` | all |
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
 | `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe (flax's sprout is its growing image, smaller), `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none, except cabbage |
 | `cabbage_<stage>_winter` (frosted, the winter crop) | `cabbage_<stage>_winter_raw.png`, `seeded_winter_raw.png`; see **Crops** below | winter |
@@ -482,6 +485,74 @@ for n in bush bush_berry; do
 done
 $P $L/install_prop.py /tmp/props pond pond_spring pond_summer
 for s in _autumn _winter; do $P $L/install_prop.py /tmp/props pond$s; done
+```
+
+### Ground decorations
+
+Small props over the grass and at forest edges (`src/scenes/decor.ts`, drawn by `src/features/decor`). Generated
+with `generateWithStyle` (`sprite`, n=2 or 3, the Ludo image behind `bush_raw.png` as `style_image`), each prompt
+"a small low ... in isometric three-quarter view, cozy cartoon style with dark outlines and cel shading, light from the
+top left, isolated, no ground, no soil, no shadow": a tuft of wild meadow grass, two or three small grey pebbles, clumps
+of daisies, buttercups, cornflowers and red poppies, a clump of tall summer grass with seed heads, three brown forest
+mushrooms, a low heap of fallen autumn leaves, dry twigs and dead grass sticking out of a small mound of snow, a soft
+low snow drift, a forest fern, a short fallen mossy log, and "a flat ground decal ... a small shallow rain puddle ... no
+soil block, no thickness" for the puddle. The seasonal versions are `editImage` on the chosen one ("keep the same ...
+exactly, same shape, size, position and outlines; ..."): snow for the tufts', stones', ferns' and log's winter, rusty
+brown fronds for the ferns' autumn. The tufts' autumn is the base image with `--leaves` (golden). The fits keep them
+small, 58 to 88 px wide at 2x (a bush is 131), so a decoration never hides a farmer or an animal, with a faint
+shadow (none for the flat ones: puddle, leaves, twigs, drift). BASE is the middle of the opaque bounds a little up
+from the bottom (the centre for flat ones); SCALE takes the bounds to the target width. Seasons Ludo didn't draw are
+the base image. 41 images in all (32 generated, 9 edits), 22.5 credits.
+
+```bash
+P=/tmp/ludo-venv/bin/python; L=tools/ludo
+mkdir -p /tmp/props
+$P $L/fit_prop.py $L/source/decor_buttercups_raw.png /tmp/props decor_buttercups 383 461.75 0.0941 --shadow=19
+$P $L/fit_prop.py $L/source/decor_cornflowers_raw.png /tmp/props decor_cornflowers 375 657.6 0.0901 --shadow=17
+$P $L/fit_prop.py $L/source/decor_daisies_raw.png /tmp/props decor_daisies 384 347.2 0.0965 --shadow=20
+$P $L/fit_prop.py $L/source/decor_leaves_0_raw.png /tmp/props decor_leaves_0 400 208 0.1011
+$P $L/fit_prop.py $L/source/decor_leaves_1_raw.png /tmp/props decor_leaves_1 383.5 224 0.1045
+$P $L/fit_prop.py $L/source/decor_mushrooms_0_raw.png /tmp/props decor_mushrooms_0 311.5 683.4 0.0810 --shadow=15
+$P $L/fit_prop.py $L/source/decor_mushrooms_1_raw.png /tmp/props decor_mushrooms_1 359 673.88 0.0696 --shadow=15
+$P $L/fit_prop.py $L/source/decor_poppies_raw.png /tmp/props decor_poppies 384 511.1 0.0936 --shadow=18
+$P $L/fit_prop.py $L/source/decor_puddle_raw.png /tmp/props decor_puddle 384 184 0.1290
+$P $L/fit_prop.py $L/source/decor_snowdrift_raw.png /tmp/props decor_snowdrift 384 258.35 0.1163
+$P $L/fit_prop.py $L/source/decor_stones_0_raw.png /tmp/props decor_stones_0 383.5 307.7 0.0827 --shadow=18
+$P $L/fit_prop.py $L/source/decor_stones_0_winter_raw.png /tmp/props decor_stones_0_winter 373 296.9 0.0870 --shadow=18
+$P $L/fit_prop.py $L/source/decor_stones_1_raw.png /tmp/props decor_stones_1 383.5 206 0.0815 --shadow=18
+$P $L/fit_prop.py $L/source/decor_stones_1_winter_raw.png /tmp/props decor_stones_1_winter 382 206.7 0.0819 --shadow=18
+$P $L/fit_prop.py $L/source/decor_tallgrass_0_raw.png /tmp/props decor_tallgrass_0 367 671.04 0.0892 --shadow=17
+$P $L/fit_prop.py $L/source/decor_tallgrass_1_raw.png /tmp/props decor_tallgrass_1 383.5 569 0.0849 --shadow=17
+$P $L/fit_prop.py $L/source/decor_tuft_0_raw.png /tmp/props decor_tuft_0 383 325.6 0.1000 --shadow=20
+$P $L/fit_prop.py $L/source/decor_tuft_0_raw.png /tmp/props decor_tuft_0_autumn 383 325.6 0.1000 --shadow=20 --leaves=-12,0.8,1.0
+$P $L/fit_prop.py $L/source/decor_tuft_0_winter_raw.png /tmp/props decor_tuft_0_winter 383 324.05 0.1006 --shadow=20
+$P $L/fit_prop.py $L/source/decor_tuft_1_raw.png /tmp/props decor_tuft_1 384 404.4 0.0991 --shadow=20
+$P $L/fit_prop.py $L/source/decor_tuft_1_raw.png /tmp/props decor_tuft_1_autumn 384 404.4 0.0991 --shadow=20 --leaves=-12,0.8,1.0
+$P $L/fit_prop.py $L/source/decor_tuft_1_winter_raw.png /tmp/props decor_tuft_1_winter 383 402.7 0.0991 --shadow=20
+$P $L/fit_prop.py $L/source/decor_twigs_0_raw.png /tmp/props decor_twigs_0 390.5 340.8 0.1037
+$P $L/fit_prop.py $L/source/decor_twigs_1_raw.png /tmp/props decor_twigs_1 383.5 319.3 0.1019
+$P $L/fit_prop.py $L/source/fallen_log_raw.png /tmp/props fallen_log 383.5 408 0.1161 --shadow=26
+$P $L/fit_prop.py $L/source/fallen_log_winter_raw.png /tmp/props fallen_log_winter 383.5 408 0.1161 --shadow=26
+$P $L/fit_prop.py $L/source/fern_0_autumn_raw.png /tmp/props fern_0_autumn 383.5 384.8 0.1233 --shadow=25
+$P $L/fit_prop.py $L/source/fern_0_raw.png /tmp/props fern_0 384 384.8 0.1232 --shadow=25
+$P $L/fit_prop.py $L/source/fern_0_winter_raw.png /tmp/props fern_0_winter 383.5 385.8 0.1237 --shadow=25
+$P $L/fit_prop.py $L/source/fern_1_autumn_raw.png /tmp/props fern_1_autumn 377.5 487 0.1279 --shadow=25
+$P $L/fit_prop.py $L/source/fern_1_raw.png /tmp/props fern_1 384 499.6 0.1224 --shadow=25
+$P $L/fit_prop.py $L/source/fern_1_winter_raw.png /tmp/props fern_1_winter 377.5 486.6 0.1275 --shadow=25
+for s in "" _spring _summer _autumn _winter; do
+  for n in decor_tuft_0 decor_tuft_1 decor_stones_0 decor_stones_1 fern_0 fern_1 fallen_log; do $P $L/add_asset.py bush $n$s; done
+done
+for n in decor_daisies decor_buttercups decor_cornflowers decor_puddle decor_tallgrass_0 decor_tallgrass_1 decor_poppies \
+  decor_mushrooms_0 decor_mushrooms_1 decor_leaves_0 decor_leaves_1 decor_twigs_0 decor_twigs_1 decor_snowdrift; do
+  $P $L/add_asset.py bush $n; $P $L/install_prop.py /tmp/props $n
+done
+for n in decor_tuft_0 decor_tuft_1 fern_0 fern_1; do
+  $P $L/install_prop.py /tmp/props $n ${n}_spring ${n}_summer
+  for s in _autumn _winter; do $P $L/install_prop.py /tmp/props $n$s; done
+done
+for n in decor_stones_0 decor_stones_1 fallen_log; do
+  $P $L/install_prop.py /tmp/props $n ${n}_spring ${n}_summer ${n}_autumn; $P $L/install_prop.py /tmp/props ${n}_winter
+done
 ```
 
 ## Fences: `fences.py`

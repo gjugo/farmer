@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { SEASONS } from '../data/seasons';
-import { ART_BASE, ART_RES, COMPOSED, GRASS, seasonalArt, seasonalComposed, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
+import { ART_BASE, ART_RES, COMPOSED, DECOR_ART, GRASS, seasonalArt, seasonalComposed, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
 import { listTextures } from './textures';
 import { packAsset, setPack } from './sprites';
 
@@ -9,6 +9,10 @@ const MANIFEST = 'farm-manifest';
 export const GROUND_ATLAS = 'ground-atlas';
 /** Ground tiles in the atlas: each season's version, a column per season. */
 export const GROUND_TILES = SEASONS.map((season) => [...GRASS, ...UNOWNED].map((name) => seasonalArt(name, season)));
+/** Texture holding every ground decoration in every season, so they are all one Blitter (see src/features/decor). */
+export const DECOR_ATLAS = 'decor-atlas';
+/** Rows of the decoration atlas are at most this wide (2x pixels); it comes out about 1024 × 400. */
+const DECOR_ATLAS_WIDTH = 1024;
 
 /** Loads the art pack with a progress bar, prepares its textures, bakes the few runtime ones, then starts the farm. */
 export class BootScene extends Phaser.Scene {
@@ -42,6 +46,7 @@ export class BootScene extends Phaser.Scene {
     this.bakeRuntimeTextures();
     for (const [key, composed] of Object.entries({ ...COMPOSED, ...seasonalComposed() })) this.compose(key, composed.h, composed.tiles);
     this.buildGroundAtlas();
+    this.buildDecorAtlas();
     this.scene.start('Farm');
   }
 
@@ -163,6 +168,32 @@ export class BootScene extends Phaser.Scene {
         y += f.height + 2;
       }
     });
+    atlas.refresh();
+  }
+
+  /** Packs every season's decoration sprites into one texture, row by row, a frame each under its own name. */
+  private buildDecorAtlas(): void {
+    const names = [...new Set(DECOR_ART.flatMap((name) => SEASONS.map((season) => seasonalArt(name, season))))].filter((name) => this.textures.exists(name));
+    const frames = names.map((name) => ({ name, frame: this.textures.getFrame(name) }));
+    const placed: { name: string; x: number; y: number; w: number; h: number }[] = [];
+    let x = 0;
+    let y = 0;
+    let rowH = 0;
+    for (const { name, frame } of frames) {
+      if (x > 0 && x + frame.width > DECOR_ATLAS_WIDTH) {
+        x = 0;
+        y += rowH + 2;
+        rowH = 0;
+      }
+      placed.push({ name, x, y, w: frame.width, h: frame.height });
+      x += frame.width + 2;
+      rowH = Math.max(rowH, frame.height);
+    }
+    const atlas = this.textures.createCanvas(DECOR_ATLAS, DECOR_ATLAS_WIDTH, Math.max(1, y + rowH))!;
+    for (const p of placed) {
+      atlas.drawFrame(p.name, undefined, p.x, p.y, false);
+      atlas.add(p.name, 0, p.x, p.y, p.w, p.h);
+    }
     atlas.refresh();
   }
 }

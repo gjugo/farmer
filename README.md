@@ -326,7 +326,13 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Seasonal look:** the farm looks like its season. Spring is bright green with flowers and blossoming trees, summer a
   deep warm green with dry patches, autumn ochre grass, fallen leaves and orange, red and yellow trees, winter snow on
   the ground, paths, roofs and rocks, bare snowy trees, frozen fields and frozen ponds (a few small ponds lie on the
-  locked land as scenery). On top: a subtle colour grade and background on the farm camera (cooler in winter, warmer
+  locked land as scenery). Small decorations lie over the grass, in clusters (about one tile in four): grass tufts and
+  stones all year, with daisies, buttercups, cornflowers and a puddle in spring, tall grass and poppies in summer,
+  mushrooms and fallen leaves in autumn, and twigs and dry grass through the snow and snow drifts in winter. Forest
+  edges have undergrowth on the free tiles one or two tiles out: ferns (brown in autumn), fallen logs and bushes, all
+  snowy in winter. They are purely decorative (scattered from a fixed seed, not saved): never in the way of building or
+  walking, not clickable, hidden under whatever is built on a tile and back when it is demolished; the meadow ones
+  show on the farm's own land, so buying land brings its decorations. On top: a subtle colour grade and background on the farm camera (cooler in winter, warmer
   in autumn; the HTML HUD is untouched) and weather particles in screen space (snowfall in winter, drifting leaves
   in autumn, a few petals in spring, clear summers), at most 150 and thinner when zoomed out. The look follows the
   game clock: at once on load, New game, debug **Next season** and after time away, with a 1.5 s crossfade when the
@@ -427,6 +433,10 @@ granaries and storehouses) in placement order as `{ id, type, pools, piles, draw
 chips are `data-testid="resource-<category>"` (`crops`, `animal`, `feed`, `goods`, `materials`) with `data-count` (and
 `data-delta` while a change shows); the pools are `resources-pool-goods` / `resources-pool-materials` (`data-used`,
 `data-capacity`, class `storage-ok|warn|full`), the popover `resources-popover` with rows `resources-item-<id>`.
+`window.farm.decor` is `{ count, bySeason, at(x, y) }`: `count` is the ground decorations showing now (tufts, flowers
+and the rest on owned land, undergrowth along forest edges), `bySeason[season]` maps each sprite to how many of the
+showing decorations would be it in that season (e.g. `bySeason.spring.decor_daisies`), and `at(x, y)` is the sprite
+drawn on tile (x, y) now (e.g. `decor_tuft_0_winter`, `fern_1_autumn`) or null (none, or the tile is built on).
 `window.farm.season` is `{ season, dayOfSeason, msLeft, look, weather }` (e.g. `season: 'winter'`, game ms until the
 next season); `look` is the season the farm is drawn in (it follows `season`, a crossfade at most behind) and
 `weather` the number of weather particles alive now (0 in summer or with weather effects off, never over 150).
@@ -541,6 +551,7 @@ src/
     iso.ts             isometric projection (no Phaser, unit-tested): ISO_W/ISO_H, tile ↔ world, picking, depth order
     depth.ts           depth layers (ground, flat, shadow, tall, signs, ghost…)
     art.ts             the art pack (no Phaser, unit-tested): texture key → pack sprite, path/fence autotile
+    decor.ts           ground decorations and forest-edge undergrowth: the seeded, clustered scatter (no Phaser, unit-tested)
     sprites.ts         drawing pack sprites (anchors, 2x art at half scale, shadows)
     textures.ts        the few runtime-drawn textures (bubbles, sparkles, smoke, `missing`)
     BootScene.ts       loads the pack (progress bar), anchors, animations, composed textures
@@ -560,6 +571,7 @@ src/
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
     soil/              the Soil overlay and its construction-menu checkbox, the field ghost's soil tint, the field panel's
                        soil block and Spread manure action, `window.farm.soil` (data: src/data/soil.ts)
+    decor/             the ground decorations as one Blitter under everything placed, `window.farm.decor`
     seasons/           season-change toasts, the seasonal look (art swap, colour grade, crossfade), weather
                        particles and their setting, `window.farm.season`
     market/            🏪 Market tab (⚖️ Trade): sell panel (flooded marks, confirm before flooding) and Buy section
