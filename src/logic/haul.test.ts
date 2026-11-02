@@ -312,6 +312,15 @@ describe('a haul trip', () => {
     expect(lodge.state.waiting).toBe(0);
   });
 
+  it('demolishing a barn puts the goods parked on its cart into the stores', () => {
+    const game = farm();
+    const barn = barnWithCart(game);
+    barn.state.cargo = { wood: 7 };
+    game.state.inventory.stone = FARMHOUSE_STORE.materials;
+    expect(game.demolish(barn.id)).not.toBeNull();
+    expect(game.count('wood')).toBe(7);
+  });
+
   it('two carts share a yard instead of both driving for the same goods', () => {
     const game = farm(2);
     barnWithCart(game, X + 4, Y + 5);

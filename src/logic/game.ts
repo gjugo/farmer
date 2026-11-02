@@ -5,6 +5,7 @@ import { dayOf, gameDelta } from './clock';
 import { DEMOLISH_REFUND } from './constants';
 import * as economy from './economy';
 import { Emitter } from './events';
+import { releaseCargo } from './haul';
 import * as inventory from './inventory';
 import { setOwned } from './land';
 import { clearUnder, mapOf, type MapLayer } from './maplayer';
@@ -312,6 +313,8 @@ export class Game {
     if (!check.ok) return null;
     const i = this._state.objects.findIndex((o) => o.id === id);
     const [object] = this._state.objects.splice(i, 1);
+    // Goods parked on an ox barn's cart go into the stores (beyond their room if need be): nothing is lost.
+    releaseCargo(this, object);
     this.events.emit('objectRemoved', object);
     this.earn(check.money);
     for (const [item, qty] of materialEntries(check.materials)) this.addItem(item, qty);

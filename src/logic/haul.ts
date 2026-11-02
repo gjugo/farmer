@@ -340,10 +340,24 @@ export function returnLoad(game: Game, trip: HaulTrip): void {
     for (const [id, n] of Object.entries(trip.load)) inventory.add(s.cargo, id, n);
     game.touch(barn);
   } else {
-    for (const [id, n] of Object.entries(trip.load)) inventory.add(game.state.inventory, id, n);
-    game.events.emit('inventory', { itemId: Object.keys(trip.load)[0], count: 0, delta: 0 });
+    for (const [id, n] of Object.entries(trip.load)) {
+      inventory.add(game.state.inventory, id, n);
+      game.events.emit('inventory', { itemId: id, count: game.count(id), delta: n });
+    }
   }
   trip.load = {};
+}
+
+/** A barn being demolished: the goods parked on its cart go into the stores, beyond their room if need be. */
+export function releaseCargo(game: Game, obj: PlacedObject): void {
+  if (!isBarn(obj)) return;
+  const s = barnState(obj);
+  if (units(s.cargo) === 0) return;
+  for (const [id, n] of Object.entries(s.cargo)) {
+    inventory.add(game.state.inventory, id, n);
+    game.events.emit('inventory', { itemId: id, count: game.count(id), delta: n });
+  }
+  s.cargo = {};
 }
 
 /** Loads, unloads and parks every cart whose moment for it has come. */
