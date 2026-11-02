@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from '../../logic/constants';
-import { newMapLayer, type MapLayer } from '../../logic/maplayer';
+import { createLand, isOwned } from '../../logic/land';
+import { depositAt, newMapLayer, treeAt, type MapLayer } from '../../logic/maplayer';
 import { FARM_PARCELS, parcelAt } from '../../logic/parcels';
 import { createNewGame } from '../../logic/state';
 import {
   CONIFERS,
-  nearPond,
   POND,
   pondWillows,
   sceneryArt,
@@ -28,6 +28,22 @@ const site = (over: Partial<TreeSite>): TreeSite => ({ x: 0, y: 0, mix: 'mixed',
 
 /** Every tile of a w × h block, as sites with `over`. */
 const sites = (over: Partial<TreeSite>, w = 60, h = 40) => Array.from({ length: w * h }, (_, i) => site({ x: i % w, y: Math.floor(i / w), ...over }));
+
+/**
+ * Spelled out here rather than taken from the code under test: is a pond drawn (by FarmScene, on the new farm)
+ * within reach of (x, y)? A pond site shows only on locked land in the map, 4+ tiles clear of the starting land,
+ * not under a tree or on a deposit.
+ */
+function drawnPondNear(layer: MapLayer, x: number, y: number): boolean {
+  const start = createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND);
+  const shows = (px: number, py: number) => {
+    if (px < 0 || py < 0 || px >= MAP_WIDTH || py >= MAP_HEIGHT || sceneryArt(px, py) !== POND) return false;
+    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) if (isOwned(start, px + dx, py + dy)) return false;
+    return !treeAt(layer, px, py) && !depositAt(layer, px, py);
+  };
+  for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) if (shows(x + dx, y + dy)) return true;
+  return false;
+}
 
 const share = (list: TreeSpecies[], kind: TreeSpecies) => list.filter((s) => s === kind).length / list.length;
 
@@ -76,12 +92,12 @@ describe('tree species', () => {
     let innerBirch = 0;
     let inner = 0;
     const counts = Object.fromEntries(TREE_SPECIES.map((s) => [s, 0])) as Record<TreeSpecies, number>;
-    for (const layer of maps(6)) {
+    for (const layer of maps(40)) {
       for (const t of layer.trees) {
         const kind = speciesAt(layer, t.x, t.y);
         const where = treeSite(layer, t.x, t.y);
         counts[kind]++;
-        if (kind === 'willow') expect(where.pond && nearPond(t.x, t.y)).toBe(true);
+        if (kind === 'willow') expect(drawnPondNear(layer, t.x, t.y), `willow at ${t.x},${t.y}`).toBe(true);
         if (kind === 'apple') expect(where.start || where.edge).toBe(true);
         // The wood's main mix holds, apart from the edge's birches and apples and the ponds' willows.
         const mix = woodMix(parcelAt(FARM_PARCELS, t.x, t.y), t.x, t.y);

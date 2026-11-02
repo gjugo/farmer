@@ -1,13 +1,18 @@
-import { START_LAND } from '../../logic/constants';
+import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from '../../logic/constants';
+import { createLand } from '../../logic/land';
 import { treeAt, type MapLayer } from '../../logic/maplayer';
 import { FARM_PARCELS, parcelAt } from '../../logic/parcels';
 import { nearPond, treeSpecies, woodMix, type TreeSite, type TreeSpecies } from '../../scenes/art';
 
 /**
  * Which species each tree of the map is, worked out from where it stands (see `treeSpecies` in src/scenes/art.ts):
- * the parcel's wood mix, whether it is at the forest's edge, on the starting land, or near a pond (a site that can
- * show one: not on the starting land or under a tree). Nothing saved.
+ * the parcel's wood mix, whether it is at the forest's edge, on the starting land, or near a pond (one that
+ * shows one on the new farm: `pondShows` with the starting land owned, as FarmScene draws it). Nothing saved. Willows by a
+ * pond whose land is bought later stay, as trees do.
  */
+
+/** The land owned on a new farm: ponds it hides grow no willows. */
+const START_OWNED = createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND);
 
 /** Fewer tree neighbours (of 8) than this puts a tree at the forest's edge. */
 export const EDGE_NEIGHBOURS = 6;
@@ -23,8 +28,7 @@ export function treeSite(layer: MapLayer, x: number, y: number): TreeSite {
     mix: woodMix(parcelAt(FARM_PARCELS, x, y), x, y),
     edge: neighbours < EDGE_NEIGHBOURS,
     start: onStart(x, y),
-    // A pond site on the starting land or under a tree never shows a pond, so it grows no willows.
-    pond: nearPond(x, y, (px, py) => onStart(px, py) || treeAt(layer, px, py) !== undefined),
+    pond: nearPond(START_OWNED, layer, x, y),
   };
 }
 

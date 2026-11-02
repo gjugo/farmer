@@ -6,7 +6,10 @@
 
 import { SEASONS, type Season } from '../data/seasons';
 import type { JobKind } from '../data/workers';
+import { inBounds, isOwned } from '../logic/land';
+import { depositAt, treeAt, type MapLayer } from '../logic/maplayer';
 import { soilBand } from '../logic/soil';
+import type { LandState } from '../logic/types';
 
 /** Where the pack lives, relative to the page (vite `base: './'`). */
 export const ART_BASE = 'assets/farm/';
@@ -399,6 +402,23 @@ export function sceneryArt(x: number, y: number): string | null {
   return hash(x, y, 13) % 1000 < POND_PER_MILLE ? POND : null;
 }
 
+/** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
+export const SCENERY_CLEARANCE = 4;
+
+/** Can scenery (a bush, a pond or a pond's willow) stand on (x, y): locked land in the map, clear of owned land, trees and deposits? */
+export function sceneryClear(land: LandState, layer: MapLayer, x: number, y: number): boolean {
+  if (!inBounds(land, x, y) || treeAt(layer, x, y) || depositAt(layer, x, y)) return false;
+  for (let dy = -SCENERY_CLEARANCE; dy <= SCENERY_CLEARANCE; dy++) {
+    for (let dx = -SCENERY_CLEARANCE; dx <= SCENERY_CLEARANCE; dx++) if (isOwned(land, x + dx, y + dy)) return false;
+  }
+  return true;
+}
+
+/** Is a pond drawn on (x, y), with `land` owned? */
+export function pondShows(land: LandState, layer: MapLayer, x: number, y: number): boolean {
+  return sceneryArt(x, y) === POND && sceneryClear(land, layer, x, y);
+}
+
 /** The decorative willows beside each pond: 1 or 2 (`count`), on the first of `spots` that are free, best first. */
 export function pondWillows(x: number, y: number): { count: number; spots: { x: number; y: number }[] } {
   const spots: { x: number; y: number; k: number }[] = [];
@@ -478,14 +498,11 @@ export function woodMix(area: { x: number; y: number } | undefined, x: number, y
 /** Willows grow only this close (in tiles, either way) to a pond site. */
 export const WILLOW_POND_REACH = 3;
 
-/**
- * Is there a pond site (`sceneryArt` is POND) within `WILLOW_POND_REACH` tiles of (x, y)? `skip` leaves out sites
- * that never show a pond (e.g. under a tree, or on the starting land).
- */
-export function nearPond(x: number, y: number, skip: (x: number, y: number) => boolean = () => false): boolean {
+/** Is a pond drawn (`pondShows`, with `land` owned) within `WILLOW_POND_REACH` tiles of (x, y)? */
+export function nearPond(land: LandState, layer: MapLayer, x: number, y: number): boolean {
   for (let dy = -WILLOW_POND_REACH; dy <= WILLOW_POND_REACH; dy++) {
     for (let dx = -WILLOW_POND_REACH; dx <= WILLOW_POND_REACH; dx++) {
-      if (sceneryArt(x + dx, y + dy) === POND && !skip(x + dx, y + dy)) return true;
+      if (pondShows(land, layer, x + dx, y + dy)) return true;
     }
   }
   return false;

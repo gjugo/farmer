@@ -12,11 +12,11 @@ import { footprintOf, refundOf, type DemolishCheck, type PlaceResult } from '../
 import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
 import { isOwned } from '../logic/land';
-import { depositAt, mapOf, treeAt } from '../logic/maplayer';
+import { mapOf } from '../logic/maplayer';
 import { farmhouseOf } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, grassArt, groundTint, POND, POND_WILLOW, pondWillows, sceneryArt, seasonalArt, treeLook, unownedArt } from './art';
+import { ART_RES, ART_SCALE, CURSOR, grassArt, groundTint, POND, POND_WILLOW, pondWillows, sceneryArt, sceneryClear, seasonalArt, treeLook, unownedArt } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
 import {
@@ -46,8 +46,6 @@ const KEY_PAN_SPEED = 700; // screen px per second
 const MAP_TOP_ROOM = ISO_H * 3;
 /** Buildables whose base art lies flat on the ground (under every shadow and standing thing): paths and field soil. */
 const FLAT_TYPES = new Set(['path', FIELD]);
-/** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
-const SCENERY_CLEARANCE = 4;
 /** Construction sites are drawn faded to this, with a progress bar this wide (world pixels). */
 const SITE_ALPHA = 0.45;
 const SITE_BAR_W = 64;
@@ -276,15 +274,8 @@ export class FarmScene extends Phaser.Scene {
     for (const s of this.scenery) s.img.destroy();
     this.sceneryShadows.removeAll(true);
     this.scenery = [];
-    const nearOwned = (x: number, y: number) => {
-      for (let dy = -SCENERY_CLEARANCE; dy <= SCENERY_CLEARANCE; dy++) {
-        for (let dx = -SCENERY_CLEARANCE; dx <= SCENERY_CLEARANCE; dx++) if (isOwned(land, x + dx, y + dy)) return true;
-      }
-      return false;
-    };
     const layer = mapOf(this.farm.state);
-    const clear = (x: number, y: number) =>
-      x >= 0 && y >= 0 && x < land.width && y < land.height && !isOwned(land, x, y) && !nearOwned(x, y) && !treeAt(layer, x, y) && !depositAt(layer, x, y);
+    const clear = (x: number, y: number) => sceneryClear(land, layer, x, y);
     const willows = new Set<string>();
     const place = (x: number, y: number, art: string) => {
       const at = gridToWorld(x, y);
