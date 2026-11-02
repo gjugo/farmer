@@ -7,6 +7,7 @@ import type { PlacedObject } from './types';
 import type { Game } from './game';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import { STARTING_FIELDS, type FieldState } from './crops';
+import { tradeLink } from './tradepost';
 import { workerAt } from './workers';
 
 /**
@@ -85,6 +86,8 @@ const RULES: Record<GuideStepId, StepRule> = {
     // Crops beyond the camp's starting carrots: those came with the settlers, not from a field.
     met: (game) => Object.entries(game.state.inventory).some(([id, n]) => CROP_ITEMS.has(id) && n > (campInfo(game.state)?.left[id] ?? 0)),
   },
+  // Built and linked to the main road (checked again whenever an object changes).
+  post: { met: (game) => tradeLink(game.state).connected },
   sell: { on: (s) => s.kind === 'activity' && s.name === 'sold' },
   materials: {
     on: (s) => (s.kind === 'activity' && s.name === 'bought' && s.payload.item === 'wood') || placed('woodcutter')(s),

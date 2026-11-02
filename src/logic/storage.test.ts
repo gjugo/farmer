@@ -364,9 +364,10 @@ describe('old saves', () => {
   });
 
   it('skip the new goals they are already past', () => {
-    // In version 6, index 3 was "buy-wood", 10 "reach-3" and 12 "make-cheese".
+    // In version 6, index 3 was "buy-wood" (its slot is "build-trading-post" since version 16), 10 "reach-3" and 12
+    // "make-cheese".
     const early = deserialize(oldSave({}, 3));
-    expect(GOALS[getSlice<ProgressionState>(early, PROGRESSION).nextGoal].id).toBe('buy-wood');
+    expect(GOALS[getSlice<ProgressionState>(early, PROGRESSION).nextGoal].id).toBe('build-trading-post');
     // Offered everything up to "own-fields": "upgrade a granary" now comes next.
     const late = deserialize(oldSave({}, 10));
     expect(GOALS[getSlice<ProgressionState>(late, PROGRESSION).nextGoal].id).toBe('upgrade-granary');

@@ -234,10 +234,10 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
           type: 'button',
           class: 'btn',
           'data-testid': 'debug-trader-now',
-          // Whatever the schedule and level: he parks by the farmhouse and stays until the day ends.
+          // Whatever the schedule and level: he parks by the linked trading post (or passes by) and stays until the day ends.
           onclick: () => {
-            traderNow(game);
-            ctx.ui.toast('🛒 A travelling trader has parked by the farmhouse', 'success');
+            const visit = traderNow(game);
+            ctx.ui.toast(visit.tile ? '🛒 A travelling trader has parked by the trading post' : '🛒 A travelling trader is passing by: no trading post is linked to the main road', 'success');
           },
         },
         'Trader now',

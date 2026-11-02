@@ -11,6 +11,8 @@ import { areaSoil } from './soil';
 import { STORAGE_SLICE } from './storage';
 import { migrateOrdersSlice } from './orders';
 import { ensureFarmhouse } from './roads';
+import { ensureMainRoad, ROAD_SLICE } from './mainroad';
+import { TRADE_SLICE } from './tradepost';
 import { applySliceDefaults, isPlainObject, shiftSlices } from './slices';
 import { createNewGame } from './state';
 import type { GameState, Inventory, PlacedObject } from './types';
@@ -25,7 +27,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 export interface SaveFile {
   version: number;
@@ -186,7 +188,43 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     const goals = p.goals.map((g: unknown) => (isPlainObject(g) && g.id === OLD_LAND_GOAL ? { ...g, id: LAND_GOAL_NOW, progress: 0 } : g));
     return { ...raw, version: 15, state: { ...state, land, ext: { ...ext, [PROGRESSION]: { ...p, goals } } } };
   },
+  // The main road and the trading post: trade needs a trading post linked to the road. The road is laid on load
+  // (`ensureMainRoad`) from a seed the save already holds (the trader's, else the clock), round what is built. The
+  // "Buy 10 wood at the Market" goal became "Build a trading post" in its slot: an active one is renamed. The guide
+  // gained a trading-post step (see `guideStepNow`). The farm is told once (`TRADE_SLICE`).
+  15: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const out: Record<string, unknown> = { ...ext, [TRADE_SLICE]: { pendingNotice: true } };
+    const trader = isPlainObject(ext.trader) ? ext.trader : {};
+    const clock = isPlainObject(state.clock) ? state.clock : {};
+    const seed =
+      typeof trader.seed === 'number' && Number.isFinite(trader.seed)
+        ? trader.seed >>> 0
+        : ((isNonNegNumber(clock.elapsed) ? Math.floor(clock.elapsed) : 0) ^ 0x40ad) >>> 0;
+    out[ROAD_SLICE] = { seed, side: null, tiles: [], pending: true };
+    const p = ext[PROGRESSION];
+    if (isPlainObject(p) && Array.isArray(p.goals)) {
+      const goals = p.goals.map((g: unknown) => (isPlainObject(g) && g.id === OLD_WOOD_GOAL ? { ...g, id: POST_GOAL_NOW, progress: 0 } : g));
+      out[PROGRESSION] = { ...p, goals };
+    }
+    const guide = ext.guide;
+    if (isPlainObject(guide) && typeof guide.step === 'number') out.guide = { ...guide, step: guideStepNow(guide.step) };
+    return { ...raw, version: 16, state: { ...state, ext: out } };
+  },
 };
+
+/** The goal slot that was "Buy 10 wood at the Market" (version 15) and is "Build a trading post" since. */
+const OLD_WOOD_GOAL = 'buy-wood';
+const POST_GOAL_NOW = 'build-trading-post';
+/**
+ * A version-15 guide step in version 16's list: "Wood and stone" (8) moved before "Sell" (7), and "Build a trading
+ * post" came in between them. A guide on "Sell" or "Wood and stone" goes to "Wood and stone" (a step already done is
+ * skipped when it comes up); later ones move along one.
+ */
+function guideStepNow(step: number): number {
+  return step < 7 ? step : step <= 8 ? 7 : step + 1;
+}
 
 /** The goal slot that was "Buy a plot of land" (version 14) and is "Own 10 fields" since. */
 const OLD_LAND_GOAL = 'buy-land';
@@ -299,6 +337,8 @@ export function normalize(input: unknown): GameState {
   const state: GameState = { money, inventory, land, objects, nextObjectId, clock, ext };
   // Farms from before farmhouses get one, with paths to what they have built.
   ensureFarmhouse(state);
+  // Farms from before the main road get one (from their seed, round what they have built).
+  ensureMainRoad(state);
   return state;
 }
 

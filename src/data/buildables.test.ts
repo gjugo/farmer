@@ -14,7 +14,7 @@ describe('construction menu categories', () => {
   });
 
   it('lists a category in unlock order', () => {
-    expect(listBuildCategory('storage').map((b) => b.id)).toEqual(['granary', 'storehouse', 'oxbarn']);
+    expect(listBuildCategory('storage').map((b) => b.id)).toEqual(['granary', 'storehouse', 'trading-post', 'oxbarn']);
     expect(listBuildCategory('resources').map((b) => b.id)).toEqual(['woodcutter', 'quarry', 'mine']);
     for (const c of BUILD_CATEGORIES) {
       const levels = listBuildCategory(c.id).map((b) => b.unlockLevel ?? 1);

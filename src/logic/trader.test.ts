@@ -7,8 +7,6 @@ import { DAY_MS } from './constants';
 import { Game } from './game';
 import { buyPrice, PRICE_MAX_FACTOR } from './market';
 import { catchUp } from './offline';
-import { objectAt } from './placement';
-import { doorOf, farmhouseOf } from './roads';
 import { deserialize, serialize } from './save';
 import { maxLevelState } from './test-utils';
 import {
@@ -18,7 +16,6 @@ import {
   isTraderDay,
   makeableGoods,
   nextTraderDay,
-  parkingSpot,
   sellToTrader,
   traderHere,
   traderInfo,
@@ -29,7 +26,6 @@ import {
   WANT_MAX_FACTOR,
   WANT_MIN_FACTOR,
 } from './trader';
-import { footprintOf } from './game';
 import type { PlacedObject } from './types';
 import type { PenState } from './animals';
 
@@ -285,14 +281,5 @@ describe('trading', () => {
     expect(events).toEqual(['sell']);
   });
 
-  it('parks next to the farmhouse door on free land, or on the nearest path', () => {
-    const game = farm(5);
-    const house = farmhouseOf(game.state)!;
-    const door = doorOf(house);
-    const spot = parkingSpot(game.state)!;
-    expect(Math.abs(spot.x - door.x) + Math.abs(spot.y - door.y)).toBe(1);
-    expect(objectAt(game.state, spot.x, spot.y, footprintOf)).toBeUndefined();
-    const visit = traderNow(game);
-    expect(visit.tile).toEqual(spot);
-  });
+  // Where he parks (by the trading post) is tested in `tradepost.test.ts`.
 });

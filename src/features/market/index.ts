@@ -18,6 +18,7 @@ import {
   sellAll,
 } from '../../logic/market';
 import { perkFactor } from '../../logic/perks';
+import { linkSignature, renderGate } from '../trade/gate';
 import { fullMessage, storageInfo } from '../../logic/storage';
 import { formatMoney, h } from '../../ui/dom';
 import { itemIcon, withIcons } from '../../ui/icons';
@@ -105,6 +106,7 @@ function buyMaterial(ctx: FarmContext, id: MaterialId, qty: number): void {
   else if (r.reason === 'full') ctx.ui.toast(fullMessage('materials'), 'error');
   else if (r.reason === 'money') ctx.ui.toast(`Not enough money: ${what} costs ${formatMoney(qty * (buyPrice(ctx.game.day, id) ?? 0))}`, 'error');
   else if (r.reason === 'level') ctx.ui.toast(`${item.name} is sold from level ${buyUnlockLevel(id)}`, 'error');
+  else if (r.reason === 'closed') ctx.ui.toast('Trade is closed: link a 🏪 trading post to the main road', 'error');
 }
 
 /** The Buy section: one row per material with quick amounts and a quantity stepper. */
@@ -198,8 +200,10 @@ function marketSheet(ctx: FarmContext): SheetSpec {
     id: 'market',
     title: () => '🏪 Market',
     signature: () =>
-      `${game.day}|${game.level}|${perkFactor(game.state, 'haggler')}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}|${JSON.stringify(marketOf(game.state).drops)}`,
+      `${game.day}|${game.level}|${perkFactor(game.state, 'haggler')}|${JSON.stringify(game.state.inventory)}|${roomLeft(ctx)}|${JSON.stringify(marketOf(game.state).drops)}|${linkSignature(ctx)}`,
     render: (body) => {
+      // Nothing is sold or bought without a trading post linked to the main road.
+      if (renderGate(ctx, body)) return;
       const day = game.day;
       body.append(
         h(

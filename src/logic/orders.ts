@@ -6,6 +6,7 @@ import { startTimer, timerDone, type Timer } from './clock';
 import type { Emitter } from './events';
 import { dailyPrice } from './market';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
+import { tradeOpen } from './tradegate';
 import type { GameState, Inventory, ItemId } from './types';
 
 /**
@@ -238,6 +239,7 @@ export interface OrderGame {
  * Returns the reward, or null (nothing changes) when the slot has no order or goods are missing.
  */
 export function fulfilOrder(game: OrderGame, index: number): number | null {
+  if (!tradeOpen(game.state)) return null;
   const orders = ordersOf(game.state);
   const order = orders.slots[index]?.order;
   if (!order || !hasGoods(game.state.inventory, order)) return null;

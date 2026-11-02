@@ -889,6 +889,17 @@ export class Hud implements UiApi {
     ]);
   }
 
+  openBuildCard(type: string): void {
+    const category = getBuildable(type)?.category;
+    if (!category) return;
+    this.closeAll();
+    this.buildMenu.select(category);
+    this.showBuildMenu();
+    const card = this.buildMenu.el.querySelector<HTMLElement>(`[data-testid="build-${type}"]`);
+    card?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    card?.focus();
+  }
+
   openPerkChoice(): void {
     const level = this.ctx.game.perks.pending[0];
     if (level === undefined) return;

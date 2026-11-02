@@ -90,7 +90,7 @@ describe('guide', () => {
       const game = started();
       at(game, 'materials');
       notifyGuide(game, placed('woodcutter'));
-      expect(stepId(game)).toBe('granary');
+      expect(stepId(game)).toBe('post');
     });
   });
 
@@ -130,9 +130,12 @@ describe('guide', () => {
       expect(stepId(game)).toBe('look');
       at(game, 'harvest');
       notifyGuide(game, { kind: 'activity', name: 'harvested', payload: { item: 'wheat', qty: 10 } });
-      // sell was done: straight on to materials; granary was done: skipped after it.
       expect(stepId(game)).toBe('materials');
       notifyGuide(game, placed('woodcutter'));
+      // The trading post has no event: it holds once a post is linked to the main road (or Next).
+      expect(stepId(game)).toBe('post');
+      nextStep(game);
+      // sell was done, and so was granary: both skipped.
       expect(stepId(game)).toBe('cottage');
     });
 
@@ -140,7 +143,7 @@ describe('guide', () => {
       const game = new Game();
       add(game, 'granary');
       startGuide(game);
-      at(game, 'materials');
+      at(game, 'sell');
       nextStep(game);
       expect(stepId(game)).toBe('cottage');
     });

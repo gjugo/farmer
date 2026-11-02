@@ -416,7 +416,7 @@ describe('saves', () => {
     const raw = JSON.parse(serialize(game.state));
     raw.version = 12;
     const loaded = new Game(parseSave(JSON.stringify(raw)).state);
-    expect(SAVE_VERSION).toBe(15);
+    expect(SAVE_VERSION).toBe(16);
     const obj = loaded.getObject(lodge.id)!;
     expect(obj.state.waiting).toBe(7);
     // Not full yet: the farmer works on, and the yard fills up and is carried in. Nothing was lost.

@@ -12,13 +12,16 @@ import { footprintOf, type Game } from './game';
 import { buyPrice, hash, PRICE_MAX_FACTOR } from './market';
 import { isOrderable, nextRandom } from './orders';
 import { canPlace, objectAt } from './placement';
-import { doorOf, farmhouseOf } from './roads';
+import { isRoadTile } from './mainroad';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
+import { tradeOpen } from './tradegate';
+import { tradeLink } from './tradepost';
 import type { GameState, ItemId, PlacedObject } from './types';
 
 /**
- * Travelling traders: from `TRADER_LEVEL`, about twice a season a trader's wagon parks by the farmhouse for one game
- * day. He buys a few goods the farm can make for well above the Market's price (no saturation) and sells building
+ * Travelling traders: from `TRADER_LEVEL`, about twice a season a trader comes along the main road and parks his wagon
+ * by the trading post for one game day (without a post linked to the road he drives through without stopping, and
+ * nothing can be traded with him). He buys a few goods the farm can make for well above the Market's price (no saturation) and sells building
  * materials, an animal and bulk feed, each in limited stock. He is announced the day before. The schedule follows
  * from the farm's saved seed and the day alone, so reloads never reroll it; a trader due while the player is away
  * comes and goes without trading. State lives in `ext.trader`.
@@ -203,45 +206,36 @@ export function generateOffers(seed: number, day: number, level: number): Pick<T
 
 // Parking --------------------------------------------------------------------------
 
-const STEPS = [
-  [0, 1],
-  [1, 0],
-  [0, -1],
-  [-1, 0],
-] as const;
-
 /** Is (x, y) a map tile with nothing on it (no object, tree, rock or pond)? */
 function freeTile(state: GameState, x: number, y: number): boolean {
   return canPlace(state, { w: 1, h: 1 }, x, y, footprintOf).ok;
 }
 
 /**
- * Where the wagon parks: a free tile next to the farmhouse door, or else the path tile nearest the door with
- * nothing else on it. Null when the farm has no farmhouse or no such tile.
+ * Where the wagon parks: by the trading post linked to the main road, on a free tile next to it (the front ones
+ * first), or else on a path tile next to it. Null when no post is linked (he drives through) or no tile is free.
  */
 export function parkingSpot(state: GameState): { x: number; y: number } | null {
-  const house = farmhouseOf(state);
-  if (!house) return null;
-  const door = doorOf(house);
-  for (const [dx, dy] of STEPS) if (freeTile(state, door.x + dx, door.y + dy)) return { x: door.x + dx, y: door.y + dy };
-  // Nearest path tile, walking the paths out from the door.
-  const isPath = (x: number, y: number) => objectAt(state, x, y, footprintOf)?.type === PATH;
-  const seen = new Set<string>();
-  const queue = isPath(door.x, door.y) ? [door] : [];
-  for (const t of queue) {
-    const k = `${t.x},${t.y}`;
-    if (seen.has(k)) continue;
-    seen.add(k);
-    if (t !== door) return { x: t.x, y: t.y };
-    for (const [dx, dy] of STEPS) if (isPath(t.x + dx, t.y + dy)) queue.push({ x: t.x + dx, y: t.y + dy });
-  }
-  return queue.length ? { ...door } : null;
+  const link = tradeLink(state);
+  if (!link.connected || !link.post) return null;
+  const post = link.post;
+  const { w, h } = footprintOf(post);
+  const ring: { x: number; y: number }[] = [];
+  // Front edges first (+y, then +x), then the back ones.
+  for (let x = post.x; x < post.x + w; x++) ring.push({ x, y: post.y + h });
+  for (let y = post.y; y < post.y + h; y++) ring.push({ x: post.x + w, y });
+  for (let x = post.x; x < post.x + w; x++) ring.push({ x, y: post.y - 1 });
+  for (let y = post.y; y < post.y + h; y++) ring.push({ x: post.x - 1, y });
+  const free = ring.find((t) => freeTile(state, t.x, t.y));
+  if (free) return free;
+  const onPath = ring.find((t) => objectAt(state, t.x, t.y, footprintOf)?.type === PATH || isRoadTile(state, t.x, t.y));
+  return onPath ? { ...onPath } : null;
 }
 
 /** Can the wagon still stand on its tile (nothing built there since, other than a path)? */
 function stillParked(state: GameState, tile: { x: number; y: number }): boolean {
   const obj = objectAt(state, tile.x, tile.y, footprintOf);
-  return obj ? obj.type === PATH : freeTile(state, tile.x, tile.y);
+  return obj ? obj.type === PATH : isRoadTile(state, tile.x, tile.y) || freeTile(state, tile.x, tile.y);
 }
 
 // Visits ---------------------------------------------------------------------------
@@ -252,12 +246,31 @@ export function traderHere(state: GameState): TraderVisit | null {
   return v && !v.missed && v.day === dayOf(state.clock) ? v : null;
 }
 
-/** The wagon's tile now, moving it if something was built on its spot. */
+/** Is the trader here today but passing by: no trading post is linked to the main road? */
+export function traderPassing(state: GameState): boolean {
+  return !!traderHere(state) && !tradeOpen(state);
+}
+
+/**
+ * The wagon's tile now: parked by the linked trading post (moved if something was built on its spot, or the post
+ * changed). Null while he is passing by (no linked post) or not here.
+ */
 export function wagonTile(state: GameState): { x: number; y: number } | null {
   const v = traderHere(state);
   if (!v) return null;
-  if (!v.tile || !stillParked(state, v.tile)) v.tile = parkingSpot(state);
+  if (!tradeLink(state).connected) return (v.tile = null);
+  if (!v.tile || !stillParked(state, v.tile) || !besidePost(state, v.tile)) v.tile = parkingSpot(state);
   return v.tile;
+}
+
+/** Is the tile next to the linked trading post? */
+function besidePost(state: GameState, t: { x: number; y: number }): boolean {
+  const post = tradeLink(state).post;
+  if (!post) return false;
+  const { w, h } = footprintOf(post);
+  const dx = Math.max(post.x - t.x, 0, t.x - (post.x + w - 1));
+  const dy = Math.max(post.y - t.y, 0, t.y - (post.y + h - 1));
+  return dx + dy === 1;
 }
 
 /** What `updateTrader` saw happen. */
@@ -333,6 +346,9 @@ export function traderInfo(game: Game) {
   const here = traderHere(game.state);
   return {
     here: !!here,
+    /** Here today but driving through: no trading post is linked to the main road. */
+    passing: traderPassing(game.state),
+    wagon: wagonTile(game.state),
     ...traderTimes(game),
     wants: here ? here.wants.map((w) => ({ ...w })) : [],
     sells: here ? here.sells.map((o) => ({ ...o })) : [],
@@ -343,7 +359,7 @@ export function traderInfo(game: Game) {
 
 export type TradeResult =
   | { ok: true; qty: number; money: number }
-  | { ok: false; reason: 'gone' | 'none' | 'sold-out' | 'money' | 'full' | 'no-pen' };
+  | { ok: false; reason: 'closed' | 'gone' | 'none' | 'sold-out' | 'money' | 'full' | 'no-pen' };
 
 function traded(game: Game, visit: TraderVisit, what: string, qty: number, money: number, kind: 'buy' | 'sell'): void {
   visit.traded += qty;
@@ -357,6 +373,7 @@ function traded(game: Game, visit: TraderVisit, what: string, qty: number, money
 export function sellToTrader(game: Game, index: number, qty: number): TradeResult {
   const visit = traderHere(game.state);
   if (!visit) return { ok: false, reason: 'gone' };
+  if (!tradeOpen(game.state)) return { ok: false, reason: 'closed' };
   const want = visit.wants[index];
   if (!want) return { ok: false, reason: 'none' };
   if (want.left <= 0) return { ok: false, reason: 'sold-out' };
@@ -387,6 +404,7 @@ export function roomFor(game: Game, offer: TraderOffer): number {
 export function buyFromTrader(game: Game, index: number, qty: number): TradeResult {
   const visit = traderHere(game.state);
   if (!visit) return { ok: false, reason: 'gone' };
+  if (!tradeOpen(game.state)) return { ok: false, reason: 'closed' };
   const offer = visit.sells[index];
   if (!offer) return { ok: false, reason: 'none' };
   if (offer.left <= 0) return { ok: false, reason: 'sold-out' };

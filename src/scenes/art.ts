@@ -93,6 +93,14 @@ export function pathPiece(mask: number): string {
   return joined('path_', mask & 15, 'single');
 }
 
+/** The main road's piece that joins the given neighbours (road or path tiles), e.g. `road_ne_sw`. */
+export function roadPiece(mask: number): string {
+  return joined('road_', mask & 15, 'single');
+}
+
+/** Every main-road piece, drawn in the ground's Blitter (see `FarmScene`) in four seasons. */
+export const ROAD_ART: readonly string[] = Array.from({ length: 16 }, (_, m) => roadPiece(m));
+
 /** The edges in a neighbour mask, by name (`NE | SW` → `['ne', 'sw']`). */
 export function edgeNames(mask: number): string[] {
   return EDGES.filter(([bit]) => mask & bit).map(([, name]) => name);
@@ -101,8 +109,8 @@ export function edgeNames(mask: number): string[] {
 /** The grid step across each edge. */
 export const EDGE_STEP: Record<number, readonly [number, number]> = { [NE]: [0, -1], [SE]: [1, 0], [SW]: [0, 1], [NW]: [-1, 0] };
 
-/** What grass fringes hang over: a path's dirt, or a field's soil bed (a lower strip, clear of the crops). */
-export const FRINGE_KINDS = ['path', 'field'] as const;
+/** What grass fringes hang over: a path's dirt, a field's soil bed (a lower strip, clear of the crops), or the main road. */
+export const FRINGE_KINDS = ['path', 'field', 'road'] as const;
 export type FringeKind = (typeof FRINGE_KINDS)[number];
 
 /** The strip of grass tufts along one edge (`NE`, `SE`, `SW` or `NW`) of a path or field tile, e.g. `fringe_path_ne`. */
@@ -162,6 +170,7 @@ export const TEXTURE_ART: Record<string, string> = {
   tailor: 'tailor',
   blacksmith: 'blacksmith',
   'trader-wagon': 'trader_wagon',
+  'trading-post': 'trading_post',
   farmhouse: 'farmhouse',
   granary: 'granary_1',
   storehouse: 'storehouse_1',
@@ -552,6 +561,7 @@ export const MAP_ART: readonly string[] = [
 export const SEASONAL_ART: readonly string[] = [
   ...GRASS,
   ...Array.from({ length: 16 }, (_, m) => pathPiece(m)),
+  ...ROAD_ART,
   ...FRINGE_ART,
   SOIL.dry,
   SOIL.wet,
@@ -620,6 +630,7 @@ export function usedArt(): string[] {
     ...Object.values(SOIL),
     ...Array.from({ length: 16 }, (_, m) => pathPiece(m)),
     ...Array.from({ length: 16 }, (_, m) => fencePiece(m)),
+    ...ROAD_ART,
     ...FRINGE_ART,
     GATE,
     ...Object.values(TEXTURE_ART),

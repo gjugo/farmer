@@ -7,7 +7,7 @@ export interface Footprint {
 }
 
 /** Why a spot is refused by a placement rule a feature registered (see `registerPlacementRule`). */
-export type RuleReason = 'tree' | 'deposit' | 'needs-outcrop' | 'needs-vein' | 'needs-home' | 'home-has-garden' | 'pond';
+export type RuleReason = 'tree' | 'deposit' | 'needs-outcrop' | 'needs-vein' | 'needs-home' | 'home-has-garden' | 'pond' | 'road';
 
 export type PlacementResult = { ok: true } | { ok: false; reason: 'out-of-bounds' | 'occupied' | RuleReason };
 

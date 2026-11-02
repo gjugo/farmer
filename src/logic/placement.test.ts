@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { footprintOf, Game } from './game';
+import { ROAD_SLICE } from './mainroad';
 import { MAP_SLICE } from './maplayer';
 import { canPlace } from './placement';
 import { POND, SCENERY, sceneryArt, sceneryClear } from './scenery';
@@ -12,6 +13,8 @@ const inside = { x: START_LAND.x + 1, y: START_LAND.y + 1 };
 /** A new game with nothing built (no starting fields, farmhouse or road). */
 function emptyFarm(): GameState {
   const s = createNewGame();
+  // No main road either (it is random per farm): its own tests are in `mainroad.test.ts`.
+  s.ext[ROAD_SLICE] = { seed: 1, side: null, tiles: [], pending: false };
   s.objects = [];
   s.nextObjectId = 1;
   return s;

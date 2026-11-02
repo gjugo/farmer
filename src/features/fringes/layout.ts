@@ -2,7 +2,9 @@ import { FIELD } from '../../data/crops';
 import { neighbourMask, type FringeKind } from '../../scenes/art';
 
 /** The buildables that get grass fringes along their edges, and which strips. */
-export const FRINGED: Readonly<Record<string, FringeKind>> = { path: 'path', [FIELD]: 'field' };
+export const FRINGED: Readonly<Record<string, FringeKind>> = { path: 'path', [FIELD]: 'field', road: 'road' };
+/** The type the main road's tiles are given in the layout (they are no object of the farm's). */
+export const ROAD_TYPE = 'road';
 
 /** A placed object's footprint, as the layout needs it. */
 export interface FringeObject {
