@@ -6,17 +6,17 @@ import { registerBehavior } from '../../game/hooks';
 import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
 import { mapOf, treeStatus, treesInRange } from '../../logic/maplayer';
-import { areaOf, collect, cycleProgress, cycleYield, defOf, depositOf, idleReason, nextTreeAt, sanitize, todayYield, type IdleReason, type ResourceState } from '../../logic/resources';
+import { areaOf, collect, cycleProgress, cycleYield, defOf, depositOf, idleReason, nextTreeAt, sanitize, todayYield, yardCapacity, type IdleReason, type ResourceState } from '../../logic/resources';
+import type { GameState } from '../../logic/types';
 import { fullMessage } from '../../logic/storage';
 import { footprintLocal } from '../../scenes/iso';
-import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
-import { packAsset, textureKey } from '../../scenes/sprites';
+import { pileArt, PILE_ART_STAGES } from '../../scenes/art';
+import { addArt, textureKey } from '../../scenes/sprites';
 import { registerTexture } from '../../scenes/textures';
-import { BUBBLE } from '../processing/textures';
 
 /**
  * Woodcutter's lodge, quarry and mine on the map and in their panel: chips or dust fly while a farmer works there,
- * and a bubble shows the output waiting for room in the storehouse. Rules live in `src/logic/resources.ts`, the
+ * and the output in the yard lies in a pile at the building (logs, stone or iron, bigger as the yard fills). Rules live in `src/logic/resources.ts`, the
  * content in `src/data/resourceBuildings.ts`; the farmers' cycles are run by the work scheduler (`src/logic/work.ts`).
  */
 
@@ -45,17 +45,21 @@ registerTexture('res-dust', {
   },
 });
 
+/** Where the yard's pile lies, a grid point on the footprint: on open ground at the front, clear of the work spot. */
+const YARD_AT: Record<ResourceType, { x: number; y: number }> = {
+  woodcutter: { x: 1.55, y: 1.6 },
+  quarry: { x: 0.45, y: 1.55 },
+  mine: { x: 1.55, y: 1.55 },
+};
+
 const BITS = 4;
-/** Icons in the waiting bubble are this many world pixels tall. */
-const BUBBLE_ICON = 28;
 
 interface Decor {
   bits: Phaser.GameObjects.Image[];
   workAt: { x: number; y: number };
-  bubble: Phaser.GameObjects.Container;
-  bubbleY: number;
-  /** What the bubble shows, to skip redundant rebuilds. */
-  bubbleKey: string;
+  pile: Phaser.GameObjects.Image;
+  /** The pile sprite shown (null: none), to skip redundant changes. */
+  pileArt: string | null;
 }
 
 const decor = new Map<string, Decor>();
@@ -80,44 +84,36 @@ function create(ctx: FarmContext, obj: PlacedObject<ResourceState>, view: Object
   const local = footprintLocal(def.footprint.w, def.footprint.h, spot.x, spot.y);
   const workAt = { x: local.x, y: local.y - 18 };
   const bits = Array.from({ length: BITS }, () => scene.add.image(workAt.x, workAt.y, spot.texture).setVisible(false));
-  // Just above the sprite's top edge.
-  const [, ay] = packAsset(artFor(def.id))?.res[ART_RES].anchor ?? [0, 0];
-  const bubbleY = view.top.y - ay * ART_SCALE - 4;
-  const bubble = scene.add.container(view.top.x, bubbleY, [scene.add.image(0, 0, 'proc-bubble')]).setVisible(false).setName('resource-waiting');
-  view.container.add([...bits, bubble]);
-  decor.set(obj.id, { bits, workAt, bubble, bubbleY, bubbleKey: '' });
+  const at = YARD_AT[def.id];
+  // Pile art stands on the middle of a tile (see "Stock piles" in tools/ludo/README.md).
+  const p = footprintLocal(def.footprint.w, def.footprint.h, at.x - 0.5, at.y - 0.5);
+  const pile = addArt(scene, p.x, p.y, pileArt(def.output, 1)!).setVisible(false).setName('resource-yard');
+  view.container.add([pile, ...bits]);
+  decor.set(obj.id, { bits, workAt, pile, pileArt: null });
   refresh(ctx, obj);
 }
 
-/** Shows the waiting-output bubble, e.g. the wood icon and "4", while output waits for room. */
+/** The pile of the yard's output: a quarter-full pile per quarter of the yard (the smallest one for anything at all). */
+export function yardPileArt(state: Pick<GameState, 'ext'>, obj: PlacedObject<ResourceState>): string | null {
+  const n = obj.state.waiting;
+  if (n <= 0) return null;
+  const stage = Math.min(PILE_ART_STAGES, Math.max(1, Math.ceil((n / yardCapacity(state, defOf(obj))) * PILE_ART_STAGES)));
+  return pileArt(defOf(obj).output, stage);
+}
+
+/** Shows the yard's pile at its fill stage. */
 function refresh(ctx: FarmContext, obj: PlacedObject<ResourceState>): void {
   const d = decor.get(obj.id);
   if (!d) return;
-  const n = obj.state.waiting;
-  const key = n > 0 ? String(n) : '';
-  if (key === d.bubbleKey) return;
-  d.bubbleKey = key;
-  d.bubble.setVisible(n > 0);
-  d.bubble.list.slice(1).forEach((child) => child.destroy());
-  if (n === 0) return;
-  const scene = ctx.scene;
-  const icon = scene.add.image(0, 0, textureKey(scene, defOf(obj).output)).setOrigin(0, 0.5);
-  icon.setScale(BUBBLE_ICON / icon.height);
-  const label = scene.add
-    .text(0, 0, String(n), { fontFamily: 'system-ui, sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#2b2118', resolution: 2 })
-    .setOrigin(0, 0.5);
-  const parts = [icon, label];
-  const gap = 2;
-  let x = -(icon.displayWidth + gap + label.displayWidth) / 2;
-  for (const p of parts) {
-    p.setPosition(x, -(BUBBLE.height - (BUBBLE.height - 12) / 2));
-    x += p.displayWidth + gap;
-  }
-  d.bubble.add(parts);
+  const art = yardPileArt(ctx.game.state, obj);
+  if (art === d.pileArt) return;
+  d.pileArt = art;
+  d.pile.setVisible(!!art);
+  if (art) d.pile.setTexture(textureKey(ctx.scene, art));
 }
 
 /** Chips or dust fly from the work spot while the farmer is at work (not while they are still walking there). */
-function animate(ctx: FarmContext, obj: PlacedObject<ResourceState>, view: ObjectView): void {
+function animate(ctx: FarmContext, obj: PlacedObject<ResourceState>): void {
   const d = decor.get(obj.id);
   if (!d) return;
   // Cosmetic only, so it runs on real time.
@@ -142,8 +138,6 @@ function animate(ctx: FarmContext, obj: PlacedObject<ResourceState>, view: Objec
       b.setAlpha(0.7 * (1 - phase));
     }
   });
-  if (d.bubble.visible) d.bubble.y = d.bubbleY + Math.sin(t / 260) * 2;
-  view.container.bringToTop(d.bubble);
 }
 
 const IDLE_TEXT: Record<IdleReason, (obj: PlacedObject<ResourceState>, ctx: FarmContext) => string> = {
@@ -155,14 +149,14 @@ const IDLE_TEXT: Record<IdleReason, (obj: PlacedObject<ResourceState>, ctx: Farm
   exhausted: (obj) => `Deposit used up: no more ${defOf(obj).output} here. Demolish it, or buy ${defOf(obj).output} at the Market.`,
   'no-farmer': (obj) => `Idle: no farmer works here. Assign one to ${defOf(obj).verb}.`,
   'no-path': () => 'Idle: no path leads here from the farmhouse door.',
-  'storehouse-full': () => `Idle: ${fullMessage('materials')}`,
+  'storehouse-full': () => `Idle: the yard is full. ${fullMessage('materials')}`,
 };
 
 function collectAndFloat(ctx: FarmContext, obj: PlacedObject<ResourceState>): void {
   const def = defOf(obj);
   const n = collect(ctx.game, obj);
   if (n > 0) ctx.ui.floatText(obj.x + (def.footprint.w - 1) / 2, obj.y, `+${n} ${itemLabel(def.output)}`);
-  if (obj.state.waiting > 0) ctx.ui.toast(`${obj.state.waiting} ${itemLabel(def.output)} wait in the ${def.name.toLowerCase()}. ${fullMessage('materials')}`, 'error');
+  if (obj.state.waiting > 0) ctx.ui.toast(`${obj.state.waiting} ${itemLabel(def.output)} wait in the yard. ${fullMessage('materials')}`, 'error');
 }
 
 /** What the building works: the trees in its reach, or what is left in its deposit. */
@@ -192,7 +186,7 @@ function panel(ctx: FarmContext, obj: PlacedObject<ResourceState>): PanelSpec {
   lines.push(...sourceLines(ctx, obj));
   const idle = idleReason(game, obj);
   if (idle) lines.push(IDLE_TEXT[idle](obj, ctx));
-  if (obj.state.waiting > 0) lines.push(`Waiting for room in the storehouse: ${obj.state.waiting} ${out}`);
+  lines.push(`Yard: ${obj.state.waiting} of ${yardCapacity(game.state, def)} ${out}. An ox barn's cart hauls it to the stores; once it is full, the farmer carries it in before working on.`);
   lines.push(`Made today: ${todayYield(clock, obj)} ${out}`);
   const { cycle } = obj.state;
   const progress = cycleProgress(clock, obj);
@@ -224,17 +218,11 @@ for (const type of Object.keys(RESOURCES) as ResourceType[]) {
   registerBehavior<ResourceState>(type, {
     create,
     refresh,
-    update(ctx, obj, view) {
-      animate(ctx, obj, view);
+    update(ctx, obj) {
+      animate(ctx, obj);
     },
     destroy(_ctx, obj) {
       decor.delete(obj.id); // the display objects go with the view's container
-    },
-    // Tapping a building with output waiting carries what fits into the storehouse; otherwise the panel opens.
-    onClick(ctx, obj) {
-      if (obj.state.waiting === 0 || ctx.game.spaceFor(defOf(obj).output) === 0) return false;
-      collectAndFloat(ctx, obj);
-      return true;
     },
     panel,
   });

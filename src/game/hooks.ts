@@ -45,6 +45,10 @@ export interface HudButton {
   badge?(ctx: FarmContext): number | null;
   /** Live icon and label (e.g. a mute toggle); re-read on every HUD refresh. */
   live?(ctx: FarmContext): { icon: string; label: string };
+  /** Shown only while this returns true (e.g. a chip for a visitor); re-read on every HUD refresh. Always shown when missing. */
+  visible?(ctx: FarmContext): boolean;
+  /** Extra class on the button, e.g. `hud-chip` for a highlighted chip. */
+  className?: string;
 }
 
 const hudButtons: HudButton[] = [];

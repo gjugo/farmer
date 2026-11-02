@@ -164,11 +164,12 @@ describe('starting jobs', () => {
     expect(collect(game, obj)).toEqual({ clothes: 2 });
   });
 
-  it('every goods recipe is worth more than its inputs at base prices (feed is a supply, not for sale)', () => {
+  it('no goods recipe is worth less than its inputs at base prices (feed is a supply, not for sale)', () => {
+    // Cloth → clothes only breaks even: the clothes are for the families (+15 approval instead of cloth's +10).
     for (const p of Object.values(PROCESSORS)) {
       for (const r of p.recipes.filter((x) => getItem(x.output.item)!.category === 'processed')) {
         const cost = Object.entries(r.inputs).reduce((sum, [id, n]) => sum + getItem(id)!.price * n!, 0);
-        expect(getItem(r.output.item)!.price * r.output.qty, `${p.id}/${r.id}`).toBeGreaterThan(cost);
+        expect(getItem(r.output.item)!.price * r.output.qty, `${p.id}/${r.id}`).toBeGreaterThanOrEqual(cost);
       }
     }
   });

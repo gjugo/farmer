@@ -182,7 +182,7 @@ describe('unlocks', () => {
   });
 
   it('lists what each level unlocks', () => {
-    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Pasture', 'Potato']);
+    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Hen Run', 'Iron at the Market', 'Kennel', 'Ox Barn', 'Pasture', 'Potato']);
     expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
     // The later levels unlock crops and the longer chains: flax, the winter cabbage and the malthouse at 6, pumpkin
@@ -309,17 +309,51 @@ describe('goals', () => {
     expect(game.progression.allDone).toBe(true);
   });
 
-  it('new goals come last, after the goals saves already know by index', () => {
-    expect(GOALS.slice(-6).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins', 'make-malt', 'brew-ale', 'sew-clothes']);
-    expect(GOALS.findIndex((g) => g.id === 'weave-cloth')).toBe(GOALS.length - 7);
+  it('the new crop goals come last, after the goals saves already know by index', () => {
+    const cloth = GOALS.findIndex((g) => g.id === 'weave-cloth');
+    expect(GOALS.slice(cloth + 1, cloth + 4).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
   });
 
-  it('the chain goals ask for 10 malt, 5 ale and 3 clothes', () => {
-    expect(GOALS.slice(-3).map((g) => [g.kind, 'item' in g ? g.item : null, g.count])).toEqual([
-      ['make', 'malt', 10],
-      ['make', 'ale', 5],
-      ['make', 'clothes', 3],
+  it('new goals are appended, after every goal saves already know by index: the trader and garden goals, the hazard goals, then the oxcart goals', () => {
+    const pumpkins = GOALS.findIndex((g) => g.id === 'grow-pumpkins');
+    expect(GOALS.slice(pumpkins + 1).map((g) => g.id)).toEqual([
+      'trade-trader',
+      'build-veg-patch',
+      'gather-apples',
+      'build-well',
+      'guard-coop',
+      'build-oxbarn',
+      'haul-goods',
+      'make-malt',
+      'brew-ale',
+      'sew-clothes',
     ]);
+  });
+
+  it('the oxcart goals follow the hazard goals: build an ox barn, haul 100 goods by cart', () => {
+    const barn = GOALS.findIndex((g) => g.id === 'build-oxbarn');
+    expect(GOALS.slice(barn, barn + 2).map((g) => [g.id, g.kind, g.count])).toEqual([
+      ['build-oxbarn', 'own-buildings', 1],
+      ['haul-goods', 'haul', 100],
+    ]);
+    expect(GOALS.findIndex((g) => g.id === 'guard-coop')).toBe(barn - 1);
+  });
+
+  it('the chain goals come last: 10 malt, 5 ale and 3 clothes', () => {
+    expect(GOALS.slice(-3).map((g) => [g.id, g.kind, 'item' in g ? g.item : null, g.count])).toEqual([
+      ['make-malt', 'make', 'malt', 10],
+      ['brew-ale', 'make', 'ale', 5],
+      ['sew-clothes', 'make', 'clothes', 3],
+    ]);
+  });
+
+  it('haul goals count goods unloaded by cart', () => {
+    const game = new Game(maxLevelState());
+    const data = getSlice<ProgressionState>(game.state, PROGRESSION);
+    data.goals = [{ id: 'haul-goods', progress: 0 }];
+    game.activity.emit('hauled', { item: 'wood', qty: 20 });
+    game.activity.emit('hauled', { item: 'stone', qty: 15 });
+    expect(game.progression.goals()[0].progress).toBe(35);
   });
 
   it('harvest cabbage in winter counts only a winter harvest', () => {

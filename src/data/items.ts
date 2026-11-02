@@ -23,6 +23,8 @@ export const ITEMS = {
   flax: { id: 'flax', name: 'Flax', category: 'crop', price: 10, icon: '🪻' },
   cabbage: { id: 'cabbage', name: 'Cabbage', category: 'crop', price: 14, icon: '🥬' },
   pumpkin: { id: 'pumpkin', name: 'Pumpkin', category: 'crop', price: 32, icon: '🎃' },
+  // Picked in the orchards beside the homes (see `src/data/gardens.ts`).
+  apple: { id: 'apple', name: 'Apple', category: 'crop', price: 7, icon: '🍎' },
   egg: { id: 'egg', name: 'Egg', category: 'animal-product', price: 10, icon: '🥚' },
   milk: { id: 'milk', name: 'Milk', category: 'animal-product', price: 18, icon: '🥛' },
   wool: { id: 'wool', name: 'Wool', category: 'animal-product', price: 25, icon: '🧶' },
@@ -34,7 +36,7 @@ export const ITEMS = {
   malt: { id: 'malt', name: 'Malt', category: 'processed', price: 12, icon: '🫘' },
   ale: { id: 'ale', name: 'Ale', category: 'processed', price: 90, icon: '🍺' },
   linen: { id: 'linen', name: 'Linen', category: 'processed', price: 60, icon: '🧻' },
-  clothes: { id: 'clothes', name: 'Clothes', category: 'processed', price: 175, icon: '👕' },
+  clothes: { id: 'clothes', name: 'Clothes', category: 'processed', price: 150, icon: '👕' },
   // Building materials: bought at the Market (see `buyPrice` in `src/logic/market.ts`), spent on buildings.
   wood: { id: 'wood', name: 'Wood', category: 'material', price: 4, icon: '🪵' },
   stone: { id: 'stone', name: 'Stone', category: 'material', price: 5, icon: '🪨' },

@@ -6,8 +6,11 @@ import { isResourceType } from '../data/resourceBuildings';
 import { PLOUGH_COST } from '../data/seasons';
 import { COLLECT_WORK_MS, FEED_WORK_MS, FERTILISE_WORK_MS, HARVEST_WORK_MS, LOAD_WORK_MS, PLANT_WORK_MS, PLOUGH_WORK_MS, type JobKind } from '../data/workers';
 import * as animals from './animals';
+import { isBarn, nextHaulEvent, planHaul, settleHauls, startTrip, type HaulTrip } from './haul';
 import { MANURE_BELOW } from '../data/soil';
 import { nextFamiliesEvent, stepFamilies } from './families';
+import { nextHazardEvent, stepHazards } from './hazards';
+import { nextGardensEvent, stepGardens } from './gardens';
 import { canPloughNow, checkFertilise, cropStage, fertilise, fertilityOf, fieldCrop, harvest, harvestYield, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import type { Game } from './game';
 import { perkFactor } from './perks';
@@ -23,7 +26,7 @@ import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf
  * farmers (no workplace, or nothing to do there) build construction sites, oldest first.
  *
  * It runs on game time, not frames: `runWork` steps the clock from one event (a job, crop, animal,
- * batch or resource cycle ending, a new season or day, a family moving in) to the next and hands out work at each, so a frame at ×60, a
+ * batch or resource cycle ending, a new season or day, a family moving in, a house garden's yield) to the next and hands out work at each, so a frame at ×60, a
  * hundred frames at ×1 and a week of offline catch-up all give the same farm. Between events
  * nothing a farmer could do changes, except what the player does, which the next call picks up.
  */
@@ -36,6 +39,8 @@ export interface Task {
   kind: JobKind;
   workMs: number;
   run: (walkMs: number) => boolean;
+  /** Hauling: the trip, given the game time the carter reaches the barn. */
+  haul?: (start: number) => HaulTrip;
 }
 
 /** Why a workplace has no job right now. */
@@ -55,9 +60,13 @@ export type WaitReason =
   | 'cycle' // a resource cycle is still under way (its farmer was moved mid-cycle)
   | 'storehouse-full' // materials wait in the building, but the storehouse has no room for them
   | 'no-trees' // a woodcutter's lodge without a grown tree in range
-  | 'exhausted'; // a quarry or mine whose deposit is used up
+  | 'exhausted' // a quarry or mine whose deposit is used up
+  | 'no-ox' // an ox barn without an ox
+  | 'nothing-to-haul' // no yard or processing building has goods waiting
+  | 'stores-full' // goods wait, but no store has room for them
+  | 'no-path'; // no path leads the cart to `to` (a pickup, a store or back to the barn)
 
-export type WorkplaceNext = { task: Task } | { wait: WaitReason; cost?: number };
+export type WorkplaceNext = { task: Task } | { wait: WaitReason; cost?: number; to?: string };
 
 const task = (kind: JobKind, workMs: number, run: (walkMs: number) => boolean): WorkplaceNext => ({ task: { kind, workMs, run } });
 
@@ -140,13 +149,23 @@ function processorNext(game: Game, obj: PlacedObject<processing.ProcessorState>)
 function resourceNext(game: Game, obj: PlacedObject<resources.ResourceState>): WorkplaceNext {
   const def = resources.defOf(obj);
   if (obj.state.cycle) return { wait: 'cycle' };
-  if (obj.state.waiting > 0) {
+  const exhausted = !!def.deposit && !resources.depositOf(game, obj);
+  const noTrees = !resources.hasTree(game, obj);
+  // A full yard is carried in on foot before the next cycle (and so is any yard when there is nothing to work).
+  if (resources.yardFull(game.state, obj) || (obj.state.waiting > 0 && (exhausted || noTrees))) {
     if (game.spaceFor(def.output) === 0) return { wait: 'storehouse-full' };
     return task('collect', COLLECT_WORK_MS, () => resources.collect(game, obj) > 0);
   }
-  if (def.deposit && !resources.depositOf(game, obj)) return { wait: 'exhausted' };
-  if (!resources.hasTree(game, obj)) return { wait: 'no-trees' };
+  if (exhausted) return { wait: 'exhausted' };
+  if (noTrees) return { wait: 'no-trees' };
   return task(def.job, resources.cycleMsAt(def, game.now), (walk) => resources.startCycle(game, obj, walk));
+}
+
+/** An ox barn: the carter's next oxcart trip, or why the cart stays in the barn. */
+function barnNext(game: Game, obj: PlacedObject): WorkplaceNext {
+  const plan = planHaul(game, obj);
+  if ('wait' in plan) return { wait: plan.wait, to: plan.to };
+  return { task: { kind: 'haul', workMs: plan.ms, run: () => true, haul: (start) => startTrip(game, plan.trip, start) } };
 }
 
 /** The job a workplace has now, or why it has none. Processing output should be settled first (`runWork` does). */
@@ -156,6 +175,7 @@ export function workplaceNext(game: Game, obj: PlacedObject): WorkplaceNext {
   if (animals.isPenType(obj.type)) return penNext(game, obj as unknown as PlacedObject<animals.PenState>);
   if (isProcessorType(obj.type)) return processorNext(game, obj as unknown as PlacedObject<processing.ProcessorState>);
   if (isResourceType(obj.type)) return resourceNext(game, obj as unknown as PlacedObject<resources.ResourceState>);
+  if (isBarn(obj)) return barnNext(game, obj);
   return { wait: 'no-recipe' };
 }
 
@@ -199,7 +219,7 @@ function settleAssigned(game: Game, onSettled: SettledHook): void {
   }
 }
 
-/** Resource buildings: end the cycles that are over, putting their yield in the storehouses (or waiting in the building). */
+/** Resource buildings: end the cycles that are over, putting their yield in the building's yard. */
 function settleResources(game: Game): void {
   for (const obj of game.state.objects) {
     if (isResourceType(obj.type) && obj.state.cycle) resources.settle(game, obj as unknown as PlacedObject<resources.ResourceState>);
@@ -211,6 +231,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
   const { state } = game;
   const now = state.clock.elapsed;
   const w = workersOf(state);
+  // Carts load, unload and park first: a trip that just ended may still have its last moment due.
+  settleHauls(game);
   for (const job of w.jobs) {
     if (job.doneAt === undefined || job.doneAt > now) continue;
     delete job.doneAt;
@@ -221,16 +243,20 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
   w.jobs = activeJobs(state.clock, w).filter((j) => j.doneAt === undefined || !!game.getObject(j.target ?? '')?.site);
   settleAssigned(game, onSettled);
   settleResources(game);
-  // New days (meals, firewood, clothes, approval, departures) and arrivals, before work is handed out.
+  // Hazards first (a harsh winter or drought starting today counts for today), then new days (meals, firewood,
+  // clothes, approval, departures) and arrivals, before work is handed out.
+  stepHazards(game);
   stepFamilies(game);
+  // House gardens yield after the meal, and carry in what waits as room appears.
+  stepGardens(game);
 
   const routeTo = (obj: PlacedObject): Route | null => {
     if (!routes.has(obj.id)) routes.set(obj.id, findRoute(state, areaOf(obj)));
     return routes.get(obj.id)!;
   };
-  const start = (farmer: number, kind: JobKind, obj: PlacedObject, workMs: number, route: Route, builds = false) => {
+  const start = (farmer: number, kind: JobKind, obj: PlacedObject, workMs: number, route: Route, builds = false, haul?: Task['haul']) => {
     const a = areaOf(obj);
-    assignJob(game, kind, a.x + a.w / 2, a.y + a.h / 2, workMs, route, { farmer, target: obj.id, builds });
+    assignJob(game, kind, a.x + a.w / 2, a.y + a.h / 2, workMs, route, { farmer, target: obj.id, builds, haul });
   };
 
   const busy = jobsByFarmer(state.clock, w);
@@ -243,7 +269,7 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
       const next = workplaceNext(game, workplace);
       const route = 'task' in next ? routeTo(workplace) : null;
       if ('task' in next && route && next.task.run(walkMs(route, perkFactor(state, 'good-boots')))) {
-        start(i, next.task.kind, workplace, next.task.workMs, route);
+        start(i, next.task.kind, workplace, next.task.workMs, route, false, next.task.haul);
         continue;
       }
     }
@@ -258,8 +284,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
 
 /**
  * The next game time after now at which a farmer may find new work: a job, crop, animal cycle, batch or resource cycle
- * ends, a tree a waiting lodge could fell grows back, a season or a day begins (the families settle their needs), or a
- * family is due to move in.
+ * ends, a tree a waiting lodge could fell grows back, a season or a day begins (the families settle their needs), a
+ * family is due to move in, or a hazard is due (crows land, a fox comes, a drought starts or ends).
  */
 export function nextWorkEvent(game: Game): number {
   const { state } = game;
@@ -297,8 +323,12 @@ export function nextWorkEvent(game: Game): number {
     const cycle = isResourceType(obj.type) ? (obj.state as resources.ResourceState).cycle : null;
     if (cycle) at(cycle.start + cycle.duration);
   }
+  // Carts load, unload and park.
+  at(nextHaulEvent(state, now));
   if (fields) at(nextSeasonAt(now));
   at(nextFamiliesEvent(state));
+  at(nextHazardEvent(state));
+  at(nextGardensEvent(state));
   return next;
 }
 

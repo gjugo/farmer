@@ -23,6 +23,7 @@ import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
 import { packAsset } from '../../scenes/sprites';
 import { h } from '../../ui/dom';
 import { withIcons } from '../../ui/icons';
+import { homeGardenLine } from '../gardens';
 
 /**
  * Families on the map and in the HUD: the approval chip (😊 62%) opens the Families sheet with homes, families,
@@ -247,6 +248,7 @@ registerBehavior<Record<string, unknown>>(COTTAGE, {
         : home
           ? [`Home of a family. Their farmer sets out from the farmhouse door like everyone else.`, `${approvalFace(approval)} Approval ${approval}% (see 👪 Families).`]
           : [`Empty. ${arrivalHint(game)}`],
+      hint: obj.site ? undefined : homeGardenLine(game, obj),
     };
   },
 });

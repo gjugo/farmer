@@ -23,6 +23,7 @@ import {
 import { ART_SCALE, facing, penFence, type Facing } from '../../scenes/art';
 import { footprintLocal } from '../../scenes/iso';
 import { addArt, addArtSprite, addShadow, packAsset, textureKey } from '../../scenes/sprites';
+import { protectionLine } from '../hazards';
 import { WALK_AREA } from './textures';
 
 /** Walking speed in tiles per real second. */
@@ -232,6 +233,9 @@ function penPanel(ctx: FarmContext, obj: PlacedObject<PenState>): PanelSpec {
     `${itemLabel('feed')} in stock: ${feed}`,
   ];
   if (animals.length === 0) lines.splice(1, 0, `Empty. Buy ${pen.animals.map((k) => ANIMALS[k].name.toLowerCase()).join(' or ')} below.`);
+  // A coop says whether a kennel keeps the fox off it.
+  const guard = protectionLine(game, obj);
+  if (guard) lines.push(guard);
 
   const actions: PanelAction[] = [];
   if (ready > 0) actions.push({ label: `Collect (${ready})`, onClick: () => collectAndFloat(ctx, obj) });

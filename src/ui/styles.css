@@ -695,6 +695,18 @@ button {
   color: var(--muted);
 }
 
+.market-price .flooded {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #3f74b5;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+
 .market-actions {
   grid-area: actions;
   display: flex;
@@ -1510,6 +1522,22 @@ body[data-menu] .tool-banner {
   display: none;
 }
 
+/* A visitor's chip (the travelling trader): stands out from the tools. */
+.hud-btn.hud-chip {
+  background: var(--gold);
+  border-color: var(--wood-dark);
+}
+
+.trader-intro {
+  margin-top: 0;
+}
+
+.trader-left {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .orders-intro {
   margin-top: 0;
 }
@@ -1805,4 +1833,54 @@ body[data-menu] .tool-banner {
 
 .families-needs {
   font-size: 13px;
+}
+
+/* Hazards: the debug buttons wrap two to a row on a phone. */
+.debug-hazards {
+  flex-wrap: wrap;
+}
+
+.debug-hazards .btn {
+  flex: 1 1 calc(50% - 6px);
+}
+
+/* The Almanac (hazards): what is on, what is coming, threats with their defences, recent losses. */
+.almanac-section {
+  margin: 0 0 12px;
+}
+
+.almanac-list,
+.almanac-threats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.almanac-list li {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.almanac-list li:nth-child(odd) {
+  background: var(--paper-dark);
+}
+
+.almanac-threats li {
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.almanac-threats li:nth-child(odd) {
+  background: var(--paper-dark);
+}
+
+.almanac-guard {
+  color: var(--green-dark);
+  font-weight: 600;
 }

@@ -12,7 +12,8 @@ import { addDeposit, addTrees, inRange, mapOf } from './maplayer';
 import { buyPrice } from './market';
 import { catchUp } from './offline';
 import { PROGRESSION, type ProgressionState } from './progression';
-import { collect, cycleMsAt, idleReason, todayYield, type ResourceState } from './resources';
+import { YARD_CYCLES } from '../data/haul';
+import { collect, cycleMsAt, idleReason, todayYield, yardFull, type ResourceState } from './resources';
 import { connectToFarmhouse } from './roads';
 import { deserialize, serialize } from './save';
 import { SEASON_MS } from './seasons';
@@ -21,7 +22,7 @@ import { createNewGame } from './state';
 import { capacity, used } from './storage';
 import { maxLevelState } from './test-utils';
 import type { PlacedObject } from './types';
-import { workplaceNext } from './work';
+import { nextWorkEvent, workplaceNext } from './work';
 import { assignFarmer, addFarmer, jobsByFarmer, unassignFarmer, workerAt, workersOf } from './workers';
 
 const MIN = 60_000;
@@ -84,20 +85,39 @@ function runCycles(game: Game, n: number, limit = 10 * HOUR): number {
   let made = 0;
   const off = game.activity.on('produced', () => made++);
   const end = game.now + limit;
-  while (made < n && game.now < end) game.advance(MIN);
+  // From one work event to the next, so it stops right as the cycle ends.
+  while (made < n && game.now < end) game.advance(Math.max(1, Math.min(MIN, nextWorkEvent(game) - game.now)));
   off();
   return made;
 }
 
 describe('resource buildings', () => {
-  it.each(TYPES)('an assigned %s produces its yield per cycle', (type) => {
+  it.each(TYPES)('an assigned %s produces its yield per cycle into its yard', (type) => {
     const { game, obj } = staffed(type);
     const def = RESOURCES[type];
     expect(runCycles(game, 1)).toBe(1);
-    expect(game.count(def.output)).toBe(def.yield);
+    // The yield lands in the building's yard, not in the storehouse.
+    expect(obj.state.waiting).toBe(def.yield);
+    expect(game.count(def.output)).toBe(0);
     expect(todayYield(game.state.clock, obj)).toBe(def.yield);
     expect(runCycles(game, 2)).toBe(2);
-    expect(game.count(def.output)).toBe(3 * def.yield);
+    expect(obj.state.waiting).toBe(YARD_CYCLES * def.yield);
+    expect(yardFull(game.state, obj)).toBe(true);
+    expect(game.count(def.output)).toBe(0);
+  });
+
+  it.each(TYPES)('a full %s yard makes its farmer carry it all in on foot before the next cycle', (type) => {
+    const { game, obj } = staffed(type);
+    const def = RESOURCES[type];
+    expect(runCycles(game, YARD_CYCLES)).toBe(YARD_CYCLES);
+    // Home from the last cycle, the farmer's next job is carrying the yard in, all of it in one trip.
+    while (jobsByFarmer(game.state.clock, workersOf(game.state))[0]?.kind !== 'collect') game.advance(MIN / 4);
+    expect(obj.state.waiting).toBe(0);
+    expect(game.count(def.output)).toBe(YARD_CYCLES * def.yield);
+    expect(obj.state.cycle).toBeNull();
+    // Then back to work.
+    expect(runCycles(game, 1)).toBe(1);
+    expect(obj.state.waiting).toBe(def.yield);
     // Nothing else came in: only the building's own material.
     expect(Object.keys(game.state.inventory)).toEqual([def.output]);
   });
@@ -111,9 +131,9 @@ describe('resource buildings', () => {
     expect(cycle.start).toBe(job!.timer.start + job!.walkMs!);
     expect(cycle.duration).toBe(RESOURCES.woodcutter.cycleMs);
     game.advance(cycle.start + cycle.duration - game.now - 1);
-    expect(game.count('wood')).toBe(0);
+    expect(obj.state.waiting).toBe(0);
     game.advance(1);
-    expect(game.count('wood')).toBe(4);
+    expect(obj.state.waiting).toBe(4);
     // Walking home: still busy, and the next cycle only starts once they are free again.
     expect(jobsByFarmer(game.state.clock, workersOf(game.state))[0]).toBeDefined();
     expect(obj.state.cycle).toBeNull();
@@ -133,7 +153,7 @@ describe('resource buildings', () => {
     const { game, obj } = staffed('woodcutter');
     game.state.clock.elapsed = winter;
     expect(runCycles(game, 1)).toBe(1);
-    expect(game.count('wood')).toBe(4);
+    expect(obj.state.waiting).toBe(4);
     expect(obj.state.day).toBeGreaterThan(0);
   });
 
@@ -154,12 +174,12 @@ describe('resource buildings', () => {
     const obj = build(game, 'quarry', X + 7, Y + 6, { road: false });
     assignFarmer(game, obj.id);
     game.advance(2 * HOUR);
-    expect(game.count('stone')).toBe(0);
+    expect(obj.state.waiting).toBe(0);
     expect(idleReason(game, obj)).toBe('no-path');
     // Lay the path and it starts.
     connectToFarmhouse(game.state, { x: obj.x, y: obj.y, w: 2, h: 2 });
     expect(runCycles(game, 1)).toBe(1);
-    expect(game.count('stone')).toBe(3);
+    expect(obj.state.waiting).toBe(3);
   });
 
   it('nothing is produced while it is a construction site', () => {
@@ -172,21 +192,25 @@ describe('resource buildings', () => {
     expect(workplaceNext(game, r.object)).toEqual({ wait: 'site' });
   });
 
-  it('a full storehouse holds the output in the building and frees the farmer', () => {
+  it('a full yard and a full storehouse hold the output in the building and free the farmer', () => {
     const { game, obj } = staffed('woodcutter');
     // Room for 2 more wood only.
     game.state.inventory = { stone: FARMHOUSE_STORE.materials - 2 };
+    obj.state.waiting = YARD_CYCLES * 4 - 4;
     expect(runCycles(game, 1)).toBe(1);
+    expect(obj.state.waiting).toBe(YARD_CYCLES * 4);
+    // Home, the farmer carries in what fits: the rest stays in the yard.
+    game.advance(5 * MIN);
     expect(game.count('wood')).toBe(2);
-    expect(obj.state.waiting).toBe(2);
+    expect(obj.state.waiting).toBe(YARD_CYCLES * 4 - 2);
     expect(used(game.state, 'materials')).toBe(capacity(game.state, 'materials'));
-    // The farmer comes home and waits; no new cycle while output waits.
+    // The farmer comes home and waits; no new cycle while the yard is full.
     game.advance(10 * MIN);
     expect(jobsByFarmer(game.state.clock, workersOf(game.state))[0]).toBeUndefined();
     expect(workplaceNext(game, obj)).toEqual({ wait: 'storehouse-full' });
     expect(idleReason(game, obj)).toBe('storehouse-full');
     game.advance(HOUR);
-    expect(obj.state.waiting).toBe(2);
+    expect(obj.state.waiting).toBe(YARD_CYCLES * 4 - 2);
     expect(obj.state.cycle).toBeNull();
     // Free for other work: they build a site meanwhile.
     const site = game.place('field', X + 4, Y + 5, { site: true });
@@ -196,11 +220,11 @@ describe('resource buildings', () => {
     expect(jobsByFarmer(game.state.clock, workersOf(game.state))[0]?.kind).toBe('build');
     // Room again: once free, the farmer carries the waiting wood in, then cuts more. Nothing was lost.
     game.advance(HOUR);
-    game.removeItem('stone', 10);
+    game.removeItem('stone', 20);
     game.advance(1);
     const [job] = jobsByFarmer(game.state.clock, workersOf(game.state));
     expect(job?.kind).toBe('collect');
-    expect(game.count('wood')).toBe(4);
+    expect(game.count('wood')).toBe(YARD_CYCLES * 4);
     expect(obj.state.waiting).toBe(0);
     game.advance(job!.timer.duration);
     expect(jobsByFarmer(game.state.clock, workersOf(game.state))[0]?.kind).toBe('chop');
@@ -223,9 +247,9 @@ describe('resource buildings', () => {
     expect(obj.state.cycle).not.toBeNull();
     unassignFarmer(game, 0);
     expect(runCycles(game, 1)).toBe(1);
-    expect(game.count('wood')).toBe(4);
+    expect(obj.state.waiting).toBe(4);
     game.advance(HOUR);
-    expect(game.count('wood')).toBe(4);
+    expect(obj.state.waiting).toBe(4);
   });
 
   it('several staffed buildings work at once', () => {
@@ -242,9 +266,11 @@ describe('resource buildings', () => {
     const ids = [build(game, 'woodcutter', X + 1, Y + 5), build(game, 'quarry', X + 4, Y + 5), build(game, 'mine', X + 7, Y + 5)].map((o) => o.id);
     for (const id of ids) expect(assignFarmer(game, id).ok).toBe(true);
     game.advance(HOUR);
-    expect(game.count('wood')).toBeGreaterThanOrEqual(4 * 10);
-    expect(game.count('stone')).toBeGreaterThanOrEqual(3 * 8);
-    expect(game.count('iron')).toBeGreaterThanOrEqual(7);
+    // Stored, or in the yards.
+    const made = (id: string, item: string) => game.count(item) + (game.getObject(id)!.state.waiting as number);
+    expect(made(ids[0], 'wood')).toBeGreaterThanOrEqual(4 * 10);
+    expect(made(ids[1], 'stone')).toBeGreaterThanOrEqual(3 * 8);
+    expect(made(ids[2], 'iron')).toBeGreaterThanOrEqual(7);
     expect(ids.map((id) => workerAt(game.state, id))).toEqual([0, 1, 2]);
   });
 });
@@ -265,13 +291,14 @@ describe('offline catch-up', () => {
     for (let t = 0; t < 3 * HOUR; t += 250) live.game.tick(250);
     const burned = firewoodOf(away);
     const result = catchUp(away, 3 * HOUR);
-    const diff = Math.abs(live.game.count('wood') - away.count('wood'));
+    const made = (g: Game) => g.count('wood') + (g.getObject(live.obj.id)!.state.waiting as number);
+    const diff = Math.abs(made(live.game) - made(away));
     expect(diff).toBeLessThanOrEqual(RESOURCES.woodcutter.yield);
     expect(away.count('wood')).toBeGreaterThan(0);
     expect(result.work.materials.wood).toBe(away.count('wood') + (away.getObject(live.obj.id)!.state.waiting as number) + burned.wood);
   });
 
-  it('stops at the storehouse capacity, holds one cycle in the building, and the summary says so', () => {
+  it('stops at the storehouse capacity, holds a yard in the building, and the summary says so', () => {
     const { game, obj } = staffed('woodcutter');
     const burned = firewoodOf(game);
     const result = catchUp(game, 24 * HOUR);
@@ -279,7 +306,7 @@ describe('offline catch-up', () => {
     expect(game.count('wood')).toBe(FARMHOUSE_STORE.materials);
     const waiting = (game.getObject(obj.id)!.state as ResourceState).waiting;
     expect(waiting).toBeGreaterThan(0);
-    expect(waiting).toBeLessThanOrEqual(RESOURCES.woodcutter.yield);
+    expect(waiting).toBeLessThanOrEqual(YARD_CYCLES * RESOURCES.woodcutter.yield);
     expect(result.work.materials.wood).toBeGreaterThanOrEqual(FARMHOUSE_STORE.materials + waiting + burned.wood);
     expect(result.produced.wood).toBe(waiting);
     expect(result.changed).toContain(obj.id);

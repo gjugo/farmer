@@ -40,6 +40,8 @@ export function isIdentity(grade: Grade): boolean {
 export const WEATHER_CAP = 150;
 /** Particles per megapixel of view at zoom 1, per season (summer is clear). */
 export const WEATHER_DENSITY: Record<Season, number> = { spring: 20, summer: 0, autumn: 35, winter: 130 };
+/** A harsh winter snows this much heavier (still never over `WEATHER_CAP`). */
+export const HARSH_SNOW = 1.8;
 /** Small screens count as this many megapixels, so a phone still gets a proper snowfall. */
 const MIN_MEGAPIXELS = 0.6;
 /** Zoomed out the weather thins down to this share at most. */
@@ -47,13 +49,14 @@ const MIN_ZOOM_SHARE = 0.35;
 
 /**
  * How many weather particles to keep alive for a `width` × `height` px view at camera `zoom`: thinned when zoomed
- * out, never over WEATHER_CAP, none when weather effects are off.
+ * out, heavier in a `harsh` winter, never over WEATHER_CAP, none when weather effects are off.
  */
-export function weatherBudget(season: Season, width: number, height: number, zoom: number, enabled: boolean): number {
+export function weatherBudget(season: Season, width: number, height: number, zoom: number, enabled: boolean, harsh = false): number {
   if (!enabled) return 0;
   const mp = Math.max(MIN_MEGAPIXELS, (Math.max(0, width) * Math.max(0, height)) / 1e6);
   const share = Math.min(1, Math.max(MIN_ZOOM_SHARE, zoom));
-  return Math.min(WEATHER_CAP, Math.round(WEATHER_DENSITY[season] * mp * share));
+  const density = WEATHER_DENSITY[season] * (harsh && season === 'winter' ? HARSH_SNOW : 1);
+  return Math.min(WEATHER_CAP, Math.round(density * mp * share));
 }
 
 /** Game time jumps bigger than this (debug "Next season", catch-up after time away) change the look at once. */

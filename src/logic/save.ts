@@ -1,5 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
+import { isResourceType } from '../data/resourceBuildings';
 import { PLOUGH_SEASONS } from '../data/seasons';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { createLand, isOwned, setOwned, setOwnedRect, type Rect } from './land';
@@ -25,7 +26,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 export interface SaveFile {
   version: number;
@@ -149,6 +150,21 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     // "build-cottage" and "house-families" in version 12.
     for (const at of [5, 14]) if (nextGoal > at) nextGoal++;
     return { ...raw, version: 12, state: { ...state, ext: { ...ext, [PROGRESSION]: { ...p, nextGoal } } } };
+  },
+  // Oxcart hauling: a resource building's yield now lands in its yard (`waiting`) instead of the storehouse. What
+  // waited there for room stays in the yard, a whole count (its farmer carries it in once the yard is full, or a
+  // cart hauls it). Jobs gain an optional `haul` trip and ox barns their own state: nothing to fill in.
+  12: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const objects = Array.isArray(state.objects)
+      ? state.objects.map((o: unknown) => {
+          if (!isPlainObject(o) || !isResourceType(o.type)) return o;
+          const s = isPlainObject(o.state) ? o.state : {};
+          const waiting = typeof s.waiting === 'number' && Number.isFinite(s.waiting) && s.waiting > 0 ? Math.ceil(s.waiting) : 0;
+          return { ...o, state: { ...s, waiting } };
+        })
+      : state.objects;
+    return { ...raw, version: 13, state: { ...state, objects } };
   },
 };
 

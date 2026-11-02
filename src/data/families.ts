@@ -15,7 +15,7 @@ export const COTTAGE = 'cottage';
 export const FARMHOUSE_HOMES = 1;
 
 /** What families eat, in the order they reach for it. Never feed, wool, cloth or the brewery's malt and ale. */
-export const FOODS: readonly KnownItemId[] = ['wheat', 'carrot', 'corn', 'potato', 'cabbage', 'pumpkin', 'egg', 'milk', 'bread', 'cheese', 'butter'];
+export const FOODS: readonly KnownItemId[] = ['wheat', 'carrot', 'corn', 'potato', 'cabbage', 'pumpkin', 'apple', 'egg', 'milk', 'bread', 'cheese', 'butter'];
 
 /** Food each family eats a day. */
 export const MEAL_PER_FAMILY = 2;

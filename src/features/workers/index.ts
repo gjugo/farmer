@@ -6,6 +6,7 @@ import { farmerActivity, farmerName, placeName } from '../../game/workers';
 import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
 import type { Game } from '../../logic/game';
+import { cartPose } from '../../logic/haul';
 import { farmhouseOf } from '../../logic/roads';
 import { siteProgress, sitesOf } from '../../logic/work';
 import {
@@ -26,6 +27,7 @@ import { addArtSprite, addShadow } from '../../scenes/sprites';
 import { h } from '../../ui/dom';
 import { withIcons } from '../../ui/icons';
 import { familiesBlock, familiesSignature } from '../families';
+import { homeGardenLine } from '../gardens';
 
 /**
  * Farmers: every job sends a farmer from the farmhouse along the paths to the work, a few
@@ -203,6 +205,9 @@ function seatOf(i: number): (typeof SEATS)[number] {
   return { x: -0.35 - (k % 3) * 0.32, y: 0.4 + Math.floor(k / 3) * 0.45, anim: 'idle', facing: 'se' };
 }
 
+/** How far beside the cart its carter walks (tiles). */
+const CARTER_BESIDE = 0.45;
+
 const BAR_W = 40;
 /** The bar floats this far above the farmer's feet. */
 const BAR_RISE = 62;
@@ -251,6 +256,17 @@ function farmerPose(game: Game, i: number, job: Job | undefined): { at: Point; a
   const route = job.route ?? [];
   const line: Point[] = [...(home && route.length ? [home] : []), ...route.map((t) => ({ x: t.x + 0.5, y: t.y + 0.5 })), { x: job.x, y: job.y }];
   const { phase, t } = jobPhase(game.state.clock, job);
+  // A carter walks beside the ox (on its left, towards the viewer), and loads and unloads by the cart.
+  const barn = job.haul ? game.getObject(job.haul.barn) : undefined;
+  const cart = phase === 'work' && job.haul ? cartPose(job.haul, barn, game.now) : null;
+  if (cart && cart.leg !== 'parked') {
+    const n = Math.hypot(cart.dir.x, cart.dir.y) || 1;
+    const side = { x: cart.dir.y / n, y: -cart.dir.x / n };
+    const flip = side.x + side.y < 0 ? -1 : 1;
+    const at = { x: cart.at.x + side.x * flip * CARTER_BESIDE, y: cart.at.y + side.y * flip * CARTER_BESIDE };
+    const f = facing(cart.dir.x, cart.dir.y);
+    return { at, anim: cart.leg === 'drive' ? 'walk' : 'load', facing: f, progress: null };
+  }
   if (phase === 'work') {
     const { dir } = along(line, 1);
     return { at: { x: job.x, y: job.y }, anim: WORK_ANIM[job.kind], facing: facing(dir.x, dir.y), progress: t };
@@ -293,8 +309,8 @@ onGameStart((ctx) => {
   });
 });
 
-registerBehavior(FARMHOUSE, {
-  panel: (ctx) => {
+registerBehavior<Record<string, unknown>>(FARMHOUSE, {
+  panel: (ctx, obj) => {
     const { farmers } = workersOf(ctx.game.state);
     const free = freeFarmers(ctx.game.state);
     return {
@@ -305,6 +321,7 @@ registerBehavior(FARMHOUSE, {
         'Farmers walk out of the door along paths. Lay a path from the door to every field, pen and building you want worked.',
         'Give farmers a workplace in 👨‍🌾 Farmers or from the workplace itself.',
       ],
+      hint: homeGardenLine(ctx.game, obj),
     };
   },
 });
