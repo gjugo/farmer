@@ -33,6 +33,10 @@ export const ITEMS = {
   butter: { id: 'butter', name: 'Butter', category: 'processed', price: 30, icon: '🧈' },
   bread: { id: 'bread', name: 'Bread', category: 'processed', price: 40, icon: '🍞' },
   cloth: { id: 'cloth', name: 'Cloth', category: 'processed', price: 75, icon: '🧵' },
+  malt: { id: 'malt', name: 'Malt', category: 'processed', price: 12, icon: '🫘' },
+  ale: { id: 'ale', name: 'Ale', category: 'processed', price: 90, icon: '🍺' },
+  linen: { id: 'linen', name: 'Linen', category: 'processed', price: 60, icon: '🧻' },
+  clothes: { id: 'clothes', name: 'Clothes', category: 'processed', price: 150, icon: '👕' },
   // Building materials: bought at the Market (see `buyPrice` in `src/logic/market.ts`), spent on buildings.
   wood: { id: 'wood', name: 'Wood', category: 'material', price: 4, icon: '🪵' },
   stone: { id: 'stone', name: 'Stone', category: 'material', price: 5, icon: '🪨' },

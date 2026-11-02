@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PROCESSORS, QUEUE_LIMIT, type RecipeDef } from '../data/processing';
+import { getItem } from '../data/items';
 import { Game } from './game';
 import { maxLevelState } from './test-utils';
 import {
@@ -119,6 +120,58 @@ describe('starting jobs', () => {
     expect(game.count('barley')).toBe(0);
     wait(game, obj, 120_000);
     expect(collect(game, obj)).toEqual({ feed: 4 });
+  });
+
+  it('malthouse malts barley: 3 barley make 2 malt in 5 min', () => {
+    const { game, obj } = setup('malthouse');
+    game.addItem('barley', 3);
+    expect(startJob(game, obj, 'malt').ok).toBe(true);
+    expect(game.count('barley')).toBe(0);
+    expect(wait(game, obj, 299_999)).toBe(0);
+    expect(wait(game, obj, 1)).toBe(1);
+    expect(collect(game, obj)).toEqual({ malt: 2 });
+  });
+
+  it('brewery brews malt into ale: 2 malt make 1 ale in 10 min', () => {
+    const { game, obj } = setup('brewery');
+    game.addItem('malt', 3);
+    expect(startJob(game, obj, 'ale').ok).toBe(true);
+    expect(game.count('malt')).toBe(1);
+    expect(checkStart(game, obj, 'ale')).toEqual({ ok: false, reason: 'inputs' });
+    wait(game, obj, 600_000);
+    expect(collect(game, obj)).toEqual({ ale: 1 });
+  });
+
+  it('the loom weaves flax into linen as well as wool into cloth', () => {
+    const { game, obj } = setup('loom');
+    game.addItem('flax', 3);
+    game.addItem('wool', 2);
+    expect(startJob(game, obj, 'linen').ok).toBe(true);
+    expect(startJob(game, obj, 'cloth').ok).toBe(true);
+    expect(game.count('flax') + game.count('wool')).toBe(0);
+    wait(game, obj, 480_000 + 600_000);
+    expect(collect(game, obj)).toEqual({ linen: 1, cloth: 1 });
+  });
+
+  it('the tailor sews clothes from 2 cloth or from 2 linen', () => {
+    const { game, obj } = setup('tailor');
+    game.addItem('cloth', 2);
+    game.addItem('linen', 2);
+    expect(startJob(game, obj, 'clothes-from-cloth').ok).toBe(true);
+    expect(startJob(game, obj, 'clothes-from-linen').ok).toBe(true);
+    expect(game.count('cloth') + game.count('linen')).toBe(0);
+    wait(game, obj, 1_200_000);
+    expect(collect(game, obj)).toEqual({ clothes: 2 });
+  });
+
+  it('no goods recipe is worth less than its inputs at base prices (feed is a supply, not for sale)', () => {
+    // Cloth → clothes only breaks even: the clothes are for the families (+15 approval instead of cloth's +10).
+    for (const p of Object.values(PROCESSORS)) {
+      for (const r of p.recipes.filter((x) => getItem(x.output.item)!.category === 'processed')) {
+        const cost = Object.entries(r.inputs).reduce((sum, [id, n]) => sum + getItem(id)!.price * n!, 0);
+        expect(getItem(r.output.item)!.price * r.output.qty, `${p.id}/${r.id}`).toBeGreaterThanOrEqual(cost);
+      }
+    }
   });
 
   it('rejects recipes of another building', () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ANIMALS, PENS } from '../data/animals';
 import { listBuildables, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, CROPS, FIELD, getCrop } from '../data/crops';
-import { PROCESSORS } from '../data/processing';
+import { PROCESSORS, recipeUnlockLevel } from '../data/processing';
 import { ACTIVE_GOALS, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL } from '../data/progression';
 import { buyAnimal, collect as collectAnimals, feedAll, type PenState } from './animals';
 import { START_LAND } from './constants';
@@ -132,11 +132,11 @@ describe('unlocks', () => {
     for (const a of Object.values(ANIMALS)) expect(a.unlockLevel).toBeGreaterThanOrEqual(PENS[a.pen].unlockLevel);
   });
 
-  it('no recipe needs an input that unlocks after its building', () => {
+  it('no recipe needs an input that unlocks after the recipe', () => {
     for (const p of Object.values(PROCESSORS)) {
       for (const recipe of p.recipes) {
         for (const [item] of inputsOf(recipe)) {
-          expect(itemUnlockLevel(item), `${p.id}/${recipe.id} needs ${item}`).toBeLessThanOrEqual(p.unlockLevel);
+          expect(itemUnlockLevel(item), `${p.id}/${recipe.id} needs ${item}`).toBeLessThanOrEqual(recipeUnlockLevel(p, recipe));
         }
       }
     }
@@ -185,12 +185,18 @@ describe('unlocks', () => {
     expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Hen Run', 'Iron at the Market', 'Kennel', 'Ox Barn', 'Pasture', 'Potato']);
     expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
-    // The later levels unlock crops: flax and the winter cabbage at 6, pumpkin at 7.
+    // The later levels unlock crops and the longer chains: flax, the winter cabbage and the malthouse at 6, pumpkin
+    // and the brewery at 7, the tailor at 8.
     expect(unlocksAt(6)).toEqual([
       { icon: '🪻', name: 'Flax' },
       { icon: '🥬', name: 'Cabbage' },
+      { icon: '🫘', name: 'Malthouse' },
     ]);
-    expect(unlocksAt(7)).toEqual([{ icon: '🎃', name: 'Pumpkin' }]);
+    expect(unlocksAt(7)).toEqual([
+      { icon: '🎃', name: 'Pumpkin' },
+      { icon: '🍺', name: 'Brewery' },
+    ]);
+    expect(unlocksAt(8)).toEqual([{ icon: '👕', name: 'Tailor' }]);
   });
 
   it('each new crop unlocks at its level, and so does its item', () => {
@@ -310,15 +316,35 @@ describe('goals', () => {
 
   it('new goals are appended, after every goal saves already know by index: the trader and garden goals, the hazard goals, then the oxcart goals', () => {
     const pumpkins = GOALS.findIndex((g) => g.id === 'grow-pumpkins');
-    expect(GOALS.slice(pumpkins + 1).map((g) => g.id)).toEqual(['trade-trader', 'build-veg-patch', 'gather-apples', 'build-well', 'guard-coop', 'build-oxbarn', 'haul-goods']);
+    expect(GOALS.slice(pumpkins + 1).map((g) => g.id)).toEqual([
+      'trade-trader',
+      'build-veg-patch',
+      'gather-apples',
+      'build-well',
+      'guard-coop',
+      'build-oxbarn',
+      'haul-goods',
+      'make-malt',
+      'brew-ale',
+      'sew-clothes',
+    ]);
   });
 
-  it('the oxcart goals come last: build an ox barn, haul 100 goods by cart', () => {
-    expect(GOALS.slice(-2).map((g) => [g.id, g.kind, g.count])).toEqual([
+  it('the oxcart goals follow the hazard goals: build an ox barn, haul 100 goods by cart', () => {
+    const barn = GOALS.findIndex((g) => g.id === 'build-oxbarn');
+    expect(GOALS.slice(barn, barn + 2).map((g) => [g.id, g.kind, g.count])).toEqual([
       ['build-oxbarn', 'own-buildings', 1],
       ['haul-goods', 'haul', 100],
     ]);
-    expect(GOALS.findIndex((g) => g.id === 'guard-coop')).toBe(GOALS.length - 3);
+    expect(GOALS.findIndex((g) => g.id === 'guard-coop')).toBe(barn - 1);
+  });
+
+  it('the chain goals come last: 10 malt, 5 ale and 3 clothes', () => {
+    expect(GOALS.slice(-3).map((g) => [g.id, g.kind, 'item' in g ? g.item : null, g.count])).toEqual([
+      ['make-malt', 'make', 'malt', 10],
+      ['brew-ale', 'make', 'ale', 5],
+      ['sew-clothes', 'make', 'clothes', 3],
+    ]);
   });
 
   it('haul goals count goods unloaded by cart', () => {

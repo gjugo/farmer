@@ -4366,6 +4366,44 @@
    }
   },
   {
+   "name": "brewery",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "brewery, 3x2 (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/brewery.png",
+     "w": 634,
+     "h": 457,
+     "anchor": [
+      254.0,
+      134.0
+     ],
+     "origin": [
+      0.40063,
+      0.29322
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/brewery.png",
+     "w": 317,
+     "h": 228,
+     "anchor": [
+      127.0,
+      67.0
+     ],
+     "origin": [
+      0.40063,
+      0.29386
+     ]
+    }
+   }
+  },
+  {
    "name": "ox_barn",
    "category": "buildings",
    "type": "image",
@@ -4475,6 +4513,82 @@
      "origin": [
       0.49803,
       0.33247
+     ]
+    }
+   }
+  },
+  {
+   "name": "tailor",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "tailor, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/tailor.png",
+     "w": 506,
+     "h": 443,
+     "anchor": [
+      253.0,
+      182.0
+     ],
+     "origin": [
+      0.5,
+      0.41084
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/tailor.png",
+     "w": 253,
+     "h": 222,
+     "anchor": [
+      126.5,
+      91.0
+     ],
+     "origin": [
+      0.5,
+      0.40991
+     ]
+    }
+   }
+  },
+  {
+   "name": "malthouse",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "malthouse, 2x2 (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/malthouse.png",
+     "w": 505,
+     "h": 429,
+     "anchor": [
+      253.0,
+      168.0
+     ],
+     "origin": [
+      0.50099,
+      0.39161
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/malthouse.png",
+     "w": 252,
+     "h": 214,
+     "anchor": [
+      126.5,
+      84.0
+     ],
+     "origin": [
+      0.50198,
+      0.39252
      ]
     }
    }
@@ -5038,6 +5152,158 @@
     },
     "1x": {
      "file": "1x/icons/cloth.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "clothes",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: clothes (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/clothes.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/clothes.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "linen",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: linen (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/linen.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/linen.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "ale",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: ale (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/ale.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/ale.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "malt",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: malt (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/malt.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/malt.png",
      "w": 128,
      "h": 128,
      "anchor": [
@@ -15284,6 +15550,44 @@
    }
   },
   {
+   "name": "brewery_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "brewery in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/brewery_winter.png",
+     "w": 636,
+     "h": 463,
+     "anchor": [
+      255.0,
+      142.0
+     ],
+     "origin": [
+      0.40094,
+      0.3067
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/brewery_winter.png",
+     "w": 318,
+     "h": 232,
+     "anchor": [
+      127.5,
+      71.0
+     ],
+     "origin": [
+      0.40094,
+      0.30603
+     ]
+    }
+   }
+  },
+  {
    "name": "weaving_hut_winter",
    "category": "buildings",
    "type": "image",
@@ -15317,6 +15621,82 @@
      "origin": [
       0.5,
       0.36139
+     ]
+    }
+   }
+  },
+  {
+   "name": "tailor_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "tailor in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/tailor_winter.png",
+     "w": 505,
+     "h": 434,
+     "anchor": [
+      253.0,
+      174.0
+     ],
+     "origin": [
+      0.50099,
+      0.40092
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/tailor_winter.png",
+     "w": 252,
+     "h": 217,
+     "anchor": [
+      126.5,
+      87.0
+     ],
+     "origin": [
+      0.50198,
+      0.40092
+     ]
+    }
+   }
+  },
+  {
+   "name": "malthouse_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "malthouse in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/malthouse_winter.png",
+     "w": 506,
+     "h": 425,
+     "anchor": [
+      253.0,
+      169.0
+     ],
+     "origin": [
+      0.5,
+      0.39765
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/malthouse_winter.png",
+     "w": 253,
+     "h": 212,
+     "anchor": [
+      126.5,
+      84.5
+     ],
+     "origin": [
+      0.5,
+      0.39858
      ]
     }
    }

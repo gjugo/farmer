@@ -1,6 +1,6 @@
 import type Phaser from 'phaser';
 import { getItem } from '../../data/items';
-import { PROCESSORS, QUEUE_LIMIT, findRecipe, type ProcessorType, type RecipeDef } from '../../data/processing';
+import { PROCESSORS, QUEUE_LIMIT, findRecipe, recipeUnlockLevel, type ProcessorType, type RecipeDef } from '../../data/processing';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
 import { timerRemaining } from '../../logic/clock';
@@ -179,6 +179,7 @@ function panel(ctx: FarmContext, obj: PlacedObject<ProcessorState>): PanelSpec {
   const actions: PanelAction[] = [];
   if (readyCount(obj) > 0) actions.push({ label: `Collect ${readyText.join(', ')}`, onClick: () => collectAndFloat(ctx, obj) });
   for (const recipe of def.recipes) {
+    if (!game.isUnlocked(recipeUnlockLevel(def, recipe))) continue;
     const inputs = inputsOf(recipe)
       .map(([id, need]) => `${itemIcon(id)} ${game.count(id)}/${need}`)
       .join(' + ');

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getBuildable } from '../data/buildables';
-import { ARRIVAL_DELAY_DAYS, ARRIVE_APPROVAL, COTTAGE, FOODS, LEAVE_APPROVAL, MEAL_PER_FAMILY, PROVISION_DAYS } from '../data/families';
+import { APPROVAL, ARRIVAL_DELAY_DAYS, ARRIVE_APPROVAL, COTTAGE, FOODS, LEAVE_APPROVAL, MEAL_PER_FAMILY, PROVISION_DAYS } from '../data/families';
 import { FIELD } from '../data/crops';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS, START_LAYOUT } from './constants';
@@ -107,6 +107,25 @@ describe('families: rules', () => {
       ['firewood', 10],
     ]);
     expect(approval).toBe(50);
+  });
+
+  it('ale: +10 when every family had some, a share when some did, and no part before the brewery', () => {
+    const part = (over: Partial<DayNeeds>) => approvalOf(day(over)).breakdown.find((p) => p.id === 'ale');
+    expect(part({ families: 3, ale: 3 })).toEqual({ id: 'ale', label: 'Ale for every family', points: APPROVAL.ale });
+    expect(part({ families: 4, ale: 2 })).toEqual({ id: 'ale', label: '2 of 4 families had ale', points: 5 });
+    expect(part({ families: 2, ale: 0 })).toMatchObject({ points: 0 });
+    expect(part({ ale: null })).toBeUndefined();
+    // Saves from before the brewery have no ale on their last day.
+    expect(part({})).toBeUndefined();
+  });
+
+  it("clothes: the tailor's clothes are worth more than cloth", () => {
+    const part = (over: Partial<DayNeeds>) => approvalOf(day(over)).breakdown.find((p) => p.id === 'clothes');
+    expect(part({ families: 2, clothed: 2, dressed: 0 })).toEqual({ id: 'clothes', label: '2 of 2 families clothed', points: APPROVAL.clothed });
+    expect(part({ families: 2, clothed: 2, dressed: 2 })).toEqual({ id: 'clothes', label: '2 of 2 families clothed (2 in clothes)', points: APPROVAL.dressed });
+    // One in clothes, one in cloth: (15 + 10) / 2.
+    expect(part({ families: 2, clothed: 2, dressed: 1 })).toMatchObject({ points: 13 });
+    expect(APPROVAL.dressed).toBeGreaterThan(APPROVAL.clothed);
   });
 });
 
@@ -278,6 +297,74 @@ describe('families on the farm', () => {
     game.advance(WINTER + YEAR_MS - game.now);
     expect(game.count('cloth')).toBe(2);
     expect(familiesOf(game.state).lastDay).toMatchObject({ clothed: 3 });
+  });
+
+  it('at the start of winter families take clothes while there are any, and cloth for the rest', () => {
+    const game = farm();
+    cottages(game, 2);
+    addFamily(game);
+    addFamily(game);
+    stock(game, 'wheat', 200);
+    stock(game, 'clothes', 2);
+    stock(game, 'cloth', 5);
+    game.state.inventory.wood = 1000;
+    game.advance(WINTER - game.now);
+    // Three families: two take clothes, the third cloth.
+    expect(game.count('clothes')).toBe(0);
+    expect(game.count('cloth')).toBe(4);
+    expect(familiesOf(game.state).lastDay).toMatchObject({ clothed: 3, dressed: 2 });
+    // (15 + 15 + 10) / 3
+    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'clothes')).toMatchObject({ label: '3 of 3 families clothed (2 in clothes)', points: 13 });
+  });
+
+  it('with clothes for everyone no cloth is taken; with none, families fall back on cloth as before', () => {
+    const game = farm();
+    stock(game, 'wheat', 200);
+    stock(game, 'clothes', 3);
+    stock(game, 'cloth', 3);
+    game.state.inventory.wood = 1000;
+    game.advance(WINTER - game.now);
+    expect([game.count('clothes'), game.count('cloth')]).toEqual([2, 3]);
+    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'clothes')).toMatchObject({ points: APPROVAL.dressed });
+
+    game.state.inventory.clothes = 0;
+    game.advance(WINTER + YEAR_MS - game.now);
+    expect(game.count('cloth')).toBe(2);
+    expect(familiesOf(game.state).lastDay).toMatchObject({ clothed: 1, dressed: 0 });
+    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'clothes')).toMatchObject({ points: APPROVAL.clothed });
+  });
+
+  it('once the brewery is unlocked families drink 1 ale per 2 families a day, while there is any', () => {
+    const game = farm();
+    cottages(game, 2);
+    addFamily(game);
+    addFamily(game);
+    stock(game, 'wheat', 200);
+    stock(game, 'ale', 3);
+    game.advance(DAY_MS);
+    // Three families: two ale, one shared and one alone.
+    expect(game.count('ale')).toBe(1);
+    expect(familiesOf(game.state).lastDay).toMatchObject({ ale: 3, aleDrunk: 2 });
+    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'ale')).toMatchObject({ points: APPROVAL.ale });
+    // Short: the last ale goes to two of the three.
+    game.advance(DAY_MS);
+    expect(game.count('ale')).toBe(0);
+    expect(familiesOf(game.state).lastDay).toMatchObject({ ale: 2, aleDrunk: 1 });
+    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'ale')).toMatchObject({ label: '2 of 3 families had ale', points: 7 });
+    // None left: the part stays, at nothing.
+    game.advance(DAY_MS);
+    expect(familiesOf(game.state).lastDay).toMatchObject({ ale: 0, aleDrunk: 0 });
+    expect(familiesOf(game.state).breakdown.find((p) => p.id === 'ale')).toMatchObject({ points: 0 });
+  });
+
+  it('before the brewery is unlocked ale is not drunk and approval has no ale part', () => {
+    const game = farm({ max: false });
+    stock(game, 'wheat', 100);
+    stock(game, 'ale', 3);
+    game.advance(2 * DAY_MS);
+    expect(game.count('ale')).toBe(3);
+    expect(familiesOf(game.state).lastDay?.ale).toBeNull();
+    expect(familiesOf(game.state).breakdown.some((p) => p.id === 'ale')).toBe(false);
   });
 
   it('before the loom is unlocked cloth is no need: none is taken and approval has no clothes part', () => {

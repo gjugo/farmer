@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ANIMALS } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { CROP_LIST, CROPS, FIELD } from '../data/crops';
-import { PROCESSORS } from '../data/processing';
+import { PROCESSORS, QUEUE_LIMIT } from '../data/processing';
 import { buildWorkMs, PLANT_WORK_MS } from '../data/workers';
 import type { FarmContext } from '../game/context';
 import { withFarmer } from '../game/workers';
@@ -14,6 +14,7 @@ import { setOwned } from './land';
 import { catchUp } from './offline';
 import type { ProcessorState } from './processing';
 import { connectToFarmhouse } from './roads';
+import { familiesOf } from './families';
 import { deserialize, serialize } from './save';
 import { SEASON_MS, seasonOf } from './seasons';
 import { maxLevelState } from './test-utils';
@@ -199,6 +200,38 @@ describe('work scheduler', () => {
     expect(game.count('butter')).toBe(4);
     expect(dairy.state.queue).toHaveLength(0);
     expect(workplaceNext(game, dairy)).toEqual({ wait: 'inputs' });
+  });
+
+  it.each([
+    ['malthouse', 'malt'],
+    ['brewery', 'ale'],
+    ['loom', 'linen'],
+    ['tailor', 'clothes-from-cloth'],
+    ['tailor', 'clothes-from-linen'],
+  ] as const)('an assigned farmer keeps the %s making %s up to the queue limit, and collects it', (type, recipeId) => {
+    const game = farm();
+    granaries(game, 2);
+    const obj = build<ProcessorState>(game, type, X + 1, Y + 5);
+    const recipe = PROCESSORS[type].recipes.find((r) => r.id === recipeId)!;
+    const batches = QUEUE_LIMIT + 1;
+    for (const [id, n] of Object.entries(recipe.inputs)) game.addItem(id, n! * batches);
+    Object.assign(game.state.inventory, { wheat: 20, carrot: 20 });
+    // The family drinks ale as it comes in: count what they drank as made too.
+    let drunk = 0;
+    game.activity.on('familiesSettled', () => (drunk += familiesOf(game.state).lastDay?.aleDrunk ?? 0));
+    const made = () => game.count(recipe.output.item) + (recipe.output.item === 'ale' ? drunk : 0);
+    setKeepMaking(game, obj.id, recipeId);
+    assignFarmer(game, obj.id);
+
+    play(game, recipe.durationMs - MIN);
+    // The queue fills up to its limit, and no further, before the first batch is done.
+    expect(obj.state.queue.length).toBe(QUEUE_LIMIT);
+    expect(made()).toBe(0);
+    play(game, batches * recipe.durationMs + 2 * MIN);
+    for (const id of Object.keys(recipe.inputs)) expect(game.count(id), id).toBe(0);
+    expect(made()).toBe(batches * recipe.output.qty);
+    expect(obj.state.queue).toHaveLength(0);
+    expect(workplaceNext(game, obj)).toEqual({ wait: 'inputs' });
   });
 
   it('a farmer whose workplace is idle builds a site, takes a hand-ordered job, then goes back', () => {
