@@ -2346,6 +2346,918 @@
    }
   },
   {
+   "name": "pumpkin_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pumpkin stage ripe (3_ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/pumpkin_3_ripe.png",
+     "w": 168,
+     "h": 134,
+     "anchor": [
+      98.0,
+      28.0
+     ],
+     "origin": [
+      0.58333,
+      0.20896
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/pumpkin_3_ripe.png",
+     "w": 84,
+     "h": 67,
+     "anchor": [
+      49.0,
+      14.0
+     ],
+     "origin": [
+      0.58333,
+      0.20896
+     ]
+    }
+   }
+  },
+  {
+   "name": "pumpkin_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pumpkin stage growing (2_growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/pumpkin_2_growing.png",
+     "w": 160,
+     "h": 122,
+     "anchor": [
+      84.0,
+      18.0
+     ],
+     "origin": [
+      0.525,
+      0.14754
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/pumpkin_2_growing.png",
+     "w": 80,
+     "h": 61,
+     "anchor": [
+      42.0,
+      9.0
+     ],
+     "origin": [
+      0.525,
+      0.14754
+     ]
+    }
+   }
+  },
+  {
+   "name": "pumpkin_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pumpkin stage sprout (1_sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/pumpkin_1_sprout.png",
+     "w": 142,
+     "h": 96,
+     "anchor": [
+      80.0,
+      -6.0
+     ],
+     "origin": [
+      0.56338,
+      -0.0625
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/pumpkin_1_sprout.png",
+     "w": 71,
+     "h": 48,
+     "anchor": [
+      40.0,
+      -3.0
+     ],
+     "origin": [
+      0.56338,
+      -0.0625
+     ]
+    }
+   }
+  },
+  {
+   "name": "pumpkin_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "pumpkin stage seeded (0_seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/pumpkin_0_seeded.png",
+     "w": 152,
+     "h": 80,
+     "anchor": [
+      82.0,
+      -14.0
+     ],
+     "origin": [
+      0.53947,
+      -0.175
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/pumpkin_0_seeded.png",
+     "w": 76,
+     "h": 40,
+     "anchor": [
+      41.0,
+      -7.0
+     ],
+     "origin": [
+      0.53947,
+      -0.175
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage ripe (3_ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_3_ripe.png",
+     "w": 196,
+     "h": 120,
+     "anchor": [
+      92.0,
+      8.0
+     ],
+     "origin": [
+      0.46939,
+      0.06667
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_3_ripe.png",
+     "w": 98,
+     "h": 60,
+     "anchor": [
+      46.0,
+      4.0
+     ],
+     "origin": [
+      0.46939,
+      0.06667
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_3_ripe_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage 3_ripe in winter, frosted (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_3_ripe_winter.png",
+     "w": 196,
+     "h": 120,
+     "anchor": [
+      92.0,
+      8.0
+     ],
+     "origin": [
+      0.46939,
+      0.06667
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_3_ripe_winter.png",
+     "w": 98,
+     "h": 60,
+     "anchor": [
+      46.0,
+      4.0
+     ],
+     "origin": [
+      0.46939,
+      0.06667
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage growing (2_growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_2_growing.png",
+     "w": 188,
+     "h": 112,
+     "anchor": [
+      88.0,
+      2.0
+     ],
+     "origin": [
+      0.46809,
+      0.01786
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_2_growing.png",
+     "w": 94,
+     "h": 56,
+     "anchor": [
+      44.0,
+      1.0
+     ],
+     "origin": [
+      0.46809,
+      0.01786
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_2_growing_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage 2_growing in winter, frosted (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_2_growing_winter.png",
+     "w": 190,
+     "h": 112,
+     "anchor": [
+      88.0,
+      2.0
+     ],
+     "origin": [
+      0.46316,
+      0.01786
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_2_growing_winter.png",
+     "w": 95,
+     "h": 56,
+     "anchor": [
+      44.0,
+      1.0
+     ],
+     "origin": [
+      0.46316,
+      0.01786
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage sprout (1_sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_1_sprout.png",
+     "w": 170,
+     "h": 100,
+     "anchor": [
+      84.0,
+      -6.0
+     ],
+     "origin": [
+      0.49412,
+      -0.06
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_1_sprout.png",
+     "w": 85,
+     "h": 50,
+     "anchor": [
+      42.0,
+      -3.0
+     ],
+     "origin": [
+      0.49412,
+      -0.06
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_1_sprout_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage 1_sprout in winter, frosted (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_1_sprout_winter.png",
+     "w": 170,
+     "h": 100,
+     "anchor": [
+      84.0,
+      -6.0
+     ],
+     "origin": [
+      0.49412,
+      -0.06
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_1_sprout_winter.png",
+     "w": 85,
+     "h": 50,
+     "anchor": [
+      42.0,
+      -3.0
+     ],
+     "origin": [
+      0.49412,
+      -0.06
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage seeded (0_seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_0_seeded.png",
+     "w": 190,
+     "h": 90,
+     "anchor": [
+      98.0,
+      -8.0
+     ],
+     "origin": [
+      0.51579,
+      -0.08889
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_0_seeded.png",
+     "w": 95,
+     "h": 45,
+     "anchor": [
+      49.0,
+      -4.0
+     ],
+     "origin": [
+      0.51579,
+      -0.08889
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage_0_seeded_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "cabbage stage 0_seeded in winter, frosted (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/cabbage_0_seeded_winter.png",
+     "w": 190,
+     "h": 90,
+     "anchor": [
+      98.0,
+      -8.0
+     ],
+     "origin": [
+      0.51579,
+      -0.08889
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/cabbage_0_seeded_winter.png",
+     "w": 95,
+     "h": 45,
+     "anchor": [
+      49.0,
+      -4.0
+     ],
+     "origin": [
+      0.51579,
+      -0.08889
+     ]
+    }
+   }
+  },
+  {
+   "name": "flax_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "flax stage ripe (3_ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/flax_3_ripe.png",
+     "w": 204,
+     "h": 142,
+     "anchor": [
+      104.0,
+      30.0
+     ],
+     "origin": [
+      0.5098,
+      0.21127
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/flax_3_ripe.png",
+     "w": 102,
+     "h": 71,
+     "anchor": [
+      52.0,
+      15.0
+     ],
+     "origin": [
+      0.5098,
+      0.21127
+     ]
+    }
+   }
+  },
+  {
+   "name": "flax_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "flax stage growing (2_growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/flax_2_growing.png",
+     "w": 206,
+     "h": 128,
+     "anchor": [
+      106.0,
+      18.0
+     ],
+     "origin": [
+      0.51456,
+      0.14062
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/flax_2_growing.png",
+     "w": 103,
+     "h": 64,
+     "anchor": [
+      53.0,
+      9.0
+     ],
+     "origin": [
+      0.51456,
+      0.14062
+     ]
+    }
+   }
+  },
+  {
+   "name": "flax_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "flax stage sprout (1_sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/flax_1_sprout.png",
+     "w": 192,
+     "h": 106,
+     "anchor": [
+      98.0,
+      -2.0
+     ],
+     "origin": [
+      0.51042,
+      -0.01887
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/flax_1_sprout.png",
+     "w": 96,
+     "h": 53,
+     "anchor": [
+      49.0,
+      -1.0
+     ],
+     "origin": [
+      0.51042,
+      -0.01887
+     ]
+    }
+   }
+  },
+  {
+   "name": "flax_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "flax stage seeded (0_seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/flax_0_seeded.png",
+     "w": 212,
+     "h": 96,
+     "anchor": [
+      106.0,
+      -6.0
+     ],
+     "origin": [
+      0.5,
+      -0.0625
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/flax_0_seeded.png",
+     "w": 106,
+     "h": 48,
+     "anchor": [
+      53.0,
+      -3.0
+     ],
+     "origin": [
+      0.5,
+      -0.0625
+     ]
+    }
+   }
+  },
+  {
+   "name": "barley_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "barley stage ripe (3_ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/barley_3_ripe.png",
+     "w": 194,
+     "h": 148,
+     "anchor": [
+      98.0,
+      34.0
+     ],
+     "origin": [
+      0.50515,
+      0.22973
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/barley_3_ripe.png",
+     "w": 97,
+     "h": 74,
+     "anchor": [
+      49.0,
+      17.0
+     ],
+     "origin": [
+      0.50515,
+      0.22973
+     ]
+    }
+   }
+  },
+  {
+   "name": "barley_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "barley stage growing (2_growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/barley_2_growing.png",
+     "w": 184,
+     "h": 134,
+     "anchor": [
+      92.0,
+      22.0
+     ],
+     "origin": [
+      0.5,
+      0.16418
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/barley_2_growing.png",
+     "w": 92,
+     "h": 67,
+     "anchor": [
+      46.0,
+      11.0
+     ],
+     "origin": [
+      0.5,
+      0.16418
+     ]
+    }
+   }
+  },
+  {
+   "name": "barley_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "barley stage sprout (1_sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/barley_1_sprout.png",
+     "w": 194,
+     "h": 114,
+     "anchor": [
+      98.0,
+      4.0
+     ],
+     "origin": [
+      0.50515,
+      0.03509
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/barley_1_sprout.png",
+     "w": 97,
+     "h": 57,
+     "anchor": [
+      49.0,
+      2.0
+     ],
+     "origin": [
+      0.50515,
+      0.03509
+     ]
+    }
+   }
+  },
+  {
+   "name": "barley_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "barley stage seeded (0_seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/barley_0_seeded.png",
+     "w": 198,
+     "h": 98,
+     "anchor": [
+      98.0,
+      -6.0
+     ],
+     "origin": [
+      0.49495,
+      -0.06122
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/barley_0_seeded.png",
+     "w": 99,
+     "h": 49,
+     "anchor": [
+      49.0,
+      -3.0
+     ],
+     "origin": [
+      0.49495,
+      -0.06122
+     ]
+    }
+   }
+  },
+  {
+   "name": "potato_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "potato stage ripe (3_ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/potato_3_ripe.png",
+     "w": 190,
+     "h": 126,
+     "anchor": [
+      100.0,
+      16.0
+     ],
+     "origin": [
+      0.52632,
+      0.12698
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/potato_3_ripe.png",
+     "w": 95,
+     "h": 63,
+     "anchor": [
+      50.0,
+      8.0
+     ],
+     "origin": [
+      0.52632,
+      0.12698
+     ]
+    }
+   }
+  },
+  {
+   "name": "potato_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "potato stage growing (2_growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/potato_2_growing.png",
+     "w": 174,
+     "h": 114,
+     "anchor": [
+      90.0,
+      6.0
+     ],
+     "origin": [
+      0.51724,
+      0.05263
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/potato_2_growing.png",
+     "w": 87,
+     "h": 57,
+     "anchor": [
+      45.0,
+      3.0
+     ],
+     "origin": [
+      0.51724,
+      0.05263
+     ]
+    }
+   }
+  },
+  {
+   "name": "potato_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "potato stage sprout (1_sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/potato_1_sprout.png",
+     "w": 168,
+     "h": 102,
+     "anchor": [
+      90.0,
+      -4.0
+     ],
+     "origin": [
+      0.53571,
+      -0.03922
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/potato_1_sprout.png",
+     "w": 84,
+     "h": 51,
+     "anchor": [
+      45.0,
+      -2.0
+     ],
+     "origin": [
+      0.53571,
+      -0.03922
+     ]
+    }
+   }
+  },
+  {
+   "name": "potato_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "potato stage seeded (0_seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/potato_0_seeded.png",
+     "w": 184,
+     "h": 92,
+     "anchor": [
+      100.0,
+      -8.0
+     ],
+     "origin": [
+      0.54348,
+      -0.08696
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/potato_0_seeded.png",
+     "w": 92,
+     "h": 46,
+     "anchor": [
+      50.0,
+      -4.0
+     ],
+     "origin": [
+      0.54348,
+      -0.08696
+     ]
+    }
+   }
+  },
+  {
    "name": "cow",
    "category": "animals",
    "type": "spritesheet",
@@ -4044,6 +4956,196 @@
     },
     "1x": {
      "file": "1x/icons/corn.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "pumpkin",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: pumpkin (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/pumpkin.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/pumpkin.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "cabbage",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: cabbage (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/cabbage.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/cabbage.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "flax",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: flax (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/flax.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/flax.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "barley",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: barley (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/barley.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/barley.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "potato",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: potato (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/potato.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/potato.png",
      "w": 128,
      "h": 128,
      "anchor": [

@@ -1,5 +1,6 @@
 import type { AnimalKind } from './animals';
 import type { KnownItemId } from './items';
+import type { Season } from './seasons';
 
 /**
  * Total XP needed to reach each level: `LEVEL_XP[n - 1]` is where level n starts.
@@ -29,7 +30,8 @@ export interface GoalReward {
  */
 export type GoalTask =
   // Count goals
-  | { kind: 'harvest'; item: KnownItemId; count: number }
+  /** Harvest `count` of `item` (only harvests in `season`, when given). */
+  | { kind: 'harvest'; item: KnownItemId; count: number; season?: Season }
   | { kind: 'collect'; item: KnownItemId; count: number }
   | { kind: 'make'; item: KnownItemId; count: number }
   /** Make `count` of a material in resource buildings (a woodcutter's lodge, quarry or mine). */
@@ -96,6 +98,10 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'mine-iron', title: 'Mine 5 iron', icon: '🔩', kind: 'produce', item: 'iron', count: 5, reward: { money: 200, xp: 100 } },
   { id: 'own-sheep', title: 'Own 2 sheep', icon: '🐑', kind: 'own-animals', animal: 'sheep', count: 2, reward: { money: 200, xp: 100 } },
   { id: 'weave-cloth', title: 'Weave 2 cloth', icon: '🧵', kind: 'make', item: 'cloth', count: 2, reward: { money: 250, xp: 120 } },
+  // Saves keep goals by index: new goals go at the end.
+  { id: 'harvest-potatoes', title: 'Harvest 30 potatoes', icon: '🥔', kind: 'harvest', item: 'potato', count: 30, reward: { money: 120, xp: 50 } },
+  { id: 'winter-cabbage', title: 'Harvest cabbage in winter', icon: '🥬', kind: 'harvest', item: 'cabbage', season: 'winter', count: 1, reward: { money: 250, xp: 120 } },
+  { id: 'grow-pumpkins', title: 'Grow 10 pumpkins', icon: '🎃', kind: 'harvest', item: 'pumpkin', count: 10, reward: { money: 300, xp: 150 } },
   { id: 'build-veg-patch', title: 'Plant a vegetable patch', icon: '🥬', kind: 'own-buildings', type: 'veg-patch', count: 1, reward: { money: 60, xp: 25 } },
   { id: 'gather-apples', title: 'Gather 20 apples', icon: '🍎', kind: 'gather', item: 'apple', count: 20, reward: { money: 150, xp: 75 } },
 ];

@@ -228,7 +228,9 @@ export function artFor(key: string): string {
 
 /** Growth stage of a crop → the pack's stage sprite. */
 const CROP_STAGES = { seeded: '0_seeded', sprout: '1_sprout', growing: '2_growing', ripe: '3_ripe' } as const;
-export const CROP_ART_IDS = ['wheat', 'carrot', 'corn'] as const;
+export const CROP_ART_IDS = ['wheat', 'carrot', 'corn', 'potato', 'barley', 'flax', 'cabbage', 'pumpkin'] as const;
+/** Crops that stand in the field in winter have a frosted `<crop>_<stage>_winter` version of every stage. */
+export const WINTER_CROP_ART_IDS = ['cabbage'] as const;
 
 /** One tile's worth of a crop at a stage, e.g. `corn_2_growing`; null for an empty field or a crop without art. */
 export function cropArt(cropId: string, stage: string): string | null {
@@ -268,7 +270,10 @@ export const WORK_ANIM: Record<JobKind, FarmerAnim> = {
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;
 
 /** Item icons in the pack: every item of the game, plus coins for money. */
-export const ICON_ART = ['egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn', 'apple', 'wood', 'stone', 'iron', 'manure', 'coins'] as const;
+export const ICON_ART = [
+  'egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn',
+  'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'apple', 'wood', 'stone', 'iron', 'manure', 'coins',
+] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */
 export function iconUrl(name: string): string {
@@ -351,13 +356,19 @@ export const SEASONAL_ART: readonly string[] = [
 ];
 const seasonal = new Set<string>(SEASONAL_ART);
 
-/** Buildings with a `<name>_winter` version (snow on the roof). The art generator makes one for every building. */
+/**
+ * Sprites with a `<name>_winter` version only: buildings (snow on the roof; the art generator makes one for every
+ * building, see `noteWinterArt`) and the stages of crops that stand in winter (`WINTER_CROP_ART_IDS`).
+ */
 const winterOnly = new Set<string>();
+const winterCrops = (): string[] => WINTER_CROP_ART_IDS.flatMap((c) => Object.keys(CROP_STAGES).map((s) => cropArt(c, s)!));
+for (const name of winterCrops()) winterOnly.add(name);
 
 /** Notes which buildings the pack has a winter version of: every `buildings` sprite with a `<name>_winter` twin. */
 export function noteWinterArt(manifest: PackManifest): void {
   const names = new Set(manifest.assets.map((a) => a.name));
   winterOnly.clear();
+  for (const name of winterCrops()) winterOnly.add(name);
   for (const a of manifest.assets) if (a.category === 'buildings' && names.has(`${a.name}_winter`)) winterOnly.add(a.name);
 }
 
