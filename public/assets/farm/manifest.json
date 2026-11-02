@@ -4518,6 +4518,44 @@
    }
   },
   {
+   "name": "blacksmith",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "blacksmith (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/blacksmith.png",
+     "w": 506,
+     "h": 390,
+     "anchor": [
+      253.0,
+      132.0
+     ],
+     "origin": [
+      0.5,
+      0.33846
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/blacksmith.png",
+     "w": 253,
+     "h": 195,
+     "anchor": [
+      126.5,
+      66.0
+     ],
+     "origin": [
+      0.5,
+      0.33846
+     ]
+    }
+   }
+  },
+  {
    "name": "tailor",
    "category": "buildings",
    "type": "image",
@@ -5266,6 +5304,44 @@
     },
     "1x": {
      "file": "1x/icons/ale.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "tools",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon: tools (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/tools.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/tools.png",
      "w": 128,
      "h": 128,
      "anchor": [
@@ -15821,6 +15897,44 @@
      "origin": [
       0.5,
       0.36139
+     ]
+    }
+   }
+  },
+  {
+   "name": "blacksmith_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "blacksmith_winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/blacksmith_winter.png",
+     "w": 506,
+     "h": 390,
+     "anchor": [
+      253.0,
+      131.0
+     ],
+     "origin": [
+      0.5,
+      0.3359
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/blacksmith_winter.png",
+     "w": 253,
+     "h": 195,
+     "anchor": [
+      126.5,
+      65.5
+     ],
+     "origin": [
+      0.5,
+      0.3359
      ]
     }
    }

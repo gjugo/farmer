@@ -18,6 +18,7 @@ git (or rerun the commands below) after running it.
 | `dairy`, `dairy_winter` | `dairy_raw.png`, `dairy_winter_raw.png` | all |
 | `weaving_hut`, `weaving_hut_winter` (the loom) | `weaving_hut_raw.png`, `weaving_hut_winter_raw.png` | all |
 | `malthouse`, `brewery`, `tailor`, each with `_winter` | `<name>_raw.png`, `<name>_winter_raw.png`; see **Malthouse, brewery and tailor** below | all |
+| `blacksmith`, `blacksmith_winter` | `blacksmith_raw.png`, `blacksmith_winter_raw.png`; see **Blacksmith** below | all |
 | `woodcutter_lodge`, `woodcutter_lodge_winter` | `woodcutter_lodge_raw.png`, `woodcutter_lodge_winter_raw.png` | all |
 | `quarry`, `quarry_winter` | `quarry_raw.png`, `quarry_winter_raw.png` | all |
 | `mine`, `mine_winter` | `mine_raw.png`, `mine_winter_raw.png` | all |
@@ -45,7 +46,7 @@ git (or rerun the commands below) after running it.
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
 | `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe (flax's sprout is its growing image, smaller), `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none, except cabbage |
 | `cabbage_<stage>_winter` (frosted, the winter crop) | `cabbage_<stage>_winter_raw.png`, `seeded_winter_raw.png`; see **Crops** below | winter |
-| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `malt`, `ale`, `linen`, `clothes`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `apple`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `malt`, `ale`, `linen`, `clothes`, `tools`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `apple`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
 | `veg_patch` (base, `_spring`, `_summer`, `_autumn`, `_winter`: bare) | `veg_patch_raw.png`, `veg_patch_{spring,autumn,winter}_raw.png`; see **House gardens** below | all |
 | `hen_run`, `hen_run_winter` (the two hens are the `chicken` sheet, drawn by the game) | `hen_run_raw.png`, `hen_run_winter_raw.png` | all |
 | `orchard`, `orchard_winter` (the pad; its two trees are `tree_apple` in its seasons, drawn by the game) | `orchard_raw.png`, `orchard_winter_raw.png` | all |
@@ -284,6 +285,36 @@ for n in malthouse tailor brewery; do $P $L/install_prop.py /tmp/props $n; $P $L
 
 Their chimneys smoke while they work: `SMOKE_AT` in `src/features/processing/textures.ts` (the malthouse's stone
 chimney beside the kiln vent, the brewery's and the tailor's brick chimneys).
+
+### Blacksmith
+
+`generateWithStyle` (n=4, `sprite`) with the Ludo tailor (itself in the farmhouse's line: styled on the weaving hut,
+styled on the farmhouse; the farmhouse file is not reachable by URL from a private repo) as `style_image`: "A complete,
+uncropped isometric view of a small farming-game village blacksmith's forge ... the entire straight-edged diamond pad
+of packed dirt with a narrow grass edge, no thickness, a four-cell (2-by-2 tile) footprint. Rough grey stone walls with
+dark timber framing and a dark slate roof; one tall square stone forge chimney with no smoke. The front-left wall is an
+open-fronted workshop under a timber lean-to roof with a glowing orange forge hearth, and an iron anvil on a wooden
+stump stands outside on the pad, with a wooden rack of hammers, shovels and pitchforks beside the door and a small water
+trough. Bright saturated colours, dark-brown outlines, flat cel shading, firm two-tone shadows from the upper left, plain
+white background." The third (one chimney, the hearth under the lean-to) was picked. Winter: `editImage` on it, n=2
+("Winter: keep the same blacksmith's forge exactly, same shape, size, position, camera angle, outlines and colours; add a
+thick layer of white snow on the slate roof and the lean-to roof, small icicles along the eaves, a little snow on the
+anvil, trough and chimney top, and cover the grass and dirt of the pad in snow. The forge hearth still glows orange.");
+the first was picked. Its pad corners match the summer image's within 2 px, but it is fitted with its own. The forge
+chimney smokes while it works (`SMOKE_AT`). The tools icon is styled on the Ludo ale icon: "A game item icon: a crossed
+iron hammer and a small iron hoe with sturdy wooden handles, forming a bold X, the dark grey iron heads clearly visible,
+front three-quarter view ..." (with the icon prompt's usual ending); the second, with the bigger hammer head, reads
+better at 24 px. 8 credits in all.
+
+```bash
+$P $L/add_asset.py weaving_hut blacksmith "--notes=blacksmith (Ludo.ai, cel-shaded; shadow baked in)"
+$P $L/add_asset.py weaving_hut_winter blacksmith_winter "--notes=blacksmith_winter (Ludo.ai, cel-shaded; shadow baked in)"
+$P $L/add_asset.py ale tools "--notes=item icon: tools (Ludo.ai, cel-shaded)"
+$P $L/fit_building.py $L/source/blacksmith_raw.png /tmp/props blacksmith 2 2 43 406 755 404 397 583
+$P $L/fit_building.py $L/source/blacksmith_winter_raw.png /tmp/props blacksmith_winter 2 2 43 405 755 405 399 583
+$P $L/fit_icon.py $L/source/icon_tools_raw.png /tmp/props tools
+for n in blacksmith blacksmith_winter tools; do $P $L/install_prop.py /tmp/props $n; done
+```
 
 ## Feed mill: `mill_sails.py`
 
@@ -545,7 +576,7 @@ a thin twine bow, a small sprig of blue flax flowers tucked under the twine / a 
 tunic shirt with a laced collar and wooden buttons, laid flat ..." (manifest entries: `add_asset.py cloth <name> ...`).
 
 ```bash
-for n in egg milk wool feed cheese butter bread cloth malt ale linen clothes wheat carrot corn potato barley flax cabbage pumpkin apple wood stone iron manure coins; do
+for n in egg milk wool feed cheese butter bread cloth malt ale linen clothes tools wheat carrot corn potato barley flax cabbage pumpkin apple wood stone iron manure coins; do
   $P $L/fit_icon.py $L/source/icon_${n}_raw.png /tmp/props $n && $P $L/install_prop.py /tmp/props $n
 done
 ```
