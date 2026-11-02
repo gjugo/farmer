@@ -11,6 +11,7 @@ import {
   type StorageLevel,
   type StoragePool,
 } from '../data/storage';
+import { materialsCost, perkFactor } from './perks';
 import { getSlice, registerStateSlice } from './slices';
 import type { Game } from './game';
 import type { GameState, ItemId, PlacedObject } from './types';
@@ -44,9 +45,14 @@ export function levelOf(obj: PlacedObject): number {
   return typeof level === 'number' && Number.isInteger(level) ? Math.max(1, Math.min(MAX_STORAGE_LEVEL, level)) : 1;
 }
 
-/** Room `obj` adds to its pool (0 for anything that is not a storage building). */
-export function capacityOfObject(obj: PlacedObject): number {
-  return isStorageType(obj.type) ? STORAGE[obj.type].levels[levelOf(obj) - 1].capacity : 0;
+/** Room `obj` adds to its pool (0 for anything that is not a storage building); 20% more with Big barns. */
+export function capacityOfObject(obj: PlacedObject, state: Pick<GameState, 'ext'>): number {
+  return isStorageType(obj.type) ? storageRoom(state, STORAGE[obj.type].levels[levelOf(obj) - 1].capacity) : 0;
+}
+
+/** A storage building's room of `base` on this farm (Big barns adds 20%, rounded down). */
+export function storageRoom(state: Pick<GameState, 'ext'>, base: number): number {
+  return Math.floor(base * perkFactor(state, 'big-barns') + 1e-9);
 }
 
 /**
@@ -55,7 +61,7 @@ export function capacityOfObject(obj: PlacedObject): number {
  */
 export function capacity(state: GameState, pool: StoragePool, without?: string): number {
   let total = FARMHOUSE_STORE[pool];
-  for (const o of state.objects) if (o.id !== without && !o.site && isStorageType(o.type) && STORAGE[o.type].pool === pool) total += capacityOfObject(o);
+  for (const o of state.objects) if (o.id !== without && !o.site && isStorageType(o.type) && STORAGE[o.type].pool === pool) total += capacityOfObject(o, state);
   return total;
 }
 
@@ -129,7 +135,7 @@ export function checkUpgrade(game: Game, obj: PlacedObject): UpgradeResult {
   const next = nextLevel(obj);
   if (!next) return { ok: false, reason: 'max' };
   if (!game.canAfford(next.upgrade.cost)) return { ok: false, reason: 'money' };
-  if (game.missingMaterials(next.upgrade.materials).length) return { ok: false, reason: 'materials' };
+  if (game.missingMaterials(materialsCost(game.state, next.upgrade.materials)).length) return { ok: false, reason: 'materials' };
   return { ok: true, level: next.level };
 }
 
@@ -139,7 +145,7 @@ export function upgrade(game: Game, obj: PlacedObject): UpgradeResult {
   if (!check.ok) return check;
   const next = nextLevel(obj)!;
   game.spend(next.upgrade.cost);
-  for (const [id, qty] of Object.entries(next.upgrade.materials)) if (qty) game.removeItem(id, qty);
+  for (const [id, qty] of Object.entries(materialsCost(game.state, next.upgrade.materials))) if (qty) game.removeItem(id, qty);
   obj.state.level = next.level;
   game.touch(obj);
   game.activity.emit('upgraded', { type: obj.type, level: next.level });

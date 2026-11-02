@@ -24,6 +24,7 @@ import {
   type CropStage,
   type FieldState,
 } from '../../logic/crops';
+import { perkFactor } from '../../logic/perks';
 import { nextSeasonAt, nextSeasonIn, seasonOf } from '../../logic/seasons';
 import { yieldAt } from '../../logic/soil';
 import { fullMessage, poolOf } from '../../logic/storage';
@@ -123,7 +124,7 @@ function syncView(ctx: FarmContext, obj: PlacedObject<FieldState>): void {
 /** Says the granaries are full, so no farmer walks out for a harvest that can't be stored. */
 function refuseIfFull(ctx: FarmContext, obj: PlacedObject<FieldState>): boolean {
   const crop = fieldCrop(obj.state);
-  if (!crop || ctx.game.spaceFor(crop.harvestItem) >= harvestYield(ctx.game.state.clock, obj)) return false;
+  if (!crop || ctx.game.spaceFor(crop.harvestItem) >= harvestYield(ctx.game.state, obj)) return false;
   ctx.ui.toast(fullMessage(poolOf(crop.harvestItem)), 'error');
   return true;
 }
@@ -212,7 +213,7 @@ function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Panel
         return { label: `📅 ${c.icon} ${c.name} · ${why}`, variant: 'secondary', disabled: true, onClick: () => {} };
       }
       return {
-        label: `${c.icon} ${c.name} · $${c.plantCost} · ${formatDuration(c.growMs)} → ${yieldAt(c.harvestQty, fertilityOf(clock, obj))} ${item?.name ?? c.name}`,
+        label: `${c.icon} ${c.name} · $${c.plantCost} · ${formatDuration(c.growMs)} → ${yieldAt(c.harvestQty, fertilityOf(clock, obj), perkFactor(game.state, 'green-thumb'))} ${item?.name ?? c.name}`,
         disabled: !game.canAfford(c.plantCost),
         onClick: () => {
           withFarmer(ctx, 'plant', obj, PLANT_WORK_MS, () => {
@@ -276,7 +277,7 @@ registerBehavior<FieldState>(FIELD, {
 
     if (stage === 'empty' || !crop) return withSoil(ctx, obj, emptyFieldPanel(ctx, obj), true);
 
-    const qty = harvestYield(clock, obj);
+    const qty = harvestYield(game.state, obj);
     if (stage === 'ripe') {
       return withSoil(
         ctx,

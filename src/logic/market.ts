@@ -3,7 +3,8 @@ import { isMaterial, isStoredMaterial, MATERIAL_UNLOCK } from '../data/materials
 import type { ActivityEvents } from './activity';
 import { DAY_MS } from './constants';
 import type { Emitter } from './events';
-import type { ClockState, Inventory, ItemId } from './types';
+import { perkFactor } from './perks';
+import type { ClockState, GameState, Inventory, ItemId } from './types';
 
 /** Daily prices swing between these multiples of the base price. */
 export const PRICE_MIN_FACTOR = 0.8;
@@ -59,6 +60,24 @@ export function buyPrice(day: number, itemId: ItemId): number | null {
   return Math.max(Math.floor(item.price * PRICE_MAX_FACTOR) + 1, price);
 }
 
+/**
+ * What the Market pays for one unit on `day` with a sell bonus of `bonus` (Haggler: 1.1), in whole dollars, or null
+ * for items outside the catalogue. Building materials get no bonus, and nothing ever sells for as much as the Market
+ * charges for it (`buyPrice`), so buying and selling back never makes money.
+ */
+export function sellPrice(day: number, itemId: ItemId, bonus = 1): number | null {
+  const price = dailyPrice(day, itemId);
+  if (price === null || bonus === 1 || isMaterial(itemId)) return price;
+  const boosted = Math.round(price * bonus);
+  const buy = buyPrice(day, itemId);
+  return buy === null ? boosted : Math.min(boosted, buy - 1);
+}
+
+/** Today's sell price on this farm (with Haggler when taken). */
+export function farmSellPrice(state: Pick<GameState, 'ext'>, day: number, itemId: ItemId): number | null {
+  return sellPrice(day, itemId, perkFactor(state, 'haggler'));
+}
+
 /** -1 below the base price, 0 at it, 1 above it. */
 export function priceTrend(day: number, itemId: ItemId): -1 | 0 | 1 {
   const price = dailyPrice(day, itemId);
@@ -75,7 +94,7 @@ export function msUntilNextDay(clock: ClockState): number {
 /** The parts of `Game` that selling needs. */
 export interface Seller {
   readonly day: number;
-  readonly state: { inventory: Inventory };
+  readonly state: { inventory: Inventory; ext: GameState['ext'] };
   count(itemId: ItemId): number;
   removeItem(itemId: ItemId, qty?: number): boolean;
   /** Sales are income: they give XP. */
@@ -90,7 +109,7 @@ export interface Seller {
  * Returns the money earned; 0 when there is nothing to sell or the item has no price.
  */
 export function sell(game: Seller, itemId: ItemId, qty = game.count(itemId)): number {
-  const price = dailyPrice(game.day, itemId);
+  const price = farmSellPrice(game.state, game.day, itemId);
   const n = Math.min(Math.floor(qty), game.count(itemId));
   if (price === null || !(n > 0)) return 0;
   if (!game.removeItem(itemId, n)) return 0;

@@ -651,7 +651,7 @@ export class FarmScene extends Phaser.Scene {
   /** Toast text for a refused placement of `type`; missing materials are named. */
   private placeError(type: string, reason: Exclude<PlaceResult, { ok: true }>['reason']): string {
     if (reason !== 'materials') return PLACE_ERRORS[reason];
-    return needsMaterialsMessage(this.ctx.game.missingMaterials(getBuildable(type)?.materials));
+    return needsMaterialsMessage(this.ctx.game.missingMaterials(this.ctx.game.materialsFor(type)));
   }
 
   private openObjectPanel(obj: PlacedObject): void {
