@@ -1,6 +1,7 @@
 import './ui/styles.css';
 import './features';
 import type { AudioDebugInfo } from './features/audio';
+import { mountGuide, offerGuide } from './features/guide';
 import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
 import { readDebugInfo } from './game/hooks';
@@ -52,6 +53,11 @@ declare global {
         trader: ReturnType<typeof traderInfo>;
         /** Item id → the Market's price for one unit now and how far it is down from the day's price (0..0.5). */
         market: Record<string, { price: number; drop: number }>;
+        /**
+         * The first-session guide: on (`active`), its step's id and number on the card (`index`, 1-based, 0 when off)
+         * of `total`, and whether it was finished or skipped/ended on this farm.
+         */
+        guide: { active: boolean; step: string | null; index: number; total: number; finished: boolean; skipped: boolean };
         /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
         iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
       }
@@ -108,6 +114,7 @@ const iso = Object.freeze({
 const uiRoot = document.getElementById('ui')!;
 const hud = new Hud(uiRoot, ctx, () => openMenu('paused'));
 ctx.ui = hud;
+mountGuide(uiRoot, ctx);
 
 /** Catches up on real time away (at ×1) and shows the summary when it was long enough. */
 function welcomeBack(awayMs: number): void {
@@ -147,7 +154,8 @@ const menu: Menu = new Menu(uiRoot, {
     hasFarm = true;
     play();
     save();
-    hud.toast('A fresh start! Welcome to your new farm.', 'success');
+    // The first-session guide is offered on every new farm (only here: loads and Continue never start it).
+    offerGuide();
   },
   onLoad: (id) => {
     const slot = readSlot(storage, id);
