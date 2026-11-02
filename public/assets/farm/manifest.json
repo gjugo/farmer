@@ -15242,6 +15242,462 @@
    }
   },
   {
+   "name": "trader_wagon",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "travelling trader's covered wagon with the trader beside it, 1x1 (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/trader_wagon.png",
+     "w": 294,
+     "h": 322,
+     "anchor": [
+      155.0,
+      163.0
+     ],
+     "origin": [
+      0.52721,
+      0.50621
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/trader_wagon.png",
+     "w": 147,
+     "h": 161,
+     "anchor": [
+      77.5,
+      81.5
+     ],
+     "origin": [
+      0.52721,
+      0.50621
+     ]
+    }
+   }
+  },
+  {
+   "name": "trader_wagon_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "trader_wagon in winter: snow on the cover and the load, a scarf for the trader (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/trader_wagon_winter.png",
+     "w": 294,
+     "h": 323,
+     "anchor": [
+      155.0,
+      164.0
+     ],
+     "origin": [
+      0.52721,
+      0.50774
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/trader_wagon_winter.png",
+     "w": 147,
+     "h": 162,
+     "anchor": [
+      77.5,
+      82.0
+     ],
+     "origin": [
+      0.52721,
+      0.50617
+     ]
+    }
+   }
+  },
+  {
+   "name": "veg_patch",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "vegetable patch, 2x2 house garden: carrots and cabbages in beds inside a wattle fence (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/veg_patch.png",
+     "w": 507,
+     "h": 287,
+     "anchor": [
+      253.0,
+      29.0
+     ],
+     "origin": [
+      0.49901,
+      0.10105
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/veg_patch.png",
+     "w": 254,
+     "h": 144,
+     "anchor": [
+      126.5,
+      14.5
+     ],
+     "origin": [
+      0.49803,
+      0.10069
+     ]
+    }
+   }
+  },
+  {
+   "name": "veg_patch_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "vegetable patch in spring: seedlings in fresh beds (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/veg_patch_spring.png",
+     "w": 506,
+     "h": 287,
+     "anchor": [
+      253.0,
+      29.0
+     ],
+     "origin": [
+      0.5,
+      0.10105
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/veg_patch_spring.png",
+     "w": 253,
+     "h": 144,
+     "anchor": [
+      126.5,
+      14.5
+     ],
+     "origin": [
+      0.5,
+      0.10069
+     ]
+    }
+   }
+  },
+  {
+   "name": "veg_patch_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "vegetable patch in summer (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/veg_patch_summer.png",
+     "w": 507,
+     "h": 287,
+     "anchor": [
+      253.0,
+      29.0
+     ],
+     "origin": [
+      0.49901,
+      0.10105
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/veg_patch_summer.png",
+     "w": 254,
+     "h": 144,
+     "anchor": [
+      126.5,
+      14.5
+     ],
+     "origin": [
+      0.49803,
+      0.10069
+     ]
+    }
+   }
+  },
+  {
+   "name": "veg_patch_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "vegetable patch in autumn: golden grass, yellowing carrot tops (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/veg_patch_autumn.png",
+     "w": 507,
+     "h": 287,
+     "anchor": [
+      253.0,
+      29.0
+     ],
+     "origin": [
+      0.49901,
+      0.10105
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/veg_patch_autumn.png",
+     "w": 254,
+     "h": 144,
+     "anchor": [
+      126.5,
+      14.5
+     ],
+     "origin": [
+      0.49803,
+      0.10069
+     ]
+    }
+   }
+  },
+  {
+   "name": "veg_patch_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "vegetable patch in winter: bare snowy furrows (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/veg_patch_winter.png",
+     "w": 505,
+     "h": 287,
+     "anchor": [
+      253.0,
+      29.0
+     ],
+     "origin": [
+      0.50099,
+      0.10105
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/veg_patch_winter.png",
+     "w": 252,
+     "h": 144,
+     "anchor": [
+      126.5,
+      14.5
+     ],
+     "origin": [
+      0.50198,
+      0.10069
+     ]
+    }
+   }
+  },
+  {
+   "name": "hen_run",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "hen run, 2x2 house garden: a small hen hut in a wire-fenced run (the hens are the chicken sprite) (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/hen_run.png",
+     "w": 506,
+     "h": 317,
+     "anchor": [
+      253.0,
+      60.0
+     ],
+     "origin": [
+      0.5,
+      0.18927
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/hen_run.png",
+     "w": 253,
+     "h": 158,
+     "anchor": [
+      126.5,
+      30.0
+     ],
+     "origin": [
+      0.5,
+      0.18987
+     ]
+    }
+   }
+  },
+  {
+   "name": "hen_run_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "hen run in winter: snow on the hut and the run (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/hen_run_winter.png",
+     "w": 506,
+     "h": 321,
+     "anchor": [
+      253.0,
+      65.0
+     ],
+     "origin": [
+      0.5,
+      0.20249
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/hen_run_winter.png",
+     "w": 253,
+     "h": 160,
+     "anchor": [
+      126.5,
+      32.5
+     ],
+     "origin": [
+      0.5,
+      0.20312
+     ]
+    }
+   }
+  },
+  {
+   "name": "orchard",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "orchard, 2x2 house garden: a grass pad with a back fence, ladder and apple basket (the trees are tree_apple) (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/orchard.png",
+     "w": 507,
+     "h": 302,
+     "anchor": [
+      253.0,
+      44.0
+     ],
+     "origin": [
+      0.49901,
+      0.1457
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/orchard.png",
+     "w": 254,
+     "h": 151,
+     "anchor": [
+      126.5,
+      22.0
+     ],
+     "origin": [
+      0.49803,
+      0.1457
+     ]
+    }
+   }
+  },
+  {
+   "name": "orchard_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "orchard pad in winter: snow on the grass and the fence (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/orchard_winter.png",
+     "w": 505,
+     "h": 302,
+     "anchor": [
+      252.0,
+      44.0
+     ],
+     "origin": [
+      0.49901,
+      0.1457
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/orchard_winter.png",
+     "w": 252,
+     "h": 151,
+     "anchor": [
+      126.0,
+      22.0
+     ],
+     "origin": [
+      0.5,
+      0.1457
+     ]
+    }
+   }
+  },
+  {
+   "name": "apple",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/apple.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/apple.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
    "name": "well",
    "category": "buildings",
    "type": "image",

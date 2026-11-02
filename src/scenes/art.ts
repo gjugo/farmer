@@ -171,6 +171,7 @@ export const TEXTURE_ART: Record<string, string> = {
   bakery: 'bakery',
   loom: 'weaving_hut',
   'sale-sign': 'for_sale_sign',
+  'trader-wagon': 'trader_wagon',
   farmhouse: 'farmhouse',
   granary: 'granary_1',
   storehouse: 'storehouse_1',
@@ -181,6 +182,9 @@ export const TEXTURE_ART: Record<string, string> = {
   well: 'well',
   scarecrow: 'scarecrow',
   kennel: 'kennel',
+  'veg-patch': 'veg_patch',
+  'hen-run': 'hen_run',
+  orchard: 'orchard',
 };
 
 /** The crows that eat on a field (see `src/features/hazards`): two frames, head up and pecking. */
@@ -275,7 +279,7 @@ export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_m
 /** Item icons in the pack: every item of the game, plus coins for money. */
 export const ICON_ART = [
   'egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn',
-  'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'wood', 'stone', 'iron', 'manure', 'coins',
+  'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'apple', 'wood', 'stone', 'iron', 'manure', 'coins',
 ] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */
@@ -330,6 +334,11 @@ export function depositArt(kind: keyof typeof DEPOSIT_ART, x: number, y: number,
   return spent ? art.spent : art.full[hash(x, y, 19) % art.full.length];
 }
 
+/** House gardens drawn in four seasons (the vegetable patch is bare in winter); the others have a winter version only. */
+export const GARDEN_SEASONAL_ART = ['veg_patch'] as const;
+/** The orchard's two trees: the map's apple tree, in its seasons. */
+export const ORCHARD_TREE = 'tree_apple';
+
 /** Every map-resource sprite, each in four seasons. */
 export const MAP_ART: readonly string[] = [
   ...new Set<string>([...TREE_ART, STUMP_ART, ...Object.values(DEPOSIT_ART).flatMap((d) => [...d.full, d.spent])]),
@@ -350,6 +359,7 @@ export const SEASONAL_ART: readonly string[] = [
   ...SCENERY,
   POND,
   ...MAP_ART,
+  ...GARDEN_SEASONAL_ART,
 ];
 const seasonal = new Set<string>(SEASONAL_ART);
 

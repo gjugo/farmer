@@ -137,11 +137,13 @@ export class Progression {
     activity.on('collected', ({ item, qty }) => this.count((d) => d.kind === 'collect' && d.item === item, qty));
     activity.on('made', ({ item, qty }) => this.count((d) => d.kind === 'make' && d.item === item, qty));
     activity.on('produced', ({ item, qty }) => this.count((d) => d.kind === 'produce' && d.item === item, qty));
+    activity.on('gathered', ({ item, qty }) => this.count((d) => d.kind === 'gather' && d.item === item, qty));
     activity.on('bought', ({ item, qty }) => this.count((d) => d.kind === 'buy' && d.item === item, qty));
     activity.on('sold', ({ item, qty }) => this.count((d) => d.kind === 'sell' && (!d.item || d.item === item), qty));
     activity.on('placed', ({ type }) => this.count((d) => d.kind === 'build' && d.type === type, 1));
     activity.on('upgraded', ({ type }) => this.count((d) => d.kind === 'upgrade' && d.type === type, 1));
     activity.on('fertilised', () => this.count((d) => d.kind === 'fertilise', 1));
+    activity.on('traded', () => this.count((d) => d.kind === 'trade', 1));
     for (const e of ['objectAdded', 'objectRemoved', 'objectChanged', 'land'] as const) events.on(e, () => this.refreshStateGoals());
     for (const e of ['familyArrived', 'familyLeft'] as const) activity.on(e, () => this.refreshStateGoals());
     events.on('reset', () => this.init());

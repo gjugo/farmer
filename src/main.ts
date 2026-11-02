@@ -5,6 +5,7 @@ import Phaser from 'phaser';
 import { ToolState, type FarmContext } from './game/context';
 import { readDebugInfo } from './game/hooks';
 import { Game, type FarmSnapshot } from './logic/game';
+import { marketPrices } from './logic/market';
 import { catchUp, catchUpGame, shouldShowSummary, type CatchUpResult } from './logic/offline';
 import type { PerkId } from './data/perks';
 import { ordersOf, type OrdersState } from './logic/orders';
@@ -12,6 +13,7 @@ import type { TakenPerk } from './logic/perks';
 import { loadSave, saveToStorage, serialize, type SaveStorage } from './logic/save';
 import { listSlots, readSlot, STORAGE_FULL, summarize, type SlotSummary } from './logic/slots';
 import { createNewGame } from './logic/state';
+import { traderInfo } from './logic/trader';
 import type { StorageInfo } from './logic/storage';
 import { BootScene } from './scenes/BootScene';
 import { FarmScene } from './scenes/FarmScene';
@@ -43,6 +45,13 @@ declare global {
         slots: readonly SlotSummary[];
         /** Perks taken (level, id), levels whose choice is still open (oldest first), and the cards a level's choice shows. */
         perks: { taken: readonly TakenPerk[]; pending: readonly number[]; offer(level: number): PerkId[] };
+        /**
+         * The travelling trader: whether he is here, when he arrives and leaves (game ms: the one here, else the next
+         * one due; nulls below level 3), and while here what he wants and sells with the stock left.
+         */
+        trader: ReturnType<typeof traderInfo>;
+        /** Item id → the Market's price for one unit now and how far it is down from the day's price (0..0.5). */
+        market: Record<string, { price: number; drop: number }>;
         /** `tileToScreen(x, y)`: page pixel of a tile's centre at the current camera, for clicking known tiles. */
         iso: { tileToScreen(x: number, y: number): { x: number; y: number } | null };
       }
@@ -205,6 +214,8 @@ Object.defineProperty(window, 'farm', {
         offer: (level: number) => game.perks.offer(level).map((p) => p.id),
       }),
       slots: Object.freeze(listSlots(storage).map((s) => Object.freeze(s))),
+      trader: traderInfo(game),
+      market: marketPrices(game.state),
       iso,
     });
   },

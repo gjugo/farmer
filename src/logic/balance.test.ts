@@ -7,7 +7,8 @@ import { GRANARY, POOL_BUILDING, type StoragePool } from '../data/storage';
 import { buyAnimal, buyFeed, feedNeeded, type PenState } from './animals';
 import type { FieldState } from './crops';
 import { Game } from './game';
-import { buy, buyPrice, buyUnlockLevel, sell } from './market';
+import { allowance, buy, buyPrice, buyUnlockLevel, marketOf, sell } from './market';
+import { sellToTrader, traderHere, traderOf, updateTrader } from './trader';
 import { START_LAND } from './constants';
 import { buyParcel, FARM_PARCELS, parcelPrice, parcelsBought, parcelsForSale } from './parcels';
 import { connectToFarmhouse, doorOf, farmhouseOf } from './roads';
@@ -83,11 +84,14 @@ function touches(tiles: Set<string>, a: { x: number; y: number; w: number; h: nu
 
 /** The new game's map: any seed gives a start grove and outcrop, this one keeps the runs repeatable. */
 const MAP_SEED = 20261031;
+/** The travelling traders' schedule and offers, fixed so the runs repeat. */
+const TRADER_SEED = 79;
 
 function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number; maxFields: number; minutes: number; hazardSeed: number }): Sim {
   const state = createNewGame();
   state.ext[MAP_SLICE] = newMapLayer(state, MAP_SEED);
   hazardsOf(state).seed = hazardSeed;
+  traderOf(state).seed = TRADER_SEED;
   const game = new Game(state);
   const reachedAt = new Map<number, number>([[1, 0]]);
   game.events.on('levelUp', ({ level }) => reachedAt.set(level, game.now));
@@ -108,6 +112,8 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     if (!buyingFirewood && !buyingDefence) bought[item] = (bought[item] ?? 0) + qty;
   });
   const STEP = 1000;
+  /** Units it sells past an item's daily allowance: a price up to this many % down is still worth taking. */
+  const FLOOD_OK = 10;
   const KEEP_MATERIALS = 10;
 
   /** Buys what `cost` lacks, in fives, if there is the money (keeping `reserve`) and the room; false when it can't. */
@@ -214,10 +220,22 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const lean = winterSoon || (seasonAt(game.now) === 'spring' && dayOfSeason(game.state.clock) <= 2);
     const days = lean ? SEASON_DAYS + 4 : 1;
     const keepFood = fed ? Math.ceil((days * MEAL_PER_FAMILY * families) / foodKinds) + 1 : 0;
+    // A trader in the yard gets first pick of what it would sell.
+    updateTrader(game);
+    const trader = traderHere(game.state);
+    trader?.wants.forEach((w, i) => {
+      const spare = game.count(w.item) - (PANTRY.includes(w.item) ? keepFood : 0);
+      if (spare > 0) sellToTrader(game, i, spare);
+    });
+    // It doesn't flood the Market: past an item's daily allowance (and a 10% drop) it keeps the rest for tomorrow,
+    // unless the granary is half full.
+    const tight = used(game.state, 'goods') >= 0.5 * capacity(game.state, 'goods');
     for (const id of Object.keys(game.state.inventory)) {
       if (id === 'feed' || isMaterial(id)) continue;
       const keep = PANTRY.includes(id) ? keepFood : 0;
-      if (game.count(id) > keep) sell(game, id, game.count(id) - keep);
+      const room = tight ? Infinity : Math.max(0, allowance(id) + FLOOD_OK - (marketOf(game.state).sold[id] ?? 0));
+      const n = Math.min(game.count(id) - keep, room);
+      if (n > 0) sell(game, id, n);
     }
     // A harsh winter (announced at the start of autumn) takes twice the wood: it stocks what the warning says.
     const harsh = harshWinterAt(game.state, nextSeasonAt(game.now)) || harshWinterAt(game.state, game.now);
@@ -379,10 +397,19 @@ describe('level curve balance', () => {
   // L2 9.0, L5 159.0; busy L2 9.0, L5 153.7.
   // More crops (potato at level 3, barley at 4; "Best in season" sows potato before corn comes): casual L2 9.0, L5 158.0;
   // relaxed L2 9.5, L5 151.0; busy L2 9.2, L5 137.4.
+  // (The next numbers, for saturation and traders, were measured before more crops came in.)
+  // Market saturation (each item's price falls past ~$150 a day of it, recovering a quarter a day) and travelling
+  // traders from level 3. Selling everything at once as before: casual L5 174.0, relaxed 176.0, busy 146.8. It now
+  // sells each item only up to the day's allowance and 10 more (unless the granary is half full), and its wanted goods to
+  // a trader first: casual L2 9.0, L5 156.0; relaxed L2 9.5, L5 172.5; busy L2 9.2, L5 119.3 (trader seed 79; over
+  // seeds 1-5 relaxed L5 172.5-178.5, casual 162-173, the same as before saturation: relaxed 172.5, casual 174.0).
+  // Both with more crops: casual L2 9.0, L5 152.0; relaxed L2 9.5, L5 158.0; busy L2 9.2, L5 133.8 (trader seeds 1-3:
+  // casual 152-158, relaxed 152-158, busy 116-141).
   // Hazards (harsh winters, droughts, crows, foxes), with scarecrows and wells from level 2 and a kennel from level 3
   // (no losses after them) and the harsh winter's wood stocked, on top of the new crops: casual L2 9.0, L5 174.0;
   // relaxed L2 9.5, L5 158.5; busy L2 9.2, L5 149.2 (seeds 1–8: casual L5 at most 175.0). Without the defences a casual
-  // or relaxed player could miss level 5 in 3 h.
+  // or relaxed player could miss level 5 in 3 h. With saturation and traders as well (trader seed 79): casual L2 9.0,
+  // L5 167.0; relaxed L2 9.5, L5 158.0; busy L2 9.2, L5 152.0.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });

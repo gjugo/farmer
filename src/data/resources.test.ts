@@ -16,7 +16,7 @@ describe('resource categories', () => {
   });
 
   it('groups the items as the bar shows them', () => {
-    expect(itemsOf('crops')).toEqual(['wheat', 'carrot', 'corn', 'potato', 'barley', 'flax', 'cabbage', 'pumpkin']);
+    expect(itemsOf('crops')).toEqual(['wheat', 'carrot', 'corn', 'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'apple']);
     expect(itemsOf('animal')).toEqual(['egg', 'milk', 'wool']);
     expect(itemsOf('feed')).toEqual(['feed']);
     expect(itemsOf('goods')).toEqual(['cheese', 'butter', 'bread', 'cloth']);
