@@ -9,6 +9,7 @@ import * as animals from './animals';
 import { isBarn, nextHaulEvent, planHaul, settleHauls, startTrip, type HaulTrip } from './haul';
 import { MANURE_BELOW } from '../data/soil';
 import { nextFamiliesEvent, stepFamilies } from './families';
+import { nextGardensEvent, stepGardens } from './gardens';
 import { canPloughNow, checkFertilise, cropStage, fertilise, fertilityOf, fieldCrop, harvest, harvestYield, isPloughed, plant, plough, seasonCheck, type FieldState } from './crops';
 import type { Game } from './game';
 import { perkFactor } from './perks';
@@ -24,7 +25,7 @@ import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf
  * farmers (no workplace, or nothing to do there) build construction sites, oldest first.
  *
  * It runs on game time, not frames: `runWork` steps the clock from one event (a job, crop, animal,
- * batch or resource cycle ending, a new season or day, a family moving in) to the next and hands out work at each, so a frame at ×60, a
+ * batch or resource cycle ending, a new season or day, a family moving in, a house garden's yield) to the next and hands out work at each, so a frame at ×60, a
  * hundred frames at ×1 and a week of offline catch-up all give the same farm. Between events
  * nothing a farmer could do changes, except what the player does, which the next call picks up.
  */
@@ -243,6 +244,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
   settleResources(game);
   // New days (meals, firewood, clothes, approval, departures) and arrivals, before work is handed out.
   stepFamilies(game);
+  // House gardens yield after the meal, and carry in what waits as room appears.
+  stepGardens(game);
 
   const routeTo = (obj: PlacedObject): Route | null => {
     if (!routes.has(obj.id)) routes.set(obj.id, findRoute(state, areaOf(obj)));
@@ -321,6 +324,7 @@ export function nextWorkEvent(game: Game): number {
   at(nextHaulEvent(state, now));
   if (fields) at(nextSeasonAt(now));
   at(nextFamiliesEvent(state));
+  at(nextGardensEvent(state));
   return next;
 }
 

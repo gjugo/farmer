@@ -13,6 +13,8 @@ export interface ActivityEvents {
   made: { item: ItemId; qty: number };
   /** A resource building finished a cycle: `qty` of a material made (stored, or waiting for room in the building). */
   produced: { item: ItemId; qty: number };
+  /** A house garden yielded: `qty` of a food picked (stored, or waiting in the garden for room). */
+  gathered: { item: ItemId; qty: number };
   /** An oxcart unloaded `qty` of `item` at a store (`src/logic/haul.ts`). */
   hauled: { item: ItemId; qty: number };
   /** Items (building materials) were bought at the Market. */
@@ -45,6 +47,8 @@ export interface ActivityEvents {
   jobsFinished: { count: number };
   /** A customer order was fulfilled. */
   orderFulfilled: { reward: number };
+  /** Goods, materials or an animal traded with a travelling trader: `kind` is what the farm did (bought or sold). */
+  traded: { kind: 'buy' | 'sell'; what: string; qty: number; money: number };
   /** A finished goal was claimed. */
   goalClaimed: { id: string };
   /** A farmer was put to work (building, ploughing, planting, harvesting, feeding, collecting, starting a batch, cutting wood, ...). */

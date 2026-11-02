@@ -75,6 +75,7 @@ export class Hud implements UiApi {
   private buttons = new Map<string, HTMLButtonElement>();
   private badges: { el: HTMLElement; read: () => number | null }[] = [];
   private liveButtons: { btn: HTMLButtonElement; read: () => { icon: string; label: string } }[] = [];
+  private visibleButtons: { btn: HTMLButtonElement; read: () => boolean }[] = [];
   private sheet: SheetSpec | null = null;
   private sheetSignature = '';
 
@@ -187,6 +188,8 @@ export class Hud implements UiApi {
         this.badges.push({ el, read: () => b.badge!(this.ctx) });
       }
       if (b.live) this.liveButtons.push({ btn: this.buttons.get(b.id)!, read: () => b.live!(this.ctx) });
+      if (b.visible) this.visibleButtons.push({ btn: this.buttons.get(b.id)!, read: () => b.visible!(this.ctx) });
+      if (b.className) this.buttons.get(b.id)!.classList.add(b.className);
     }
     addButton('settings', '⚙️', 'Settings', () => this.toggleSheet(this.settingsSheet()));
     addButton('menu', '☰', 'Menu', () => this.onMenu());
@@ -247,6 +250,10 @@ export class Hud implements UiApi {
       const text = n ? String(n) : '';
       if (el.textContent !== text) el.textContent = text;
       el.hidden = !n;
+    }
+    for (const { btn, read } of this.visibleButtons) {
+      const hidden = !read();
+      if (btn.hidden !== hidden) btn.hidden = hidden;
     }
     for (const { btn, read } of this.liveButtons) {
       const { icon, label } = read();

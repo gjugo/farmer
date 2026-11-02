@@ -66,6 +66,8 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
   deposit: 'Rock is in the way: only a quarry or mine stands on it',
   'needs-outcrop': 'A quarry must stand on a stone outcrop',
   'needs-vein': 'A mine must stand on an iron vein',
+  'needs-home': 'A garden must touch a home along an edge',
+  'home-has-garden': 'That home already has a garden',
 };
 
 /**
@@ -571,6 +573,11 @@ export class FarmScene extends Phaser.Scene {
     this.touches.delete(p.id);
     if (this.activeTouches().length < 2) this.pinch = null;
     if (!t || t.dragging) return;
+    // A display object with its own tap action (e.g. the trader's wagon) handles the tap itself.
+    if (this.ctx.tools.mode.kind === 'normal') {
+      const onTap = this.input.hitTestPointer(p).map((obj) => obj.getData('onTap') as (() => void) | undefined).find(Boolean);
+      if (onTap) return onTap();
+    }
     const { tx, ty } = this.tapTarget(p);
     this.handleTap(tx, ty);
     this.updateCursor(p);

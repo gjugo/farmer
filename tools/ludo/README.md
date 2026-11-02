@@ -41,8 +41,12 @@ git (or rerun the commands below) after running it.
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
 | `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe (flax's sprout is its growing image, smaller), `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none, except cabbage |
 | `cabbage_<stage>_winter` (frosted, the winter crop) | `cabbage_<stage>_winter_raw.png`, `seeded_winter_raw.png`; see **Crops** below | winter |
-| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `apple`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| `veg_patch` (base, `_spring`, `_summer`, `_autumn`, `_winter`: bare) | `veg_patch_raw.png`, `veg_patch_{spring,autumn,winter}_raw.png`; see **House gardens** below | all |
+| `hen_run`, `hen_run_winter` (the two hens are the `chicken` sheet, drawn by the game) | `hen_run_raw.png`, `hen_run_winter_raw.png` | all |
+| `orchard`, `orchard_winter` (the pad; its two trees are `tree_apple` in its seasons, drawn by the game) | `orchard_raw.png`, `orchard_winter_raw.png` | all |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
+| `trader_wagon`, `trader_wagon_winter` (the travelling trader with his wagon) | `trader_wagon_raw.png`, `trader_wagon_winter_raw.png`; see **Trader's wagon** below | all |
 
 ## Generating in Ludo
 
@@ -148,6 +152,40 @@ the pad). Some code points into a building's 2x sprite and needs updating with i
 `src/features/resources/index.ts`, a grid point on the footprint). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
 its own bounds, so pieces fitted with the same corners share one canvas and anchor.
+
+## House gardens
+
+`generateWithStyle` with the Ludo cottage as `style_image`, `sprite`, n=2: "a small family vegetable garden ... a
+straight-edged flat diamond pad of 2-by-2 tiles with no thickness: dark tilled soil beds in neat rows ..., leafy green
+carrot tops showing orange shoulders, a few round green cabbages and lettuces, and a low woven wattle fence of thin
+sticks around the edges of the pad. No building" and "a small backyard hen run ... a tiny wooden hen hut ... on the
+back corner of the pad; a low wooden post-and-wire fence runs around the pad's edges ... No chickens". The orchard pad
+used the chosen hen run as `style_image`: "an empty small orchard plot ... short green grass ... a low rustic wooden
+split-rail fence along the two back edges only; a small wooden ladder ... and a wicker apple basket at the left
+corner. The middle of the pad is open grass ... No trees". The seasons are `editImage` on the chosen summer image
+("keep the same ... exactly: same pad, same shape, size, position, fence and outlines" + young seedlings and
+flowers for spring, golden grass and pumpkins for autumn, bare snowy furrows with the fence kept for winter, snow on
+the hut, run and pad for the hen run and orchard). The vegetable patch is seasonal like the ground (`veg_patch_<season>`,
+listed in `GARDEN_SEASONAL_ART` in `src/scenes/art.ts`); its spring, summer and autumn entries are in category
+`props` so only `veg_patch` counts as a building with a winter twin. The hens (`HEN_AREA`) and the orchard's two
+trees (`TREES`, at 0.85 scale) are placed by `src/features/gardens/index.ts`. Edits on the same canvas size as the
+summer image are fitted with the summer corners, so the seasons line up; the hen run's winter came back on a
+different canvas and has its own.
+
+```bash
+$P $L/fit_building.py $L/source/veg_patch_raw.png /tmp/props veg_patch 2 2 42 255 724 254 382 425
+for s in spring autumn winter; do
+  $P $L/fit_building.py $L/source/veg_patch_${s}_raw.png /tmp/props veg_patch_$s 2 2 42 255 724 254 382 425
+done
+$P $L/fit_building.py $L/source/hen_run_raw.png /tmp/props hen_run 2 2 41 297 726 296 382.5 467.8
+$P $L/fit_building.py $L/source/hen_run_winter_raw.png /tmp/props hen_run_winter 2 2 56 292 704 289 377 452.5
+$P $L/fit_building.py $L/source/orchard_raw.png /tmp/props orchard 2 2 43 272 728 272 385.5 443.2
+$P $L/fit_building.py $L/source/orchard_winter_raw.png /tmp/props orchard_winter 2 2 43 272 728 272 385.5 443.2
+$P $L/install_prop.py /tmp/props veg_patch veg_patch_summer
+for n in veg_patch_spring veg_patch_autumn veg_patch_winter hen_run hen_run_winter orchard orchard_winter; do
+  $P $L/install_prop.py /tmp/props $n
+done
+```
 
 ## Feed mill: `mill_sails.py`
 
@@ -387,7 +425,7 @@ large brown hen's egg ... / a small steel farm milk churn ... / a fluffy round b
 wool ... / a plump burlap sack of animal feed ... / a round wheel of yellow cheese with a wedge cut out ... / a
 pale yellow block of butter ... on a small round wooden board / a golden-brown crusty loaf ... / a bolt of woven
 blue cloth ... / a sheaf of ripe golden wheat ... / a fat orange carrot with a bushy green top ... / a ripe ear of
-yellow corn with its husks peeled back / a small stack of three chopped logs ... / two chunky grey cut stone
+yellow corn with its husks peeled back / a single shiny ripe red apple with a short brown stem and one green leaf (with the egg icon as `style_image`) / a small stack of three chopped logs ... / two chunky grey cut stone
 blocks ... / three dark blue-grey iron ingots ... / a small wooden bucket filled with dark brown manure ... / a
 small stack of shiny gold coins ... / two plump round brown potatoes ... / a small tied bundle of pale straw-yellow
 barley ears with long whiskery bristly awns ... tied with a green band / a tied bundle of harvested flax stems ... a few
@@ -404,7 +442,7 @@ The new crops' icons (potato to pumpkin) were styled on the Ludo carrot icon ins
 first (`add_asset.py corn <name> "--notes=item icon: <name> (Ludo.ai, cel-shaded)"`).
 
 ```bash
-for n in egg milk wool feed cheese butter bread cloth wheat carrot corn potato barley flax cabbage pumpkin wood stone iron manure coins; do
+for n in egg milk wool feed cheese butter bread cloth wheat carrot corn potato barley flax cabbage pumpkin apple wood stone iron manure coins; do
   $P $L/fit_icon.py $L/source/icon_${n}_raw.png /tmp/props $n && $P $L/install_prop.py /tmp/props $n
 done
 ```
@@ -680,3 +718,20 @@ and anchors match the pack, so `manifest.json` needs no change. It writes every 
 Seasons: spring and summer are the Ludo grass as is. Autumn is it recoloured gold with fallen leaves drawn on
 (wrapped, so it still tiles). Winter uses the snow tile for grass (three variants: as is, turned, transposed),
 the trampled-snow tile for paths, and frozen soil: the tilled soil greyed with snow in the furrows.
+
+## Trader's wagon
+
+`createImage` (Cel-Shaded, Isometric, sprite, square): a covered wagon with two spoked wheels, a cream canvas cover
+with a red stripe, crates, sacks and a barrel, and the bearded trader in a green coat waving beside it; no horse,
+ground or shadow. Winter is `editImage` on it ("keep the same ... exactly; add fresh snow on the cover, the load and
+the wagon's edges, and give the trader a red scarf"). The raw images are padded with 112 px of transparency at the
+bottom so the baked shadow isn't clipped. It is fitted as a one-tile prop standing between the wheels (it overhangs
+its tile like a tree), with `buildings` entries in `manifest.json` added by hand first (`install_prop.py` only updates
+existing entries); the game draws `trader_wagon_winter` in winter.
+
+```bash
+for n in trader_wagon trader_wagon_winter; do
+  $P $L/fit_prop.py $L/source/${n}_raw.png /tmp/props $n 420 600 0.4 --shadow=100
+  $P $L/install_prop.py /tmp/props $n
+done
+```
