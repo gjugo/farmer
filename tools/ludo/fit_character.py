@@ -1,6 +1,7 @@
 """Build the farmer's spritesheet from Ludo Directional Sprites renders.
 
-Usage: python fit_character.py FRAMES_DIR OUT_DIR HEIGHT ANIM:DIR=SOURCE ... [--fill=ANIM]
+Usage: python fit_character.py FRAMES_DIR OUT_DIR HEIGHT ANIM:DIR=SOURCE ... [--fill=ANIM] [--row=ANIM:FRAMES:FPS ...]
+                                [--match=ANIM:REF ...]
 
 Each ANIM:DIR=SOURCE says where an animation and direction (se, sw, ne, nw) comes from, relative to FRAMES_DIR:
 - a folder of frame_NNN.png from the web app's Animation Pack export (Individual Frames). Ludo's pack already gives
@@ -11,7 +12,11 @@ Each ANIM:DIR=SOURCE says where an animation and direction (se, sw, ne, nw) come
   it is seen whole) is as wide as in the pack, and each sheet keeps its feet on its own ground line.
 Frames are picked evenly from each Ludo loop to the count the game plays (the manifest's `frames`), scaled, and placed
 on the game's grid with the feet on the manifest anchor; a soft shadow is baked under the feet. Animations without a
-source use the --fill animation's frames. Writes {2x,1x}_farmer.png and prints the manifest values.
+source use the --fill animation's frames. --match scales ANIM instead so the
+figure (top of the hat to the feet, SE and SW views) is as tall as in REF: for a pose that tilts the hat, like the
+carry walks, where its width misleads. --row adds an animation the manifest lacks as a new row at the bottom of the
+sheet (its four directions, FRAMES frames at FPS each) and writes the manifest; one it has already is left alone.
+Writes {2x,1x}_farmer.png and prints the manifest values.
 """
 import json
 import os
@@ -27,6 +32,8 @@ FEET = 8  # 2x px from the ground point down to the lowest toe
 
 frames_dir, out_dir, height = sys.argv[1], sys.argv[2], float(sys.argv[3])
 fill = next((a.split('=')[1] for a in sys.argv if a.startswith('--fill=')), 'idle')
+matches = dict(a.split('=')[1].split(':') for a in sys.argv if a.startswith('--match='))
+new_rows = [a.split('=')[1].split(':') for a in sys.argv if a.startswith('--row=')]
 sheets = {}
 for arg in sys.argv[4:]:
     if not arg.startswith('--'):
@@ -70,6 +77,10 @@ def feet(im):
     xs = np.nonzero(solid[bottom - im.height // 30:bottom + 1].any(0))[0]
     return bottom, (xs[0] + xs[-1]) / 2
 
+def figure_height(anim):
+    """Median height in raw px of the figure's frames in the SE and SW views."""
+    return np.median([f.getbbox()[3] - f.getbbox()[1] for d in ('se', 'sw') for f in frames(sheets[(anim, d)])])
+
 def front_hat(anim):
     return np.percentile([hat_width(f) for d in ('se', 'sw') for f in frames(sheets[(anim, d)])], 90)
 
@@ -82,15 +93,35 @@ hat = front_hat(fill) * pack_scale  # the hat's width in 2x px
 
 placement = {}  # (anim, dir) -> (scale, raw ground point)
 for (anim, d), source in sheets.items():
+    placement[(anim, d)] = pack_scale if os.path.isdir(source) else hat / front_hat(anim)
+for (anim, d) in placement:
+    if anim in matches:
+        ref = matches[anim]
+        placement[(anim, d)] = placement[(ref, 'se')] * figure_height(ref) / figure_height(anim)
+for (anim, d), source in sheets.items():
     if os.path.isdir(source):
         placement[(anim, d)] = (pack_scale, pack_ground)
     else:
-        scale = hat / front_hat(anim)
+        scale = placement[(anim, d)]
         spots = [feet(f) for f in frames(source)]
         ground = (np.median([x for _, x in spots]), np.median([y for y, _ in spots]) - FEET / scale)
         placement[(anim, d)] = (scale, ground)
 
-asset = next(a for a in json.load(open(MANIFEST))['assets'] if a['name'] == 'farmer')
+manifest_text = open(MANIFEST).read()
+manifest = json.loads(manifest_text)
+asset = next(a for a in manifest['assets'] if a['name'] == 'farmer')
+for anim, n, fps in new_rows:
+    if any(a['anim'] == anim for a in asset['animations']):
+        continue
+    row = asset['res']['2x']['rows']
+    for slot, d in enumerate(('se', 'sw', 'ne', 'nw')):
+        start = row * asset['res']['2x']['columns'] + slot * 6
+        asset['animations'].append({'key': f'farmer_{anim}_{d}', 'anim': anim, 'dir': d, 'start': start,
+                                    'end': start + int(n) - 1, 'frames': int(n), 'fps': int(fps), 'repeat': -1})
+    for res in asset['res'].values():
+        res['rows'] = row + 1
+if new_rows:
+    open(MANIFEST, 'w').write(json.dumps(manifest, indent=1) + ('\n' if manifest_text.endswith('\n') else ''))
 cols, rows = asset['res']['2x']['columns'], asset['res']['2x']['rows']
 sheet = Image.new('RGBA', (cols * FW, rows * FH))
 
