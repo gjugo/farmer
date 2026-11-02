@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getBuildable } from '../data/buildables';
+import { FIELD } from '../data/crops';
 import { splitIcons } from '../data/items';
 import { formatMaterials, needsMaterialsMessage } from '../data/materials';
 import { buildWorkMs } from '../data/workers';
@@ -43,8 +44,8 @@ const MAX_ZOOM = 2;
 const KEY_PAN_SPEED = 700; // screen px per second
 /** Room above the map's top corner for buildings standing at the back. */
 const MAP_TOP_ROOM = ISO_H * 3;
-/** Build-menu categories whose base art lies flat on the ground (under every shadow and standing thing). */
-const FLAT_CATEGORIES = new Set(['decor', 'crops']);
+/** Buildables whose base art lies flat on the ground (under every shadow and standing thing): paths and field soil. */
+const FLAT_TYPES = new Set(['path', FIELD]);
 /** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
 const SCENERY_CLEARANCE = 4;
 /** Construction sites are drawn faded to this, with a progress bar this wide (world pixels). */
@@ -349,7 +350,7 @@ export class FarmScene extends Phaser.Scene {
     const container = this.add.container(box.left, box.top);
     const ground = this.add.container(box.left, box.top).setDepth(DEPTH.flat + depthKey(fp) * 1e-4);
     const shadows = this.add.container(box.left, box.top, shadow ? [shadow] : []).setDepth(DEPTH.shadow);
-    (FLAT_CATEGORIES.has(def?.category ?? '') ? ground : container).add(sprite);
+    (FLAT_TYPES.has(obj.type) ? ground : container).add(sprite);
     const view: ObjectView = { container, ground, shadows, sprite, shadow, top, width: box.width, height: box.height };
     this.views.set(obj.id, { ...view, obj });
     this.depthsDirty = true;

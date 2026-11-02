@@ -35,6 +35,7 @@ git (or rerun the commands below) after running it.
 | `cart_se`, `cart_sw`, `cart_ne`, `cart_nw` (the oxcart, one per facing) | `cart_raw.webp`, `cart_model.glb`, `cart_<dir>_raw.png`; see **Ox and oxcart** below | all (not seasonal) |
 | `ox_barn`, `ox_barn_winter` | `ox_barn_raw.png`, `ox_barn_winter_raw.png` | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
+| `fringe_path_<edge>`, `fringe_field_<edge>` (edge `ne`, `se`, `sw`, `nw`: grass fringes over path and field edges) | the `grass_0` tiles above (from `grass_a_raw.png`; winter `snow_raw.png`); see **Grass fringes** below | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
 | `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
 | `tree_pine` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_pine_raw.png`, `tree_pine_winter_raw.png` (spring and autumn recoloured from summer) | all |
@@ -1024,6 +1025,29 @@ and anchors match the pack, so `manifest.json` needs no change. It writes every 
 Seasons: spring and summer are the Ludo grass as is. Autumn is it recoloured gold with fallen leaves drawn on
 (wrapped, so it still tiles). Winter uses the snow tile for grass (three variants: as is, turned, transposed),
 the trampled-snow tile for paths, and frozen soil: the tilled soil greyed with snow in the furrows.
+
+## Grass fringes: `fringes.py`
+
+```bash
+mkdir -p /tmp/fringes/2x /tmp/fringes/1x
+$P $L/fringes.py /tmp/fringes
+cp /tmp/fringes/2x/*.png public/assets/farm/2x/tiles/; cp /tmp/fringes/1x/*.png public/assets/farm/1x/tiles/
+# Manifest entries (only once; shaped like a path piece: 256 x 128 at 2x, anchored on the top corner):
+N=(); for k in path field; do for e in ne se sw nw; do for s in "" _spring _summer _autumn _winter; do
+  N+=(fringe_${k}_${e}$s); done; done; done
+$P $L/add_asset.py path_single "${N[@]}" --notes="grass fringe strip over a path or field edge"
+```
+
+No Ludo generation: the strips are cut from the ground they hang from. Each is a tile-sized, transparent canvas with a
+strip of grass along one edge: a solid band, then pointed tufts with a soft (feathered) alpha, a faint cel outline, a
+little darker at the root, and a soft drop shadow on the dirt. The colour is sampled from the season's `grass_0` tile
+(built by `ground_tiles.py` from `grass_a_raw.png`, winter from `snow_raw.png`) at the same tile coordinates, and that
+texture wraps once per tile, so a strip continues its neighbouring grass tile exactly. **Rerun it after
+`ground_tiles.py`.** The path strips (`fringe_path_*`) cover the path tile's own grass margin and hang their tufts over
+the rim of the dirt (`HW` in `ground_tiles.py`); the field strips (`fringe_field_*`) are a low band whose tufts just
+reach over the soil bed's rim (`I`), so they never get in the crops' way. Seasons: spring and summer green, autumn the
+gold grass with its leaves, winter snow-crusted (snow with frosted, greyed blades in it). The game draws them all in
+one Blitter (`src/features/fringes`), tinted like the neighbouring grass tile (rich soil, locked land).
 
 ## Trader's wagon
 
