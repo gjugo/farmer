@@ -35,6 +35,7 @@ git (or rerun the commands below) after running it.
 | `cart_se`, `cart_sw`, `cart_ne`, `cart_nw` (the oxcart, one per facing) | `cart_raw.webp`, `cart_model.glb`, `cart_<dir>_raw.png`; see **Ox and oxcart** below | all (not seasonal) |
 | `ox_barn`, `ox_barn_winter` | `ox_barn_raw.png`, `ox_barn_winter_raw.png` | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
+| `grass_clover`, `grass_flowers`, `grass_long`, `grass_worn`, `grass_moss`, `grass_stones` (spring to autumn), `grass_tips`, `grass_drift` (winter), `forest_0..2`, `wet_0/1` (all four) | `grass_<name>_raw.png`, `snow_tips_raw.png`, `snow_drift_raw.png`, `forest_{0,1,2}_raw.png`, `wet_{0,1}_raw.png`; see **Ground tiles** below | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
 | `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
 | `tree_pine` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_pine_raw.png`, `tree_pine_winter_raw.png` (spring and autumn recoloured from summer) | all |
@@ -895,6 +896,39 @@ and anchors match the pack, so `manifest.json` needs no change. It writes every 
 Seasons: spring and summer are the Ludo grass as is. Autumn is it recoloured gold with fallen leaves drawn on
 (wrapped, so it still tiles). Winter uses the snow tile for grass (three variants: as is, turned, transposed),
 the trampled-snow tile for paths, and frozen soil: the tilled soil greyed with snow in the furrows.
+
+**Meadow variants, forest floor and wet meadow.** The game picks a tile per map tile in `src/scenes/ground.ts` (plain
+grass on about 60%, the rest in patches) and tints it; locked land is a tint too, so `unowned_0/1` are still built but
+no longer drawn. The script reads these from the same folder as `GRASS_A`, each an `editImage` (Map Tile, `n` 2–4, one
+picked) on the Ludo web generation `grass_a_raw.png` came from, or on the snow tile's for winter:
+
+| Tile | Source | Prompt (after "Keep this exact isometric grass map tile: same diamond shape, framing, size, grass colour and cel-shaded style. Change only the top grass surface:") |
+| --- | --- | --- |
+| `grass_clover` | `grass_clover_raw.png` | patches of small three-leaf clover with a few round white clover flowers |
+| `grass_flowers` | `grass_flowers_raw.png` | many small white daisies and yellow buttercup wildflowers, spread evenly |
+| `grass_long` | `grass_long_raw.png` | longer meadow grass, dense taller blades in soft waves, a few thin seed heads |
+| `grass_worn` | `grass_worn_raw.png` | a dry worn patch: thin, short, yellowed grass with a little bare light-brown earth |
+| `grass_moss` | `grass_moss_raw.png` | soft cushions of deep green moss in irregular patches |
+| `grass_stones` | `grass_stones_raw.png` | four or five small grey stones half sunk into the grass |
+| `forest_0..2` | `forest_{0,1,2}_raw.png` | a forest floor: darker green grass with soft moss, a few fallen leaves, small ferns, twigs |
+| `wet_0/1` | `wet_{0,1}_raw.png` | a wet meadow: lush deep green grass, clumps of rushes (some with cattail heads), glints of water |
+| `grass_tips` (winter) | `snow_tips_raw.png` | (on the snow tile) small clusters of dry yellow-brown grass tips poking up through the snow |
+| `grass_drift` (winter) | `snow_drift_raw.png` | (on the snow tile) a small, low, smooth snow drift with a pale blue shaded side |
+
+Each is made to wrap like the grass, colour-matched to plain grass (or snow) so it is no lighter or darker, and laid over
+`grass_0`'s (or the snow's) border inside an irregular blob, so it meets every other ground tile without a seam and
+doesn't read as a diamond. Zone tiles cover more of the tile (they come in blocks). Seasons: spring and summer as is;
+autumn recoloured with fallen leaves like the grass (many more on the forest floor); winter is the snow tile with soft
+darker pools on the forest floor and the wet meadow frosted (its rushes pale stalks in the snow). The meadow specials
+have no winter file and the winter specials no other season: the game picks per season. Only the `_<season>` files are
+written (no base file). New entries go into `manifest.json` with `add_asset.py`, shaped like `grass_2_winter`:
+
+```bash
+N=(); for s in spring summer autumn; do for v in clover flowers long worn moss stones; do N+=(grass_${v}_$s); done; done
+N+=(grass_tips_winter grass_drift_winter)
+for s in spring summer autumn winter; do N+=(forest_0_$s forest_1_$s forest_2_$s wet_0_$s wet_1_$s); done
+$P $L/add_asset.py grass_2_winter "${N[@]}" "--notes=ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)"
+```
 
 ## Trader's wagon
 

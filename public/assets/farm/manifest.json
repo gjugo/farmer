@@ -12100,6 +12100,1526 @@
    }
   },
   {
+   "name": "grass_clover_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_clover_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_clover_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_flowers_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_flowers_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_flowers_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_long_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_long_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_long_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_worn_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_worn_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_worn_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_moss_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_moss_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_moss_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_stones_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_stones_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_stones_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_clover_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_clover_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_clover_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_flowers_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_flowers_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_flowers_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_long_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_long_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_long_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_worn_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_worn_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_worn_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_moss_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_moss_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_moss_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_stones_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_stones_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_stones_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_clover_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_clover_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_clover_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_flowers_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_flowers_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_flowers_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_long_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_long_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_long_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_worn_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_worn_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_worn_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_moss_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_moss_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_moss_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_stones_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_stones_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_stones_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_tips_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_tips_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_tips_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "grass_drift_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/grass_drift_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/grass_drift_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_0_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_0_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_0_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_1_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_1_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_1_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_2_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_2_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_2_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_0_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_0_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_0_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_1_spring",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_1_spring.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_1_spring.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_0_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_0_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_0_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_1_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_1_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_1_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_2_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_2_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_2_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_0_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_0_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_0_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_1_summer",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_1_summer.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_1_summer.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_0_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_0_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_0_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_1_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_1_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_1_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_2_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_2_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_2_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_0_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_0_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_0_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_1_autumn",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_1_autumn.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_1_autumn.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_0_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_0_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_0_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_1_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_1_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_1_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "forest_2_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/forest_2_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/forest_2_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_0_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_0_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_0_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "wet_1_winter",
+   "category": "tiles",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "ground tile (Ludo.ai, cel-shaded; tools/ludo/ground_tiles.py)",
+   "res": {
+    "2x": {
+     "file": "2x/tiles/wet_1_winter.png",
+     "w": 256,
+     "h": 128,
+     "anchor": [
+      128.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    },
+    "1x": {
+     "file": "1x/tiles/wet_1_winter.png",
+     "w": 128,
+     "h": 64,
+     "anchor": [
+      64.0,
+      0.0
+     ],
+     "origin": [
+      0.5,
+      0.0
+     ]
+    }
+   }
+  },
+  {
    "name": "path_single_winter",
    "category": "tiles",
    "type": "image",
