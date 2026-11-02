@@ -1,5 +1,6 @@
 import { MATERIAL_IDS } from '../data/materials';
 import { MAX_LEVEL } from '../data/progression';
+import { ROAD_SLICE, type RoadState } from './mainroad';
 import { MAP_SLICE, type MapLayer } from './maplayer';
 import { PROGRESSION, type ProgressionState } from './progression';
 import { getSlice } from './slices';
@@ -40,11 +41,14 @@ export function fromV6(x: number, y: number): { x: number; y: number } {
 }
 
 /**
- * Takes the trees and deposits off the map (`src/logic/maplayer.ts`), so tests can build at fixed spots: a new
- * game's grove and outcrop stand on the starting land. Map tests lay out their own.
+ * Takes the trees and deposits off the map (`src/logic/maplayer.ts`) and the main road (`src/logic/mainroad.ts`), so
+ * tests can build at fixed spots: a new game's grove and outcrop stand on the starting land, and its road (random per
+ * farm) near an edge. Map and road tests lay out their own.
  */
 export function bareMap(state: GameState): GameState {
   const layer: MapLayer = { trees: [], deposits: [] };
   state.ext[MAP_SLICE] = layer;
+  const road: RoadState = { seed: 1, side: null, tiles: [], pending: false };
+  state.ext[ROAD_SLICE] = road;
   return state;
 }

@@ -8,7 +8,6 @@ import { addFamily, familiesOf, type DayNeeds } from './families';
 import { Game, materialsRefundOf, refundOf } from './game';
 import { cottageLevel, homeBuildings, homeList, homeRoom } from './homes';
 import { harshWinterWood } from './hazards';
-import { setOwned } from './land';
 import { PROGRESSION, type ProgressionState } from './progression';
 import { parseSave, serialize } from './save';
 import { SEASON_MS } from './seasons';
@@ -22,14 +21,12 @@ const WINTER = 3 * SEASON_MS;
 const X = START_LAYOUT.x - 1;
 const Y = START_LAYOUT.y + 6;
 
-/** A farm at `level` owning the whole map, with no money or materials until a test gives them. */
+/** A farm at `level`, with no money or materials until a test gives them. */
 function farm(level = 3): Game {
   const game = new Game(bareMap(new Game().state));
   getSlice<ProgressionState>(game.state, PROGRESSION).xp = xpForLevel(level);
   game.state.money = 0;
   game.state.inventory = {};
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 
@@ -264,8 +261,6 @@ describe('a level 2 cottage: firewood and gardens', () => {
     getSlice<ProgressionState>(game.state, PROGRESSION).xp = xpForLevel(10);
     game.earn(1_000_000);
     for (const id of ['wood', 'stone', 'iron']) game.state.inventory[id] = 500;
-    const land = game.state.land;
-    for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
     const r = game.place(COTTAGE, 4, 4);
     if (!r.ok) throw new Error(r.reason);
     setLevel(r.object, 2);

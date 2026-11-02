@@ -83,7 +83,8 @@ describe('grass fringes', () => {
   it('names a strip per kind and edge', () => {
     expect(fringeArt('path', NE)).toBe('fringe_path_ne');
     expect(fringeArt('field', SW)).toBe('fringe_field_sw');
-    expect(FRINGE_ART).toHaveLength(8);
-    expect(new Set(FRINGE_ART).size).toBe(8);
+    expect(fringeArt('road', SE)).toBe('fringe_road_se');
+    expect(FRINGE_ART).toHaveLength(12);
+    expect(new Set(FRINGE_ART).size).toBe(12);
   });
 });

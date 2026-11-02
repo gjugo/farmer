@@ -6,6 +6,7 @@ import type { PlacedObject } from './types';
 import type { Game } from './game';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import { STARTING_FIELDS, type FieldState } from './crops';
+import { tradeLink } from './tradepost';
 import { workerAt } from './workers';
 
 /**
@@ -83,6 +84,8 @@ const RULES: Record<GuideStepId, StepRule> = {
     on: (s) => s.kind === 'activity' && s.name === 'harvested',
     met: (game) => Object.entries(game.state.inventory).some(([id, n]) => CROP_ITEMS.has(id) && n > 0),
   },
+  // Built and linked to the main road (checked again whenever an object changes).
+  post: { met: (game) => tradeLink(game.state).connected },
   sell: { on: (s) => s.kind === 'activity' && s.name === 'sold' },
   materials: {
     on: (s) => (s.kind === 'activity' && s.name === 'bought' && s.payload.item === 'wood') || placed('woodcutter')(s),

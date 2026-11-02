@@ -107,14 +107,14 @@ const CART_BACK = 0.2;
 /** Where the load sits on the cart's bed, in world px from the cart's anchor, per facing. */
 const LOAD_AT: Record<Facing, { x: number; y: number }> = { se: { x: 0, y: -14 }, sw: { x: 0, y: -14 }, ne: { x: 0, y: -14 }, nw: { x: 0, y: -14 } };
 
-interface CartSprites {
+export interface CartSprites {
   ox: Phaser.GameObjects.Sprite;
   cart: Phaser.GameObjects.Image;
   load: Phaser.GameObjects.Image;
   loadArt: string | null;
 }
 
-function addCart(scene: Phaser.Scene): CartSprites {
+export function addCart(scene: Phaser.Scene): CartSprites {
   return {
     ox: addArtSprite(scene, 0, 0, OX_ART),
     cart: addArt(scene, 0, 0, cartArt('se')),
@@ -123,7 +123,7 @@ function addCart(scene: Phaser.Scene): CartSprites {
   };
 }
 
-function destroyCart(c: CartSprites): void {
+export function destroyCart(c: CartSprites): void {
   c.ox.destroy();
   c.cart.destroy();
   c.load.destroy();
@@ -135,7 +135,7 @@ function unit(d: { x: number; y: number }): { x: number; y: number } {
   return n > 0 ? { x: d.x / n, y: d.y / n } : { x: 1, y: 0 };
 }
 
-function drawCart(scene: Phaser.Scene, c: CartSprites, pose: CartPose, load: Inventory): void {
+export function drawCart(scene: Phaser.Scene, c: CartSprites, pose: CartPose, load: Inventory): void {
   const dir = unit(pose.dir);
   const face = facing(dir.x, dir.y);
   const cartAt = { x: pose.at.x - dir.x * CART_BACK, y: pose.at.y - dir.y * CART_BACK };

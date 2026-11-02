@@ -3,6 +3,7 @@ import { SEASONS, type Season } from '../../data/seasons';
 import { onGameStart, registerDebugInfo } from '../../game/hooks';
 import type { Game } from '../../logic/game';
 import { footprintOf } from '../../logic/game';
+import { roadTiles } from '../../logic/mainroad';
 import { depositAt, mapOf, treeAt, type MapLayer } from '../../logic/maplayer';
 import { ART_RES, ART_SCALE, sceneryArt, seasonalArt } from '../../scenes/art';
 import { DECOR_ATLAS } from '../../scenes/BootScene';
@@ -19,10 +20,10 @@ import { artSeason, packAsset } from '../../scenes/sprites';
  * Not interactive: a tap goes straight through to the tile. And `window.farm.decor` for QA.
  */
 
-/** Tiles covered by placed objects (paths, fields, buildings, pens, construction sites), as y * width + x. */
+/** Tiles covered by placed objects (paths, fields, buildings, pens, construction sites) or the main road, as y * width + x. */
 function coveredTiles(game: Game): Set<number> {
   const { width } = game.state.land;
-  const out = new Set<number>();
+  const out = new Set<number>(roadTiles(game.state).map((t) => t.y * width + t.x));
   for (const o of game.state.objects) {
     const fp = footprintOf(o);
     for (let y = o.y; y < o.y + fp.h; y++) for (let x = o.x; x < o.x + fp.w; x++) out.add(y * width + x);

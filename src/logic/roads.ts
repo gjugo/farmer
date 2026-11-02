@@ -4,6 +4,8 @@ import { START_LAYOUT } from './constants';
 // The starting fields' new-game setup must run before ours, which lays the road to them.
 import './crops';
 import { inBounds } from './land';
+// The main road's tiles are path to walk on.
+import { roadTiles } from './mainroad';
 import { canPlace, ruleBlock } from './placement';
 import { addStartingObject, onNewGame } from './state';
 import type { GameState, PlacedObject } from './types';
@@ -69,14 +71,52 @@ function touching(a: Area, x: number, y: number): Tile | null {
   return null;
 }
 
-/** Tile → the object covering it, for every owned tile with something on it. */
+/** Stands in for a main-road tile in `occupancy`: the road is path to walk on, but no object of the farm's. */
+const ROAD_TILE: PlacedObject = Object.freeze({ id: 'main-road', type: PATH, x: 0, y: 0, state: {} }) as PlacedObject;
+
+/** Tile → the object covering it, for every tile with something on it; the main road's tiles count as path. */
 function occupancy(state: GameState): Map<string, PlacedObject> {
   const at = new Map<string, PlacedObject>();
+  for (const t of roadTiles(state)) at.set(key(t.x, t.y), ROAD_TILE);
   for (const o of state.objects) {
     const { w, h } = footprintOf(o);
     for (let y = o.y; y < o.y + h; y++) for (let x = o.x; x < o.x + w; x++) at.set(key(x, y), o);
   }
   return at;
+}
+
+/**
+ * Every path tile (the main road's too) the farmhouse door reaches along paths, as "x,y" keys; empty when the farm has
+ * no farmhouse or no path at its door.
+ */
+export function pathNetwork(state: GameState): Set<string> {
+  const house = farmhouseOf(state);
+  const seen = new Set<string>();
+  if (!house) return seen;
+  const at = occupancy(state);
+  const isPath = (x: number, y: number) => at.get(key(x, y))?.type === PATH;
+  const door = doorOf(house);
+  const queue: Tile[] = isPath(door.x, door.y) ? [door] : [];
+  if (queue.length) seen.add(key(door.x, door.y));
+  for (let i = 0; i < queue.length; i++) {
+    const t = queue[i];
+    for (const [dx, dy] of STEPS) {
+      const nx = t.x + dx;
+      const ny = t.y + dy;
+      if (seen.has(key(nx, ny)) || !isPath(nx, ny)) continue;
+      seen.add(key(nx, ny));
+      queue.push({ x: nx, y: ny });
+    }
+  }
+  return seen;
+}
+
+/** Does any tile of `network` (see `pathNetwork`) share an edge with `site`? */
+export function networkTouches(network: ReadonlySet<string>, site: Area): boolean {
+  for (let y = site.y - 1; y <= site.y + site.h; y++) {
+    for (let x = site.x - 1; x <= site.x + site.w; x++) if (network.has(key(x, y)) && touching(site, x, y)) return true;
+  }
+  return false;
 }
 
 /**

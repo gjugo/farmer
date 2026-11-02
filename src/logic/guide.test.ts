@@ -130,6 +130,9 @@ describe('guide', () => {
       expect(stepId(game)).toBe('look');
       at(game, 'harvest');
       notifyGuide(game, { kind: 'activity', name: 'harvested', payload: { item: 'wheat', qty: 10 } });
+      // The trading post comes first (no event: it holds once a post is linked, or Next).
+      expect(stepId(game)).toBe('post');
+      nextStep(game);
       // sell was done: straight on to materials; granary was done: skipped after it.
       expect(stepId(game)).toBe('materials');
       notifyGuide(game, placed('woodcutter'));

@@ -13,6 +13,8 @@ import { clearUnder, mapOf, type MapLayer } from './maplayer';
 import { canPlace, objectAt, type Footprint, type PlacementResult } from './placement';
 // Ponds are in the way of building.
 import './scenery';
+// Trade needs a trading post linked to the main road.
+import './tradepost';
 import { buildTime, materialsCost, Perks, type PerksState } from './perks';
 import { Progression, type GoalView } from './progression';
 import { createNewGame } from './state';

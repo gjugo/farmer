@@ -104,6 +104,8 @@ export interface UiApi {
   closePanel(): void;
   /** Modal confirm dialog. Resolves true when confirmed. */
   confirm(title: string, message: string, options?: ConfirmOptions): Promise<boolean>;
+  /** Opens the construction menu on the category of buildable `type`, with its card in view and focused. */
+  openBuildCard(type: string): void;
   /** Opens the oldest open perk choice (⭐ Perks → Choose a perk does the same); nothing when none is open. */
   openPerkChoice(): void;
 }

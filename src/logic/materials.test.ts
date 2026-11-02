@@ -224,15 +224,19 @@ describe('buying at the Market', () => {
 });
 
 describe('goals, orders and saves', () => {
-  it('a "buy 10 wood" goal comes just before building a cottage (with that wood) and the coop, and counts wood bought', () => {
-    const at = GOALS.findIndex((g) => g.id === 'buy-wood');
+  it('"Build a trading post" sits where "Buy 10 wood" was (saves keep goals by index), before the cottage and the coop', () => {
+    const at = GOALS.findIndex((g) => g.id === 'build-trading-post');
+    expect(at).toBe(4);
+    expect(GOALS.some((g) => g.id === 'buy-wood')).toBe(false);
     expect(GOALS.slice(at + 1, at + 3).map((g) => g.id)).toEqual(['build-cottage', 'build-coop']);
     const game = farm();
-    getSlice<ProgressionState>(game.state, PROGRESSION).goals = [{ id: 'buy-wood', progress: 0 }];
-    game.addItem('wood', 5); // not bought: no credit
-    buy(game, 'wood', 5);
-    expect(game.progression.goals()[0].progress).toBe(5);
-    buy(game, 'wood', 5);
+    getSlice<ProgressionState>(game.state, PROGRESSION).goals = [{ id: 'build-trading-post', progress: 0 }];
+    game.earn(100);
+    game.addItem('wood', 10);
+    const spot = [...Array(START_LAND.w * START_LAND.h).keys()]
+      .map((i) => ({ x: START_LAND.x + (i % START_LAND.w), y: START_LAND.y + Math.floor(i / START_LAND.w) }))
+      .find((t) => game.checkPlacement('trading-post', t.x, t.y).ok)!;
+    expect(game.place('trading-post', spot.x, spot.y).ok).toBe(true);
     expect(game.progression.goals()[0].complete).toBe(true);
   });
 
@@ -256,7 +260,8 @@ describe('goals, orders and saves', () => {
     expect(loaded.inventory).toEqual({ egg: 2 });
     expect(loaded.objects[0]).toEqual({ ...coop, ...fromV6(coop.x, coop.y) });
     // Not yet at the coop goal: the new "buy wood" goal comes next.
-    expect(GOALS[getSlice<ProgressionState>(loaded, PROGRESSION).nextGoal].id).toBe('buy-wood');
+    // The slot "buy-wood" was in is "Build a trading post" since version 16.
+    expect(GOALS[getSlice<ProgressionState>(loaded, PROGRESSION).nextGoal].id).toBe('build-trading-post');
   });
 
   it('an old save past the coop goal keeps its next goal and skips "buy wood"', () => {
