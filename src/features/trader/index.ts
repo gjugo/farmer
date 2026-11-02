@@ -4,6 +4,8 @@ import { getItem } from '../../data/items';
 import type { FarmContext, SheetSpec } from '../../game/context';
 import { onGameStart, registerHudButton } from '../../game/hooks';
 import { fullMessage, poolOf } from '../../logic/storage';
+import { LINK_TEXT, tradeLink } from '../../logic/tradepost';
+import { linkSignature, renderGate } from '../trade/gate';
 import {
   buyFromTrader,
   dayStart,
@@ -11,6 +13,7 @@ import {
   sellToTrader,
   traderHere,
   traderOf,
+  traderPassing,
   traderTimes,
   TRADER_LEVEL,
   updateTrader,
@@ -57,6 +60,7 @@ function offerName(offer: TraderOffer): { icon: HTMLElement | string; name: stri
 }
 
 const REFUSED: Record<Exclude<TradeResult, { ok: true }>['reason'], string> = {
+  closed: 'Trade is closed: link a 🏪 trading post to the main road',
   gone: 'The trader has moved on',
   none: 'Nothing to trade',
   'sold-out': 'He has no more of that',
@@ -95,9 +99,16 @@ function traderSheet(ctx: FarmContext): SheetSpec {
     title: () => '🛒 Travelling trader',
     signature: () => {
       const v = traderHere(game.state);
-      return `${game.day}|${game.level}|${game.money}|${JSON.stringify(game.state.inventory)}|${v ? JSON.stringify([v.wants, v.sells]) : '-'}|${comingTomorrow(ctx)}`;
+      return `${game.day}|${game.level}|${game.money}|${JSON.stringify(game.state.inventory)}|${v ? JSON.stringify([v.wants, v.sells]) : '-'}|${comingTomorrow(ctx)}|${linkSignature(ctx)}`;
     },
     render: (body) => {
+      // He only stops by a trading post linked to the main road; without one he drives through.
+      if (renderGate(ctx, body)) {
+        if (traderHere(game.state)) {
+          body.append(h('p', { class: 'trader-intro', 'data-testid': 'trader-passing' }, 'A travelling trader is driving along the main road today, but without a linked trading post he passes by without stopping.'));
+        }
+        return;
+      }
       const visit = traderHere(game.state);
       if (!visit) {
         const text =
@@ -206,7 +217,12 @@ registerHudButton({
   icon: '🛒',
   spot: { kind: 'banner', order: 20, opens: 'trader', severity: (ctx) => (traderHere(ctx.game.state) ? 'warn' : 'info') },
   visible: traderShown,
-  live: (ctx) => (traderHere(ctx.game.state) ? { icon: '🛒', label: `Trader here · leaves in ${countdown(ctx)}` } : { icon: '🛒', label: 'Trader tomorrow' }),
+  live: (ctx) =>
+    traderPassing(ctx.game.state)
+      ? { icon: '🛒', label: `Trader passing by · ${LINK_TEXT[tradeLink(ctx.game.state).reason ?? 'no-post'].replace(/^Build/, 'build').replace(/^No/, 'no')}` }
+      : traderHere(ctx.game.state)
+        ? { icon: '🛒', label: `Trader here · leaves in ${countdown(ctx)}` }
+        : { icon: '🛒', label: 'Trader tomorrow' },
 });
 
 onGameStart((ctx) => {
@@ -234,7 +250,8 @@ onGameStart((ctx) => {
   const onUpdate = () => {
     const r = updateTrader(game);
     if (r.announced !== null) ctx.ui.toast('🛒 A travelling trader arrives tomorrow. He stays one day.', 'info');
-    if (r.arrived) ctx.ui.toast('🛒 A travelling trader has parked in the village. Tap his wagon to trade.', 'success');
+    if (r.arrived && wagonTile(game.state)) ctx.ui.toast('🛒 A travelling trader has parked by the trading post. Tap his wagon to trade.', 'success');
+    else if (r.arrived) ctx.ui.toast('🛒 A travelling trader is passing along the main road, but without a trading post linked to it he doesn’t stop.', 'info');
     if (r.left) ctx.ui.toast('🛒 The travelling trader has moved on.', 'info');
     draw();
   };

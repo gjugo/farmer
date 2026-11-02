@@ -2,13 +2,14 @@ import Phaser from 'phaser';
 import type { Season } from '../../data/seasons';
 import { onGameStart, registerDebugInfo } from '../../game/hooks';
 import { footprintOf } from '../../logic/game';
+import { roadTiles } from '../../logic/mainroad';
 import { ART_RES, ART_SCALE, EDGE_STEP, edgeNames, fringeArt, NE, NW, seasonalArt, SE, SW } from '../../scenes/art';
 import { FRINGE_ATLAS } from '../../scenes/BootScene';
 import { DEPTH } from '../../scenes/depth';
 import type { FarmScene } from '../../scenes/FarmScene';
 import { gridToWorld } from '../../scenes/iso';
 import { artSeason, packAsset } from '../../scenes/sprites';
-import { fringeTiles, type FringeTile } from './layout';
+import { fringeTiles, ROAD_TYPE, type FringeTile } from './layout';
 
 /**
  * Grass fringes: a strip of grass tufts hanging over each edge of a path or field tile that borders open grass, so
@@ -38,7 +39,10 @@ onGameStart((ctx) => {
     blitter.clear();
     const { land, objects } = game.state;
     const list = fringeTiles(
-      objects.map((o) => ({ type: o.type, x: o.x, y: o.y, ...footprintOf(o) })),
+      [
+        ...roadTiles(game.state).map((t) => ({ type: ROAD_TYPE, x: t.x, y: t.y, w: 1, h: 1 })),
+        ...objects.map((o) => ({ type: o.type, x: o.x, y: o.y, ...footprintOf(o) })),
+      ],
       (x, y) => x >= 0 && y >= 0 && x < land.width && y < land.height,
     );
     tiles = new Map(list.map((t) => [key(t.x, t.y), t]));

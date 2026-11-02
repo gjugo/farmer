@@ -4,7 +4,8 @@ import { FIELD } from '../data/crops';
 import { SOIL_QUALITY } from '../data/soil';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { footprintOf, Game } from './game';
-import { MAP_SLICE, mapOf } from './maplayer';
+import { isRoadTile } from './mainroad';
+import { MAP_SLICE, mapOf, type MapLayer } from './maplayer';
 import { canPlace } from './placement';
 import { deserialize, loadFromStorage, loadSave, parseSave, SAVE_KEY, SAVE_VERSION, saveToStorage, serialize, type SaveStorage } from './save';
 import { getSlice, registerStateSlice } from './slices';
@@ -147,7 +148,7 @@ describe('save / load', () => {
     b.state = { crop: 'wheat', timer: { start: 0, duration: 480_000 }, ploughedAt: 0 };
     const loaded = parseSave(JSON.stringify({ version: 9, savedAt: 1, state })).state;
     const fields = loaded.objects.filter((o) => o.type === FIELD);
-    expect(SAVE_VERSION).toBe(16);
+    expect(SAVE_VERSION).toBe(17);
     expect(fields[0].state).toEqual({ crop: null, timer: null, ploughedAt: 0, fertility: SOIL_QUALITY.rich, restingSince: 5000, lastCrop: null });
     expect(fields[1].state).toMatchObject({ crop: 'wheat', fertility: SOIL_QUALITY.rich, restingSince: null, lastCrop: null });
     expect(fields.map((f) => f.state.fertility)).toEqual(fields.map((f) => areaSoil({ x: f.x, y: f.y, w: 2, h: 2 })));
@@ -178,8 +179,10 @@ describe('save / load', () => {
     const raw = JSON.parse(JSON.stringify({ version: 14, savedAt: 1, state: { ...state, land: { width: MAP_WIDTH, height: MAP_HEIGHT, owned } } }));
     const loaded = parseSave(JSON.stringify(raw)).state;
     expect(loaded.land).toEqual({ width: MAP_WIDTH, height: MAP_HEIGHT });
-    // The same trees, deposits and buildings.
-    expect(mapOf(loaded)).toEqual(raw.state.ext[MAP_SLICE]);
+    // The same trees, deposits and buildings (but the trees the main road, laid in version 16, cut through).
+    const raws = raw.state.ext[MAP_SLICE] as MapLayer;
+    expect(mapOf(loaded).deposits).toEqual(raws.deposits);
+    expect(mapOf(loaded).trees).toEqual(raws.trees.filter((t) => !isRoadTile(loaded, t.x, t.y)));
     expect(loaded.objects).toEqual(raw.state.objects);
     // Land that was never bought takes buildings now: the far corner, and a tile next to the bought block.
     const free = (x: number, y: number) =>

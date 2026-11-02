@@ -30,6 +30,8 @@ import { addDeposit, depositsUnder, MAP_SLICE, mapOf, newMapLayer, treesInRange 
 import { ruleBlock } from './placement';
 import { createNewGame } from './state';
 import { RESOURCES } from '../data/resourceBuildings';
+import { TRADING_POST } from '../data/trade';
+import { roadTiles } from './mainroad';
 import { addFarmer, assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, setKeepMaking, workerAt, workersOf } from './workers';
 import { maxLevelState, useClassicStart } from './test-utils';
 import { campInfo, campOf } from './camp';
@@ -216,6 +218,13 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     if (goals.has('build-granary') || goals.has('upgrade-granary')) makeRoom('goods');
     // The camp's wood means it needn't buy any for its first buildings, but it follows the goal that asks for it.
     if (goals.has('buy-wood') && game.money >= 10 * buyPrice(game.day, 'wood')! + 100) buy(game, 'wood', 10);
+    // It follows the goal for a trading post too: a path from the village out to the nearest stretch of the main road
+    // (free here, like all its paths), then the post by it.
+    if (goals.has('build-trading-post') && game.objectsOfType(TRADING_POST).length === 0 && game.money >= getBuildable(TRADING_POST)!.cost + 100) {
+      const centre = villageCentre(game.state)!;
+      const near = [...roadTiles(game.state)].sort((a, b) => Math.abs(a.x - centre.x) + Math.abs(a.y - centre.y) - (Math.abs(b.x - centre.x) + Math.abs(b.y - centre.y)))[0];
+      if (near && connectToFarmhouse(game.state, { ...near, w: 1, h: 1 })) build(TRADING_POST, 100);
+    }
     // Food for the families (the camp's bread and carrots first): its cheap crops (wheat, carrots, corn); the
     // dearer eggs and milk are sold. A day's meals, and from autumn until the first spring harvest (a crop sown in
     // spring can take two days) enough for winter and those days, split across the kinds (meals are spread across them).
@@ -436,6 +445,10 @@ describe('level curve balance', () => {
   // by the nearest stand of 8+ trees a path can reach. A settlers' yard of 20 materials until the farmhouse is built
   // (without it, spending the camp's wood before a storehouse locked the Market's materials out): casual L2 13.0,
   // L5 170.0; relaxed L2 12.5, L5 164.5; busy L2 12.5, L5 144.8.
+  // Merged with the main road and the trading post (#108), the bot following the "Build a trading post" goal (a free
+  // path from the village to the nearest stretch of road, the post by it): casual L2 13.0, L5 158.0; relaxed L2 12.5,
+  // L5 158.0; busy L2 13.0, L5 just past 190 min in this run (about 150 in runs with extra logging: the busy bot
+  // overbuilds fields and runs on little money, so it swings either side of 3 h).
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });

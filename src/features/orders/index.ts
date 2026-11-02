@@ -2,7 +2,9 @@ import Phaser from 'phaser';
 import { getItem } from '../../data/items';
 import type { FarmContext, SheetSpec } from '../../game/context';
 import { onGameStart, registerHudButton } from '../../game/hooks';
+import { linkSignature, renderGate } from '../trade/gate';
 import { timerRemaining } from '../../logic/clock';
+import { tradeOpen } from '../../logic/tradegate';
 import {
   discardOrder,
   fulfilOrder,
@@ -123,9 +125,11 @@ function ordersSheet(ctx: FarmContext): SheetSpec {
     signature: () => {
       updateOrders(game.state);
       const slots = ordersOf(game.state).slots.map((s) => (s.order ? `${s.order.id}:${hasGoods(game.state.inventory, s.order)}` : `-${s.reason ?? ''}`));
-      return `${game.day}|${JSON.stringify(game.state.inventory)}|${slots.join(',')}`;
+      return `${game.day}|${JSON.stringify(game.state.inventory)}|${slots.join(',')}|${linkSignature(ctx)}`;
     },
     render: (body) => {
+      // No orders are delivered without a trading post linked to the main road.
+      if (renderGate(ctx, body)) return;
       body.append(h('p', { class: 'muted orders-intro' }, 'Customers pay more than the market for the whole bundle.'));
       body.append(
         h(
@@ -151,7 +155,7 @@ registerHudButton({
   label: 'Orders',
   icon: '📋',
   spot: { kind: 'tab', window: 'trade', order: 20, sheet: ordersSheet },
-  badge: (ctx) => fulfillableCount(ctx.game.state),
+  badge: (ctx) => (tradeOpen(ctx.game.state) ? fulfillableCount(ctx.game.state) : 0),
 });
 
 onGameStart((ctx) => {

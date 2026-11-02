@@ -237,6 +237,15 @@ export function addTrees(layer: MapLayer, tiles: readonly { x: number; y: number
   changed(layer);
 }
 
+/** Takes the trees (grown or stumps) off the given tiles for good, e.g. where the main road cuts through a forest. Returns how many went. */
+export function removeTrees(layer: MapLayer, tiles: readonly { x: number; y: number }[]): number {
+  const gone = new Set(tiles.map((t) => tileKey(t.x, t.y)));
+  const before = layer.trees.length;
+  layer.trees = layer.trees.filter((t) => !gone.has(tileKey(t.x, t.y)));
+  changed(layer);
+  return before - layer.trees.length;
+}
+
 /** Adds a deposit (for tests and set-ups). */
 export function addDeposit(layer: MapLayer, kind: DepositKind, area: Rect, amount = DEPOSITS[kind].amount(area.w * area.h)): Deposit {
   const d: Deposit = { kind, x: area.x, y: area.y, w: area.w, h: area.h, left: amount, amount };

@@ -5,6 +5,7 @@ import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { Game } from './game';
 import { createHash } from 'node:crypto';
 import { inBounds } from './land';
+import { isRoadTile } from './mainroad';
 import { blockAt, MAP_BLOCKS, mapOf } from './maplayer';
 import { findRoute } from './roads';
 import { growMap, parseSave, serialize } from './save';
@@ -63,8 +64,10 @@ describe('version 6 saves on the bigger map', () => {
   it('opens the whole map once loaded, with the map laid out as it always was', () => {
     const state = load();
     expect(state.land).toEqual({ width: MAP_WIDTH, height: MAP_HEIGHT });
-    // The digest of this save's trees and deposits from before the whole map was open.
-    expect(createHash('sha1').update(JSON.stringify(mapOf(state))).digest('hex').slice(0, 12)).toBe('fe7a8258953e');
+    // The digest of this save's trees and deposits from before the whole map was open, less the trees the main road
+    // (version 16) cut through: none stands on it.
+    expect(createHash('sha1').update(JSON.stringify(mapOf(state))).digest('hex').slice(0, 12)).toBe('863a75dd7529');
+    expect(mapOf(state).trees.filter((t) => isRoadTile(state, t.x, t.y))).toEqual([]);
     for (const o of state.objects) {
       const fp = footprint(o);
       for (let y = fp.y; y < fp.y + fp.h; y++) for (let x = fp.x; x < fp.x + fp.w; x++) expect(inBounds(state.land, x, y), o.id).toBe(true);

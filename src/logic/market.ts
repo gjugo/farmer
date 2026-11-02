@@ -6,6 +6,7 @@ import { DAY_MS } from './constants';
 import type { Emitter } from './events';
 import { perkFactor } from './perks';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
+import { tradeOpen } from './tradegate';
 import type { ClockState, GameState, ItemId } from './types';
 
 /** Daily prices swing between these multiples of the base price. */
@@ -249,6 +250,8 @@ export interface Seller {
  * nothing to sell or the item has no price.
  */
 export function sell(game: Seller, itemId: ItemId, qty = game.count(itemId)): number {
+  // No trade without a trading post linked to the main road.
+  if (!tradeOpen(game.state)) return 0;
   const n = Math.min(Math.floor(qty), game.count(itemId));
   if (!(n > 0)) return 0;
   const quote = quoteSale(game.state, itemId, n);
@@ -292,6 +295,7 @@ export function sellAll(game: Seller): number {
 
 /** The parts of `Game` that buying needs. */
 export interface Buyer {
+  readonly state: GameState;
   readonly day: number;
   readonly money: number;
   isUnlocked(unlockLevel: number | undefined): boolean;
@@ -303,7 +307,7 @@ export interface Buyer {
 }
 
 /** `qty` is what was bought: fewer than asked when the storehouses only had room for that many. */
-export type BuyResult = { ok: true; qty: number; spent: number } | { ok: false; reason: 'not-for-sale' | 'level' | 'money' | 'full' };
+export type BuyResult = { ok: true; qty: number; spent: number } | { ok: false; reason: 'closed' | 'not-for-sale' | 'level' | 'money' | 'full' };
 
 /** Level from which the Market sells an item; Infinity when it never does. */
 export function buyUnlockLevel(itemId: ItemId): number {
@@ -315,6 +319,7 @@ export function buyUnlockLevel(itemId: ItemId): number {
  * changes) when it is not for sale, still locked, there is no room at all, or the money isn't there.
  */
 export function buy(game: Buyer, itemId: ItemId, qty: number): BuyResult {
+  if (!tradeOpen(game.state)) return { ok: false, reason: 'closed' };
   const price = buyPrice(game.day, itemId);
   const asked = Math.floor(qty);
   if (price === null || !(asked > 0)) return { ok: false, reason: 'not-for-sale' };

@@ -1,6 +1,6 @@
 """Grass fringes: strips of grass tufts that hang over a path's or field's edge where it borders grass.
 
-Usage: python fringes.py OUT_DIR [TILES_DIR]
+Usage: python fringes.py OUT_DIR [TILES_DIR] [KIND,...]
 
 Writes 2x/ and 1x/ PNGs into OUT_DIR named fringe_<kind>_<edge> (kind path or field, edge ne, se, sw or nw), each in
 the base, _spring, _summer, _autumn and _winter versions. Each is a tile-sized canvas (256 x 128 at 2x, anchored on
@@ -14,6 +14,8 @@ this after ground_tiles.py.
 
   path:  solid grass over the path tile's own grass margin, tufts hanging over the dirt's rim (HW in ground_tiles.py)
   field: a low strip, tufts just over the soil bed's rim (I in ground_tiles.py), so crops stand clear of it
+  road:  the main road's narrower grass margin, tufts over its rim (HW in road_tiles.py)
+KIND,... builds only those kinds (e.g. `road`); all of them when left out.
 Spring and summer are green, autumn the gold grass with its leaves, winter snow-crusted: snow with frosted blades.
 """
 import sys
@@ -31,7 +33,9 @@ EDGES = ['ne', 'se', 'sw', 'nw']
 KINDS = {
     'path': dict(core=0.235, tuft=(0.05, 0.13), blades=30, seed=11),
     'field': dict(core=0.035, tuft=(0.03, 0.085), blades=34, seed=23),
+    'road': dict(core=0.11, tuft=(0.04, 0.1), blades=32, seed=37),
 }
+only = sys.argv[3].split(',') if len(sys.argv) > 3 else list(KINDS)
 
 
 def load(name):
@@ -137,7 +141,7 @@ SEASONS = {
     '_winter': (load('grass_0_winter'), frosted(green, load('grass_0_winter'))),
 }
 
-for kind in KINDS:
+for kind in only:
     for edge in EDGES:
         for suffix, (base, blade_col) in SEASONS.items():
             save(f'fringe_{kind}_{edge}{suffix}', strip(kind, edge, base, blade_col))

@@ -14,11 +14,12 @@ import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
 import { START_LAND } from '../logic/constants';
 import { inBounds } from '../logic/land';
+import { isRoadTile } from '../logic/mainroad';
 import { mapOf, treeAt } from '../logic/maplayer';
 import { villageCentre } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, POND, POND_WILLOW, pondWillows, sceneryArt, sceneryClear, treeLook } from './art';
+import { ART_RES, ART_SCALE, CURSOR, neighbourMask, POND, POND_WILLOW, pondWillows, roadPiece, sceneryArt, sceneryClear, treeLook } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
 import { groundLook, groundZone, type GroundLook, type GroundZone } from './ground';
@@ -82,6 +83,7 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
   'home-has-garden': 'That home already has a garden',
   pond: 'A pond is in the way',
   built: 'Already built: a farm has only one',
+  road: 'The main road runs here',
 };
 
 /**
@@ -191,6 +193,9 @@ export class FarmScene extends Phaser.Scene {
         if (view) getBehavior(o.type)?.refresh?.(this.ctx, o, view);
       }),
       events.on('objectAdded', () => (this.sceneryDirty = true)),
+      // The main road's pieces join the paths next to them.
+      events.on('objectAdded', (o) => o.type === 'path' && this.paintAround(o.x, o.y)),
+      events.on('objectRemoved', (o) => o.type === 'path' && this.paintAround(o.x, o.y)),
       events.on('objectRemoved', () => (this.sceneryDirty = true)),
       // Building over a stump clears it for good: the forest floor around it may go.
       events.on('objectAdded', (o) => this.rezone({ x: o.x, y: o.y, ...footprintOf(o) })),
@@ -306,6 +311,19 @@ export class FarmScene extends Phaser.Scene {
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) this.paintTile(x, y);
   }
 
+  /** Repaints a tile and its four neighbours (a path next to the main road was built or demolished). */
+  private paintAround(x: number, y: number): void {
+    for (const [dx, dy] of [
+      [0, 0],
+      [0, -1],
+      [1, 0],
+      [0, 1],
+      [-1, 0],
+    ]) {
+      if (isRoadTile(this.farm.state, x + dx, y + dy)) this.paintTile(x + dx, y + dy);
+    }
+  }
+
   private paintTile(x: number, y: number): void {
     const { land } = this.farm.state;
     if (!inBounds(land, x, y)) return;
@@ -314,6 +332,12 @@ export class FarmScene extends Phaser.Scene {
     if (!bob) return;
     const zoneAt = (zx: number, zy: number) => (inBounds(land, zx, zy) ? this.groundZones[zy * land.width + zx] : undefined) ?? this.groundZones[i] ?? 'meadow';
     const look = groundLook(x, y, soilAt(x, y), this.groundZones[i] ?? 'meadow', artSeason(), zoneAt);
+    // The main road is part of the ground: its piece joins the road and paths next to it, its grass takes the tile's tint.
+    const state = this.farm.state;
+    if (isRoadTile(state, x, y)) {
+      const joins = (nx: number, ny: number) => isRoadTile(state, nx, ny) || this.farm.objectAt(nx, ny)?.type === 'path';
+      look.art = `${roadPiece(neighbourMask(joins, x, y))}_${artSeason()}`;
+    }
     this.groundLooks[i] = look;
     const [ax, ay] = packAsset(look.art)?.res[ART_RES].anchor ?? [0, 0];
     // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
@@ -403,7 +427,7 @@ export class FarmScene extends Phaser.Scene {
   private coverScenery(): void {
     for (const s of this.scenery) {
       if (!s.givesWay) continue;
-      const shows = !this.farm.objectAt(s.fp.x, s.fp.y);
+      const shows = !this.farm.objectAt(s.fp.x, s.fp.y) && !isRoadTile(this.farm.state, s.fp.x, s.fp.y);
       s.img.setVisible(shows);
       s.shadow?.setVisible(shows);
     }
@@ -719,7 +743,8 @@ export class FarmScene extends Phaser.Scene {
       // Say why the spot itself is wrong before asking for a farmer and a path.
       const check = game.checkPlacement(mode.type, x, y);
       if (!check.ok) {
-        ui.toast(PLACE_ERRORS[check.reason], 'error');
+        // A path laid over the main road does nothing: the road is path already.
+        if (!(check.reason === 'road' && mode.type === 'path')) ui.toast(PLACE_ERRORS[check.reason], 'error');
         return;
       }
       // A farmer must be able to walk there to build it.

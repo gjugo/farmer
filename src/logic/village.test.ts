@@ -13,7 +13,7 @@ import { Game } from './game';
 import { buy } from './market';
 import { homeRoom, houseRoom } from './homes';
 import { PROGRESSION, type ProgressionState } from './progression';
-import { connectToFarmhouse, farmhouseOf, findRoute, villageCentre, villageInfo } from './roads';
+import { connectToFarmhouse, farmhouseOf, pathNetwork, findRoute, villageCentre, villageInfo } from './roads';
 import { deserialize, serialize } from './save';
 import { getSlice } from './slices';
 import { createNewGame } from './state';
@@ -121,6 +121,12 @@ describe('storage before the farmhouse', () => {
 });
 
 describe('placement from the village centre', () => {
+  it('the path network (the trading post’s link to the main road) starts at the camp on a new farm', () => {
+    const game = newFarm();
+    const centre = villageCentre(game.state)!;
+    expect(pathNetwork(game.state).has(`${centre.x},${centre.y}`)).toBe(true);
+  });
+
   it('a field is worked once a path joins it to the tent, and not before', () => {
     const game = newFarm();
     const r = game.place(FIELD, START_LAYOUT.x, START_LAYOUT.y, { site: true });

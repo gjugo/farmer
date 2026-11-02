@@ -1,5 +1,6 @@
 import type { FarmContext, ObjectView } from '../../game/context';
 import { registerBehavior } from '../../game/hooks';
+import { isRoadTile } from '../../logic/mainroad';
 import { neighbourMask, pathPiece } from '../../scenes/art';
 import { textureKey } from '../../scenes/sprites';
 
@@ -15,7 +16,8 @@ const at = (x: number, y: number) => `${x},${y}`;
 function paint(ctx: FarmContext, x: number, y: number): void {
   const view = paths.get(at(x, y));
   if (!view) return;
-  const piece = pathPiece(neighbourMask((nx, ny) => paths.has(at(nx, ny)), x, y));
+  // A path joins the paths and the main road next to it.
+  const piece = pathPiece(neighbourMask((nx, ny) => paths.has(at(nx, ny)) || isRoadTile(ctx.game.state, nx, ny), x, y));
   view.sprite.setTexture(textureKey(ctx.scene, piece));
 }
 
