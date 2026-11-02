@@ -11,9 +11,9 @@ export type GuideStepId =
   | 'develop'
   | 'field'
   | 'harvest'
+  | 'materials'
   | 'post'
   | 'sell'
-  | 'materials'
   | 'granary'
   | 'cottage'
   | 'done';
@@ -92,6 +92,12 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
     map: 'field-ripe',
   },
   {
+    id: 'materials',
+    title: 'Wood and stone',
+    text: 'Buildings need 🪵 wood and 🪨 stone, and there is no Market yet: build a 🪓 Woodcutter’s Lodge (🔨 → 🪓 Resources) near trees and assign a farmer.',
+    ring: ['build-woodcutter', 'build-cat-resources', 'btn-build'],
+  },
+  {
     id: 'post',
     title: 'Build a trading post',
     text: 'Trade needs a 🏪 Trading Post (🔨 → 📦 Storage) linked to the 🛣️ main road near the map’s edge: lay 🛤️ Paths from the farmhouse to the post and on to the road.',
@@ -102,12 +108,6 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
     title: 'Sell at the trading post',
     text: 'Once the post is linked, ⚖️ Trade (T) → 🏪 Market sells your crops. Past the daily allowance prices drop, so sell a little each day.',
     ring: ['sell-all-*', 'btn-trade'],
-  },
-  {
-    id: 'materials',
-    title: 'Wood and stone',
-    text: 'Buildings need 🪵 wood and 🪨 stone. Build a 🪓 Woodcutter’s Lodge near trees and assign a farmer, or buy wood at the linked trading post’s Market.',
-    ring: ['build-woodcutter', 'buy-5-wood', 'btn-build'],
   },
   {
     id: 'granary',

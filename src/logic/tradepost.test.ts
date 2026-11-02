@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { PATH } from '../data/farmhouse';
+import { GUIDE_STEPS } from '../data/guide';
 import { TRADING_POST } from '../data/trade';
 import { START_LAND } from './constants';
 import { footprintOf, Game } from './game';
 import { roadOf, ROAD_SLICE, roadTiles } from './mainroad';
 import { buy, sell } from './market';
 import { fulfilOrder, ordersOf, updateOrders } from './orders';
+import { guideOf } from './guide';
 import { PROGRESSION, type ProgressionState } from './progression';
 import { connectToFarmhouse, doorOf, farmhouseOf } from './roads';
 import { parseSave, serialize } from './save';
@@ -223,7 +225,20 @@ describe('older saves (version 15)', () => {
     expect(tradeLink(loaded).connected).toBe(false);
   });
 
-  it('a new farm is not told', () => {
+  it('keep their place in the guide: the trading-post step comes after "Wood and stone"', () => {
+    const step = (old: number) => {
+      const raw = v15();
+      raw.state.ext.guide = { started: true, step: old, finished: false, skipped: false, done: [] };
+      return GUIDE_STEPS[guideOf(parseSave(JSON.stringify(raw)).state).step].id;
+    };
+    // Version 15: 6 harvest, 7 sell, 8 materials, 9 granary.
+    expect(step(6)).toBe('harvest');
+    expect(step(7)).toBe('materials');
+    expect(step(8)).toBe('materials');
+    expect(step(9)).toBe('granary');
+  });
+
+    it('a new farm is not told', () => {
     expect(takeTradeNotice(createNewGame())).toBe(false);
   });
 });

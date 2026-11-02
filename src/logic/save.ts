@@ -191,7 +191,7 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
   // The main road and the trading post: trade needs a trading post linked to the road. The road is laid on load
   // (`ensureMainRoad`) from a seed the save already holds (the trader's, else the clock), round what is built. The
   // "Buy 10 wood at the Market" goal became "Build a trading post" in its slot: an active one is renamed. The guide
-  // gained a step before "Sell" (a guide on "Sell" shows it first; one past it moves along). The farm is told once (`TRADE_SLICE`).
+  // gained a trading-post step (see `guideStepNow`). The farm is told once (`TRADE_SLICE`).
   15: (raw) => {
     const state = isPlainObject(raw.state) ? raw.state : {};
     const ext = isPlainObject(state.ext) ? state.ext : {};
@@ -209,7 +209,7 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
       out[PROGRESSION] = { ...p, goals };
     }
     const guide = ext.guide;
-    if (isPlainObject(guide) && typeof guide.step === 'number' && guide.step > GUIDE_POST_STEP) out.guide = { ...guide, step: guide.step + 1 };
+    if (isPlainObject(guide) && typeof guide.step === 'number') out.guide = { ...guide, step: guideStepNow(guide.step) };
     return { ...raw, version: 16, state: { ...state, ext: out } };
   },
 };
@@ -217,8 +217,14 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
 /** The goal slot that was "Buy 10 wood at the Market" (version 15) and is "Build a trading post" since. */
 const OLD_WOOD_GOAL = 'buy-wood';
 const POST_GOAL_NOW = 'build-trading-post';
-/** The guide step inserted in version 16 ("Build a trading post", before "Sell at the trading post"). */
-const GUIDE_POST_STEP = 7;
+/**
+ * A version-15 guide step in version 16's list: "Wood and stone" (8) moved before "Sell" (7), and "Build a trading
+ * post" came in between them. A guide on "Sell" or "Wood and stone" goes to "Wood and stone" (a step already done is
+ * skipped when it comes up); later ones move along one.
+ */
+function guideStepNow(step: number): number {
+  return step < 7 ? step : step <= 8 ? 7 : step + 1;
+}
 
 /** The goal slot that was "Buy a plot of land" (version 14) and is "Own 10 fields" since. */
 const OLD_LAND_GOAL = 'buy-land';
