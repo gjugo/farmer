@@ -29,6 +29,9 @@ git (or rerun the commands below) after running it.
 | `feed_mill`, `feed_mill_winter`, `feed_mill_sails` (8 frames), `feed_mill_static`, `feed_mill_static_winter` | `feed_mill_raw.png`, `feed_mill_body_raw.png`, `feed_mill_sails_raw.png`, `feed_mill_winter_raw.png`; see **Feed mill** below | all |
 | `farmer` (spritesheet, with his tools) | see **Farmer** below | all |
 | `chicken`, `cow`, `sheep` (spritesheets: idle, walk, eat × SE/SW/NE/NW) | see **Animals** below | all |
+| `ox` (spritesheet: idle, walk × SE/SW/NE/NW) | see **Ox and oxcart** below | all |
+| `cart_se`, `cart_sw`, `cart_ne`, `cart_nw` (the oxcart, one per facing) | `cart_raw.webp`, `cart_model.glb`, `cart_<dir>_raw.png`; see **Ox and oxcart** below | all (not seasonal) |
+| `ox_barn`, `ox_barn_winter` | `ox_barn_raw.png`, `ox_barn_winter_raw.png` | all |
 | `grass_0..2`, `path_*` (16), `soil_tilled_x/y`, `soil_watered_x/y`, `unowned_0/1` | `grass_a_raw.png`, `grass_b_raw.png`, `dirt_raw.png`, `soil_raw.png`, `snow_raw.png`, `snow_path_raw.png` | all |
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
 | `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
@@ -700,6 +703,66 @@ knee, the sheep to his waist, the cow's back to his chest. Each animation is sca
 tallest SE frame) is that tall, and placed with the ground under the middle of its feet on the anchor. `!` mirrors a
 sheet, `~` plays it forward then back (for a one-way clip that has to loop). The script bakes in a soft shadow and
 writes the manifest entry itself (frame size, grid, anchor, origin, animations); the old `_shadow` sheets are gone.
+
+## Ox and oxcart
+
+The ox barn's ox, its cart and the barn itself (about 32 credits in all, two tries at the ox image included).
+
+**Barn:** `generateWithStyle` with the farmhouse image as `style_image` ("a rustic wooden ox barn with a stone base and
+a steep wooden-shingle roof, a long, low building ... a wide open cart door, a hay rack and a water trough ..., on a
+rectangular (not square) flat grass pad 3 tiles long by 2 deep ..."), then `editImage` for winter ("keep the same ox
+barn ... exactly; ... snow on the roof ..., cover the grass pad in snow"). Ludo drew the long wall along the
+front-right edge, so it is mirrored to put it along x, and `--pad` makes the pad 3:2.
+
+```bash
+$P $L/fit_building.py $L/source/ox_barn_raw.png /tmp/props ox_barn 3 2 43 267 724 262 378.5 434.8 --mirror --pad
+$P $L/fit_building.py $L/source/ox_barn_winter_raw.png /tmp/props ox_barn_winter 3 2 43 266 723 261 378 433.5 --mirror --pad
+$P $L/add_asset.py bakery ox_barn ox_barn_winter
+for n in ox_barn ox_barn_winter; do $P $L/install_prop.py /tmp/props $n; done
+```
+
+The cart parks by the door on the short front-right wall (`PARK_AT` in `src/logic/haul.ts`).
+
+**Ox:** the animals pipeline. `generateWithStyle` with the cow image as `style_image` (the first try drew dairy cows
+with udders; the second asked for "a draught ox: a big, heavily muscled castrated bull ..., NOT a dairy cow, no udder,
+... a solid reddish-brown (chestnut) coat ..., long wide forward-curving cream horns, a plain wooden yoke bar ..."):
+`source/ox_raw.webp`; `create3DModelImage` on it: `source/ox_3d_raw.webp`; `create3DModel` (`prop`, `rig: true`,
+20000 faces): `source/ox_model.glb` (gzipped). `animate3DModel` gave "Load-Pulling Walk" (prompt "a heavy ox walking
+forward steadily, pulling a load", `loop: false`) and "Gentle Tail Swish" ("standing still, breathing, tail
+swishing"), in `source/animal_clips/ox_{walk,idle}.glb`. `createDirectionalSprites` rendered each (as for the
+animals: `cel_cartoon`, `isometric`, SE/SW/NE/NW, 16 frames, 256 px): `source/ox_sheets/`. It has no eat animation,
+so `fit_animal.py` gets `--anims=idle,walk`:
+
+```bash
+$P $L/add_asset.py cow ox
+X=(); for a in idle walk; do for d in se sw ne nw; do X+=("$a:$d=${a}_$d.webp"); done; done
+$P $L/fit_animal.py ox $L/source/ox_sheets /tmp/props 96 "${X[@]}" --anims=idle,walk --frames=idle:12,walk:12 \
+  --fps=idle:5,walk:10 --shadow=34,15
+for r in 2x 1x; do cp /tmp/props/${r}_ox.png public/assets/farm/$r/animals/ox.png; done
+```
+
+96 px stands a little taller than the cow (88).
+
+**Cart:** a 3D prop rendered in four facings. `generateWithStyle` with the farmer image ("an empty wooden two-wheeled
+farm haul cart, open flat bed with low plank sides, two big spoked wooden wheels, two shafts pointing forward ...
+no animal"): `source/cart_raw.webp`; `create3DModel` (`prop`, 8000 faces, 1024 texture): `source/cart_model.glb`
+(gzipped); `createDirectionalStills` (`cel_cartoon`, `isometric`, SE/SW/NE/NW): `source/cart_<dir>_raw.png`. The
+cart model's front is not its shafts, so Ludo's direction names are *not* the game's facings here: the game's facing
+(the way the shafts point on screen) comes from the still noted below. Every still shares one camera, so one BASE and
+SCALE fit them all.
+
+```bash
+for m in se:ne sw:se ne:nw nw:sw; do
+  $P $L/fit_prop.py $L/source/cart_${m#*:}_raw.png /tmp/props cart_${m%%:*} 476 430 0.28 --shadow=42
+done
+$P $L/add_asset.py tree_stump cart_se cart_sw cart_ne cart_nw
+for d in se sw ne nw; do $P $L/install_prop.py /tmp/props cart_$d; done
+```
+
+**Loads:** no extra art. The cart carries a small stock pile (`pile_wood`, `pile_stone`, `pile_iron`, or
+`pile_feed` sacks for goods; stage 2 past half a load), drawn on its bed (`cartLoadArt` in `src/scenes/art.ts`,
+`LOAD_AT` in `src/features/haul/index.ts`). The yards of the woodcutter's lodge, quarry and mine use the same piles
+(`YARD_AT` in `src/features/resources/index.ts`).
 
 ## Ground tiles: `ground_tiles.py`
 

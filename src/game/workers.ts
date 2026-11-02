@@ -6,6 +6,7 @@ import { isResourceType, RESOURCES } from '../data/resourceBuildings';
 import { seasonNames } from '../data/seasons';
 import { JOBS, type JobKind } from '../data/workers';
 import { canPloughNow, formatDuration } from '../logic/crops';
+import { cartPose, isBarn, type HaulTrip } from '../logic/haul';
 import type { Game } from '../logic/game';
 import { findRoute } from '../logic/roads';
 import { fullMessage } from '../logic/storage';
@@ -127,7 +128,30 @@ export function waitText(game: Game, next: Exclude<WorkplaceNext, { task: unknow
       return 'No grown trees in range: waiting for stumps to grow back';
     case 'exhausted':
       return 'Deposit used up';
+    case 'no-ox':
+      return 'No ox';
+    case 'nothing-to-haul':
+      return 'Nothing to haul';
+    case 'stores-full':
+      return 'Stores full';
+    case 'no-path': {
+      const to = next.to ? game.getObject(next.to) : undefined;
+      return `No path to ${to ? placeName(game, to) : 'the stores'}`;
+    }
   }
+}
+
+/** What a carter does on the cart's legs: "Driving to 🪓 Woodcutter's Lodge", "Unloading at 🏚 Storehouse". */
+function cartNote(game: Game, trip: HaulTrip): string {
+  const name = (id: string | null) => {
+    const obj = id ? game.getObject(id) : undefined;
+    return obj ? placeName(game, obj) : 'the barn';
+  };
+  const pose = cartPose(trip, game.getObject(trip.barn), game.now);
+  if (pose?.leg === 'load') return `Loading the cart at ${name(trip.from)}`;
+  if (pose?.leg === 'unload') return `Unloading the cart at ${name(trip.to)}`;
+  if (trip.unloaded || trip.parked) return 'Driving the cart back to the barn';
+  return `Driving the cart to ${name(trip.loaded ? trip.to : trip.from)}`;
 }
 
 const PHASE_NOTE: Record<JobPhase, string> = { out: ' (on the way)', work: '', back: ' (heading home)' };
@@ -139,7 +163,9 @@ export function farmerActivity(game: Game, farmer: number): string {
   const job = jobsByFarmer(state.clock, w)[farmer];
   if (job) {
     const at = job.target ? game.getObject(job.target) : undefined;
-    return `${JOBS[job.kind].icon} ${JOBS[job.kind].label}${at ? ` at ${placeName(game, at)}` : ''}${PHASE_NOTE[jobPhase(state.clock, job).phase]}`;
+    const phase = jobPhase(state.clock, job).phase;
+    if (job.haul && phase === 'work') return `${JOBS.haul.icon} ${cartNote(game, job.haul)}`;
+    return `${JOBS[job.kind].icon} ${JOBS[job.kind].label}${at ? ` at ${placeName(game, at)}` : ''}${PHASE_NOTE[phase]}`;
   }
   const id = w.workplaces[farmer];
   const workplace = id ? game.getObject(id) : undefined;
@@ -199,10 +225,12 @@ export function workplacePanel(ctx: FarmContext, obj: PlacedObject): Pick<PanelS
     lines.push(
       isResourceType(obj.type)
         ? `👨‍🌾 Assign a farmer to ${RESOURCES[obj.type].verb}: nothing is made without one.`
-        : '👨‍🌾 No farmer works here: tap to have any free farmer do the work.',
+        : isBarn(obj)
+          ? '👨‍🌾 No carter: assign a farmer to drive the oxcart.'
+          : '👨‍🌾 No farmer works here: tap to have any free farmer do the work.',
     );
     actions.push({
-      label: isResourceType(obj.type) ? `👨‍🌾 Assign a farmer to ${RESOURCES[obj.type].verb}` : '👨‍🌾 Assign a farmer',
+      label: isResourceType(obj.type) ? `👨‍🌾 Assign a farmer to ${RESOURCES[obj.type].verb}` : isBarn(obj) ? '👨‍🌾 Assign a carter' : '👨‍🌾 Assign a farmer',
       variant: 'secondary',
       onClick: () => {
         const r = assignFarmer(game, obj.id);
