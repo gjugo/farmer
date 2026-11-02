@@ -1,6 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { createClock } from './clock';
-import { MAP_HEIGHT, MAP_WIDTH, START_LAND, STARTING_MONEY } from './constants';
+import { MAP_HEIGHT, MAP_WIDTH, STARTING_MONEY } from './constants';
 import { createLand } from './land';
 import { canPlace } from './placement';
 import { applySliceDefaults } from './slices';
@@ -9,11 +9,14 @@ import type { GameState, PlacedObject } from './types';
 /** Fills a brand-new farm, e.g. with starting fields. Not run for loaded saves. */
 export type NewGameSetup = (state: GameState) => void;
 
-const setups: NewGameSetup[] = [];
+const setups: { setup: NewGameSetup; late: boolean }[] = [];
 
-/** Registers starting content for new games. Features call this from their own module. */
-export function onNewGame(setup: NewGameSetup): void {
-  setups.push(setup);
+/**
+ * Registers starting content for new games. Features call this from their own module, so setups run in import order;
+ * a `late` setup runs after all the others (the farmhouse lays its roads to what they placed, whatever the order).
+ */
+export function onNewGame(setup: NewGameSetup, { late = false }: { late?: boolean } = {}): void {
+  setups.push({ setup, late });
 }
 
 export function createNewGame(): GameState {
@@ -22,19 +25,19 @@ export function createNewGame(): GameState {
   const state: GameState = {
     money: STARTING_MONEY,
     inventory: {},
-    land: createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND),
+    land: createLand(MAP_WIDTH, MAP_HEIGHT),
     objects: [],
     nextObjectId: 1,
     clock: createClock(),
     ext,
   };
-  for (const setup of setups) setup(state);
+  for (const late of [false, true]) for (const s of setups) if (s.late === late) s.setup(state);
   return state;
 }
 
 /**
  * Places a buildable for free, for new-game setups. Returns null (and changes
- * nothing) when the type is unknown or the spot is not free owned land.
+ * nothing) when the type is unknown or the spot is not free.
  */
 export function addStartingObject(state: GameState, type: string, x: number, y: number): PlacedObject | null {
   const def = getBuildable(type);

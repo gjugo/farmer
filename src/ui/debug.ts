@@ -138,7 +138,7 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
           'data-testid': 'debug-add-family',
           // Fills an empty home at once, skipping the wait and the approval check.
           onclick: () => {
-            if (!addFamily(game)) ctx.ui.toast('No empty home: build a cottage first', 'error');
+            if (!addFamily(game)) ctx.ui.toast('No room in a home: build or upgrade a cottage first', 'error');
           },
         },
         '+1 family',

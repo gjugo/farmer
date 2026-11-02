@@ -4,7 +4,7 @@ import { FARMHOUSE, PATH } from '../data/farmhouse';
 import { isStoredMaterial } from '../data/materials';
 import type { StoragePool } from '../data/storage';
 import type { Game } from './game';
-// The farmhouse and its road are laid out first; the camp goes beside them.
+// The farmhouse and its road are laid out first (its late setup registers before ours); the camp goes beside them.
 import { farmhouseOf } from './roads';
 import { canPlace } from './placement';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
@@ -179,6 +179,11 @@ export function addCamp(state: GameState): PlacedObject<CampState> | null {
   return camp;
 }
 
-onNewGame((state) => {
-  addCamp(state);
-});
+// Late, like the farmhouse (and after it: roads is imported first), so the fields, the map and the farmhouse with its
+// road are all there; the spot keeps clear of trees and rocks.
+onNewGame(
+  (state) => {
+    addCamp(state);
+  },
+  { late: true },
+);

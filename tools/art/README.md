@@ -105,7 +105,7 @@ So a new sprite shows up in the game once its **name** is mapped in `src/scenes/
 | buildings, props | `TEXTURE_ART` (game texture key → sprite), or the sprite name as the buildable's `texture` |
 | animals | `ANIMAL_ART` (sheet + `<animal>_<anim>_<dir>` animations) |
 | the farmer | `FARMER_ART` (sheet + `farmer_<anim>_<dir>` animations) |
-| scenery on locked land | `SCENERY` |
+| scenery out in the wild (bushes, ponds) | `SCENERY`, `POND` (`src/logic/scenery.ts`) |
 | map trees, stumps, outcrops, veins | `TREE_ART`, `STUMP_ART`, `DEPOSIT_ART` (`MAP_ART`) |
 | stock piles `pile_<kind>_<stage>` | `PILE_ART` → `pileArt(kind, stage)` |
 

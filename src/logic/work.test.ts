@@ -10,7 +10,6 @@ import { buyAnimal, type PenState } from './animals';
 import { DAY_MS, START_LAYOUT } from './constants';
 import { cropStage, isPloughed, seasonCheck, type FieldState } from './crops';
 import { Game } from './game';
-import { setOwned } from './land';
 import { catchUp } from './offline';
 import type { ProcessorState } from './processing';
 import { connectToFarmhouse } from './roads';
@@ -40,12 +39,10 @@ const HOUR = 60 * MIN;
 const X = START_LAYOUT.x - 1;
 const Y = START_LAYOUT.y - 1;
 
-/** A top-level farm owning the whole map, with plenty of money. */
+/** A top-level farm, with plenty of money. */
 function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 

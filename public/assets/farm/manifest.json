@@ -6344,44 +6344,6 @@
    }
   },
   {
-   "name": "for_sale_sign",
-   "category": "buildings",
-   "type": "image",
-   "footprint": [
-    1,
-    1
-   ],
-   "notes": "'for sale' sign for unowned plots, 1x1 (Ludo.ai, cel-shaded; shadow baked in)",
-   "res": {
-    "2x": {
-     "file": "2x/buildings/for_sale_sign.png",
-     "w": 84,
-     "h": 164,
-     "anchor": [
-      42.0,
-      88.0
-     ],
-     "origin": [
-      0.5,
-      0.53659
-     ]
-    },
-    "1x": {
-     "file": "1x/buildings/for_sale_sign.png",
-     "w": 42,
-     "h": 82,
-     "anchor": [
-      21.0,
-      44.0
-     ],
-     "origin": [
-      0.5,
-      0.53659
-     ]
-    }
-   }
-  },
-  {
    "name": "cottage",
    "category": "buildings",
    "type": "image",
@@ -6415,6 +6377,44 @@
      "origin": [
       0.49803,
       0.22289
+     ]
+    }
+   }
+  },
+  {
+   "name": "cottage_2",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "cottage, level 2, 2x2: a bigger home for two families, two chimneys (smoke drawn by the game) (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/cottage_2.png",
+     "w": 507,
+     "h": 352,
+     "anchor": [
+      253.0,
+      93.0
+     ],
+     "origin": [
+      0.49901,
+      0.2642
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/cottage_2.png",
+     "w": 254,
+     "h": 176,
+     "anchor": [
+      126.5,
+      46.5
+     ],
+     "origin": [
+      0.49803,
+      0.2642
      ]
     }
    }
@@ -22250,44 +22250,6 @@
    }
   },
   {
-   "name": "for_sale_sign_winter",
-   "category": "buildings",
-   "type": "image",
-   "footprint": [
-    1,
-    1
-   ],
-   "notes": "for_sale_sign in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
-   "res": {
-    "2x": {
-     "file": "2x/buildings/for_sale_sign_winter.png",
-     "w": 80,
-     "h": 164,
-     "anchor": [
-      40.0,
-      87.0
-     ],
-     "origin": [
-      0.5,
-      0.53049
-     ]
-    },
-    "1x": {
-     "file": "1x/buildings/for_sale_sign_winter.png",
-     "w": 40,
-     "h": 82,
-     "anchor": [
-      20.0,
-      43.5
-     ],
-     "origin": [
-      0.5,
-      0.53049
-     ]
-    }
-   }
-  },
-  {
    "name": "cottage_winter",
    "category": "buildings",
    "type": "image",
@@ -22321,6 +22283,44 @@
      "origin": [
       0.49803,
       0.22455
+     ]
+    }
+   }
+  },
+  {
+   "name": "cottage_2_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "cottage level 2 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/cottage_2_winter.png",
+     "w": 506,
+     "h": 351,
+     "anchor": [
+      253.0,
+      92.0
+     ],
+     "origin": [
+      0.5,
+      0.26211
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/cottage_2_winter.png",
+     "w": 253,
+     "h": 176,
+     "anchor": [
+      126.5,
+      46.0
+     ],
+     "origin": [
+      0.5,
+      0.26136
      ]
     }
    }

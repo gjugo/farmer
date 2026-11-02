@@ -4,13 +4,12 @@ import { getBuildable } from '../../data/buildables';
 import { SOIL_INFO, SOIL_QUALITY } from '../../data/soil';
 import type { BuildPreview, FarmContext } from '../../game/context';
 import { onGameStart, registerBuildMenuToggle, registerDebugInfo } from '../../game/hooks';
-import { isOwned } from '../../logic/land';
 import { soilAt, soilBand } from '../../logic/soil';
 import { DEPTH } from '../../scenes/depth';
 import { gridToWorld } from '../../scenes/iso';
 
 /**
- * Soil: the quality overlay over owned land (the Build menu's Soil toggle), the soil tint under a field's build ghost,
+ * Soil: the quality overlay over the whole map (the Build menu's Soil toggle), the soil tint under a field's build ghost,
  * and `window.farm.soil` for QA. The rules live in `src/logic/soil.ts`; rich ground's lusher grass is drawn by the Farm
  * scene (`soilTint` in `src/scenes/ground.ts`), the field panel's soil block in `./panel.ts`.
  */
@@ -41,7 +40,7 @@ function drawOverlay(ctx: FarmContext): void {
   overlay.setVisible(overlayOn);
   if (!overlayOn) return;
   const { land } = ctx.game.state;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) if (isOwned(land, x, y)) fillTile(overlay, x, y, OVERLAY_ALPHA);
+  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) fillTile(overlay, x, y, OVERLAY_ALPHA);
 }
 
 function drawGhost(preview: BuildPreview): void {
@@ -67,19 +66,7 @@ onGameStart((ctx) => {
   overlay = ctx.scene.add.graphics().setDepth(OVERLAY_DEPTH);
   ghostTiles = ctx.scene.add.graphics().setDepth(DEPTH.ghost + 1);
   drawOverlay(ctx);
-  const { events } = ctx.game;
-  // Bought land joins the overlay; a parcel announces each tile, so redraw once per frame at most.
-  let pending = false;
-  const redraw = () => {
-    if (pending) return;
-    pending = true;
-    ctx.scene.time.delayedCall(0, () => {
-      pending = false;
-      drawOverlay(ctx);
-    });
-  };
-  events.on('land', redraw);
-  events.on('reset', redraw);
+  ctx.game.events.on('reset', () => drawOverlay(ctx));
   ctx.tools.events.on('preview', drawGhost);
 });
 

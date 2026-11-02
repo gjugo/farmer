@@ -10,9 +10,8 @@ import { Game } from './game';
 import { allowance, buy, buyPrice, buyUnlockLevel, marketOf, sell } from './market';
 import { sellToTrader, traderHere, traderOf, updateTrader } from './trader';
 import { START_LAND } from './constants';
-import { buyParcel, FARM_PARCELS, parcelPrice, parcelsBought, parcelsForSale } from './parcels';
 import { connectToFarmhouse, doorOf, farmhouseOf } from './roads';
-import { inBounds, isOwned } from './land';
+import { inBounds } from './land';
 import { capacity, checkUpgrade, nextLevel, upgrade, used } from './storage';
 import type { GameState, PlacedObject } from './types';
 import { PATH } from '../data/farmhouse';
@@ -22,7 +21,7 @@ import { SEASON_DAYS } from '../data/seasons';
 import type { FarmContext } from '../game/context';
 import { withFarmer } from '../game/workers';
 import { DAY_MS } from './constants';
-import { homesOf } from './families';
+import { homeRoom } from './homes';
 import { DEFENCES, type DefenceType } from '../data/hazards';
 import { guardedBy, harshWinterAt, harshWinterWood, hazardsOf, isProtected, setHazardsEnabled } from './hazards';
 import { dayOfSeason, nextSeasonAt, seasonAt } from './seasons';
@@ -32,8 +31,8 @@ import { ruleBlock } from './placement';
 import { createNewGame } from './state';
 import { RESOURCES } from '../data/resourceBuildings';
 import { addFarmer, assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, setKeepMaking, workerAt, workersOf } from './workers';
-import { maxLevelState } from './test-utils';
-import { campInfo } from './camp';
+import { maxLevelState, noCamp } from './test-utils';
+import { addCamp, campInfo } from './camp';
 
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
@@ -90,8 +89,10 @@ const MAP_SEED = 20261031;
 const TRADER_SEED = 79;
 
 function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number; maxFields: number; minutes: number; hazardSeed: number }): Sim {
-  const state = createNewGame();
+  // As a new game does: the map first, then the camp goes up beside the farmhouse, clear of trees and rocks.
+  const state = noCamp(createNewGame());
   state.ext[MAP_SLICE] = newMapLayer(state, MAP_SEED);
+  if (!addCamp(state)) throw new Error('no room for the camp');
   hazardsOf(state).seed = hazardSeed;
   traderOf(state).seed = TRADER_SEED;
   const game = new Game(state);
@@ -148,12 +149,15 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const { width, height } = game.state.land;
     const spots: { x: number; y: number }[] = [];
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (game.checkPlacement(type, x, y).ok) spots.push({ x, y });
+    // The whole map is open: like a player, it builds close to the farmhouse first.
+    const door = doorOf(farmhouseOf(game.state)!);
+    spots.sort((a, b) => Math.abs(a.x - door.x) + Math.abs(a.y - door.y) - (Math.abs(b.x - door.x) + Math.abs(b.y - door.y)));
     const area = (s: { x: number; y: number }) => ({ ...s, ...def.footprint });
     // Same as trying findRoute, then connectToFarmhouse, on each spot, but one flood fill each instead of one per spot.
     const onPaths = reachable(game.state, (o) => o?.type === PATH);
     // Trees and rocks are in the way of paths too.
     const free = (o: PlacedObject | undefined, x: number, y: number) =>
-      isOwned(game.state.land, x, y) && (o ? o.type === PATH : !ruleBlock(game.state, { w: 1, h: 1 }, x, y, PATH));
+      inBounds(game.state.land, x, y) && (o ? o.type === PATH : !ruleBlock(game.state, { w: 1, h: 1 }, x, y, PATH));
     const onLand = reachable(game.state, free);
     // Nor does it wall off its own land: every tile the farmhouse reaches now stays reachable around the new building.
     const walls = (a: { x: number; y: number; w: number; h: number }) => {
@@ -180,13 +184,8 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // A defence where it guards nothing new is money wasted.
     if (defence) spots.splice(spots.findIndex((s) => worth(s) === 0) >>> 0);
     const spot = spots.find((s) => fits(s, onPaths)) ?? spots.find((s) => fits(s, onLand));
-    if (!spot) {
-      // Out of room: buy the cheapest parcel next to the farm, if that leaves the money for the building.
-      const [parcel] = parcelsForSale(game.state.land, FARM_PARCELS);
-      const price = parcelPrice(parcelsBought(game.state.land, FARM_PARCELS, START_LAND));
-      if (parcel && game.money >= price + def.cost + reserve) buyParcel(game, FARM_PARCELS, START_LAND, parcel);
-      return null;
-    }
+    // The whole map is open: no room left means nowhere a path reaches.
+    if (!spot) return null;
     if (!shop(def.cost, def.materials, reserve)) return null;
     const r = game.place(type, spot.x, spot.y, { site: true });
     if (r.ok) connectToFarmhouse(game.state, area(spot));
@@ -246,7 +245,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     }
     // A harsh winter (announced at the start of autumn) takes twice the wood: it stocks what the warning says.
     const harsh = harshWinterAt(game.state, nextSeasonAt(game.now)) || harshWinterAt(game.state, game.now);
-    const firewood = harsh ? harshWinterWood(game.state) : SEASON_DAYS * FIREWOOD_PER_HOME * Math.min(families, homesOf(game.state));
+    const firewood = harsh ? harshWinterWood(game.state) : SEASON_DAYS * FIREWOOD_PER_HOME * Math.min(families, homeRoom(game.state));
     // Materials its buildings made beyond a working stock are sold too.
     for (const id of MATERIAL_IDS) {
       const keep = Math.max(id === 'wood' ? Math.max(KEEP_MATERIALS, firewood) : KEEP_MATERIALS, supplies(id));
@@ -279,7 +278,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // Staff every finished field and pen; for those left without a farmer, build cottages so families come for them.
     // (Fields frozen in winter don't count: their farmers are at the lodge and the quarry.)
     const unstaffed = workplaces.filter((wp) => workerAt(game.state, wp.id) === null && !frozen(wp) && !assignFarmer(game, wp.id).ok).length;
-    const comingHomes = homesOf(game.state) - workersOf(game.state).farmers + game.objectsOfType(COTTAGE).filter((o) => o.site).length;
+    const comingHomes = homeRoom(game.state) - workersOf(game.state).farmers + game.objectsOfType(COTTAGE).filter((o) => o.site).length;
     // Only when the pantry holds its reserve: a family it can't feed would leave again.
     const pantry = PANTRY.reduce((n, id) => n + game.count(id), 0);
     if (unstaffed > 0 && comingHomes <= 0 && pantry >= (keepFood - 1) * foodKinds) build(COTTAGE, 40);
@@ -417,9 +416,11 @@ describe('level curve balance', () => {
   // relaxed L2 9.5, L5 158.5; busy L2 9.2, L5 149.2 (seeds 1–8: casual L5 at most 175.0). Without the defences a casual
   // or relaxed player could miss level 5 in 3 h. With saturation and traders as well (trader seed 79): casual L2 9.0,
   // L5 167.0; relaxed L2 9.5, L5 158.0; busy L2 9.2, L5 152.0.
+  // The whole map open from the start (no land to buy; each player builds nearest the farmhouse first): casual L2 9.0,
+  // L5 175.0; relaxed L2 9.0, L5 157.5; busy L2 9.0, L5 148.3 (before: casual L5 170.0, relaxed 158.0, busy 155.5).
   // The starting camp (40 wood, 20 stone, 15 bread, 15 carrots; no provisions grace), with the bot keeping the supplies
-  // for building and meals and following the "Buy 10 wood" goal: casual L2 9.0, L5 167.0; relaxed L2 9.5, L5 175.5;
-  // busy L2 9.2, L5 160.0.
+  // for building and meals and following the "Buy 10 wood" goal: casual L2 9.0, L5 159.0; relaxed L2 9.0, L5 177.0;
+  // busy L2 9.0, L5 157.8.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });
@@ -496,7 +497,6 @@ describe('tools balance', () => {
     game.earn(1_000_000);
     setHazardsEnabled(false);
     const land = game.state.land;
-    for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) land.owned[y * land.width + x] = 1;
     while (workersOf(game.state).farmers < FARMERS) addFarmer(game);
     // Each building at the first free spot (scanning rows below the starting layout) a path can reach.
     const place = (type: string, site = false) => {

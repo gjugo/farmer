@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { START_LAND } from './constants';
+import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { footprintOf, Game } from './game';
+import { MAP_SLICE } from './maplayer';
 import { canPlace } from './placement';
+import { POND, SCENERY, sceneryArt, sceneryClear } from './scenery';
 import { createNewGame } from './state';
 import type { GameState } from './types';
 
@@ -15,22 +17,50 @@ function emptyFarm(): GameState {
   return s;
 }
 
+/** An empty farm with no trees or deposits on its map either. */
+function bareFarm(): GameState {
+  const s = emptyFarm();
+  s.ext[MAP_SLICE] = { trees: [], deposits: [] };
+  return s;
+}
+
+/** Every tile of the map carrying `art` as scenery (on a map with no trees or deposits). */
+function sceneryTiles(s: GameState, art: (a: string | null) => boolean): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (let y = 0; y < MAP_HEIGHT; y++) for (let x = 0; x < MAP_WIDTH; x++) if (art(sceneryArt(x, y)) && sceneryClear(s.ext[MAP_SLICE] as never, x, y)) out.push({ x, y });
+  return out;
+}
+
 describe('placement', () => {
-  it('allows a free, owned tile', () => {
+  it('allows a free tile', () => {
     const s = emptyFarm();
     expect(canPlace(s, { w: 1, h: 1 }, inside.x, inside.y, footprintOf)).toEqual({ ok: true });
   });
 
-  it('refuses locked land', () => {
-    const s = emptyFarm();
-    expect(canPlace(s, { w: 1, h: 1 }, 0, 0, footprintOf)).toEqual({ ok: false, reason: 'locked' });
+  it('allows free tiles anywhere on the map, past the starting land and in the far corners', () => {
+    const s = bareFarm();
+    const lastX = START_LAND.x + START_LAND.w - 1;
+    expect(canPlace(s, { w: 2, h: 1 }, lastX, inside.y, footprintOf)).toEqual({ ok: true });
+    for (const [x, y] of [
+      [0, 0],
+      [MAP_WIDTH - 2, 0],
+      [0, MAP_HEIGHT - 2],
+      [MAP_WIDTH - 2, MAP_HEIGHT - 2],
+    ]) {
+      expect(canPlace(s, { w: 2, h: 2 }, x, y, footprintOf), `${x},${y}`).toEqual({ ok: true });
+    }
   });
 
-  it('refuses a footprint that pokes past the owned edge', () => {
-    const s = emptyFarm();
-    const lastX = START_LAND.x + START_LAND.w - 1;
-    expect(canPlace(s, { w: 1, h: 1 }, lastX, inside.y, footprintOf).ok).toBe(true);
-    expect(canPlace(s, { w: 2, h: 1 }, lastX, inside.y, footprintOf)).toEqual({ ok: false, reason: 'locked' });
+  it('refuses a pond, but builds over a bush', () => {
+    const s = bareFarm();
+    const ponds = sceneryTiles(s, (a) => a === POND);
+    const bushes = sceneryTiles(s, (a) => (SCENERY as readonly (string | null)[]).includes(a));
+    expect(ponds.length).toBeGreaterThan(0);
+    expect(bushes.length).toBeGreaterThan(0);
+    for (const p of ponds) expect(canPlace(s, { w: 1, h: 1 }, p.x, p.y, footprintOf), `${p.x},${p.y}`).toEqual({ ok: false, reason: 'pond' });
+    // A footprint with a pond under any of its tiles.
+    expect(canPlace(s, { w: 2, h: 2 }, ponds[0].x - 1, ponds[0].y - 1, footprintOf)).toEqual({ ok: false, reason: 'pond' });
+    for (const b of bushes) expect(canPlace(s, { w: 1, h: 1 }, b.x, b.y, footprintOf), `${b.x},${b.y}`).toEqual({ ok: true });
   });
 
   it('refuses out-of-bounds tiles', () => {
@@ -61,9 +91,9 @@ describe('Game.place / demolish', () => {
     expect(g.state.objects).toHaveLength(0);
   });
 
-  it('refuses locked land, occupied tiles and unknown types without charging', () => {
+  it('refuses out-of-bounds, occupied tiles and unknown types without charging', () => {
     const g = new Game(emptyFarm());
-    expect(g.place('path', 0, 0)).toEqual({ ok: false, reason: 'locked' });
+    expect(g.place('path', -1, 0)).toEqual({ ok: false, reason: 'out-of-bounds' });
     g.place('path', inside.x, inside.y);
     expect(g.place('path', inside.x, inside.y)).toEqual({ ok: false, reason: 'occupied' });
     expect(g.place('spaceship', inside.x + 1, inside.y)).toEqual({ ok: false, reason: 'unknown-type' });

@@ -10,6 +10,15 @@ export interface PanelAction {
   disabled?: boolean;
   /** Visual emphasis: `primary` (default), `secondary` or `danger`. */
   variant?: 'primary' | 'secondary' | 'danger';
+  /** Its `data-testid`, when it needs a stable one (otherwise `panel-action-<index>`). */
+  testId?: string;
+}
+
+/** A requirement in a panel's checklist, shown ✅ or ❌ (`data-testid="panel-check-<id>"`, `data-ok`). */
+export interface PanelCheck {
+  id: string;
+  ok: boolean;
+  text: string;
 }
 
 /** A drop-down in an action panel, e.g. a field's crop plan. */
@@ -46,6 +55,8 @@ export interface PanelSpec {
   icon?: string;
   /** Status lines; a `{ text, testId }` line gets `data-testid="<testId>"` for QA. */
   lines?: (string | PanelLine)[];
+  /** Requirements shown ✅ / ❌ under the lines, e.g. a cottage upgrade's. */
+  checklist?: PanelCheck[];
   progress?: { value: number; label?: string };
   /** Labelled bars shown under the lines, e.g. a field's fertility. */
   meters?: PanelMeter[];

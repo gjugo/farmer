@@ -4,9 +4,9 @@ import { APPROVAL, ARRIVAL_DELAY_DAYS, ARRIVE_APPROVAL, COTTAGE, FOODS, LEAVE_AP
 import { FIELD } from '../data/crops';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS, START_LAYOUT } from './constants';
-import { addFamily, approvalOf, familiesOf, homesOf, mealFrom, YEAR_MS, type DayNeeds } from './families';
+import { addFamily, approvalOf, familiesOf, mealFrom, YEAR_MS, type DayNeeds } from './families';
+import { homeRoom } from './homes';
 import { Game } from './game';
-import { setOwned } from './land';
 import { catchUp } from './offline';
 import { connectToFarmhouse } from './roads';
 import { parseSave, serialize } from './save';
@@ -21,12 +21,10 @@ const WINTER = 3 * SEASON_MS;
 const X = START_LAYOUT.x - 1;
 const Y = START_LAYOUT.y + 6;
 
-/** A farm owning the whole map with plenty of money (and, at `max`, every building and the loom unlocked). */
+/** A farm with plenty of money (and, at `max`, every building and the loom unlocked). */
 function farm({ max = true } = {}): Game {
   const game = new Game(max ? maxLevelState() : bareMap(stockMaterials(new Game().state)));
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 
@@ -135,7 +133,7 @@ describe('families on the farm', () => {
 
   it('a new game has one family in the farmhouse and no free home', () => {
     const game = new Game();
-    expect(homesOf(game.state)).toBe(1);
+    expect(homeRoom(game.state)).toBe(1);
     expect(workersOf(game.state).farmers).toBe(1);
     expect(familiesOf(game.state)).toMatchObject({ approval: 50, nextArrivalAt: null, lastDay: null });
     expect(getBuildable(COTTAGE)).toMatchObject({ category: 'homes', unlockLevel: 1, footprint: { w: 2, h: 2 } });
@@ -190,12 +188,12 @@ describe('families on the farm', () => {
     const r = game.place(COTTAGE, X, Y, { site: true });
     if (!r.ok) throw new Error(r.reason);
     expect(connectToFarmhouse(game.state, { x: X, y: Y, w: 2, h: 2 })).toBeTruthy();
-    expect(homesOf(game.state)).toBe(1);
+    expect(homeRoom(game.state)).toBe(1);
     let builtAt = -1;
     game.activity.on('built', () => (builtAt = game.now));
     game.advance(DAY_MS / 4);
     expect(builtAt).toBeGreaterThan(0);
-    expect(homesOf(game.state)).toBe(2);
+    expect(homeRoom(game.state)).toBe(2);
     expect(familiesOf(game.state).nextArrivalAt).toBe(builtAt + ARRIVAL_DELAY_DAYS * DAY_MS);
     game.advance(DAY_MS);
     expect(workersOf(game.state).farmers).toBe(2);
@@ -445,7 +443,7 @@ describe('families in saves', () => {
     raw.state.ext.progression = { xp: 0, goals: [{ id: 'build-coop', progress: 0 }], nextGoal: 13 };
     const loaded = new Game(parseSave(JSON.stringify(raw)).state);
     expect(workersOf(loaded.state).farmers).toBe(5);
-    expect(homesOf(loaded.state)).toBe(1);
+    expect(homeRoom(loaded.state)).toBe(1);
     expect((loaded.state.ext.progression as { nextGoal: number }).nextGoal).toBe(14);
     stock(loaded, 'wheat', 100);
     loaded.advance(2 * DAY_MS);

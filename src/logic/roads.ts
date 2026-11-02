@@ -3,7 +3,7 @@ import { FARMHOUSE, FARMHOUSE_DOOR, PATH } from '../data/farmhouse';
 import { START_LAYOUT } from './constants';
 // The starting fields' new-game setup must run before ours, which lays the road to them.
 import './crops';
-import { inBounds, isOwned } from './land';
+import { inBounds } from './land';
 import { canPlace, ruleBlock } from './placement';
 import { addStartingObject, onNewGame } from './state';
 import type { GameState, PlacedObject } from './types';
@@ -167,14 +167,14 @@ export function wayLength(points: Point[]): number {
   return n;
 }
 
-/** Lays free paths over owned empty tiles so the door reaches `site`, reusing paths already there. */
+/** Lays free paths over empty tiles so the door reaches `site`, reusing paths already there. */
 function layRoad(state: GameState, door: Tile, site: Area): boolean {
   const at = occupancy(state);
   const tiles = search(door, site, (x, y) => {
-    if (!inBounds(state.land, x, y) || !isOwned(state.land, x, y)) return null;
+    if (!inBounds(state.land, x, y)) return null;
     const o = at.get(key(x, y));
     if (o) return o.type === PATH ? 0 : null;
-    // A grown tree or a deposit is in the way.
+    // A grown tree, a deposit or a pond is in the way.
     return ruleBlock(state, { w: 1, h: 1 }, x, y, PATH) ? null : 1;
   });
   if (!tiles) return false;
@@ -188,18 +188,18 @@ export function connectToFarmhouse(state: GameState, site: Area): boolean {
   return !!house && layRoad(state, doorOf(house), site);
 }
 
-/** Can the farmhouse stand at (x, y) with a free (or path) tile of our land in front of its door? */
+/** Can the farmhouse stand at (x, y) with a free (or path) tile in the map in front of its door? */
 function farmhouseFits(state: GameState, x: number, y: number): boolean {
   if (!canPlace(state, getBuildable(FARMHOUSE)!.footprint, x, y, footprintOf, FARMHOUSE).ok) return false;
   const door = doorOf({ x, y });
-  if (!isOwned(state.land, door.x, door.y)) return false;
+  if (!inBounds(state.land, door.x, door.y)) return false;
   const there = occupancy(state).get(key(door.x, door.y));
   return !there || there.type === PATH;
 }
 
 /**
  * Gives a farm without a farmhouse one: at `preferred` when it fits there, else on the free spot of
- * our land nearest to it. Then lays paths from its door to everything already built that has none.
+ * the map nearest to it. Then lays paths from its door to everything already built that has none.
  */
 export function ensureFarmhouse(state: GameState, preferred: Tile = STARTING_FARMHOUSE): void {
   if (farmhouseOf(state)) return;
@@ -220,4 +220,5 @@ export function ensureFarmhouse(state: GameState, preferred: Tile = STARTING_FAR
   if (!occupancy(state).has(key(door.x, door.y))) addStartingObject(state, PATH, door.x, door.y);
 }
 
-onNewGame((state) => ensureFarmhouse(state));
+// Late: the roads go to the starting fields (and anything else a setup placed), whichever module loaded first.
+onNewGame((state) => ensureFarmhouse(state), { late: true });

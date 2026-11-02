@@ -5,7 +5,6 @@ import { buyAnimal, feedAll, type PenState } from './animals';
 import { START_LAND } from './constants';
 import { plant, type FieldState } from './crops';
 import { Game } from './game';
-import { setOwned } from './land';
 import { startJob, type ProcessorState } from './processing';
 import { maxLevelState } from './test-utils';
 import type { PlacedObject } from './types';
@@ -18,11 +17,9 @@ function record(game: Game): string[] {
   return seen;
 }
 
-/** A max-level farm that owns all its land and has plenty of money. */
+/** A max-level farm that has plenty of money. */
 function richGame(): Game {
   const game = new Game(maxLevelState());
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   game.earn(10_000);
   return game;
 }

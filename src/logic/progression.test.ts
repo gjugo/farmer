@@ -9,7 +9,6 @@ import { START_LAND } from './constants';
 import { harvest, plant, type FieldState } from './crops';
 import { Game } from './game';
 import { sell } from './market';
-import { buyParcel, FARM_PARCELS, parcelsForSale } from './parcels';
 import { inputsOf } from './processing';
 import { PROGRESSION, type ProgressionState } from './progression';
 import { deserialize, serialize } from './save';
@@ -277,16 +276,20 @@ describe('goals', () => {
     expect(game.progression.goals()[0].complete).toBe(true);
   });
 
-  it('own-parcels and reach-level goals follow land and level', () => {
+  it('own-10-fields and reach-level goals follow the fields and level', () => {
     const game = new Game(bareMap(createNewGame()));
     game.earn(10_000);
     const data = getSlice<ProgressionState>(game.state, PROGRESSION);
     data.goals = [
-      { id: 'buy-land', progress: 0 },
+      { id: 'own-10-fields', progress: 0 },
       { id: 'reach-3', progress: 0 },
     ];
-    buyParcel(game, FARM_PARCELS, START_LAND, parcelsForSale(game.state.land, FARM_PARCELS)[0]);
     game.progression.setLevel(3);
+    // A new farm has 2 fields: 8 more, out past the starting land.
+    for (let i = 0; i < 8; i++) {
+      expect(game.progression.goals()[0]).toMatchObject({ progress: 2 + i, complete: false });
+      expect(game.place(FIELD, START_LAND.x - 3, START_LAND.y + i * 2 - 4).ok).toBe(true);
+    }
     expect(game.progression.goals().map((g) => g.complete)).toEqual([true, true]);
   });
 
@@ -329,6 +332,7 @@ describe('goals', () => {
       'sew-clothes',
       'build-blacksmith',
       'forge-tools',
+      'upgrade-cottage',
     ]);
   });
 
@@ -350,11 +354,16 @@ describe('goals', () => {
     ]);
   });
 
-  it('the blacksmith goals come last: build a blacksmith, forge 5 tools', () => {
-    expect(GOALS.slice(-2).map((g) => [g.id, g.kind, 'type' in g ? g.type : 'item' in g ? g.item : null, g.count])).toEqual([
+  it('the blacksmith goals follow the oxcart and processing goals: build a blacksmith, forge 5 tools', () => {
+    const smith = GOALS.findIndex((g) => g.id === 'build-blacksmith');
+    expect(GOALS.slice(smith, smith + 2).map((g) => [g.id, g.kind, 'type' in g ? g.type : 'item' in g ? g.item : null, g.count])).toEqual([
       ['build-blacksmith', 'own-buildings', 'blacksmith', 1],
       ['forge-tools', 'make', 'tools', 5],
     ]);
+  });
+
+  it('"Upgrade a cottage" comes last and counts cottage upgrades', () => {
+    expect(GOALS.at(-1)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
   });
 
   it('haul goals count goods unloaded by cart', () => {

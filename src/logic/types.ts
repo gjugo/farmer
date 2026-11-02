@@ -26,11 +26,10 @@ export interface ConstructionSite {
   paid: number;
 }
 
+/** The map: every tile of it is the farm's to build on (see `src/logic/placement.ts` for what is in the way). */
 export interface LandState {
   width: number;
   height: number;
-  /** Row-major, `1` = owned by the player, `0` = locked. */
-  owned: number[];
 }
 
 export interface ClockState {

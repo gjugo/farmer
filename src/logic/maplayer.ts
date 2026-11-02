@@ -1,16 +1,16 @@
 import { getBuildable } from '../data/buildables';
 import { DEPOSITS, RESOURCES, type DepositKind, type ResourceType } from '../data/resourceBuildings';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
-import { createLand, inBounds, isOwned, type Rect } from './land';
-import { FARM_PARCELS, type Parcel } from './parcels';
+import { inBounds, inRect, type Rect } from './land';
 import { registerPlacementRule } from './placement';
-// The starting fields, farmhouse and camp are laid out first; the map is generated around them.
-import './camp';
+// The starting fields and farmhouse are laid out first; the map is generated around them.
 import './roads';
 import { SEASON_MS } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import { onNewGame } from './state';
 import type { GameState, LandState } from './types';
+
+const MAP: LandState = { width: MAP_WIDTH, height: MAP_HEIGHT };
 
 /**
  * The map layer: forests and deposits that are really there, generated from a seed on a new game and saved.
@@ -336,18 +336,18 @@ export interface Occupant extends Rect {
   type: string;
 }
 
-/** How the map is laid out. Tuned so the start has wood and stone at hand and iron is one parcel away. */
+/** How the map is laid out. Tuned so the start has wood and stone at hand and iron is one block away. */
 export const GEN = {
   /** Trees in the grove on the starting land. */
   startGrove: 10,
   /** Trees around each lodge of an older save. */
   lodgeGrove: 8,
-  /** Forests on locked land and their size range. */
+  /** Forests out in the wild (beyond the starting land) and their size range. */
   forests: 7,
   forestTrees: [20, 34] as const,
-  /** Stone outcrops on locked land (besides the one at the start). */
+  /** Stone outcrops out in the wild (besides the one at the start). */
   outcrops: 5,
-  /** Iron veins on locked land: one next to the start, the rest further out. */
+  /** Iron veins out in the wild: one next to the start, the rest further out. */
   veins: 3,
 } as const;
 
@@ -358,14 +358,60 @@ const STEPS = [
   [-1, 0],
 ] as const;
 
-/** Grid position of a parcel (`p2-1` → column 2, row 1). */
-function parcelCell(p: Parcel): { c: number; r: number } {
-  const m = /^p(\d+)-(\d+)$/.exec(p.id);
-  return m ? { c: Number(m[1]), r: Number(m[2]) } : { c: 0, r: 0 };
+/** A block of the layout grid, at column `c` and row `r` of it. */
+export interface Block extends Rect {
+  c: number;
+  r: number;
 }
 
-/** Where a parcel's for-sale sign may stand (see `signSpot` in src/features/land): kept clear of trees and rocks. */
-function signSpots(p: Parcel): [number, number][] {
+/** Blocks are at most this many tiles wide/tall. */
+const BLOCK_MAX = 12;
+
+/**
+ * Splits the strip [from, to) into near-equal chunks of at most `max` tiles.
+ * The bigger chunks come first, so walking outward from the farm they are next to it.
+ */
+function chunks(from: number, to: number, max: number, biggestFirst: boolean): [number, number][] {
+  const len = to - from;
+  if (len <= 0) return [];
+  const n = Math.ceil(len / max);
+  const sizes = Array.from({ length: n }, (_, i) => Math.floor(len / n) + (i < len % n ? 1 : 0));
+  if (!biggestFirst) sizes.reverse();
+  const out: [number, number][] = [];
+  let at = from;
+  for (const size of sizes) {
+    out.push([at, size]);
+    at += size;
+  }
+  return out;
+}
+
+/** Column (or row) bands: the start area is one band, the land on each side is chunked. */
+function bands(start: number, size: number, total: number, max: number): [number, number][] {
+  return [...chunks(0, start, max, false), [start, size], ...chunks(start + size, total, max, true)];
+}
+
+/**
+ * The grid the map is laid out on: the starting land is one block, the rest of the map is split into blocks of up
+ * to 12 tiles around it, one forest or deposit per block. The grid never changes: the same seed lays out the
+ * same map, and existing farms' trees and deposits never move.
+ */
+export const MAP_BLOCKS: readonly Block[] = (() => {
+  const cols = bands(START_LAND.x, START_LAND.w, MAP_WIDTH, BLOCK_MAX);
+  const rows = bands(START_LAND.y, START_LAND.h, MAP_HEIGHT, BLOCK_MAX);
+  return rows.flatMap(([y, h], r) => cols.map(([x, w], c) => ({ c, r, x, y, w, h })));
+})();
+
+/** The block (x, y) lies in, or undefined off the map. */
+export function blockAt(x: number, y: number): Block | undefined {
+  return MAP_BLOCKS.find((b) => inRect(b, x, y));
+}
+
+/** Is (x, y) on the starting land? */
+export const onStartLand = (x: number, y: number): boolean => inRect(START_LAND, x, y);
+
+/** Spots by a block's edges the layout keeps clear of trees and rocks (it always has: keeps a seed's map the same). */
+function edgeSpots(p: Block): [number, number][] {
   const midX = p.x + Math.floor(p.w / 2);
   const midY = p.y + Math.floor(p.h / 2);
   return [
@@ -381,12 +427,15 @@ function signSpots(p: Parcel): [number, number][] {
  * starting fields and farmhouse; older saves with everything they have built, so their quarries and mines get a
  * deposit under them and their lodges a grove within reach.
  *
- * - A grove of about 10 trees on the starting land, away from the fields and paths, and a 2×2 stone outcrop there
- *   (or, when the land is built up, in the first ring of parcels).
- * - Iron veins only on locked land: one in a parcel next to the start, the others further out.
- * - More outcrops (2×2 or 3×3) and large forests on locked land, clear of the land's edge and the for-sale signs.
+ * `home` is the farm's home ground: the starting land for a new game (`onStartLand`); for older saves (from before the whole map was
+ * open), the land the farm held then. Everything else is the wild.
+ *
+ * - A grove of about 10 trees on the home ground, away from the fields and paths, and a 2×2 stone outcrop there
+ *   (or, when it is built up, in the first ring of blocks).
+ * - Iron veins only in the wild: one in a block next to the start, the others further out.
+ * - More outcrops (2×2 or 3×3) and large forests in the wild, clear of the home ground's edge and the blocks' edge spots.
  */
-export function generateMapLayer(land: LandState, occupants: readonly Occupant[], seed: number): MapLayer {
+export function generateMapLayer(home: (x: number, y: number) => boolean, occupants: readonly Occupant[], seed: number): MapLayer {
   const rnd = seededRandom(seed);
   const pick = <T>(list: readonly T[]): T | undefined => list[Math.floor(rnd() * list.length)];
   const shuffle = <T>(list: T[]): T[] => {
@@ -396,12 +445,13 @@ export function generateMapLayer(land: LandState, occupants: readonly Occupant[]
     }
     return list;
   };
+  const land = MAP;
   const W = land.width;
   const H = land.height;
   const layer = emptyLayer();
   /** 1: something stands or lies here. */
   const taken = new Uint8Array(W * H);
-  /** 1: next to an object or a deposit, or a sign spot: no new deposit or tree. */
+  /** 1: next to an object or a deposit, or an edge spot: no new deposit or tree. */
   const near = new Uint8Array(W * H);
   const at = (x: number, y: number) => y * W + x;
   const markNear = (a: Rect, margin: number) => {
@@ -414,16 +464,16 @@ export function generateMapLayer(land: LandState, occupants: readonly Occupant[]
     markTaken(o);
     markNear(o, 1);
   }
-  for (const p of FARM_PARCELS) for (const [x, y] of signSpots(p)) markNear({ x, y, w: 1, h: 1 }, 1);
+  for (const p of MAP_BLOCKS) for (const [x, y] of edgeSpots(p)) markNear({ x, y, w: 1, h: 1 }, 1);
 
   const free = (x: number, y: number, margin = true) => inBounds(land, x, y) && !taken[at(x, y)] && (!margin || !near[at(x, y)]);
-  /** Next to owned land (or on it): locked features keep off the fence. */
-  const byOwned = (x: number, y: number) => {
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (isOwned(land, x + dx, y + dy)) return true;
+  const atHome = (x: number, y: number) => inBounds(land, x, y) && home(x, y);
+  /** Next to the home ground (or on it): features in the wild keep off its edge. */
+  const byHome = (x: number, y: number) => {
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (atHome(x + dx, y + dy)) return true;
     return false;
   };
-  const owned = (x: number, y: number) => isOwned(land, x, y);
-  const locked = (x: number, y: number) => !isOwned(land, x, y) && !byOwned(x, y);
+  const wild = (x: number, y: number) => !atHome(x, y) && !byHome(x, y);
 
   const addTree = (x: number, y: number) => {
     taken[at(x, y)] = 1;
@@ -503,28 +553,25 @@ export function generateMapLayer(land: LandState, occupants: readonly Occupant[]
 
   // The start: a grove at the back left of the starting land, a stone outcrop at the front right.
   const S = START_LAND;
-  // The grove keeps two tiles off what is built (fields, paths, the farmhouse and the camp), so their edges stay open.
-  const roomy = (x: number, y: number) => occupants.every((o) => x < o.x - 2 || y < o.y - 2 || x >= o.x + o.w + 2 || y >= o.y + o.h + 2);
-  const groveAt = spots(1, 1, (x, y) => owned(x, y) && free(x, y) && roomy(x, y), S, { x: S.x + 2.5, y: S.y + S.h - 2.5 })[0];
-  if (groveAt) grove(groveAt, GEN.startGrove, (x, y) => owned(x, y) && free(x, y) && roomy(x, y));
+  const groveAt = spots(1, 1, (x, y) => atHome(x, y) && free(x, y), S, { x: S.x + 2.5, y: S.y + S.h - 2.5 })[0];
+  if (groveAt) grove(groveAt, GEN.startGrove, (x, y) => atHome(x, y) && free(x, y));
   for (const t of layer.trees) markNear({ x: t.x, y: t.y, w: 1, h: 1 }, 1);
   const startRock =
-    spots(2, 2, (x, y) => owned(x, y) && free(x, y), S, { x: S.x + S.w - 3, y: S.y + S.h - 2.5 })[0] ??
-    spots(2, 2, (x, y) => locked(x, y) && free(x, y), { x: S.x - 12, y: S.y - 12, w: S.w + 24, h: S.h + 24 }, { x: S.x + S.w / 2, y: S.y + S.h / 2 })[0];
+    spots(2, 2, (x, y) => atHome(x, y) && free(x, y), S, { x: S.x + S.w - 3, y: S.y + S.h - 2.5 })[0] ??
+    spots(2, 2, (x, y) => wild(x, y) && free(x, y), { x: S.x - 12, y: S.y - 12, w: S.w + 24, h: S.h + 24 }, { x: S.x + S.w / 2, y: S.y + S.h / 2 })[0];
   if (startRock) addDeposit('stone', { x: startRock.x, y: startRock.y, w: 2, h: 2 });
 
-  // Parcels by ring around the start (1: next to it).
-  const start = FARM_PARCELS.find((p) => p.x === S.x && p.y === S.y) ?? FARM_PARCELS[0];
-  const c0 = parcelCell(start);
-  const ring = (p: Parcel) => Math.max(Math.abs(parcelCell(p).c - c0.c), Math.abs(parcelCell(p).r - c0.r));
-  const beside = (p: Parcel) => ring(p) === 1 && (parcelCell(p).c === c0.c || parcelCell(p).r === c0.r);
-  const lockedParcels = FARM_PARCELS.filter((p) => p !== start && spots(1, 1, locked, p, p).length > 0);
-  const inner = (p: Parcel): Rect => ({ x: p.x + 1, y: p.y + 1, w: p.w - 2, h: p.h - 2 });
-  const used = new Set<Parcel>();
-  /** A deposit at a random free spot inside one of `parcels` (tried in order); false when none has room. */
-  const depositIn = (kind: DepositKind, size: number, parcels: Parcel[]) => {
-    for (const p of parcels) {
-      const options = spots(size, size, (x, y) => locked(x, y) && free(x, y), inner(p), p);
+  // Blocks by ring around the start (1: next to it).
+  const start = MAP_BLOCKS.find((p) => p.x === S.x && p.y === S.y) ?? MAP_BLOCKS[0];
+  const ring = (p: Block) => Math.max(Math.abs(p.c - start.c), Math.abs(p.r - start.r));
+  const beside = (p: Block) => ring(p) === 1 && (p.c === start.c || p.r === start.r);
+  const wildBlocks = MAP_BLOCKS.filter((p) => p !== start && spots(1, 1, wild, p, p).length > 0);
+  const inner = (p: Block): Rect => ({ x: p.x + 1, y: p.y + 1, w: p.w - 2, h: p.h - 2 });
+  const used = new Set<Block>();
+  /** A deposit at a random free spot inside one of `blocks` (tried in order); false when none has room. */
+  const depositIn = (kind: DepositKind, size: number, blocks: Block[]) => {
+    for (const p of blocks) {
+      const options = spots(size, size, (x, y) => wild(x, y) && free(x, y), inner(p), p);
       const spot = pick(options);
       if (!spot) continue;
       addDeposit(kind, { x: spot.x, y: spot.y, w: size, h: size }, 2);
@@ -534,23 +581,23 @@ export function generateMapLayer(land: LandState, occupants: readonly Occupant[]
     return false;
   };
 
-  // Iron: a vein in a parcel next to the start (so the "Mine iron" goal is reachable), the rest further out.
-  const veinFirst = shuffle(lockedParcels.filter(beside));
-  const veinMore = shuffle(lockedParcels.filter((p) => !beside(p)));
+  // Iron: a vein in a block next to the start (so the "Mine iron" goal is in easy reach), the rest further out.
+  const veinFirst = shuffle(wildBlocks.filter(beside));
+  const veinMore = shuffle(wildBlocks.filter((p) => !beside(p)));
   let veins = depositIn('iron', 2, [...veinFirst, ...veinMore]) ? 1 : 0;
   for (; veins < GEN.veins; veins++) if (!depositIn('iron', 2, shuffle(veinMore.filter((p) => !used.has(p))))) break;
 
   // Stone further out: 2×2 or 3×3.
   for (let i = 0; i < GEN.outcrops; i++) {
     const size = rnd() < 0.5 ? 3 : 2;
-    depositIn('stone', size, shuffle(lockedParcels.filter((p) => !used.has(p))));
+    depositIn('stone', size, shuffle(wildBlocks.filter((p) => !used.has(p))));
   }
 
-  // Forests: large clumps on locked land, each from a parcel of its own when there are enough.
-  const forestParcels = shuffle([...lockedParcels]);
-  for (let i = 0; i < GEN.forests && forestParcels.length > 0; i++) {
-    const p = forestParcels.splice(0, 1)[0];
-    const ok = (x: number, y: number) => locked(x, y) && free(x, y);
+  // Forests: large clumps in the wild, each from a block of its own when there are enough.
+  const forestBlocks = shuffle([...wildBlocks]);
+  for (let i = 0; i < GEN.forests && forestBlocks.length > 0; i++) {
+    const p = forestBlocks.splice(0, 1)[0];
+    const ok = (x: number, y: number) => wild(x, y) && free(x, y);
     const centre = pick(spots(1, 1, ok, inner(p), p).slice(0, Math.max(1, Math.floor((p.w * p.h) / 3))));
     if (!centre) continue;
     const [lo, hi] = GEN.forestTrees;
@@ -569,7 +616,7 @@ export function occupantsOf(objects: readonly { type: string; x: number; y: numb
 
 /** A new farm's map, from a seed (random unless given). */
 export function newMapLayer(state: GameState, seed = Math.floor(Math.random() * 0x100000000)): MapLayer {
-  const layer = generateMapLayer(state.land, occupantsOf(state.objects), seed);
+  const layer = generateMapLayer(onStartLand, occupantsOf(state.objects), seed);
   checked.add(layer);
   return layer;
 }
@@ -583,18 +630,16 @@ onNewGame((state) => {
  * untrusted saved state. The seed comes from the save, so loading the same save twice gives the same map.
  */
 export function migrateMapLayer(raw: Record<string, unknown>): MapLayer {
-  const fallback = createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND);
+  // Saves back then owned land (a row-major grid, 1 = owned): it was the home ground. Broken: the starting land.
   const l = isPlainObject(raw.land) ? raw.land : {};
-  const land: LandState =
-    l.width === fallback.width && l.height === fallback.height && Array.isArray(l.owned) && l.owned.length === fallback.owned.length
-      ? { width: fallback.width, height: fallback.height, owned: l.owned.map((t) => (t === 1 ? 1 : 0)) }
-      : fallback;
+  const owned = l.width === MAP_WIDTH && l.height === MAP_HEIGHT && Array.isArray(l.owned) && l.owned.length === MAP_WIDTH * MAP_HEIGHT ? l.owned : null;
+  const home = owned ? (x: number, y: number) => owned[y * MAP_WIDTH + x] === 1 : onStartLand;
   const objects = (Array.isArray(raw.objects) ? raw.objects : []).flatMap((o) =>
     isPlainObject(o) && typeof o.type === 'string' && isInt(o.x) && isInt(o.y) ? [{ type: o.type, x: o.x, y: o.y }] : [],
   );
   const clock = isPlainObject(raw.clock) ? raw.clock : {};
   const seed = (typeof clock.elapsed === 'number' && Number.isFinite(clock.elapsed) ? Math.floor(clock.elapsed) : 0) ^ 0x5eed;
-  return generateMapLayer(land, occupantsOf(objects), seed);
+  return generateMapLayer(home, occupantsOf(objects), seed);
 }
 
 /** Counts for `window.farm.map` and tests. */

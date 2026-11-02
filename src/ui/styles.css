@@ -649,6 +649,20 @@ button {
   margin: 2px 0;
 }
 
+.checklist {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist li {
+  margin: 2px 0;
+}
+
+.checklist .check-no {
+  color: var(--red);
+}
+
 .meters {
   display: grid;
   gap: 6px;
@@ -2415,6 +2429,160 @@ body[data-player-paused]:not([data-menu]) #ui::after {
   pointer-events: none;
 }
 
+/* The first-session guide (src/features/guide): a card under the farm overview, a ring round what a step names and
+   a marker on the map. Over the HUD (the ring goes round tool bar and build menu buttons), under the menu (15) and
+   dialogs (20). Nothing in it blocks the farm: only the card's own buttons take taps. */
+.guide-card {
+  position: absolute;
+  top: calc(var(--top-h) + var(--safe-top) + 6px);
+  left: calc(10px + var(--safe-left));
+  width: min(300px, calc(100% - 20px));
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  background: var(--paper);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 9;
+}
+
+.guide-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: default;
+}
+
+.guide-icon {
+  font-size: 20px;
+}
+
+.guide-heading {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.guide-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.guide-title {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.guide-chevron {
+  display: none;
+}
+
+.guide-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.guide-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.guide-actions .btn {
+  min-height: 40px;
+  padding: 6px 12px;
+}
+
+@keyframes guide-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(244 197 66 / 70%), 0 0 12px 2px rgb(244 197 66 / 50%);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(244 197 66 / 0%), 0 0 18px 6px rgb(244 197 66 / 35%);
+  }
+}
+
+.guide-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  border: 3px solid var(--gold);
+  border-radius: 14px;
+  z-index: 9;
+  pointer-events: none !important;
+  animation: guide-pulse 1.6s ease-in-out infinite;
+}
+
+.guide-marker {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none !important;
+}
+
+.guide-marker::before,
+.guide-marker::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+/* A pulsing gold ring on the ground and a bobbing arrow over it. */
+.guide-marker::before {
+  left: -34px;
+  top: -17px;
+  width: 68px;
+  height: 34px;
+  border: 3px solid var(--gold);
+  border-radius: 50%;
+  animation: guide-pulse 1.6s ease-in-out infinite;
+}
+
+.guide-marker::after {
+  content: '⬇';
+  left: -12px;
+  top: -64px;
+  width: 24px;
+  color: var(--gold);
+  font-size: 26px;
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 0 2px 3px rgb(0 0 0 / 60%);
+  animation: guide-bob 1s ease-in-out infinite alternate;
+}
+
+@keyframes guide-bob {
+  to {
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-ring,
+  .guide-marker::before,
+  .guide-marker::after {
+    animation: none;
+  }
+
+  .guide-ring,
+  .guide-marker::before {
+    box-shadow: 0 0 10px 3px rgb(244 197 66 / 55%);
+  }
+}
+
 /* Phones --------------------------------------------------------------------- */
 
 @media (max-width: 760px) {
@@ -2614,5 +2782,74 @@ body[data-player-paused]:not([data-menu]) #ui::after {
 
   body[data-player-paused]:not([data-menu]) #ui::after {
     bottom: calc(var(--g-h) + 70px + var(--safe-bottom));
+  }
+  /* The guide: a strip above the clock and speed, over the tool bar; it opens on a tap and makes way for a bottom
+     sheet or the construction menu (the ring still points). */
+  .guide-card {
+    top: auto;
+    bottom: calc(var(--g-h) + 66px + var(--safe-bottom));
+    left: calc(8px + var(--safe-left));
+    right: calc(8px + var(--safe-right));
+    width: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 8px;
+    padding: 4px 6px 4px 10px;
+  }
+
+  .guide-card[data-sheet],
+  .guide-card[data-build] {
+    display: none;
+  }
+
+  .guide-head {
+    min-height: 40px;
+    cursor: pointer;
+  }
+
+  .guide-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .guide-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 15px;
+  }
+
+  .guide-chevron {
+    display: inline;
+    color: var(--muted);
+  }
+
+  .guide-card.expanded .guide-chevron {
+    transform: rotate(180deg);
+  }
+
+  .guide-card:not(.expanded) .guide-text,
+  .guide-card:not(.expanded) .guide-end {
+    display: none;
+  }
+
+  .guide-card.expanded .guide-text {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .guide-card.expanded .guide-actions {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .guide-card.expanded {
+    padding-bottom: 8px;
+  }
+
+  body[data-guide][data-player-paused]:not([data-menu]) #ui::after {
+    bottom: calc(var(--g-h) + 120px + var(--safe-bottom));
   }
 }

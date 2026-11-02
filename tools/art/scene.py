@@ -111,8 +111,6 @@ put("dairy", 9, 8)
 put("bakery", 9, 13)
 put("weaving_hut", 13, 8)
 put("market_stall", 13, 13)
-put("for_sale_sign", 14, 2)
-put("for_sale_sign", 13, 5)
 
 # pasture fence x 9..15, y 0..6 is barn+pasture: fence around x 13..15? keep pasture x 0..6 y 2..5
 pasture = set()

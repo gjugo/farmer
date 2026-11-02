@@ -1,7 +1,7 @@
 import { ANIMALS } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { FIELD, getCrop } from '../data/crops';
-import { COTTAGE, FARMHOUSE_HOMES, FIREWOOD_PER_HOME } from '../data/families';
+import { FIREWOOD_PER_HOME } from '../data/families';
 import {
   CROWS,
   DEFENCE_FOR,
@@ -18,6 +18,7 @@ import {
 import { SEASON_DAYS } from '../data/seasons';
 import { animalsOf, isPenType, type PenState } from './animals';
 import { DAY_MS } from './constants';
+import { homeRoom } from './homes';
 import type { FieldState } from './crops';
 import type { Game } from './game';
 import { perkFactor } from './perks';
@@ -209,10 +210,9 @@ export function chickensOf(state: GameState): number {
   return state.objects.reduce((n, o) => n + (isPenType(o.type) ? animalsOf(o as PlacedObject<PenState>).filter((a) => a.kind === 'chicken').length : 0), 0);
 }
 
-/** Occupied homes (as the families count them). */
+/** Hearths to keep warm (as the families count them): one per family living in a home. */
 function warmHomes(state: GameState): number {
-  const homes = FARMHOUSE_HOMES + state.objects.filter((o) => o.type === COTTAGE && !o.site).length;
-  return Math.min(homes, workersOf(state).farmers);
+  return Math.min(homeRoom(state), workersOf(state).farmers);
 }
 
 // Effects ----------------------------------------------------------------------------

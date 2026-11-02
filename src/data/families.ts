@@ -1,8 +1,10 @@
 import { registerBuildable } from './buildables';
 import type { KnownItemId } from './items';
+import type { MaterialCost } from './materials';
 
 /**
- * Families: every farmer is a family living in a home. The farmhouse houses the first one, each cottage one more.
+ * Families: every farmer is a family living in a home. The farmhouse houses the first one, each cottage one more (two
+ * once upgraded to level 2).
  * Families eat from the granary, burn firewood in winter, want clothes once the loom is unlocked and enjoy ale once
  * the brewery is; how well the farm meets those needs is their approval, and approval decides whether new families
  * move in or old ones leave.
@@ -11,7 +13,7 @@ import type { KnownItemId } from './items';
 
 export const COTTAGE = 'cottage';
 
-/** Homes besides the cottages: the farmhouse houses the starting family. */
+/** Room besides the cottages: the farmhouse houses the starting family. */
 export const FARMHOUSE_HOMES = 1;
 
 /** What families eat, in the order they reach for it. Never feed, wool, cloth or the brewery's malt and ale. */
@@ -20,7 +22,7 @@ export const FOODS: readonly KnownItemId[] = ['wheat', 'carrot', 'corn', 'potato
 /** Food each family eats a day. */
 export const MEAL_PER_FAMILY = 2;
 
-/** Wood each occupied home burns on a winter day. */
+/** Wood each family burns at its own hearth on a winter day (a full level 2 cottage burns two). */
 export const FIREWOOD_PER_HOME = 1;
 
 /**
@@ -68,12 +70,27 @@ export const APPROVAL = {
   freezing: -60,
 } as const;
 
+export interface CottageLevel {
+  /** Families this cottage houses at this level. */
+  room: number;
+  /**
+   * What going up to this level asks (missing for level 1, which is the build cost), as Manor Lords' burgages do: the
+   * farm's level, a winter's firewood in store (one per family per winter day, counted after the upgrade's wood),
+   * `foods` kinds of food eaten on the last settled day with nobody short, and the cost.
+   */
+  upgrade?: { cost: number; materials: MaterialCost; farmLevel: number; foods: number };
+}
+
 /** The cottage: a small home for one more family. Costs about what hiring a farmer for cash used to ($150). */
 export const COTTAGE_DEF = {
   cost: 80,
   materials: { wood: 8 },
   footprint: { w: 2, h: 2 },
+  /** Level 1 first; the highest level is the last. A cottage never goes down a level. */
+  levels: [{ room: 1 }, { room: 2, upgrade: { cost: 120, materials: { wood: 12, stone: 8 }, farmLevel: 3, foods: 2 } }] as readonly CottageLevel[],
 } as const;
+
+export const MAX_COTTAGE_LEVEL = COTTAGE_DEF.levels.length;
 
 registerBuildable({
   id: COTTAGE,
@@ -86,4 +103,5 @@ registerBuildable({
   description: 'A home for one more family: a new farmer moves in when your families are happy.',
   icon: '🛖',
   unlockLevel: 1,
+  initialState: () => ({ level: 1 }),
 });

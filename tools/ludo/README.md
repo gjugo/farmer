@@ -13,6 +13,7 @@ git (or rerun the commands below) after running it.
 | --- | --- | --- |
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
 | `cottage`, `cottage_winter` | `cottage_raw.png`, `cottage_winter_raw.png` | all |
+| `cottage_2`, `cottage_2_winter` (the cottage at level 2) | `cottage_2_raw.png`, `cottage_2_winter_raw.png`; see **Cottage level 2** below | all |
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
 | `bakery`, `bakery_winter` | `bakery_raw.png`, `bakery_winter_raw.png` | all |
 | `dairy`, `dairy_winter` | `dairy_raw.png`, `dairy_winter_raw.png` | all |
@@ -22,7 +23,6 @@ git (or rerun the commands below) after running it.
 | `woodcutter_lodge`, `woodcutter_lodge_winter` | `woodcutter_lodge_raw.png`, `woodcutter_lodge_winter_raw.png` | all |
 | `quarry`, `quarry_winter` | `quarry_raw.png`, `quarry_winter_raw.png` | all |
 | `mine`, `mine_winter` | `mine_raw.png`, `mine_winter_raw.png` | all |
-| `for_sale_sign`, `for_sale_sign_winter` | `for_sale_sign_raw.png`, `for_sale_sign_winter_raw.png` | all |
 | `well`, `well_winter`, `kennel`, `kennel_winter` (1×1) | `well_raw.png`, `well_winter_raw.png`, `kennel_raw.png`, `kennel_winter_raw.png`; see **Well, kennel, scarecrow and crow** below | all |
 | `scarecrow`, `scarecrow_winter` (1×1, no pad) | `scarecrow_raw.png`, `scarecrow_winter_raw.png` | all |
 | `crow_0`, `crow_1` (two frames: standing, pecking) | `crow_0_raw.png`, `crow_1_raw.png` | none |
@@ -112,10 +112,7 @@ $P $L/fit_building.py $L/source/quarry_raw.png /tmp/props quarry 2 2 45 286 754 
 $P $L/fit_building.py $L/source/quarry_winter_raw.png /tmp/props quarry_winter 2 2 44 288 754 286 397 464.5
 $P $L/fit_building.py $L/source/mine_raw.png /tmp/props mine 2 2 39 260 743 258 389 435
 $P $L/fit_building.py $L/source/mine_winter_raw.png /tmp/props mine_winter 2 2 43 255 723 255 383 425
-# The sign has no pad: fitted as a prop, BASE at the foot of the post (Ludo drew the winter one 4% narrower).
-$P $L/fit_prop.py $L/source/for_sale_sign_raw.png /tmp/props for_sale_sign 207 712 0.22 --shadow=28
-$P $L/fit_prop.py $L/source/for_sale_sign_winter_raw.png /tmp/props for_sale_sign_winter 198 709 0.22 --shadow=28
-for n in weaving_hut woodcutter_lodge quarry mine for_sale_sign; do
+for n in weaving_hut woodcutter_lodge quarry mine; do
   $P $L/install_prop.py /tmp/props $n; $P $L/install_prop.py /tmp/props ${n}_winter
 done
 ```
@@ -159,12 +156,35 @@ Install with `install_prop.py` (it reads the `NAME.json` the fit writes), or cop
 `/tmp/1x_<name>.png` to `public/assets/farm/{2x,1x}/buildings/<name>.png` and set the asset's `w`, `h`, `anchor`
 and `origin` (anchor / size) in `manifest.json` by hand; either way the `shadow` goes (Ludo draws the shadow on
 the pad). Some code points into a building's 2x sprite and needs updating with it: the cottage's chimney
-(`CHIMNEY_AT` in `src/features/families/index.ts`), the coop's run (`WALK_AREA` in
+(`CHIMNEY_AT` in `src/features/families/index.ts`, one list per level), the coop's run (`WALK_AREA` in
 `src/features/animals/textures.ts`), the bakery's, dairy's and weaving hut's smoke (`SMOKE_AT` in
 `src/features/processing/textures.ts`), and the woodcutter's, quarry's and mine's chips and dust (`WORK_AT` in
 `src/features/resources/index.ts`, a grid point on the footprint). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
 its own bounds, so pieces fitted with the same corners share one canvas and anchor.
+
+### Cottage level 2
+
+The cottage has a sprite per level like the granary: `cottage` is level 1 (and the build card), `cottage_2` level 2.
+`cottage_raw.png` is not reachable by URL from a private repo, so it went to `editImage` as base64 (`image_type`
+`sprite`, n=3), posted to the Ludo MCP endpoint from a script: "Keep the same cottage exactly, same pad, same angle,
+lighting, colours and dark outlines, same cel-shaded style, the same grass pad corners, but make it a bigger,
+better-built two-storey home: a stone ground floor, a timber-framed upper floor with a dormer window, a bigger shingle
+roof, a second chimney on the other end of the roof, flower window boxes. It must read as the same cottage grown,
+clearly bigger, standing on the same pad." The third came closest (two storeys filling more of the pad, both
+chimneys clear of the roof). Winter: `editImage` on that image's Ludo URL (n=2): "Keep the same house exactly, same
+size, position, pad, angle, lighting, colours and dark outlines, same cel-shaded style; make it winter: thick white
+snow on the roof, the dormer and both chimney tops, a little snow on the window boxes and sills, and cover the whole
+grass pad in white snow. Do not move or resize anything." (the second, thicker snow). Same canvas, so both are fitted
+with the summer corners. The chimney tops in the 2x sprite are `CHIMNEY_AT[1]` in `src/features/families/index.ts`.
+
+```bash
+$P $L/add_asset.py cottage cottage_2 "--notes=cottage, level 2, 2x2: a bigger home for two families, two chimneys (smoke drawn by the game) (Ludo.ai, cel-shaded; shadow baked in)"
+$P $L/add_asset.py cottage_winter cottage_2_winter "--notes=cottage level 2 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)"
+for n in cottage_2 cottage_2_winter; do
+  $P $L/fit_building.py $L/source/${n}_raw.png /tmp/props $n 2 2 58 311 732 312 396 480 && $P $L/install_prop.py /tmp/props $n
+done
+```
 
 ### Well, kennel, scarecrow and crow
 
@@ -175,9 +195,10 @@ farm well with a little pitched wooden shingle roof on two wooden posts, a crank
 A small wooden dog kennel with a pitched plank roof and a round-arched doorway, with a friendly brown and white farm
 dog lying in front of the doorway, ... on a small square grass pad of exactly one tile. Isometric 2:1 view, south
 corner of the pad toward the viewer, a straight-edged diamond pad with no thickness ...". The scarecrow used
-`for_sale_sign_raw.png` ("a straw-stuffed figure on a single upright wooden pole with a crossbar for its arms,
+`for_sale_sign_raw.png` (the old "For sale" sign, kept in `source/` for this; its sprites went with land buying, see
+below) ("a straw-stuffed figure on a single upright wooden pole with a crossbar for its arms,
 floppy brown straw hat, patched checked shirt and patched trousers, ... a small tuft of grass at the foot of the
-pole ... no ground plate, no soil, no shadow") and is fitted padless like the sign (category `buildings`, so its
+pole ... no ground plate, no soil, no shadow") and is fitted padless as the sign was (category `buildings`, so its
 winter twin swaps in); its winter edit kept the canvas, so both use one BASE and SCALE. The crow used
 `chicken_raw.png` ("a small black crow standing on the ground, wings folded, head up, three-quarter view from
 slightly above ..., only the bird, no ground, no shadow"); `crow_1` is `editImage` on it ("the same crow, pecking at
@@ -1029,7 +1050,7 @@ Seasons: spring and summer are the Ludo grass as is. Autumn is it recoloured gol
 the trampled-snow tile for paths, and frozen soil: the tilled soil greyed with snow in the furrows.
 
 **Meadow variants, forest floor and wet meadow.** The game picks a tile per map tile in `src/scenes/ground.ts` (plain
-grass on about 60%, the rest in patches) and tints it; locked land is a tint too, so `unowned_0/1` are still built but
+grass on about 60%, the rest in patches) and tints it; the whole map is the farm's (no locked land), so `unowned_0/1` are still built but
 no longer drawn. The script reads these from the same folder as `GRASS_A`, each an `editImage` (Map Tile, `n` 2–4, one
 picked) on the Ludo web generation `grass_a_raw.png` came from, or on the snow tile's for winter:
 
@@ -1082,7 +1103,7 @@ texture wraps once per tile, so a strip continues its neighbouring grass tile ex
 the rim of the dirt (`HW` in `ground_tiles.py`); the field strips (`fringe_field_*`) are a low band whose tufts just
 reach over the soil bed's rim (`I`), so they never get in the crops' way. Seasons: spring and summer green, autumn the
 gold grass with its leaves, winter snow-crusted (snow with frosted, greyed blades in it). The game draws them all in
-one Blitter (`src/features/fringes`), tinted like the neighbouring grass tile (rich soil, locked land).
+one Blitter (`src/features/fringes`), tinted like the neighbouring grass tile (colour patches, rich soil, zone).
 
 ## Trader's wagon
 
@@ -1100,6 +1121,13 @@ for n in trader_wagon trader_wagon_winter; do
   $P $L/install_prop.py /tmp/props $n
 done
 ```
+
+## Removed: the "For sale" sign
+
+The whole map is the farm's from the start (no land to buy), so `for_sale_sign` and `for_sale_sign_winter` (and
+their old `_shadow` layers) were taken out of `manifest.json` and `public/assets/farm/{2x,1x}/buildings/` by hand.
+Their raw images stay in `source/`: `for_sale_sign_raw.png` is the scarecrow's style image. The `land` sound
+(`public/audio/land.mp3`, played on buying land) went too.
 
 ## Starting camp
 

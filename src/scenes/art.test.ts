@@ -22,6 +22,7 @@ import {
   seasonalArt,
   seasonalComposed,
   STORAGE_ART,
+  cottageArt,
   storageArt,
   ART_RES,
   artFor,
@@ -336,6 +337,17 @@ describe('seasonal art', () => {
     }
   });
 
+  it('draws a cottage per level, level 1 also the build preview', () => {
+    expect(cottageArt(1)).toBe('cottage');
+    expect(cottageArt(2)).toBe('cottage_2');
+    expect(cottageArt(9)).toBe('cottage_2');
+    expect(artFor('cottage')).toBe('cottage');
+    for (const name of ['cottage_2', 'cottage_2_winter']) {
+      expect(assets.get(name)?.footprint, name).toEqual([2, 2]);
+      expect(usedArt()).toContain(name);
+    }
+  });
+
   it('every building sprite has a winter version, so every building gets snow on its roof', () => {
     const buildings = manifest.assets.filter((a) => a.category === 'buildings' && !a.name.endsWith('_winter') && a.type === 'image');
     expect(buildings.length).toBeGreaterThan(10);
@@ -343,8 +355,12 @@ describe('seasonal art', () => {
       expect(assets.has(`${b.name}_winter`), `${b.name}_winter`).toBe(true);
       expect(seasonalArt(b.name, 'winter')).toBe(`${b.name}_winter`);
     }
-    // the farmhouse, coop, processors and every storage level the game draws
-    const drawn = [...listBuildables().map((b) => artFor(b.texture)), ...(Object.keys(STORAGE_ART) as (keyof typeof STORAGE_ART)[]).flatMap((t) => [1, 2, 3].map((l) => storageArt(t, l)))];
+    // the farmhouse, coop, processors and every storage and cottage level the game draws
+    const drawn = [
+      ...listBuildables().map((b) => artFor(b.texture)),
+      ...(Object.keys(STORAGE_ART) as (keyof typeof STORAGE_ART)[]).flatMap((t) => [1, 2, 3].map((l) => storageArt(t, l))),
+      ...[1, 2].map(cottageArt),
+    ];
     for (const name of drawn) {
       if (assets.get(name)?.category === 'buildings') expect(usedArt(), name).toContain(`${name}_winter`);
     }
@@ -357,7 +373,7 @@ describe('seasonal art', () => {
     for (const { tiles } of Object.values(composed)) for (const t of tiles) expect(assets.has(t.art), t.art).toBe(true);
   });
 
-  it('scatters a few ponds on the locked land of a new map, apart from the bushes', () => {
+  it('scatters a few ponds out in the wild of a new map, apart from the bushes', () => {
     let ponds = 0;
     let other = 0;
     for (let y = 0; y < MAP_HEIGHT; y++) {
