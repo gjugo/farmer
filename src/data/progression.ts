@@ -120,6 +120,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'sew-clothes', title: 'Sew 3 clothes', icon: '👕', kind: 'make', item: 'clothes', count: 3, reward: { money: 500, xp: 250 } },
   { id: 'build-blacksmith', title: 'Build a blacksmith', icon: '🔨', kind: 'own-buildings', type: 'blacksmith', count: 1, reward: { money: 200, xp: 100 } },
   { id: 'forge-tools', title: 'Forge 5 tools', icon: '🛠️', kind: 'make', item: 'tools', count: 5, reward: { money: 250, xp: 120 } },
+  { id: 'upgrade-cottage', title: 'Upgrade a cottage', icon: '🏡', kind: 'upgrade', type: 'cottage', count: 1, reward: { money: 150, xp: 75 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

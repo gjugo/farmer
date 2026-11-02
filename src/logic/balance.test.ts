@@ -22,7 +22,7 @@ import { SEASON_DAYS } from '../data/seasons';
 import type { FarmContext } from '../game/context';
 import { withFarmer } from '../game/workers';
 import { DAY_MS } from './constants';
-import { homesOf } from './families';
+import { homeRoom } from './homes';
 import { DEFENCES, type DefenceType } from '../data/hazards';
 import { guardedBy, harshWinterAt, harshWinterWood, hazardsOf, isProtected, setHazardsEnabled } from './hazards';
 import { dayOfSeason, nextSeasonAt, seasonAt } from './seasons';
@@ -240,7 +240,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     }
     // A harsh winter (announced at the start of autumn) takes twice the wood: it stocks what the warning says.
     const harsh = harshWinterAt(game.state, nextSeasonAt(game.now)) || harshWinterAt(game.state, game.now);
-    const firewood = harsh ? harshWinterWood(game.state) : SEASON_DAYS * FIREWOOD_PER_HOME * Math.min(families, homesOf(game.state));
+    const firewood = harsh ? harshWinterWood(game.state) : SEASON_DAYS * FIREWOOD_PER_HOME * Math.min(families, homeRoom(game.state));
     // Materials its buildings made beyond a working stock are sold too.
     for (const id of MATERIAL_IDS) {
       const keep = id === 'wood' ? Math.max(KEEP_MATERIALS, firewood) : KEEP_MATERIALS;
@@ -273,7 +273,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // Staff every finished field and pen; for those left without a farmer, build cottages so families come for them.
     // (Fields frozen in winter don't count: their farmers are at the lodge and the quarry.)
     const unstaffed = workplaces.filter((wp) => workerAt(game.state, wp.id) === null && !frozen(wp) && !assignFarmer(game, wp.id).ok).length;
-    const comingHomes = homesOf(game.state) - workersOf(game.state).farmers + game.objectsOfType(COTTAGE).filter((o) => o.site).length;
+    const comingHomes = homeRoom(game.state) - workersOf(game.state).farmers + game.objectsOfType(COTTAGE).filter((o) => o.site).length;
     // Only when the pantry holds its reserve: a family it can't feed would leave again.
     const pantry = PANTRY.reduce((n, id) => n + game.count(id), 0);
     if (unstaffed > 0 && comingHomes <= 0 && pantry >= (keepFood - 1) * foodKinds) build(COTTAGE, 40);

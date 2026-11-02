@@ -13,6 +13,7 @@ git (or rerun the commands below) after running it.
 | --- | --- | --- |
 | `farmhouse`, `farmhouse_winter` | `farmhouse_raw.png`, `farmhouse_winter_raw.png` | all |
 | `cottage`, `cottage_winter` | `cottage_raw.png`, `cottage_winter_raw.png` | all |
+| `cottage_2`, `cottage_2_winter` (the cottage at level 2) | `cottage_2_raw.png`, `cottage_2_winter_raw.png`; see **Cottage level 2** below | all |
 | `chicken_coop`, `chicken_coop_winter` | `chicken_coop_raw.png`, `chicken_coop_winter_raw.png` | all |
 | `bakery`, `bakery_winter` | `bakery_raw.png`, `bakery_winter_raw.png` | all |
 | `dairy`, `dairy_winter` | `dairy_raw.png`, `dairy_winter_raw.png` | all |
@@ -158,12 +159,35 @@ Install with `install_prop.py` (it reads the `NAME.json` the fit writes), or cop
 `/tmp/1x_<name>.png` to `public/assets/farm/{2x,1x}/buildings/<name>.png` and set the asset's `w`, `h`, `anchor`
 and `origin` (anchor / size) in `manifest.json` by hand; either way the `shadow` goes (Ludo draws the shadow on
 the pad). Some code points into a building's 2x sprite and needs updating with it: the cottage's chimney
-(`CHIMNEY_AT` in `src/features/families/index.ts`), the coop's run (`WALK_AREA` in
+(`CHIMNEY_AT` in `src/features/families/index.ts`, one list per level), the coop's run (`WALK_AREA` in
 `src/features/animals/textures.ts`), the bakery's, dairy's and weaving hut's smoke (`SMOKE_AT` in
 `src/features/processing/textures.ts`), and the woodcutter's, quarry's and mine's chips and dust (`WORK_AT` in
 `src/features/resources/index.ts`, a grid point on the footprint). `--keep=N` is how many px below the pad's edge stay (default 2, the outline);
 lower it if bits of the soil outline show. `--box=X0,Y0,X1,Y1` crops the scaled 2x image to that box instead of
 its own bounds, so pieces fitted with the same corners share one canvas and anchor.
+
+### Cottage level 2
+
+The cottage has a sprite per level like the granary: `cottage` is level 1 (and the build card), `cottage_2` level 2.
+`cottage_raw.png` is not reachable by URL from a private repo, so it went to `editImage` as base64 (`image_type`
+`sprite`, n=3), posted to the Ludo MCP endpoint from a script: "Keep the same cottage exactly, same pad, same angle,
+lighting, colours and dark outlines, same cel-shaded style, the same grass pad corners, but make it a bigger,
+better-built two-storey home: a stone ground floor, a timber-framed upper floor with a dormer window, a bigger shingle
+roof, a second chimney on the other end of the roof, flower window boxes. It must read as the same cottage grown,
+clearly bigger, standing on the same pad." The third came closest (two storeys filling more of the pad, both
+chimneys clear of the roof). Winter: `editImage` on that image's Ludo URL (n=2): "Keep the same house exactly, same
+size, position, pad, angle, lighting, colours and dark outlines, same cel-shaded style; make it winter: thick white
+snow on the roof, the dormer and both chimney tops, a little snow on the window boxes and sills, and cover the whole
+grass pad in white snow. Do not move or resize anything." (the second, thicker snow). Same canvas, so both are fitted
+with the summer corners. The chimney tops in the 2x sprite are `CHIMNEY_AT[1]` in `src/features/families/index.ts`.
+
+```bash
+$P $L/add_asset.py cottage cottage_2 "--notes=cottage, level 2, 2x2: a bigger home for two families, two chimneys (smoke drawn by the game) (Ludo.ai, cel-shaded; shadow baked in)"
+$P $L/add_asset.py cottage_winter cottage_2_winter "--notes=cottage level 2 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)"
+for n in cottage_2 cottage_2_winter; do
+  $P $L/fit_building.py $L/source/${n}_raw.png /tmp/props $n 2 2 58 311 732 312 396 480 && $P $L/install_prop.py /tmp/props $n
+done
+```
 
 ### Well, kennel, scarecrow and crow
 

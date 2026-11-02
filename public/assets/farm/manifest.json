@@ -6420,6 +6420,44 @@
    }
   },
   {
+   "name": "cottage_2",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "cottage, level 2, 2x2: a bigger home for two families, two chimneys (smoke drawn by the game) (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/cottage_2.png",
+     "w": 507,
+     "h": 352,
+     "anchor": [
+      253.0,
+      93.0
+     ],
+     "origin": [
+      0.49901,
+      0.2642
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/cottage_2.png",
+     "w": 254,
+     "h": 176,
+     "anchor": [
+      126.5,
+      46.5
+     ],
+     "origin": [
+      0.49803,
+      0.2642
+     ]
+    }
+   }
+  },
+  {
    "name": "egg",
    "category": "icons",
    "type": "image",
@@ -22321,6 +22359,44 @@
      "origin": [
       0.49803,
       0.22455
+     ]
+    }
+   }
+  },
+  {
+   "name": "cottage_2_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "cottage level 2 in winter: snow on the roof (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/cottage_2_winter.png",
+     "w": 506,
+     "h": 351,
+     "anchor": [
+      253.0,
+      92.0
+     ],
+     "origin": [
+      0.5,
+      0.26211
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/cottage_2_winter.png",
+     "w": 253,
+     "h": 176,
+     "anchor": [
+      126.5,
+      46.0
+     ],
+     "origin": [
+      0.5,
+      0.26136
      ]
     }
    }

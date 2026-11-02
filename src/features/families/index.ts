@@ -5,24 +5,28 @@ import {
   CLOTHES_PER_FAMILY,
   COTTAGE,
   FAMILIES_PER_ALE,
-  FARMHOUSE_HOMES,
   FIREWOOD_PER_HOME,
   FOODS,
   LEAVE_APPROVAL,
+  MAX_COTTAGE_LEVEL,
   MEAL_PER_FAMILY,
 } from '../../data/families';
 import { getItem } from '../../data/items';
 import { MAX_FARMERS } from '../../data/workers';
-import type { FarmContext, ObjectView, PlacedObject, SheetSpec } from '../../game/context';
+import type { FarmContext, ObjectView, PanelSpec, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { formatDuration } from '../../logic/crops';
-import { aleWanted, clothesNeeded, familiesCount, familiesOf, homesOf } from '../../logic/families';
+import { cottageChecklist, nextCottageLevel, upgradeCottage } from '../../logic/cottages';
+import { aleWanted, clothesNeeded, familiesCount, familiesOf } from '../../logic/families';
+import { cottageLevel, cottageRoom, familiesIn, homeList, homeRoom } from '../../logic/homes';
+import { buildTime } from '../../logic/perks';
 import { suppliesOf } from '../../logic/supplies';
 import type { GameState } from '../../logic/types';
 import type { Game } from '../../logic/game';
 import { seasonOf } from '../../logic/seasons';
-import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
-import { packAsset } from '../../scenes/sprites';
+import { withFarmer } from '../../game/workers';
+import { ART_RES, ART_SCALE, cottageArt, SHADOW } from '../../scenes/art';
+import { packAsset, textureKey } from '../../scenes/sprites';
 import { h } from '../../ui/dom';
 import { withIcons } from '../../ui/icons';
 import { homeGardenLine } from '../gardens';
@@ -54,12 +58,12 @@ function foods(ate: Record<string, number>): string {
 /** What the sheet says about the next family: when they come, or what stops them. */
 function arrivalHint(game: Game): string {
   const { state } = game;
-  const homes = homesOf(state);
+  const homes = homeRoom(state);
   const families = familiesCount(state);
   const s = familiesOf(state);
   if (families >= MAX_FARMERS) return `Your farm has the most families it can (${MAX_FARMERS}).`;
-  if (families > homes) return `${families - homes} of your farmers have no home of their own: build cottages for them before another family can come.`;
-  if (families === homes) return 'Build a cottage to house another family.';
+  if (families > homes) return `${families - homes} of your farmers have no home of their own: build a 🛖 cottage, or upgrade one, before another family can come.`;
+  if (families === homes) return 'Build a 🛖 cottage, or upgrade one, to house another family.';
   if (s.approval < ARRIVE_APPROVAL) return `A home is free: a family moves in once approval reaches ${ARRIVE_APPROVAL}%.`;
   const at = s.nextArrivalAt;
   return at !== null && at > game.now ? `A home is free: a new family arrives in about ${formatDuration(at - game.now)}.` : 'A home is free: a new family is on the way.';
@@ -69,7 +73,7 @@ function arrivalHint(game: Game): string {
 export function familiesBlock(game: Game): HTMLElement {
   const { state } = game;
   const s = familiesOf(state);
-  const homes = homesOf(state);
+  const homes = homeRoom(state);
   const families = familiesCount(state);
   const day = s.lastDay;
   const lastLines: string[] = [];
@@ -92,7 +96,7 @@ export function familiesBlock(game: Game): HTMLElement {
     h(
       'p',
       { class: 'families-stats' },
-      h('span', { 'data-testid': 'families-homes' }, `🏡 ${homes} ${homes === 1 ? 'home' : 'homes'}`),
+      h('span', { 'data-testid': 'families-homes' }, `🏡 room for ${homes} ${homes === 1 ? 'family' : 'families'}`),
       h('span', { 'data-testid': 'families-count' }, `👪 ${families} ${families === 1 ? 'family' : 'families'}`),
       h('span', { class: `families-approval approval-${s.approval >= ARRIVE_APPROVAL ? 'good' : s.approval >= LEAVE_APPROVAL ? 'meh' : 'bad'}`, 'data-testid': 'families-approval' }, `${approvalFace(s.approval)} ${s.approval}%`),
     ),
@@ -112,7 +116,7 @@ export function familiesBlock(game: Game): HTMLElement {
       'p',
       { class: 'muted families-needs' },
       withIcons(
-        `Each family eats ${MEAL_PER_FAMILY} food a day from the granary (${FOODS.map((id) => getItem(id)?.icon ?? id).join(' ')}): the more kinds they get, the happier they are. On winter days each home burns ${FIREWOOD_PER_HOME} 🪵 wood from the storehouse.${clothes}${ale}`,
+        `Each family eats ${MEAL_PER_FAMILY} food a day from the granary (${FOODS.map((id) => getItem(id)?.icon ?? id).join(' ')}): the more kinds they get, the happier they are. On winter days each family burns ${FIREWOOD_PER_HOME} 🪵 wood at its own hearth, from the storehouse.${clothes}${ale}`,
       ),
     ),
   );
@@ -122,7 +126,7 @@ export function familiesBlock(game: Game): HTMLElement {
 export function familiesSignature(game: Game): string {
   const s = familiesOf(game.state);
   const left = s.nextArrivalAt !== null ? Math.ceil((s.nextArrivalAt - game.now) / 10_000) : -1;
-  return `${homesOf(game.state)}|${familiesCount(game.state)}|${s.approval}|${s.settledDay}|${left}|${clothesNeeded(game)}|${aleWanted(game)}`;
+  return `${homeRoom(game.state)}|${familiesCount(game.state)}|${s.approval}|${s.settledDay}|${left}|${clothesNeeded(game)}|${aleWanted(game)}`;
 }
 
 function familiesSheet(ctx: FarmContext): SheetSpec {
@@ -166,11 +170,11 @@ registerHudButton({
     opens: 'families',
     detail: (ctx) => {
       const { state } = ctx.game;
-      const homes = homesOf(state);
+      const homes = homeRoom(state);
       const building = homesBuilding(state);
       return [
-        `${homes} ${homes === 1 ? 'home' : 'homes'} (the farmhouse and every cottage), ${familiesCount(state)} lived in`,
-        building ? `${building} ${building === 1 ? 'cottage' : 'cottages'} being built` : 'Build a 🛖 cottage for one more family',
+        `Room for ${homes} ${homes === 1 ? 'family' : 'families'} (the farmhouse and every cottage; a level 2 cottage houses 2), ${familiesCount(state)} living here`,
+        building ? `${building} ${building === 1 ? 'cottage' : 'cottages'} being built` : 'Build a 🛖 cottage, or upgrade one, for one more family',
         arrivalHint(ctx.game),
       ];
     },
@@ -178,7 +182,7 @@ registerHudButton({
   live: (ctx) => {
     const { state } = ctx.game;
     const building = homesBuilding(state);
-    return { icon: '🏠', label: `${Math.max(0, homesOf(state) - familiesCount(state))}${building ? ` (+${building})` : ''}` };
+    return { icon: '🏠', label: `${Math.max(0, homeRoom(state) - familiesCount(state))}${building ? ` (+${building})` : ''}` };
   },
 });
 
@@ -233,8 +237,8 @@ registerDebugInfo('families', () => {
   if (!game) return null;
   const s = familiesOf(game.state);
   const d = s.lastDay;
-  return structuredClone({
-    homes: homesOf(game.state),
+  return Object.assign(structuredClone({
+    homes: homeRoom(game.state),
     families: familiesCount(game.state),
     approval: s.approval,
     breakdown: s.breakdown,
@@ -249,6 +253,15 @@ registerDebugInfo('families', () => {
         }
       : null,
     nextArrivalAt: s.nextArrivalAt,
+    homeList: homeList(game.state, familiesCount(game.state)),
+  }), {
+    /** The upgrade checklist of cottage `id` (`{ level, fuel, food, cost, ok }`, each line `{ ok, text }`), or null. */
+    upgrade: (id: string) => {
+      const obj = game.getObject(id);
+      if (!obj || obj.type !== COTTAGE) return null;
+      const c = cottageChecklist(game, obj);
+      return structuredClone({ level: c.level, fuel: c.fuel, food: c.food, cost: c.cost, ok: c.ok, next: c.next, blocked: c.blocked });
+    },
   });
 });
 
@@ -263,63 +276,151 @@ onGameStart((ctx) => {
 
 // Cottages ---------------------------------------------------------------------------
 
-/** The chimney top in the cottage's 2x sprite (the Ludo.ai cottage, `tools/ludo/source/cottage_raw.png`). */
-const CHIMNEY_AT = { x: 172, y: 18 };
+/**
+ * The chimney tops in each level's 2x sprite (the Ludo.ai cottages, `tools/ludo/source/cottage_raw.png` and
+ * `cottage_2_raw.png`). Each family has its own hearth: chimney i smokes while family i + 1 lives there.
+ */
+const CHIMNEY_AT: readonly (readonly { x: number; y: number }[])[] = [
+  [{ x: 172, y: 18 }],
+  [
+    { x: 167, y: 38 },
+    { x: 323, y: 12 },
+  ],
+];
 const PUFFS = 3;
 
-const puffsOf = new Map<string, Phaser.GameObjects.Image[]>();
+interface CottageView {
+  level: number;
+  /** Puffs per chimney. */
+  puffs: Phaser.GameObjects.Image[][];
+  badge: Phaser.GameObjects.Container | null;
+}
 
-/** Is a family living in this cottage? Cottages fill up in build order, after the farmhouse. */
-function occupied(game: Game, obj: PlacedObject): boolean {
-  if (obj.site) return false;
-  const i = game.state.objects.filter((o) => o.type === COTTAGE && !o.site).findIndex((o) => o.id === obj.id);
-  return i >= 0 && i < familiesCount(game.state) - FARMHOUSE_HOMES;
+const cottageViews = new Map<string, CottageView>();
+
+/** Families living in this cottage: homes fill up in build order after the farmhouse, each up to its room. */
+function occupants(game: Game, obj: PlacedObject): number {
+  return obj.site ? 0 : familiesIn(game.state, familiesCount(game.state), obj.id);
 }
 
 /** Smoke on winter days while the homes have firewood. */
-function smoking(game: Game, obj: PlacedObject): boolean {
+function smoking(game: Game): boolean {
   const day = familiesOf(game.state).lastDay;
-  return seasonOf(game.state.clock) === 'winter' && !!day && day.firewood !== null && day.firewood > 0 && occupied(game, obj);
+  return seasonOf(game.state.clock) === 'winter' && !!day && day.firewood !== null && day.firewood > 0;
+}
+
+/** Puts up the sprite, chimneys and "Lv 2" badge (none at level 1) of the cottage's level. */
+function syncCottage(ctx: FarmContext, obj: PlacedObject, view: ObjectView): void {
+  const level = cottageLevel(obj);
+  const cv = cottageViews.get(obj.id);
+  if (!cv || cv.level === level) return;
+  cv.level = level;
+  const art = cottageArt(level);
+  view.sprite.setTexture(textureKey(ctx.scene, art));
+  view.shadow?.setTexture(textureKey(ctx.scene, `${art}${SHADOW}`));
+  for (const p of cv.puffs.flat()) p.destroy();
+  cv.badge?.destroy();
+  cv.badge = null;
+  const [ax, ay] = packAsset(art)?.res[ART_RES].anchor ?? [0, 0];
+  cv.puffs = (CHIMNEY_AT[level - 1] ?? CHIMNEY_AT[0]).map((c) => {
+    const at = { x: view.top.x + (c.x - ax) * ART_SCALE, y: view.top.y + (c.y - ay) * ART_SCALE };
+    const puffs = Array.from({ length: PUFFS }, () => ctx.scene.add.image(at.x, at.y, 'proc-smoke').setVisible(false).setData('at', at));
+    view.container.add(puffs);
+    return puffs;
+  });
+  if (level > 1) {
+    // Like the granary's, but centred over the roof between the chimneys, so it hides neither.
+    const label = ctx.scene.add
+      .text(0, 0, `Lv ${level}`, { fontFamily: 'system-ui, sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#fff8e6', resolution: 2 })
+      .setOrigin(0.5);
+    const bg = ctx.scene.add.graphics();
+    bg.fillStyle(0x3a2618, 0.85).fillRoundedRect(-22, -11, 44, 22, 10);
+    bg.lineStyle(2, 0xf2c14e).strokeRoundedRect(-22, -11, 44, 22, 10);
+    cv.badge = ctx.scene.add.container(view.top.x, view.top.y - ay * ART_SCALE - 8, [bg, label]).setName(`cottage-level-${level}`);
+    view.container.add(cv.badge);
+  }
+}
+
+/** "Home of 2 families" / "1 family, room for 1 more" / "Empty, room for 2". */
+function occupancyLine(n: number, room: number): string {
+  if (n === 0) return room === 1 ? 'Empty.' : `Empty, room for ${room}.`;
+  if (n >= room) return n === 1 ? 'Home of a family.' : `Home of ${n} families.`;
+  return `${n} ${n === 1 ? 'family' : 'families'}, room for ${room - n} more.`;
+}
+
+function doUpgradeCottage(ctx: FarmContext, obj: PlacedObject): void {
+  withFarmer(ctx, 'build', obj, buildTime(ctx.game.state, obj.type), () => {
+    const r = upgradeCottage(ctx.game, obj);
+    if (!r.ok) {
+      ctx.ui.toast(r.reason === 'needs' ? `Cannot upgrade: ${missingLines(ctx.game, obj)}` : 'Cannot upgrade', 'error');
+      return false;
+    }
+    ctx.ui.toast(`🏡 Cottage upgraded to level ${r.level}: room for ${cottageRoom(obj)} families`, 'success');
+    return true;
+  });
+}
+
+/** The unmet lines, for the toast when the needs lapsed while the farmer walked there. */
+function missingLines(game: Game, obj: PlacedObject): string {
+  const c = cottageChecklist(game, obj);
+  return [c.level, c.fuel, c.food, c.cost].filter((l) => !l.ok).map((l) => l.text).join('; ');
+}
+
+function cottagePanel(ctx: FarmContext, obj: PlacedObject): PanelSpec {
+  const { game } = ctx;
+  const level = cottageLevel(obj);
+  const title = level > 1 ? `Cottage · Level ${level}` : 'Cottage';
+  if (obj.site) return { title, icon: '🛖', lines: ['Being built: a free farmer builds it, then a family can move in.'] };
+  const n = occupants(game, obj);
+  const room = cottageRoom(obj);
+  const { approval } = familiesOf(game.state);
+  const lines = [`Level ${level} of ${MAX_COTTAGE_LEVEL}.`, occupancyLine(n, room)];
+  if (n > 0) lines.push(`Their ${n === 1 ? 'farmer sets' : 'farmers set'} out from the farmhouse door like everyone else. ${approvalFace(approval)} Approval ${approval}% (see 👪 Families).`);
+  if (n < room) lines.push(arrivalHint(game));
+  const spec: PanelSpec = { title, icon: '🛖', lines, hint: homeGardenLine(game, obj) };
+  const next = nextCottageLevel(obj);
+  if (!next) {
+    lines.push('Top level.');
+    return spec;
+  }
+  const c = cottageChecklist(game, obj);
+  lines.push(`⬆️ Level ${next.level} houses ${next.room} families. It needs:`);
+  spec.checklist = [
+    { id: 'cottage-level', ok: c.level.ok, text: c.level.text },
+    { id: 'cottage-fuel', ok: c.fuel.ok, text: c.fuel.text },
+    { id: 'cottage-food', ok: c.food.ok, text: c.food.text },
+    { id: 'cottage-cost', ok: c.cost.ok, text: c.cost.text },
+  ];
+  spec.actions = [{ label: `⬆️ Upgrade to level ${next.level}`, disabled: !c.ok, testId: 'cottage-upgrade', onClick: () => doUpgradeCottage(ctx, obj) }];
+  return spec;
 }
 
 registerBehavior<Record<string, unknown>>(COTTAGE, {
   create: (ctx, obj, view: ObjectView) => {
-    const [ax, ay] = packAsset(artFor(COTTAGE))?.res[ART_RES].anchor ?? [0, 0];
-    const at = { x: view.top.x + (CHIMNEY_AT.x - ax) * ART_SCALE, y: view.top.y + (CHIMNEY_AT.y - ay) * ART_SCALE };
-    const puffs = Array.from({ length: PUFFS }, () => ctx.scene.add.image(at.x, at.y, 'proc-smoke').setVisible(false).setData('at', at));
-    view.container.add(puffs);
-    puffsOf.set(obj.id, puffs);
+    cottageViews.set(obj.id, { level: 0, puffs: [], badge: null });
+    syncCottage(ctx, obj, view);
   },
+  refresh: syncCottage,
   update: (ctx, obj) => {
-    const puffs = puffsOf.get(obj.id);
-    if (!puffs) return;
-    const on = smoking(ctx.game, obj);
+    const cv = cottageViews.get(obj.id);
+    if (!cv) return;
+    const on = smoking(ctx.game);
+    const families = on ? occupants(ctx.game, obj) : 0;
     // Cosmetic only, so it runs on real time.
     const t = ctx.scene.time.now;
-    puffs.forEach((p, i) => {
-      p.setVisible(on);
-      if (!on) return;
-      const a = p.getData('at') as { x: number; y: number };
-      const phase = (t / 2000 + i / PUFFS) % 1;
-      p.setPosition(a.x + Math.sin(phase * 5 + i) * 5 + phase * 10, a.y - phase * 40);
-      p.setAlpha(0.7 * (1 - phase));
-      p.setScale(0.45 + phase * 0.7);
-    });
+    cv.puffs.forEach((puffs, chimney) =>
+      puffs.forEach((p, i) => {
+        const lit = chimney < families;
+        p.setVisible(lit);
+        if (!lit) return;
+        const a = p.getData('at') as { x: number; y: number };
+        const phase = (t / 2000 + i / PUFFS + chimney * 0.37) % 1;
+        p.setPosition(a.x + Math.sin(phase * 5 + i) * 5 + phase * 10, a.y - phase * 40);
+        p.setAlpha(0.7 * (1 - phase));
+        p.setScale(0.45 + phase * 0.7);
+      }),
+    );
   },
-  destroy: (_ctx, obj) => void puffsOf.delete(obj.id),
-  panel: (ctx, obj) => {
-    const { game } = ctx;
-    const home = occupied(game, obj);
-    const { approval } = familiesOf(game.state);
-    return {
-      title: 'Cottage',
-      icon: '🛖',
-      lines: obj.site
-        ? ['Being built: a free farmer builds it, then a family can move in.']
-        : home
-          ? [`Home of a family. Their farmer sets out from the farmhouse door like everyone else.`, `${approvalFace(approval)} Approval ${approval}% (see 👪 Families).`]
-          : [`Empty. ${arrivalHint(game)}`],
-      hint: obj.site ? undefined : homeGardenLine(game, obj),
-    };
-  },
+  destroy: (_ctx, obj) => void cottageViews.delete(obj.id), // the puffs and badge go with the view's container
+  panel: cottagePanel,
 });
