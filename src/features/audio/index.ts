@@ -1,5 +1,5 @@
-import type { FarmContext, SheetSpec } from '../../game/context';
-import { onGameStart, registerDebugInfo, registerHudButton, registerSettingsSection } from '../../game/hooks';
+import type { FarmContext } from '../../game/context';
+import { onGameStart, registerDebugInfo, registerHotkey, registerSettingsSection } from '../../game/hooks';
 import { uiSignals, type UiSignals } from '../../game/signals';
 import type { ActivityEvents } from '../../logic/activity';
 import { animalsOf, isPenType, type PenState } from '../../logic/animals';
@@ -163,12 +163,13 @@ onGameStart((ctx) => {
 
 // Controls -------------------------------------------------------------------------
 
-registerHudButton({
-  id: 'sound',
-  label: 'Mute',
-  icon: '🔊',
-  onClick: () => updateSettings({ muted: !settings.muted }),
-  live: () => (settings.muted ? { icon: '🔇', label: 'Unmute' } : { icon: '🔊', label: 'Mute' }),
+registerHotkey({
+  key: 'm',
+  label: 'Sound on / off',
+  run: (ctx) => {
+    updateSettings({ muted: !settings.muted });
+    ctx.ui.toast(settings.muted ? '🔇 Sound off (M to turn it on)' : '🔊 Sound on');
+  },
 });
 
 function slider(id: string, label: string, value: number, onInput: (v: number) => void): HTMLElement {
@@ -191,7 +192,7 @@ function slider(id: string, label: string, value: number, onInput: (v: number) =
 
 registerSettingsSection({
   id: 'sound',
-  render(ctx, body) {
+  render(_ctx, body) {
     const mute = h('input', {
       type: 'checkbox',
       id: 'sound-mute',
@@ -207,33 +208,27 @@ registerSettingsSection({
         slider('music', 'Music', settings.musicVolume, (v) => updateSettings({ musicVolume: v })),
         slider('sfx', 'Effects', settings.sfxVolume, (v) => updateSettings({ sfxVolume: v })),
         h('label', { class: 'check-row', for: 'sound-mute' }, mute, 'Mute all sound'),
-        h('button', { type: 'button', class: 'btn btn-secondary', 'data-testid': 'btn-credits', onclick: () => ctx.ui.toggleSheet(creditsSheet(ctx)) }, 'Credits'),
+        credits(),
       ),
     );
   },
 });
 
-function creditsSheet(ctx: FarmContext): SheetSpec {
-  return {
-    id: 'credits',
-    title: () => '🎵 Credits',
-    signature: () => 'credits',
-    render: (body) => {
-      const attributed = AUDIO_CREDITS.filter((c) => c.license !== 'CC0');
-      body.append(
-        h('p', {}, 'Sound effects, ambience and music are free recordings shared under open licences. Thank you!'),
-        attributed.length
-          ? h(
-              'ul',
-              { class: 'credits-list', 'data-testid': 'credits-list' },
-              attributed.map((c) =>
-                h('li', {}, `“${c.title}” by ${c.author} (`, h('a', { href: c.url, target: '_blank', rel: 'noopener' }, c.license), ')'),
-              ),
-            )
-          : '',
-        h('p', { class: 'muted' }, 'All other sounds are CC0 (public domain). The full list is in CREDITS.md.'),
-        h('div', { class: 'actions' }, h('button', { type: 'button', class: 'btn btn-secondary', onclick: () => ctx.ui.closePanel() }, 'Close')),
-      );
-    },
-  };
+/** The sound credits, folded under the sound settings (they live in ☰ Menu → Settings). */
+function credits(): HTMLElement {
+  const attributed = AUDIO_CREDITS.filter((c) => c.license !== 'CC0');
+  return h(
+    'details',
+    { class: 'credits', 'data-testid': 'credits' },
+    h('summary', { 'data-testid': 'btn-credits' }, '🎵 Credits'),
+    h('p', {}, 'Sound effects, ambience and music are free recordings shared under open licences. Thank you!'),
+    attributed.length
+      ? h(
+          'ul',
+          { class: 'credits-list', 'data-testid': 'credits-list' },
+          attributed.map((c) => h('li', {}, `“${c.title}” by ${c.author} (`, h('a', { href: c.url, target: '_blank', rel: 'noopener' }, c.license), ')')),
+        )
+      : '',
+    h('p', { class: 'muted' }, 'All other sounds are CC0 (public domain). The full list is in CREDITS.md.'),
+  );
 }

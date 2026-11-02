@@ -138,7 +138,7 @@ describe('families on the farm', () => {
     expect(homesOf(game.state)).toBe(1);
     expect(workersOf(game.state).farmers).toBe(1);
     expect(familiesOf(game.state)).toMatchObject({ approval: 50, nextArrivalAt: null, lastDay: null });
-    expect(getBuildable(COTTAGE)).toMatchObject({ category: 'housing', unlockLevel: 1, footprint: { w: 2, h: 2 } });
+    expect(getBuildable(COTTAGE)).toMatchObject({ category: 'homes', unlockLevel: 1, footprint: { w: 2, h: 2 } });
   });
 
   it('each day the families eat 2 food each from the granary, and approval follows what they ate', () => {

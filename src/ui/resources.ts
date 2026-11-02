@@ -23,7 +23,7 @@ interface Chip {
 }
 
 /**
- * The resource bar under the top bar, like Manor Lords: one chip per category (crops, animal products, feed,
+ * The resource bar at the top right, like Manor Lords': one chip per category (crops, animal products, feed,
  * goods, materials) with its total, a +N / −N flash when it changes, and the room used in the granaries and
  * storehouses. Hover (mouse) or tap a chip for each item's count; Esc or a tap outside closes it.
  */
@@ -137,6 +137,11 @@ export class ResourceBar {
       if (el.className !== cls) el.className = cls;
     }
     if (this.open) this.renderPopover();
+  }
+
+  /** Marks a category's chip, e.g. the materials while placing a building (null: none). */
+  highlight(category: ResourceCategory | null): void {
+    for (const [id, chip] of this.chips) chip.btn.classList.toggle('res-hl', id === category);
   }
 
   /** After a new game: show the new counts without flashing the difference. */

@@ -3,7 +3,7 @@ import { getItem, ITEM_LIST } from '../../data/items';
 import { formatMaterials, needsMaterialsMessage } from '../../data/materials';
 import { FARMHOUSE_STORE, MAX_STORAGE_LEVEL, STORAGE, type StorageType } from '../../data/storage';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
-import { onGameStart, registerBehavior, registerDebugInfo } from '../../game/hooks';
+import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { withFarmer } from '../../game/workers';
 import {
   capacity,
@@ -26,12 +26,20 @@ import { ART_RES, ART_SCALE, SHADOW, storageArt } from '../../scenes/art';
 import { packAsset, textureKey } from '../../scenes/sprites';
 import { formatMoney } from '../../ui/dom';
 import './piles';
+import { storageSheet } from './sheet';
 
 /**
  * Granaries and storehouses: their sprite and level badge on the map, and the panel that shows the pool's
  * stock and upgrades the building. The rules (capacity, upgrades, the space check every intake goes through)
- * live in `src/logic/storage.ts`, the content in `src/data/storage.ts`.
+ * live in `src/logic/storage.ts`, the content in `src/data/storage.ts`. The 👪 Farm window's Storage tab is in `./sheet.ts`.
  */
+
+registerHudButton({
+  id: 'storage',
+  label: 'Storage',
+  icon: '📦',
+  spot: { kind: 'tab', window: 'farm', order: 30, sheet: storageSheet },
+});
 
 interface Badge {
   box: Phaser.GameObjects.Container;

@@ -17,6 +17,8 @@ import type { FarmContext, ObjectView, PlacedObject, SheetSpec } from '../../gam
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { formatDuration } from '../../logic/crops';
 import { aleWanted, clothesNeeded, familiesCount, familiesOf, homesOf } from '../../logic/families';
+import { suppliesOf } from '../../logic/supplies';
+import type { GameState } from '../../logic/types';
 import type { Game } from '../../logic/game';
 import { seasonOf } from '../../logic/seasons';
 import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
@@ -144,12 +146,81 @@ function familiesSheet(ctx: FarmContext): SheetSpec {
 
 registerHudButton({
   id: 'families',
+  label: 'Families',
+  icon: '👪',
+  spot: { kind: 'tab', window: 'farm', order: 10, sheet: familiesSheet },
+});
+
+/** Cottages still being built: "(+N)" on the home room chip. */
+function homesBuilding(state: GameState): number {
+  return state.objects.filter((o) => o.type === COTTAGE && o.site).length;
+}
+
+registerHudButton({
+  id: 'homes',
+  label: 'Free home room',
+  icon: '🏠',
+  spot: {
+    kind: 'chip',
+    order: 30,
+    opens: 'families',
+    detail: (ctx) => {
+      const { state } = ctx.game;
+      const homes = homesOf(state);
+      const building = homesBuilding(state);
+      return [
+        `${homes} ${homes === 1 ? 'home' : 'homes'} (the farmhouse and every cottage), ${familiesCount(state)} lived in`,
+        building ? `${building} ${building === 1 ? 'cottage' : 'cottages'} being built` : 'Build a 🛖 cottage for one more family',
+        arrivalHint(ctx.game),
+      ];
+    },
+  },
+  live: (ctx) => {
+    const { state } = ctx.game;
+    const building = homesBuilding(state);
+    return { icon: '🏠', label: `${Math.max(0, homesOf(state) - familiesCount(state))}${building ? ` (+${building})` : ''}` };
+  },
+});
+
+registerHudButton({
+  id: 'approval',
   label: 'Approval',
   icon: '😊',
-  onClick: (ctx) => ctx.ui.toggleSheet(familiesSheet(ctx)),
+  spot: {
+    kind: 'chip',
+    order: 40,
+    opens: 'families',
+    detail: (ctx) => [
+      ...familiesOf(ctx.game.state).breakdown.map((p) => `${p.label}: ${p.id === 'base' ? `${p.points}%` : pointsText(p.points)}`),
+      `New families come from ${ARRIVE_APPROVAL}%; below ${LEAVE_APPROVAL}% one leaves.`,
+    ],
+  },
   live: (ctx) => {
     const { approval } = familiesOf(ctx.game.state);
     return { icon: approvalFace(approval), label: `${approval}%` };
+  },
+});
+
+registerHudButton({
+  id: 'supplies',
+  label: 'Supplies: days of food left (in winter, of food or firewood, whichever runs out first)',
+  icon: '🧺',
+  spot: {
+    kind: 'chip',
+    order: 60,
+    opens: 'storage',
+    detail: (ctx) => {
+      const s = suppliesOf(ctx.game.state);
+      const days = (n: number | null) => (n === null ? 'nobody eats' : `${n} ${n === 1 ? 'day' : 'days'}`);
+      return [
+        `🍽️ Food: ${s.food.stock}, ${s.food.perDay} a day → ${days(s.food.days)}`,
+        s.firewood ? `🪵 Firewood: ${s.firewood.stock}, ${s.firewood.perDay} a day → ${days(s.firewood.days)}` : '🪵 Firewood is burnt in winter only',
+      ];
+    },
+  },
+  live: (ctx) => {
+    const s = suppliesOf(ctx.game.state);
+    return { icon: s.limit === 'firewood' ? '🪵' : '🧺', label: s.days === null ? '–' : String(s.days) };
   },
 });
 

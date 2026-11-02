@@ -1,4 +1,4 @@
-import type { FarmContext, ObjectView, PanelSpec, PlacedObject } from './context';
+import type { FarmContext, ObjectView, PanelSpec, PlacedObject, SheetSpec } from './context';
 
 /**
  * Per-buildable-type behaviour. Register one from a feature module with
@@ -35,34 +35,84 @@ export function getBehavior(type: string): ObjectBehavior | undefined {
   return behaviors.get(type);
 }
 
-/** A button in the HUD top bar (e.g. Market). */
+/**
+ * The HUD's windows, opened from the tool bar (Farm, Trade, Almanac) or the level (Development). Features add tabs to
+ * them; the HUD lays them out (`src/ui/hud.ts`).
+ */
+export type HudWindowId = 'development' | 'farm' | 'trade' | 'almanac';
+
+/** A banner's colour: news, something to see to soon, or trouble now. */
+export type BannerSeverity = 'info' | 'warn' | 'alert';
+
+/** Where a feature's HUD element goes. */
+export type HudSpot =
+  /** A tab in a window (`tab-<id>`), showing the feature's sheet. Tabs are ordered by `order` (default 0). */
+  | { kind: 'tab'; window: HudWindowId; order?: number; sheet(ctx: FarmContext): SheetSpec }
+  /**
+   * A chip in the farm overview, top left (`stat-<id>`): an icon and a number. Hover or tap explains it (`label`) with
+   * `detail`'s lines; a click opens the tab `opens`.
+   */
+  | { kind: 'chip'; order?: number; opens?: string; detail?(ctx: FarmContext): string[] }
+  /** A notice under the level (`banner-<id>`), coloured by `severity`; a tap opens the tab `opens`. */
+  | { kind: 'banner'; order?: number; opens?: string; severity(ctx: FarmContext): BannerSeverity };
+
+/**
+ * Something a feature shows in the HUD: a window tab, a farm overview chip or a banner (`spot`). Ids are unique per
+ * kind of spot, so a feature can have a tab and a banner with the same id.
+ */
 export interface HudButton {
   id: string;
+  /** The tab's name, the chip's explanation (e.g. "Free farmers"), or the banner's text. */
   label: string;
   icon?: string;
-  onClick(ctx: FarmContext): void;
-  /** Small count shown on the button (e.g. orders ready to fulfil); re-read on every HUD refresh. Hidden when null or 0. */
+  spot: HudSpot;
+  /** Small count (e.g. orders ready to fulfil); re-read on every HUD refresh. Hidden when null or 0. A tab's badge also shows on its window's button. */
   badge?(ctx: FarmContext): number | null;
-  /** Live icon and label (e.g. a mute toggle); re-read on every HUD refresh. */
+  /** Live icon and label: a chip's number, a banner's text; re-read on every HUD refresh. */
   live?(ctx: FarmContext): { icon: string; label: string };
-  /** Shown only while this returns true (e.g. a chip for a visitor); re-read on every HUD refresh. Always shown when missing. */
+  /** Shown only while this returns true (e.g. the trader's tab and banner); re-read on every HUD refresh. Always shown when missing. */
   visible?(ctx: FarmContext): boolean;
-  /** Extra class on the button, e.g. `hud-chip` for a highlighted chip. */
-  className?: string;
 }
 
 const hudButtons: HudButton[] = [];
 
 export function registerHudButton(button: HudButton): void {
-  if (hudButtons.some((b) => b.id === button.id)) throw new Error(`HUD button "${button.id}" is already registered`);
+  if (hudButtons.some((b) => b.id === button.id && b.spot.kind === button.spot.kind)) {
+    throw new Error(`HUD ${button.spot.kind} "${button.id}" is already registered`);
+  }
   hudButtons.push(button);
 }
 
-export function listHudButtons(): readonly HudButton[] {
-  return hudButtons;
+/** Registered HUD elements of one kind of spot, in `order`. */
+export function listHudButtons<K extends HudSpot['kind']>(kind: K): readonly (HudButton & { spot: Extract<HudSpot, { kind: K }> })[] {
+  return hudButtons
+    .filter((b): b is HudButton & { spot: Extract<HudSpot, { kind: K }> } => b.spot.kind === kind)
+    .sort((a, b) => (a.spot.order ?? 0) - (b.spot.order ?? 0));
 }
 
-/** An on/off switch at the top of the Build menu (e.g. the soil overlay). */
+/**
+ * A keyboard shortcut (e.g. M toggles sound). The HUD runs it only while no dialog or menu is open and no text field
+ * has the focus. `key` is matched against `KeyboardEvent.key`, ignoring case.
+ */
+export interface Hotkey {
+  key: string;
+  /** What it does, for the help text. */
+  label: string;
+  run(ctx: FarmContext): void;
+}
+
+const hotkeys: Hotkey[] = [];
+
+export function registerHotkey(hotkey: Hotkey): void {
+  if (hotkeys.some((k) => k.key.toLowerCase() === hotkey.key.toLowerCase())) throw new Error(`Hotkey "${hotkey.key}" is already registered`);
+  hotkeys.push(hotkey);
+}
+
+export function listHotkeys(): readonly Hotkey[] {
+  return hotkeys;
+}
+
+/** A checkbox above the construction menu's cards, like Manor Lords' "Snap to Roads" (e.g. the soil overlay). */
 export interface BuildMenuToggle {
   id: string;
   label: string;

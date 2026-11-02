@@ -55,7 +55,7 @@ registerBuildable({
   texture: 'field',
   icon: '🟫',
   unlockLevel: 1,
-  category: 'crops',
+  category: 'farming',
   description: 'Soil for grain, roots and vegetables. Plough it in spring, summer or autumn, then sow. Rich ground yields more.',
   // A new field starts at the average soil quality of its tiles, resting from the moment it is laid.
   initialState: (at) => ({

@@ -25,7 +25,8 @@ import { formatMoney, h } from '../../ui/dom';
 import { itemIcon } from '../../ui/icons';
 
 /**
- * The travelling trader: his wagon by the farmhouse, a HUD chip the day before and while he is here, and his panel.
+ * The travelling trader: his wagon by the farmhouse, a HUD banner and a ⚖️ Trade tab the day before and while he is
+ * here, and his panel.
  * Logic (schedule, offers, trading) lives in `src/logic/trader.ts`.
  */
 
@@ -188,21 +189,28 @@ function traderSheet(ctx: FarmContext): SheetSpec {
   };
 }
 
-let openSheet: ((ctx: FarmContext) => void) | null = null;
+/** He is here, or comes tomorrow (announced): his tab and banner show. */
+const traderShown = (ctx: FarmContext) => !!traderHere(ctx.game.state) || comingTomorrow(ctx);
 
 registerHudButton({
   id: 'trader',
   label: 'Trader',
   icon: '🛒',
-  className: 'hud-chip',
-  onClick: (ctx) => ctx.ui.toggleSheet(traderSheet(ctx)),
-  visible: (ctx) => !!traderHere(ctx.game.state) || comingTomorrow(ctx),
-  live: (ctx) => (traderHere(ctx.game.state) ? { icon: '🛒', label: 'Trader here' } : { icon: '🛒', label: 'Trader tomorrow' }),
+  spot: { kind: 'tab', window: 'trade', order: 30, sheet: traderSheet },
+  visible: traderShown,
+});
+
+registerHudButton({
+  id: 'trader',
+  label: 'Trader',
+  icon: '🛒',
+  spot: { kind: 'banner', order: 20, opens: 'trader', severity: (ctx) => (traderHere(ctx.game.state) ? 'warn' : 'info') },
+  visible: traderShown,
+  live: (ctx) => (traderHere(ctx.game.state) ? { icon: '🛒', label: `Trader here · leaves in ${countdown(ctx)}` } : { icon: '🛒', label: 'Trader tomorrow' }),
 });
 
 onGameStart((ctx) => {
   const { game, scene } = ctx;
-  openSheet = (c) => c.ui.toggleSheet(traderSheet(c));
   let wagon: Phaser.GameObjects.Image | null = null;
   let drawn = '';
 
@@ -216,7 +224,7 @@ onGameStart((ctx) => {
       if (tile) {
         const top = gridToWorld(tile.x, tile.y);
         wagon = addArt(scene, top.x, top.y, 'trader-wagon').setInteractive({ pixelPerfect: true, alphaTolerance: 32 });
-        wagon.setData('onTap', () => openSheet?.(ctx));
+        wagon.setData('onTap', () => ctx.ui.openTab('trader'));
         wagon.setData('testid', 'trader-wagon');
       }
     }

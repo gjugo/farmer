@@ -150,7 +150,7 @@ registerHudButton({
   id: 'orders',
   label: 'Orders',
   icon: '📋',
-  onClick: (ctx) => ctx.ui.toggleSheet(ordersSheet(ctx)),
+  spot: { kind: 'tab', window: 'trade', order: 20, sheet: ordersSheet },
   badge: (ctx) => fulfillableCount(ctx.game.state),
 });
 
