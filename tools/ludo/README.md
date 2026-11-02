@@ -36,8 +36,9 @@ git (or rerun the commands below) after running it.
 | `bush`, `bush_berry` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `bush_raw.png`, `bush_berry_raw.png`, each with `_{spring,autumn,winter}_raw.png` | all |
 | `pond` (base, `_spring`, `_summer`, `_autumn`, `_winter`, frozen) | `pond_raw.png`, `pond_{autumn,winter}_raw.png` (spring and summer are the base image) | all |
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
-| `wheat`, `carrot`, `corn` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe, `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none (nothing grows in winter) |
-| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe (flax's sprout is its growing image, smaller), `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none, except cabbage |
+| `cabbage_<stage>_winter` (frosted, the winter crop) | `cabbage_<stage>_winter_raw.png`, `seeded_winter_raw.png`; see **Crops** below | winter |
+| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
 | `pile_<kind>_1..4` for `crops`, `animal`, `feed`, `goods`, `wood`, `stone`, `iron`, `house_goods`, `house_materials` | `pile_<kind>_<n>_raw.png`; see **Stock piles** below | none (piles change with the stock) |
 
 ## Generating in Ludo
@@ -320,6 +321,56 @@ for c in wheat carrot corn; do for s in 0_seeded 1_sprout 2_growing 3_ripe; do
 done; done
 ```
 
+### Potato, barley, flax, cabbage and pumpkin
+
+The same way, with the ripe carrot Ludo image as `style_image` for the ripe stage ("a single ripe potato plant: a
+bushy low clump of broad dark green leaves with a few small white-and-yellow potato flowers on top, two round brown
+potatoes peeking out at the foot / ... ripe pale golden barley ... long drooping bearded ears with long whiskery awns,
+paler ... than wheat / ... flowering flax: several thin tall green stalks ... topped with many small bright sky-blue
+five-petal flax flowers / ... one round firm pale-green cabbage head wrapped in a few broad darker green outer leaves /
+... one round ribbed bright orange pumpkin ... among a few big broad green pumpkin leaves and a curly vine tendril; only
+the plant: ..."), then `editImage` for growing and sprout as above. Flax's own sprout was too thin to read, so its
+growing image is fitted small instead. Cabbage stands in the field in winter, so each of its stages has a `_winter`
+version (`WINTER_CROP_ART_IDS` in `src/scenes/art.ts`): `editImage` on the chosen stage ("keep the same ... exactly,
+same shape, size, position and outlines; add a cap of white snow ... with a pale blue frost on the leaf edges"), and
+for the seeded stage the same on `seeded_raw.png`. `add_asset.py LIKE NAME ...` first adds manifest entries for new
+names, shaped like an existing asset (rerunning it changes nothing), so `install_prop.py` can fill them in.
+
+```bash
+for c in potato barley flax cabbage pumpkin; do for s in 0_seeded 1_sprout 2_growing 3_ripe; do
+  $P $L/add_asset.py corn_3_ripe ${c}_$s "--notes=$c stage ${s#?_} ($s); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)"
+done; done
+for s in 0_seeded 1_sprout 2_growing 3_ripe; do
+  $P $L/add_asset.py cabbage_$s cabbage_${s}_winter "--notes=cabbage stage $s in winter, frosted (Ludo.ai, cel-shaded; shadow baked in)"
+done
+f $L/source/seeded_raw.png /tmp/props potato_0_seeded 14 3 3 --seed=4 --bright=1.15
+f $L/source/potato_1_sprout_raw.png /tmp/props potato_1_sprout 20 3 3 --seed=4 --shadow=5 --color=1.3
+f $L/source/potato_2_growing_raw.png /tmp/props potato_2_growing 30 3 3 --seed=4 --shadow=7 --color=1.3
+f $L/source/potato_3_ripe_raw.png /tmp/props potato_3_ripe 40 3 3 --seed=4 --shadow=9
+f $L/source/seeded_raw.png /tmp/props barley_0_seeded 14 4 4 --seed=5 --bright=1.15
+f $L/source/barley_1_sprout_raw.png /tmp/props barley_1_sprout 22 4 4 --seed=5 --shadow=5 --color=1.3 --widen=1.3
+f $L/source/barley_2_growing_raw.png /tmp/props barley_2_growing 40 4 4 --seed=5 --shadow=7 --color=1.25 --widen=1.5
+f $L/source/barley_3_ripe_raw.png /tmp/props barley_3_ripe 52 4 4 --seed=5 --shadow=8 --color=1.1 --bright=1.08
+f $L/source/seeded_raw.png /tmp/props flax_0_seeded 14 4 4 --seed=6 --bright=1.15
+f $L/source/flax_2_growing_raw.png /tmp/props flax_1_sprout 18 4 4 --seed=6 --shadow=5 --color=1.5 --bright=1.1 --widen=1.4
+f $L/source/flax_2_growing_raw.png /tmp/props flax_2_growing 36 4 4 --seed=6 --shadow=7 --color=1.4 --widen=1.3
+f $L/source/flax_3_ripe_raw.png /tmp/props flax_3_ripe 48 4 4 --seed=6 --shadow=8 --color=1.15
+for s in "" _winter; do
+  f $L/source/seeded${s}_raw.png /tmp/props cabbage_0_seeded$s 14 3 3 --seed=7 --bright=1.15
+  f $L/source/cabbage_1_sprout${s}_raw.png /tmp/props cabbage_1_sprout$s 16 3 3 --seed=7 --shadow=6 --color=1.3
+  f $L/source/cabbage_2_growing${s}_raw.png /tmp/props cabbage_2_growing$s 26 3 3 --seed=7 --shadow=9 --color=1.25
+  f $L/source/cabbage_3_ripe${s}_raw.png /tmp/props cabbage_3_ripe$s 32 3 3 --seed=7 --shadow=11
+done
+f $L/source/seeded_raw.png /tmp/props pumpkin_0_seeded 14 2 2 --seed=8 --bright=1.15
+f $L/source/pumpkin_1_sprout_raw.png /tmp/props pumpkin_1_sprout 22 2 2 --seed=8 --shadow=7 --color=1.3
+f $L/source/pumpkin_2_growing_raw.png /tmp/props pumpkin_2_growing 44 2 2 --seed=8 --shadow=10 --color=1.2
+f $L/source/pumpkin_3_ripe_raw.png /tmp/props pumpkin_3_ripe 54 2 2 --seed=8 --shadow=12
+for c in potato barley flax cabbage pumpkin; do for s in 0_seeded 1_sprout 2_growing 3_ripe; do
+  $P $L/install_prop.py /tmp/props ${c}_$s
+done; done
+for s in 0_seeded 1_sprout 2_growing 3_ripe; do $P $L/install_prop.py /tmp/props cabbage_${s}_winter; done
+```
+
 HEIGHT is the plant's height in 2x px (corn ripe stands about as tall as the pack's corn). The anchor is the
 tile's top corner, as for every crop sprite, so field depth and clicking are unchanged; `install_prop.py` drops
 the old `_shadow` layer (the fit bakes a small contact shadow under each plant).
@@ -335,7 +386,10 @@ pale yellow block of butter ... on a small round wooden board / a golden-brown c
 blue cloth ... / a sheaf of ripe golden wheat ... / a fat orange carrot with a bushy green top ... / a ripe ear of
 yellow corn with its husks peeled back / a small stack of three chopped logs ... / two chunky grey cut stone
 blocks ... / three dark blue-grey iron ingots ... / a small wooden bucket filled with dark brown manure ... / a
-small stack of shiny gold coins ...; front three-quarter view. Bold simple silhouette that reads at small size,
+small stack of shiny gold coins ... / two plump round brown potatoes ... / a small tied bundle of pale straw-yellow
+barley ears with long whiskery bristly awns ... tied with a green band / a tied bundle of harvested flax stems ... a few
+bright sky-blue flax flowers at the top, tied with twine / one round fresh green cabbage head ... / one round ribbed
+bright orange pumpkin with a short brown curly stem and a small green leaf ...; front three-quarter view. Bold simple silhouette that reads at small size,
 chunky shapes, cozy cartoon style with soft cel shading and a thick dark brown outline, lit from the top left.
 Only the item, centered; no ground, no shadow, no text, no frame."
 
@@ -343,8 +397,11 @@ Only the item, centered; no ground, no shadow, no text, no frame."
 2x), so each reads at the same size in the overlay's square `object-fit: contain` slot; the anchor is the box's
 centre. Check them at 24 px before installing.
 
+The new crops' icons (potato to pumpkin) were styled on the Ludo carrot icon instead, and need manifest entries
+first (`add_asset.py corn <name> "--notes=item icon: <name> (Ludo.ai, cel-shaded)"`).
+
 ```bash
-for n in egg milk wool feed cheese butter bread cloth wheat carrot corn wood stone iron manure coins; do
+for n in egg milk wool feed cheese butter bread cloth wheat carrot corn potato barley flax cabbage pumpkin wood stone iron manure coins; do
   $P $L/fit_icon.py $L/source/icon_${n}_raw.png /tmp/props $n && $P $L/install_prop.py /tmp/props $n
 done
 ```

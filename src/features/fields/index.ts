@@ -20,6 +20,7 @@ import {
   plough,
   ploughedUntil,
   seasonCheck,
+  sowSeasons,
   timeToRipe,
   type CropStage,
   type FieldState,
@@ -209,7 +210,7 @@ function emptyFieldPanel(ctx: FarmContext, obj: PlacedObject<FieldState>): Panel
       }
       const season = seasonCheck(clock, c);
       if (season !== 'ok') {
-        const why = season === 'late' ? `too late in ${SEASON_INFO[seasonOf(clock)].name.toLowerCase()}` : `sow in ${seasonNames(c.seasons)}`;
+        const why = season === 'late' ? `too late in ${SEASON_INFO[seasonOf(clock)].name.toLowerCase()}` : `sow in ${seasonNames(sowSeasons(c))}`;
         return { label: `📅 ${c.icon} ${c.name} · ${why}`, variant: 'secondary', disabled: true, onClick: () => {} };
       }
       return {

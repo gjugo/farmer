@@ -26,7 +26,13 @@ export interface CropDef {
 export const CROPS = {
   wheat: { id: 'wheat', name: 'Wheat', plantCost: 8, growMs: 480_000, harvestItem: 'wheat', harvestQty: 10, icon: '🌾', unlockLevel: 1, seasons: ['spring', 'summer', 'autumn'], soilDrain: 8 },
   carrot: { id: 'carrot', name: 'Carrot', plantCost: 12, growMs: 600_000, harvestItem: 'carrot', harvestQty: 10, icon: '🥕', unlockLevel: 2, seasons: ['spring', 'autumn'], soilDrain: 5 },
+  potato: { id: 'potato', name: 'Potato', plantCost: 14, growMs: 720_000, harvestItem: 'potato', harvestQty: 14, icon: '🥔', unlockLevel: 3, seasons: ['spring', 'summer'], soilDrain: 15 },
   corn: { id: 'corn', name: 'Corn', plantCost: 16, growMs: 960_000, harvestItem: 'corn', harvestQty: 12, icon: '🌽', unlockLevel: 4, seasons: ['spring', 'summer'], soilDrain: 12 },
+  barley: { id: 'barley', name: 'Barley', plantCost: 10, growMs: 540_000, harvestItem: 'barley', harvestQty: 10, icon: '🌿', unlockLevel: 4, seasons: ['spring', 'summer'], soilDrain: 6 },
+  flax: { id: 'flax', name: 'Flax', plantCost: 14, growMs: 840_000, harvestItem: 'flax', harvestQty: 8, icon: '🪻', unlockLevel: 6, seasons: ['spring', 'summer'], soilDrain: 10 },
+  // The winter crop: sown in autumn, it is ripe in winter (it grows longer than a season), and keeps in the frozen field.
+  cabbage: { id: 'cabbage', name: 'Cabbage', plantCost: 20, growMs: 2_100_000, harvestItem: 'cabbage', harvestQty: 10, icon: '🥬', unlockLevel: 6, seasons: ['autumn', 'winter'], soilDrain: 9 },
+  pumpkin: { id: 'pumpkin', name: 'Pumpkin', plantCost: 24, growMs: 1_500_000, harvestItem: 'pumpkin', harvestQty: 6, icon: '🎃', unlockLevel: 7, seasons: ['summer', 'autumn'], soilDrain: 13 },
 } as const satisfies Record<string, CropDef>;
 
 export type CropId = keyof typeof CROPS;
@@ -50,7 +56,7 @@ registerBuildable({
   icon: '🟫',
   unlockLevel: 1,
   category: 'crops',
-  description: 'Soil for wheat, carrots and corn. Plough it in spring, summer or autumn, then sow. Rich ground yields more.',
+  description: 'Soil for grain, roots and vegetables. Plough it in spring, summer or autumn, then sow. Rich ground yields more.',
   // A new field starts at the average soil quality of its tiles, resting from the moment it is laid.
   initialState: (at) => ({
     crop: null,

@@ -339,6 +339,8 @@ describe('level curve balance', () => {
   // goal now counts a coop built before it shows (it blocked a goal slot for good). With level 5 at 6000 XP the casual
   // player missed it (≈5900 XP in 3 h), at 5500 reached it at 183 min; at 5000: casual L2 9.0, L5 171.0; relaxed
   // L2 9.0, L5 159.0; busy L2 9.0, L5 153.7.
+  // More crops (potato at level 3, barley at 4; "Best in season" sows potato before corn comes): casual L2 9.0, L5 158.0;
+  // relaxed L2 9.5, L5 151.0; busy L2 9.2, L5 137.4.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190 });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190 });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190 });
