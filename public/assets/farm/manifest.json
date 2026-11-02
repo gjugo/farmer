@@ -6895,14 +6895,14 @@
    "name": "farmer",
    "category": "people",
    "type": "spritesheet",
-   "notes": "rows = one anim each, the 4 directions (se, sw, ne, nw) side by side in 6-frame slots; mine plays the quarry frames; anchor = ground point under the farmer; work anims hold a tool, sit = cross-legged on the ground by the farmhouse (Ludo.ai Directional Sprites, cartoon style; shadow baked in)",
+   "notes": "rows = one anim each, the 4 directions (se, sw, ne, nw) side by side in 6-frame slots; mine plays the quarry frames; anchor = ground point under the farmer; work anims hold a tool, carry_<load> = walking with a load (sack, basket, bucket, logs, stone), sit = cross-legged on the ground by the farmhouse (Ludo.ai Directional Sprites, cartoon style; shadow baked in)",
    "res": {
     "2x": {
      "file": "2x/people/farmer.png",
      "frameWidth": 164,
      "frameHeight": 156,
      "columns": 24,
-     "rows": 13,
+     "rows": 18,
      "anchor": [
       82.0,
       126.0
@@ -6917,7 +6917,7 @@
      "frameWidth": 82,
      "frameHeight": 78,
      "columns": 24,
-     "rows": 13,
+     "rows": 18,
      "anchor": [
       41.0,
       63.0
@@ -7487,6 +7487,206 @@
      "end": 309,
      "frames": 4,
      "fps": 5,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_sack_se",
+     "anim": "carry_sack",
+     "dir": "se",
+     "start": 312,
+     "end": 317,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_sack_sw",
+     "anim": "carry_sack",
+     "dir": "sw",
+     "start": 318,
+     "end": 323,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_sack_ne",
+     "anim": "carry_sack",
+     "dir": "ne",
+     "start": 324,
+     "end": 329,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_sack_nw",
+     "anim": "carry_sack",
+     "dir": "nw",
+     "start": 330,
+     "end": 335,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_basket_se",
+     "anim": "carry_basket",
+     "dir": "se",
+     "start": 336,
+     "end": 341,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_basket_sw",
+     "anim": "carry_basket",
+     "dir": "sw",
+     "start": 342,
+     "end": 347,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_basket_ne",
+     "anim": "carry_basket",
+     "dir": "ne",
+     "start": 348,
+     "end": 353,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_basket_nw",
+     "anim": "carry_basket",
+     "dir": "nw",
+     "start": 354,
+     "end": 359,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_bucket_se",
+     "anim": "carry_bucket",
+     "dir": "se",
+     "start": 360,
+     "end": 365,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_bucket_sw",
+     "anim": "carry_bucket",
+     "dir": "sw",
+     "start": 366,
+     "end": 371,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_bucket_ne",
+     "anim": "carry_bucket",
+     "dir": "ne",
+     "start": 372,
+     "end": 377,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_bucket_nw",
+     "anim": "carry_bucket",
+     "dir": "nw",
+     "start": 378,
+     "end": 383,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_logs_se",
+     "anim": "carry_logs",
+     "dir": "se",
+     "start": 384,
+     "end": 389,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_logs_sw",
+     "anim": "carry_logs",
+     "dir": "sw",
+     "start": 390,
+     "end": 395,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_logs_ne",
+     "anim": "carry_logs",
+     "dir": "ne",
+     "start": 396,
+     "end": 401,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_logs_nw",
+     "anim": "carry_logs",
+     "dir": "nw",
+     "start": 402,
+     "end": 407,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_stone_se",
+     "anim": "carry_stone",
+     "dir": "se",
+     "start": 408,
+     "end": 413,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_stone_sw",
+     "anim": "carry_stone",
+     "dir": "sw",
+     "start": 414,
+     "end": 419,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_stone_ne",
+     "anim": "carry_stone",
+     "dir": "ne",
+     "start": 420,
+     "end": 425,
+     "frames": 6,
+     "fps": 9,
+     "repeat": -1
+    },
+    {
+     "key": "farmer_carry_stone_nw",
+     "anim": "carry_stone",
+     "dir": "nw",
+     "start": 426,
+     "end": 431,
+     "frames": 6,
+     "fps": 9,
      "repeat": -1
     }
    ]

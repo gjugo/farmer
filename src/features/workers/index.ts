@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { FARMHOUSE } from '../../data/farmhouse';
 import type { FarmContext, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
-import { farmerActivity, farmerName, placeName } from '../../game/workers';
+import { farmerActivity, farmerLoad, farmerName, placeName } from '../../game/workers';
 import { timerRemaining } from '../../logic/clock';
 import { formatDuration } from '../../logic/crops';
 import type { Game } from '../../logic/game';
@@ -168,6 +168,7 @@ registerDebugInfo('workers', () => {
       farmer: i,
       workplace: w.workplaces[i],
       job: jobs[i]?.kind ?? null,
+      carrying: jobs[i] ? farmerLoad(game, jobs[i]) : null,
       activity: farmerActivity(game, i),
     })),
     assignments: Object.fromEntries(w.workplaces.flatMap((id, i) => (id ? [[id, i]] : []))),
@@ -272,7 +273,8 @@ function farmerPose(game: Game, i: number, job: Job | undefined): { at: Point; a
     return { at: { x: job.x, y: job.y }, anim: WORK_ANIM[job.kind], facing: facing(dir.x, dir.y), progress: t };
   }
   const { at, dir } = along(line, phase === 'out' ? t : 1 - t);
-  return { at, anim: 'walk', facing: phase === 'out' ? facing(dir.x, dir.y) : facing(-dir.x, -dir.y), progress: null };
+  const load = farmerLoad(game, job);
+  return { at, anim: load ? `carry_${load}` : 'walk', facing: phase === 'out' ? facing(dir.x, dir.y) : facing(-dir.x, -dir.y), progress: null };
 }
 
 onGameStart((ctx) => {

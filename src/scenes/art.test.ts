@@ -32,6 +32,10 @@ import {
   FARMER_ART,
   type FarmerAnim,
   WORK_ANIM,
+  CARRY,
+  carryLoad,
+  LOADS,
+  type Load,
   fencePiece,
   groundTint,
   RICH_GROUND_TINT,
@@ -180,6 +184,51 @@ describe('art pack', () => {
       expect(WORK_ANIM[kind], kind).toBe(kind === 'haul' ? 'walk' : kind);
       for (const dir of ['se', 'sw', 'ne', 'nw']) expect(keys.has(`${FARMER_ART}_${WORK_ANIM[kind]}_${dir}`), `${kind} ${dir}`).toBe(true);
     }
+  });
+
+  it('gives every job a load (or none) for both trips, and every load a carry walk in every direction', () => {
+    const keys = new Set(assets.get(FARMER_ART)!.animations!.map((a) => a.key));
+    const items = [null, ...ITEM_LIST.map((i) => i.id)];
+    for (const kind of Object.keys(JOBS) as JobKind[]) {
+      for (const trip of ['out', 'back'] as const) {
+        expect(CARRY[kind]?.[trip], `${kind} ${trip}`).not.toBeUndefined();
+        for (const item of items) {
+          const load = carryLoad(kind, trip, item);
+          if (load !== null) expect(LOADS, `${kind} ${trip} ${item}`).toContain(load);
+        }
+      }
+    }
+    for (const load of LOADS) {
+      for (const dir of ['se', 'sw', 'ne', 'nw']) expect(keys.has(`${FARMER_ART}_carry_${load}_${dir}`), `${load} ${dir}`).toBe(true);
+    }
+  });
+
+  it('carries what the job moves: crops and goods in a sack, eggs in a basket, milk in a bucket, wood and stone', () => {
+    const cases: [JobKind, 'out' | 'back', string | null, Load | null][] = [
+      ['plough', 'out', null, null],
+      ['plough', 'back', null, null],
+      ['plant', 'out', null, null],
+      ['plant', 'back', null, null],
+      ['harvest', 'out', null, null],
+      ['harvest', 'back', null, 'sack'],
+      ['collect', 'back', 'egg', 'basket'],
+      ['collect', 'back', 'milk', 'bucket'],
+      ['collect', 'back', 'wool', 'sack'],
+      ['collect', 'back', null, 'sack'], // a processing building's goods
+      ['collect', 'back', 'wood', 'logs'],
+      ['chop', 'back', 'wood', 'logs'],
+      ['quarry', 'back', 'stone', 'stone'],
+      ['mine', 'back', 'iron', 'stone'],
+      ['chop', 'out', null, null],
+      ['load', 'out', null, 'sack'],
+      ['load', 'back', null, null],
+      ['feed', 'out', null, 'sack'],
+      ['fertilise', 'out', null, 'sack'],
+      ['build', 'out', 'wood', 'logs'],
+      ['build', 'out', 'stone', 'stone'],
+      ['build', 'back', null, null],
+    ];
+    for (const [kind, trip, item, load] of cases) expect(carryLoad(kind, trip, item), `${kind} ${trip} ${item}`).toBe(load);
   });
 
   it('keeps every texture of the pack within 4096 px, the WebGL limit of many phones', () => {

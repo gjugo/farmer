@@ -257,7 +257,11 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   apples" come last.
 - **Farmhouse and roads:** every farm has a farmhouse (it can't be built or demolished). Idle farmers rest on its bench;
   for a job a farmer walks out of the door **along paths** to the work (0.4 game-s per tile), works there (hoeing,
-  sowing, harvesting, hammering, feeding) and walks back, busy the whole way. Work on a field, pen or building is refused
+  sowing, harvesting, hammering, feeding) and walks back, busy the whole way. On the way they carry what the job moves:
+  a sack home from a harvest or a workshop and out to feed, spread manure or load a batch, a basket of eggs, a bucket
+  of milk, a sack of wool, logs or stone from the lodge, quarry or mine, and logs (or stone) out to a construction
+  site; ploughing, sowing and hauling trips are empty-handed (a carter's goods ride on the oxcart). It is only the look: the goods moved when the job started
+  (`CARRY` in `src/scenes/art.ts`). Work on a field, pen or building is refused
   until a path joins it to the door ("No path leads there"), and the build ghost turns red where no path reaches.
   New farms start with a road from the door to both fields; older saves get a farmhouse and roads to what they built.
 - **Seasons:** a game day lasts 8 real minutes at ×1 and each season 4 days, about 30 minutes (days 1–4 spring,
@@ -387,8 +391,9 @@ ale that day and the ale drunk, null before the brewery is unlocked) or null bef
 yield waiting for room in the granary, `nextAt` the game time of its next daily yield (null while it has no finished
 home).
 `window.farm.workers` is `{ farmers, free, list, assignments, plans, recipes, sites }`: `list[i]` is
-`{ farmer, workplace, job, activity }` (workplace: object id or null; job: the running job's kind or null; activity:
-the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
+`{ farmer, workplace, job, carrying, activity }` (workplace: object id or null; job: the running job's kind or null;
+carrying: what they carry now, `sack`, `basket`, `bucket`, `logs` or `stone`, or null while working, resting or walking
+empty-handed; activity: the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
 (`best`, `none` for Fallow, or a crop id), `recipes` building id → "Keep making" recipe, and `sites` lists the construction sites
 oldest first (`{ id, type, x, y, workMs, paid, builder: { farmer, progress } | null }`). A placed object that is still a
 site carries `site: { workMs, paid }` in `window.farm.objects`.

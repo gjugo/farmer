@@ -28,7 +28,7 @@ git (or rerun the commands below) after running it.
 | `granary_1..3`, each with `_winter` | `granary_{1,2,3}_raw.png`, `granary_{1,2,3}_winter_raw.png` | all |
 | `storehouse_1..3`, each with `_winter` | `storehouse_{1,2,3}_raw.png`, `storehouse_{1,2,3}_winter_raw.png` | all |
 | `feed_mill`, `feed_mill_winter`, `feed_mill_sails` (8 frames), `feed_mill_static`, `feed_mill_static_winter` | `feed_mill_raw.png`, `feed_mill_body_raw.png`, `feed_mill_sails_raw.png`, `feed_mill_winter_raw.png`; see **Feed mill** below | all |
-| `farmer` (spritesheet, with his tools) | see **Farmer** below | all |
+| `farmer` (spritesheet, with his tools and the loads he carries) | see **Farmer** below | all |
 | `chicken`, `cow`, `sheep` (spritesheets: idle, walk, eat × SE/SW/NE/NW) | see **Animals** below | all |
 | `ox` (spritesheet: idle, walk × SE/SW/NE/NW) | see **Ox and oxcart** below | all |
 | `cart_se`, `cart_sw`, `cart_ne`, `cart_nw` (the oxcart, one per facing) | `cart_raw.webp`, `cart_model.glb`, `cart_<dir>_raw.png`; see **Ox and oxcart** below | all (not seasonal) |
@@ -682,22 +682,65 @@ Then render each `/tmp/rig/<anim>.glb` with `createDirectionalSprites` (base64 `
 the settings above) and save each sheet as `source/farmer_sheets/<anim>_<dir>.webp`. A 10 MB GLB is too big to paste
 into an MCP call as base64; post the same `tools/call` to `https://mcp.ludo.ai/mcp` from a script instead.
 
+### Carrying
+
+Walking out to the work or home from it, the farmer carries what the job moves (`CARRY` in `src/scenes/art.ts`):
+each load has its own walk, `carry_<load>`. The loads are props like the tools: the sack, basket and bucket are the
+tools' own models; the log bundle and the stone block are new (`generateWithStyle` with `farmer_raw.png`: "A bundle of
+four short chopped wooden logs tied together with a rope, a single game prop seen from the side, the whole object,
+lying horizontally, centred, nothing else" / "A single chunky rough-cut grey stone block, a quarried building stone
+with chiselled edges, a single game prop, the whole object, centred, nothing else", n=2 each; then `create3DModel` as
+for the tools: `source/tools/{logs,stone}{_raw.webp,.glb}`). Iron shares the stone block.
+
+The loads held in both arms are bound to the chest (`--bone=Spine3`), in front of his belly where the carrying walk
+holds the arms: shared between both wrists (`L_Wrist+R_Wrist`) the two hands' turns blend and the load shrinks and
+drifts. The farmer is 1 model unit tall and his belly is about 0.24 deep, so a load needs `--at` z of about 0.27 to sit
+in front of it. The bucket hangs from one hand on a plain walk.
+
+| game anim | load | bone | Ludo preset | sheets |
+|---|---|---|---|---|
+| carry_sack | sack | chest | `walk_carry_loop_quaternius` | `carry_sack_*` |
+| carry_basket | basket | chest | `walk_carry_loop_quaternius` | `carry_basket_*` |
+| carry_bucket | bucket | left hand | `walk_loop_quaternius` | `carry_bucket_*` |
+| carry_logs | log bundle, across the arms | chest | `walk_carry_loop_quaternius` | `carry_logs_*` |
+| carry_stone | stone block | chest | `walk_carry_loop_quaternius` | `carry_stone_*` |
+
+`walk_carrying` (the other carrying walk) does not retarget onto the farmer: his arms hang and the load collapses.
+
+```bash
+"${A[@]}" /tmp/rig/carry_sack.glb $T/sack.glb --bone=Spine3 --up=y --length=0.34 --grip=0.5 --at=0,-0.06,0.27
+"${A[@]}" /tmp/rig/carry_basket.glb $T/basket.glb --bone=Spine3 --up=y --length=0.26 --grip=0.5 --at=0,-0.07,0.28
+"${A[@]}" /tmp/rig/carry_bucket.glb $T/bucket.glb --bone=L_Wrist --up=y --length=0.22 --grip=1.0 --at=0,-0.03,0
+"${A[@]}" /tmp/rig/carry_logs.glb $T/logs.glb --bone=Spine3 --length=0.4 --grip=0.5 --rot=0,0,90 --at=0,-0.03,0.25
+"${A[@]}" /tmp/rig/carry_stone.glb $T/stone.glb --bone=Spine3 --up=y --length=0.2 --grip=0.5 --at=0,-0.07,0.27
+```
+
+Rendered with the tools' settings. A new load: add it to `LOADS` (and `ITEM_LOAD`, or a `CARRY` row), attach and
+render it as above, and add it to the sheet below (`--row` and `--match`).
+
 ### The game's sheet
 
 ```bash
-S=(); for a in plough plant harvest collect feed fertilise load build chop quarry; do
+S=(); for a in plough plant harvest collect feed fertilise load build chop quarry carry_sack carry_basket carry_bucket carry_logs carry_stone; do
   for d in ne se sw nw; do S+=("$a:$d=../farmer_sheets/${a}_$d.webp"); done; done
 for d in ne se sw nw; do S+=("mine:$d=../farmer_sheets/quarry_$d.webp" "sit:$d=../farmer_sheets/groundsit_$d.webp"); done
+R=(); for l in sack basket bucket logs stone; do R+=("--row=carry_${l}:6:9" "--match=carry_${l}:walk"); done
 $P $L/fit_character.py $L/source/farmer_frames /tmp/props 100 \
   idle:se=Animation-1 idle:nw=Animation-2 idle:ne=Animation-3 idle:sw=Animation-6 \
-  walk:nw=Animation-4 walk:sw=Animation-5 walk:ne=Animation-7 walk:se=Animation-8 "${S[@]}"
+  walk:nw=Animation-4 walk:sw=Animation-5 walk:ne=Animation-7 walk:se=Animation-8 "${S[@]}" "${R[@]}"
 ```
+
+`--row=ANIM:FRAMES:FPS` adds an animation the manifest lacks as a new row (a carry walk plays 6 frames at 9 fps, like
+the walk, so his steps keep pace with the ground). `--match=ANIM:REF` sizes ANIM by the figure's height in REF instead
+of by the hat: the carrying walk tilts his head back, so the hat looks narrower and he came out a fifth too big. Write
+`${l}` with braces in zsh: `$l:w...` is a history modifier.
 
 `100` is his height in 2x px. Ludo frames each API render to its own motion, so the script scales each animation by
 the hat's width to match the pack. Copy `/tmp/props/{2x,1x}_farmer.png` to
 `public/assets/farm/{2x,1x}/people/farmer.png`; the manifest keeps the frame (164x156, anchor 82,126 at 2x; 82x78,
 anchor 41,63 at 1x) with no `shadow`. The sheet is 24 columns: one row per animation, its four directions (se, sw,
-ne, nw) side by side in 6-frame slots, so it stays within the 4096 px texture limit of many phones (3936x2028 at 2x).
+ne, nw) side by side in 6-frame slots, so it stays within the 4096 px texture limit of many phones (3936x2808 at 2x with 18 rows, 1968x1404 at 1x; 26
+rows is the most that fits).
 The `farmer` asset's `animations` in `manifest.json` give each one's `start`; mine's point at quarry's frames.
 
 ## Animals: `fit_animal.py`
