@@ -7,6 +7,8 @@ import { isBehind, type Footprint } from './iso';
 export const DEPTH = {
   ground: 0,
   flat: 1,
+  /** Grass fringes over the edges of paths and fields (src/features/fringes): above them, under shadows and walkers. */
+  fringe: 3,
   /** Every shadow: above the ground and flat things, below everything standing. */
   shadow: 4,
   /** Things on locked land behind the farm, e.g. "for sale" signs there. */

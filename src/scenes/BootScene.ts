@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { SEASONS } from '../data/seasons';
-import { ART_BASE, ART_RES, COMPOSED, GRASS, seasonalArt, seasonalComposed, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
+import { ART_BASE, ART_RES, COMPOSED, FRINGE_ART, GRASS, seasonalArt, seasonalComposed, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
 import { listTextures } from './textures';
 import { packAsset, setPack } from './sprites';
 
@@ -9,6 +9,10 @@ const MANIFEST = 'farm-manifest';
 export const GROUND_ATLAS = 'ground-atlas';
 /** Ground tiles in the atlas: each season's version, a column per season. */
 export const GROUND_TILES = SEASONS.map((season) => [...GRASS, ...UNOWNED].map((name) => seasonalArt(name, season)));
+/** Texture holding every grass fringe strip, for the fringes' Blitter (src/features/fringes). */
+export const FRINGE_ATLAS = 'fringe-atlas';
+/** Fringe strips in their atlas: each season's version, a column per season. */
+export const FRINGE_TILES = SEASONS.map((season) => FRINGE_ART.map((name) => seasonalArt(name, season)));
 
 /** Loads the art pack with a progress bar, prepares its textures, bakes the few runtime ones, then starts the farm. */
 export class BootScene extends Phaser.Scene {
@@ -41,7 +45,8 @@ export class BootScene extends Phaser.Scene {
     this.createAnimations();
     this.bakeRuntimeTextures();
     for (const [key, composed] of Object.entries({ ...COMPOSED, ...seasonalComposed() })) this.compose(key, composed.h, composed.tiles);
-    this.buildGroundAtlas();
+    this.buildAtlas(GROUND_ATLAS, GROUND_TILES);
+    this.buildAtlas(FRINGE_ATLAS, FRINGE_TILES);
     this.scene.start('Farm');
   }
 
@@ -147,13 +152,14 @@ export class BootScene extends Phaser.Scene {
     frame.pivotY = (top.y - minY) / canvas.height;
   }
 
-  /** Copies the ground tiles into one texture with a frame each, for the ground Blitter (a column per season keeps it small). */
-  private buildGroundAtlas(): void {
-    const columns = GROUND_TILES.map((tiles) => tiles.filter((name) => this.textures.exists(name)));
+  /** Copies tiles into one texture with a frame each, for a Blitter (a column per season keeps it small). */
+  private buildAtlas(key: string, seasons: string[][]): void {
+    const columns = seasons.map((tiles) => tiles.filter((name) => this.textures.exists(name)));
+    if (!columns.flat().length) return;
     const frame = (name: string) => this.textures.getFrame(name);
     const width = Math.max(...columns.flat().map((name) => frame(name).width));
     const height = Math.max(...columns.map((tiles) => tiles.reduce((sum, name) => sum + frame(name).height + 2, 0)));
-    const atlas = this.textures.createCanvas(GROUND_ATLAS, (width + 2) * columns.length, height)!;
+    const atlas = this.textures.createCanvas(key, (width + 2) * columns.length, height)!;
     columns.forEach((tiles, col) => {
       let y = 0;
       for (const name of tiles) {
