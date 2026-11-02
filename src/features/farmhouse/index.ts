@@ -20,7 +20,9 @@ import { seasonOf } from '../../logic/seasons';
 import { missingText } from '../../logic/upgrades';
 import { freeFarmers, workersOf } from '../../logic/workers';
 import { ART_RES, ART_SCALE, farmhouseArt, SHADOW } from '../../scenes/art';
+import { footprintLocal, ISO_W } from '../../scenes/iso';
 import { packAsset, textureKey } from '../../scenes/sprites';
+import { registerTexture } from '../../scenes/textures';
 import { homeGardenLine } from '../gardens';
 
 /**
@@ -47,8 +49,42 @@ const CHIMNEY_AT: readonly (readonly { x: number; y: number }[])[] = [
 ];
 const PUFFS = 3;
 
+/**
+ * The bench idle farmers sit on, at each level: its middle on the ground, in tiles from the top-left tile, on the open
+ * pad left of the door (two seats, `SEATS` in `src/features/workers`). The art has none, so it is drawn (below).
+ */
+const BENCH_AT: readonly { x: number; y: number }[] = [
+  { x: 0.68, y: 2.42 },
+  { x: 0.68, y: 2.47 },
+  { x: 0.68, y: 2.47 },
+];
+
+/** A small wooden bench along the front-left face (the pack has none), anchored on the middle of its feet. */
+registerTexture('farmhouse-bench', {
+  width: 72,
+  height: 56,
+  pivot: { x: 36 / 72, y: 42 / 56 },
+  draw: (g) => {
+    const wood = 0x9a6634;
+    const dark = 0x5a3a1c;
+    const poly = (pts: [number, number][], fill: number) => {
+      g.beginPath();
+      pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+      g.closePath();
+      g.fillStyle(fill).fillPath();
+      g.lineStyle(2, dark).strokePath();
+    };
+    // Back legs and backrest (the side towards the house), then the front legs and the seat.
+    g.lineStyle(3, dark).lineBetween(20, 16, 20, 26).lineBetween(68, 40, 68, 50);
+    poly([[20, 16], [68, 40], [68, 28], [20, 4]], 0x8a5a2b);
+    g.lineStyle(3, dark).lineBetween(13, 20, 13, 30).lineBetween(60, 44, 60, 54);
+    poly([[12, 20], [60, 44], [68, 40], [20, 16]], wood);
+  },
+});
+
 interface HouseView {
   level: number;
+  bench: Phaser.GameObjects.Image | null;
   /** Puffs per chimney. */
   puffs: Phaser.GameObjects.Image[][];
   badge: Phaser.GameObjects.Container | null;
@@ -79,6 +115,13 @@ function syncHouse(ctx: FarmContext, obj: PlacedObject, view: ObjectView): void 
   for (const p of hv.puffs.flat()) p.destroy();
   hv.badge?.destroy();
   hv.badge = null;
+  // The bench, in front of the sprite and behind anything added after it (the stock piles).
+  hv.bench?.destroy();
+  const b = BENCH_AT[level - 1] ?? BENCH_AT[0];
+  const depth = Math.round(view.top.x / (ISO_W / 2));
+  const at = footprintLocal(0, depth, b.x, b.y);
+  hv.bench = ctx.scene.add.image(at.x, at.y, 'farmhouse-bench').setName('farmhouse-bench');
+  view.container.addAt(hv.bench, view.container.getIndex(view.sprite) + 1);
   const [ax, ay] = packAsset(art)?.res[ART_RES].anchor ?? [0, 0];
   hv.puffs = (CHIMNEY_AT[level - 1] ?? CHIMNEY_AT[0]).map((c) => {
     const at = { x: view.top.x + (c.x - ax) * ART_SCALE, y: view.top.y + (c.y - ay) * ART_SCALE };
@@ -148,7 +191,7 @@ function panel(ctx: FarmContext, obj: PlacedObject): PanelSpec {
 
 registerBehavior<Record<string, unknown>>(FARMHOUSE, {
   create: (ctx, obj, view) => {
-    views.set(obj.id, { level: 0, puffs: [], badge: null });
+    views.set(obj.id, { level: 0, bench: null, puffs: [], badge: null });
     syncHouse(ctx, obj, view);
   },
   refresh: syncHouse,
