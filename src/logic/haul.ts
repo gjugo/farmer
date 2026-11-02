@@ -18,7 +18,7 @@ import { activeJobs, jobsByFarmer, workerAt, workersOf, type Job } from './worke
  * Oxcart hauling. An ox barn with an ox and a carter (the farmer assigned to it) sends its cart out along the paths:
  * from the barn to the fullest yard (a resource building's output, or a processing building's finished goods), where
  * it loads up to `CART_CAPACITY` units, on to the nearest store with room for them (a granary, storehouse or the
- * farmhouse), where it unloads, and back to the barn. The carter walks from the farmhouse to the barn first and home
+ * farmhouse), where it unloads, and back to the barn. The carter walks from the village centre to the barn first and home
  * again after. Numbers live in `src/data/haul.ts`.
  *
  * A trip is one farmer job (kind `haul`) made of legs with their own timing. The goods are always counted where they

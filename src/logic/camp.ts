@@ -8,6 +8,7 @@ import type { Game } from './game';
 import { houseRoom } from './homes';
 import { inBounds } from './land';
 import { canPlace } from './placement';
+import { centreSnapshot, keepRoadsJoined } from './roads';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import { addStartingObject, onNewGame } from './state';
 import type { GameState, Inventory, PlacedObject } from './types';
@@ -59,6 +60,15 @@ function farmers(state: GameState): number {
 /** Families living in the tent now: its starting families, as far as they are still on the farm; 0 once it is gone. */
 export function tentFamilies(state: GameState): number {
   return campOf(state) ? Math.min(campSlice(state).families, farmers(state)) : 0;
+}
+
+/**
+ * Families of the tent with first claim on free house room: all of them once the supplies are used up (newcomers wait
+ * until they have moved out), none before.
+ */
+export function tentClaims(state: GameState): number {
+  const camp = campOf(state);
+  return camp && Object.keys(campLeft(camp)).length === 0 ? tentFamilies(state) : 0;
 }
 
 /** Families the tent's packing waits for: those in it the houses have no room for yet. */
@@ -130,12 +140,15 @@ export function settleCamp(game: Game): void {
   const before = JSON.stringify(camp.state.left);
   const empty = trimCamp(state);
   if (empty && waitingFamilies(state) === 0) {
+    const centre = centreSnapshot(state);
     state.objects = state.objects.filter((o) => o !== camp);
     const s = campSlice(state);
     s.id = camp.id;
     s.packed = true;
     s.families = 0;
     game.events.emit('objectRemoved', camp);
+    // The village centre moves to the oldest cottage (or the farmhouse): the roads that met at the tent stay joined.
+    keepRoadsJoined(game, centre);
   } else if (JSON.stringify(camp.state.left) !== before) game.touch(camp);
 }
 

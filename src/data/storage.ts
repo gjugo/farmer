@@ -16,6 +16,12 @@ export const STORAGE_POOLS: readonly StoragePool[] = ['goods', 'materials'];
 /** Room at the farmhouse in each pool, once it is built (`src/data/farmhouse.ts`). */
 export const FARMHOUSE_STORE: Readonly<Record<StoragePool, number>> = { goods: 50, materials: 50 };
 
+/**
+ * Room in the settlers' yard until the farmhouse is built: enough materials to buy a storehouse's wood and stone (or a
+ * granary's wood), so a farm that spent the camp's supplies before building one can always still build it.
+ */
+export const SETTLERS_YARD: Readonly<Record<StoragePool, number>> = { goods: 0, materials: 20 };
+
 export type StorageType = 'granary' | 'storehouse';
 
 export const GRANARY: StorageType = 'granary';

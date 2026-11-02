@@ -9,6 +9,7 @@ import {
   capacity,
   capacityOfObject,
   farmhouseStore,
+  settlersYard,
   storageRoom,
   checkUpgrade,
   levelOf,
@@ -140,12 +141,14 @@ function panel(ctx: FarmContext, obj: PlacedObject<StorageState>): PanelSpec {
   const cap = capacity(game.state, pool);
   const have = used(game.state, pool);
   const house = farmhouseStore(game.state, pool);
+  const yard = settlersYard(game.state, pool);
   const camp = campRoom(game.state, pool);
-  const others = cap - house - camp - capacityOfObject(obj, game.state);
+  const others = cap - house - yard - camp - capacityOfObject(obj, game.state);
   const parts = [
     `this ${def.name.toLowerCase()} ${capacityOfObject(obj, game.state)}`,
     ...(others > 0 ? [`other ${def.name.toLowerCase()}s ${others}`] : []),
     ...(house > 0 ? [`farmhouse ${house}`] : []),
+    ...(yard > 0 ? [`settlers' yard ${yard}`] : []),
     ...(camp > 0 ? [`camp ${camp}`] : []),
   ];
   const lines = [

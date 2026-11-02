@@ -9,6 +9,7 @@ import { COLLECT_WORK_MS, FEED_WORK_MS, FERTILISE_WORK_MS, HARVEST_WORK_MS, LOAD
 import * as animals from './animals';
 import { isBarn, nextHaulEvent, planHaul, settleHauls, startTrip, type HaulTrip } from './haul';
 import { MANURE_BELOW } from '../data/soil';
+import { settleCamp } from './camp';
 import { nextFamiliesEvent, stepFamilies } from './families';
 import { nextHazardEvent, stepHazards } from './hazards';
 import { nextGardensEvent, stepGardens } from './gardens';
@@ -17,7 +18,7 @@ import type { Game } from './game';
 import { perkFactor } from './perks';
 import * as processing from './processing';
 import * as resources from './resources';
-import { findRoute, type Route } from './roads';
+import { centreSnapshot, findRoute, keepRoadsJoined, type Route } from './roads';
 import { breakWornTools, toolFactor, toolsWanted } from './tools';
 import { nextSeasonAt } from './seasons';
 import type { GameState, PlacedObject } from './types';
@@ -213,9 +214,14 @@ export function sitesOf(state: GameState): PlacedObject[] {
 }
 
 function finishSite(game: Game, obj: PlacedObject): void {
+  const centre = centreSnapshot(game.state);
   delete obj.site;
   game.touch(obj);
+  // A finished farmhouse becomes the village centre: the roads stay joined to it.
+  keepRoadsJoined(game, centre);
   game.activity.emit('built', { type: obj.type });
+  // A new home: the empty camp may pack away now that its families have room.
+  settleCamp(game);
 }
 
 /** Called when processing batches finished in a building the scheduler looked at. */

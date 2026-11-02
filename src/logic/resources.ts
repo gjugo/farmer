@@ -166,7 +166,7 @@ export function collect(game: Game, obj: PlacedObject<ResourceState>): number {
 
 /**
  * Why the building makes nothing now: nothing to work (no grown tree in range, the deposit used up), no farmer, no
- * path from the farmhouse, or its yard is full and the storehouse has no room for it.
+ * path from the village centre, or its yard is full and the storehouse has no room for it.
  */
 export type IdleReason = 'site' | 'no-trees' | 'exhausted' | 'no-farmer' | 'no-path' | 'storehouse-full';
 

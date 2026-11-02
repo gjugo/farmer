@@ -17,7 +17,7 @@ import { SEASONS } from '../data/seasons';
 import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS } from './constants';
 import type { Game } from './game';
-import { familyLeftCamp, settleCamp, tentFamilies } from './camp';
+import { familyLeftCamp, settleCamp, tentClaims, tentFamilies } from './camp';
 import { firewoodPerHome } from './hazards';
 import { gardenedHomes } from './gardens';
 import { builtFarmhouse, homeBuildings, homeRoom, houseRoom } from './homes';
@@ -261,9 +261,12 @@ export function addFamily(game: Game): boolean {
   return true;
 }
 
-/** Room for a newcomer: the houses fit more than the families outside the tent (the tent never takes newcomers). */
+/**
+ * Room for a newcomer: the houses fit more than the families outside the tent (the tent never takes newcomers), and
+ * than the tent's families waiting to move out once its supplies are used up (they come first).
+ */
 function homeFree(state: GameState): boolean {
-  return houseRoom(state) > familiesCount(state) - tentFamilies(state) && familiesCount(state) < MAX_FARMERS;
+  return houseRoom(state) > familiesCount(state) - tentFamilies(state) + tentClaims(state) && familiesCount(state) < MAX_FARMERS;
 }
 
 /** One family leaves (one of the tent's while it stands): their farmer goes and their workplace is freed. The last family never leaves. */

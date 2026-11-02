@@ -20,6 +20,7 @@ import { createNewGame } from './state';
 import { capacity, excessWithout, spaceFor, used } from './storage';
 import type { GameState, ItemId, PlacedObject } from './types';
 import { buildableUnlockLevel, isUnlocked, type Unlock } from './unlocks';
+import { centreSnapshot, keepRoadsJoined } from './roads';
 import { runWork } from './work';
 
 export interface GameEvents {
@@ -299,11 +300,15 @@ export class Game {
     };
     const workMs = options.site ? buildTime(this._state, type) : 0;
     if (workMs > 0) object.site = { workMs, paid: def.cost };
+    const centre = centreSnapshot(this._state);
     this._state.objects.push(object);
     // Building over stumps (or a used-up deposit) clears them for good.
     if (clearUnder(mapOf(this._state), { x, y, ...def.footprint }, this.now, type)) this.mapChanged();
     this.events.emit('objectAdded', object);
     this.activity.emit('placed', { type });
+    // A finished farmhouse (debug, tests) is the new village centre; a finished home may be the room the camp waits for.
+    keepRoadsJoined(this, centre);
+    if (!object.site) settleCamp(this);
     return { ok: true, object };
   }
 
@@ -338,11 +343,14 @@ export class Game {
   demolish(id: string): number | null {
     const check = this.checkDemolish(id);
     if (!check.ok) return null;
+    const centre = centreSnapshot(this._state);
     const i = this._state.objects.findIndex((o) => o.id === id);
     const [object] = this._state.objects.splice(i, 1);
     // Goods parked on an ox barn's cart go into the stores (beyond their room if need be): nothing is lost.
     releaseCargo(this, object);
     this.events.emit('objectRemoved', object);
+    // The centre cottage gone: the next one is the centre, joined to the roads.
+    keepRoadsJoined(this, centre);
     this.earn(check.money);
     for (const [item, qty] of materialEntries(check.materials)) this.addItem(item, qty);
     return check.money;

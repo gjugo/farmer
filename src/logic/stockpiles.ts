@@ -3,7 +3,7 @@ import { GRANARY_PILES, PILE_STAGES, pileOf, STOREHOUSE_PILES, type PileStage } 
 import { isStorageType, STORAGE, STORAGE_POOLS, type StoragePool } from '../data/storage';
 import { campLeft, campOf } from './camp';
 import { builtFarmhouse } from './homes';
-import { capacityOfObject, farmhouseStore, poolOf, used } from './storage';
+import { capacityOfObject, farmhouseStore, poolOf, settlersYard, used } from './storage';
 import type { GameState } from './types';
 
 /**
@@ -64,14 +64,15 @@ export function stockDisplay(state: GameState): StockShown[] {
     const totals = pileTotals(state, pool, kinds);
     if (camp) for (const [id, n] of Object.entries(campLeft(camp))) if (poolOf(id) === pool) totals[pileOf(id)] = Math.max(0, (totals[pileOf(id)] ?? 0) - n);
     const biggest = Math.max(0, ...Object.values(totals));
-    // The camp's supplies are drawn at the camp; the rest is shared out from the farmhouse on.
+    // The camp's supplies are drawn at the camp; the rest is shared out from the farmhouse (once built) on.
     let left = used(state, pool) - campHeld[pool];
     const take = (room: number) => {
       const held = Math.min(left, room);
       left -= held;
       return held;
     };
-    // The farmhouse store fills first, once the farmhouse is built.
+    // Until the farmhouse is built the settlers' yard keeps a little (drawn nowhere); then its store fills first.
+    take(settlersYard(state, pool));
     const house = builtFarmhouse(state);
     if (house) {
       const room = farmhouseStore(state, pool);

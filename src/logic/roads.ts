@@ -8,6 +8,7 @@ import { finishedCottages } from './homes';
 import { inBounds } from './land';
 import { canPlace, registerPlacementRule, ruleBlock } from './placement';
 import { addStartingObject } from './state';
+import type { Game } from './game';
 import type { GameState, PlacedObject } from './types';
 
 /**
@@ -164,7 +165,7 @@ function search(door: Tile | Tile[], site: Area, cost: (x: number, y: number) =>
  * Where roads start: the tile in front of the centre's door first, then every other tile along the centre building's
  * edges (farmers step out onto any path there). Empty without a centre.
  */
-function startTiles(state: GameState): Tile[] {
+export function startTiles(state: GameState): Tile[] {
   const centre = villageCentre(state);
   if (!centre) return [];
   const starts: Tile[] = [{ x: centre.x, y: centre.y }];
@@ -223,8 +224,8 @@ export function wayLength(points: Point[]): number {
   return n;
 }
 
-/** Lays free paths over empty tiles so the door reaches `site`, reusing paths already there. */
-function layRoad(state: GameState, door: Tile | Tile[], site: Area): boolean {
+/** Lays free paths over empty tiles so the door reaches `site`, reusing paths already there. Returns the new paths, or null when there is no way. */
+function layRoad(state: GameState, door: Tile | Tile[], site: Area): PlacedObject[] | null {
   const at = occupancy(state);
   const tiles = search(door, site, (x, y) => {
     if (!inBounds(state.land, x, y)) return null;
@@ -233,9 +234,14 @@ function layRoad(state: GameState, door: Tile | Tile[], site: Area): boolean {
     // A grown tree, a deposit or a pond is in the way.
     return ruleBlock(state, { w: 1, h: 1 }, x, y, PATH) ? null : 1;
   });
-  if (!tiles) return false;
-  for (const t of tiles) if (!at.has(key(t.x, t.y))) addStartingObject(state, PATH, t.x, t.y);
-  return true;
+  if (!tiles) return null;
+  const added: PlacedObject[] = [];
+  for (const t of tiles) {
+    if (at.has(key(t.x, t.y))) continue;
+    const path = addStartingObject(state, PATH, t.x, t.y);
+    if (path) added.push(path);
+  }
+  return added;
 }
 
 /**
@@ -244,7 +250,40 @@ function layRoad(state: GameState, door: Tile | Tile[], site: Area): boolean {
  */
 export function connectToFarmhouse(state: GameState, site: Area): boolean {
   const starts = startTiles(state);
-  return starts.length > 0 && layRoad(state, starts, site);
+  return starts.length > 0 && layRoad(state, starts, site) !== null;
+}
+
+/** Where the village centre is and the tiles its roads start from, taken before something that may move it. */
+export interface CentreSnapshot {
+  id: string | null;
+  starts: Tile[];
+}
+
+export function centreSnapshot(state: GameState): CentreSnapshot {
+  return { id: villageCentre(state)?.id ?? null, starts: startTiles(state) };
+}
+
+/**
+ * After the village centre moved (the camp packed away, the farmhouse finished, the centre cottage demolished): paths
+ * that started at the old centre may have been joined only through its building. Free paths join each of them to the
+ * new centre again, over the old building's freed tiles where it is gone. Returns the paths laid.
+ */
+export function rejoinRoads(state: GameState, before: CentreSnapshot): PlacedObject[] {
+  const centre = villageCentre(state);
+  if (!centre || centre.id === before.id) return [];
+  const added: PlacedObject[] = [];
+  for (const t of before.starts) {
+    if (occupancy(state).get(key(t.x, t.y))?.type !== PATH) continue;
+    const tile = { x: t.x, y: t.y, w: 1, h: 1 };
+    if (findRoute(state, tile)) continue;
+    added.push(...(layRoad(state, startTiles(state), tile) ?? []));
+  }
+  return added;
+}
+
+/** `rejoinRoads` for a running game: the new paths are announced, so they are drawn. */
+export function keepRoadsJoined(game: Game, before: CentreSnapshot): void {
+  for (const path of rejoinRoads(game.state, before)) game.events.emit('objectAdded', path);
 }
 
 /** Can the farmhouse stand at (x, y) with a free (or path) tile in the map in front of its door? */
