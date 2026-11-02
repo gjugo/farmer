@@ -18,6 +18,8 @@ export const ITEMS = {
   wheat: { id: 'wheat', name: 'Wheat', category: 'crop', price: 4, icon: '🌾' },
   carrot: { id: 'carrot', name: 'Carrot', category: 'crop', price: 6, icon: '🥕' },
   corn: { id: 'corn', name: 'Corn', category: 'crop', price: 8, icon: '🌽' },
+  // Picked in the orchards beside the homes (see `src/data/gardens.ts`).
+  apple: { id: 'apple', name: 'Apple', category: 'crop', price: 7, icon: '🍎' },
   egg: { id: 'egg', name: 'Egg', category: 'animal-product', price: 10, icon: '🥚' },
   milk: { id: 'milk', name: 'Milk', category: 'animal-product', price: 18, icon: '🥛' },
   wool: { id: 'wool', name: 'Wool', category: 'animal-product', price: 25, icon: '🧶' },

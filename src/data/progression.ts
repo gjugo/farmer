@@ -34,6 +34,8 @@ export type GoalTask =
   | { kind: 'make'; item: KnownItemId; count: number }
   /** Make `count` of a material in resource buildings (a woodcutter's lodge, quarry or mine). */
   | { kind: 'produce'; item: KnownItemId; count: number }
+  /** Pick `count` of a food in house gardens. */
+  | { kind: 'gather'; item: KnownItemId; count: number }
   /** Sell `count` items (of `item`, or of anything). */
   | { kind: 'sell'; item?: KnownItemId; count: number }
   /** Buy `count` of `item` at the Market. */
@@ -94,6 +96,8 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'mine-iron', title: 'Mine 5 iron', icon: '🔩', kind: 'produce', item: 'iron', count: 5, reward: { money: 200, xp: 100 } },
   { id: 'own-sheep', title: 'Own 2 sheep', icon: '🐑', kind: 'own-animals', animal: 'sheep', count: 2, reward: { money: 200, xp: 100 } },
   { id: 'weave-cloth', title: 'Weave 2 cloth', icon: '🧵', kind: 'make', item: 'cloth', count: 2, reward: { money: 250, xp: 120 } },
+  { id: 'build-veg-patch', title: 'Plant a vegetable patch', icon: '🥬', kind: 'own-buildings', type: 'veg-patch', count: 1, reward: { money: 60, xp: 25 } },
+  { id: 'gather-apples', title: 'Gather 20 apples', icon: '🍎', kind: 'gather', item: 'apple', count: 20, reward: { money: 150, xp: 75 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {
