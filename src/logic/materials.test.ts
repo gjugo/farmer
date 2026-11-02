@@ -12,6 +12,7 @@ import { PROGRESSION, type ProgressionState } from './progression';
 import { deserialize } from './save';
 import { getSlice } from './slices';
 import { createNewGame } from './state';
+import { CAMP_SUPPLIES } from '../data/camp';
 import { fromV6, maxLevelState, v6Land, V6_START } from './test-utils';
 import { itemUnlockLevel } from './unlocks';
 
@@ -244,8 +245,9 @@ describe('goals, orders and saves', () => {
     for (const id of MATERIAL_IDS) expect(isOrderable(ITEMS[id])).toBe(false);
   });
 
-  it('a new farm starts without materials', () => {
-    for (const id of MATERIAL_IDS) expect(createNewGame().inventory[id]).toBeUndefined();
+  it("a new farm's only materials are the starting camp's supplies", () => {
+    const inventory = createNewGame().inventory;
+    for (const id of MATERIAL_IDS) expect(inventory[id]).toBe(CAMP_SUPPLIES[id]);
   });
 
   it('an old save loads with no materials and its buildings untouched', () => {

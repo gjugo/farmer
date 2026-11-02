@@ -12,7 +12,7 @@ import { PROGRESSION, type ProgressionState } from './progression';
 import { parseSave, serialize } from './save';
 import { SEASON_MS } from './seasons';
 import { getSlice } from './slices';
-import { bareMap } from './test-utils';
+import { bareMap, noCamp } from './test-utils';
 import type { PlacedObject } from './types';
 import { xpForLevel } from './unlocks';
 import { workersOf } from './workers';
@@ -21,9 +21,9 @@ const WINTER = 3 * SEASON_MS;
 const X = START_LAYOUT.x - 1;
 const Y = START_LAYOUT.y + 6;
 
-/** A farm at `level`, with no money or materials until a test gives them. */
+/** A farm at `level` (the whole map is the farm's), without the starting camp, with no money or materials until a test gives them. */
 function farm(level = 3): Game {
-  const game = new Game(bareMap(new Game().state));
+  const game = new Game(noCamp(bareMap(new Game().state)));
   getSlice<ProgressionState>(game.state, PROGRESSION).xp = xpForLevel(level);
   game.state.money = 0;
   game.state.inventory = {};
@@ -257,7 +257,7 @@ describe('a level 2 cottage: firewood and gardens', () => {
   });
 
   it('a 2-family cottage with a garden counts as gardened: gardens are one per home building', () => {
-    const game = new Game(bareMap(new Game().state));
+    const game = new Game(noCamp(bareMap(new Game().state)));
     getSlice<ProgressionState>(game.state, PROGRESSION).xp = xpForLevel(10);
     game.earn(1_000_000);
     for (const id of ['wood', 'stone', 'iron']) game.state.inventory[id] = 500;

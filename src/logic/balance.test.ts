@@ -15,7 +15,7 @@ import { inBounds } from './land';
 import { capacity, checkUpgrade, nextLevel, upgrade, used } from './storage';
 import type { GameState, PlacedObject } from './types';
 import { PATH } from '../data/farmhouse';
-import { COTTAGE, FIREWOOD_PER_HOME, FOODS, MEAL_PER_FAMILY, PROVISION_DAYS } from '../data/families';
+import { COTTAGE, FIREWOOD_PER_HOME, FOODS, MEAL_PER_FAMILY } from '../data/families';
 import { getItem } from '../data/items';
 import { SEASON_DAYS } from '../data/seasons';
 import type { FarmContext } from '../game/context';
@@ -31,7 +31,8 @@ import { ruleBlock } from './placement';
 import { createNewGame } from './state';
 import { RESOURCES } from '../data/resourceBuildings';
 import { addFarmer, assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, setKeepMaking, workerAt, workersOf } from './workers';
-import { maxLevelState } from './test-utils';
+import { maxLevelState, noCamp } from './test-utils';
+import { addCamp, campInfo } from './camp';
 
 /**
  * A scripted "normal" player on a new game at ×1 speed, used to tune the level curve
@@ -88,8 +89,10 @@ const MAP_SEED = 20261031;
 const TRADER_SEED = 79;
 
 function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number; maxFields: number; minutes: number; hazardSeed: number }): Sim {
-  const state = createNewGame();
+  // As a new game does: the map first, then the camp goes up beside the farmhouse, clear of trees and rocks.
+  const state = noCamp(createNewGame());
   state.ext[MAP_SLICE] = newMapLayer(state, MAP_SEED);
+  if (!addCamp(state)) throw new Error('no room for the camp');
   hazardsOf(state).seed = hazardSeed;
   traderOf(state).seed = TRADER_SEED;
   const game = new Game(state);
@@ -115,6 +118,8 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
   /** Units it sells past an item's daily allowance: a price up to this many % down is still worth taking. */
   const FLOOD_OK = 10;
   const KEEP_MATERIALS = 10;
+  /** What is left of the camp's starting supplies of `id`: kept for building and meals, never sold. */
+  const supplies = (id: string) => campInfo(game.state)?.left[id] ?? 0;
 
   /** Buys what `cost` lacks, in fives, if there is the money (keeping `reserve`) and the room; false when it can't. */
   const shop = (cost: number, materials: MaterialCost | undefined, reserve: number): boolean => {
@@ -207,22 +212,25 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // Like a player, it follows the storage goals.
     const goals = new Set(game.progression.goals().map((g) => g.def.id));
     if (goals.has('build-granary') || goals.has('upgrade-granary')) makeRoom('goods');
-    // Food for the families (none while they live on their provisions): its cheap crops (wheat, carrots, corn); the
+    // The camp's wood means it needn't buy any for its first buildings, but it follows the goal that asks for it.
+    if (goals.has('buy-wood') && game.money >= 10 * buyPrice(game.day, 'wood')! + 100) buy(game, 'wood', 10);
+    // Food for the families (the camp's bread and carrots first): its cheap crops (wheat, carrots, corn); the
     // dearer eggs and milk are sold. A day's meals, and from autumn until the first spring harvest (a crop sown in
     // spring can take two days) enough for winter and those days, split across the kinds (meals are spread across them).
     const families = workersOf(game.state).farmers;
     const winterSoon = seasonAt(game.now) === 'winter' || seasonAt(nextSeasonAt(game.now)) === 'winter';
-    const fed = game.now >= PROVISION_DAYS * DAY_MS;
     const PANTRY: readonly string[] = FOODS.filter((id) => getItem(id)?.category === 'crop');
     const foodKinds = PANTRY.filter((id) => game.count(id) > 0).length || 1;
     const lean = winterSoon || (seasonAt(game.now) === 'spring' && dayOfSeason(game.state.clock) <= 2);
     const days = lean ? SEASON_DAYS + 4 : 1;
-    const keepFood = fed ? Math.ceil((days * MEAL_PER_FAMILY * families) / foodKinds) + 1 : 0;
+    // What the camp still holds is eaten first, so only the rest of the need is kept back from the crops.
+    const need = days * MEAL_PER_FAMILY * families - FOODS.reduce((n, id) => n + supplies(id), 0);
+    const keepFood = need > 0 ? Math.ceil(need / foodKinds) + 1 : 0;
     // A trader in the yard gets first pick of what it would sell.
     updateTrader(game);
     const trader = traderHere(game.state);
     trader?.wants.forEach((w, i) => {
-      const spare = game.count(w.item) - (PANTRY.includes(w.item) ? keepFood : 0);
+      const spare = game.count(w.item) - Math.max(PANTRY.includes(w.item) ? keepFood : 0, supplies(w.item));
       if (spare > 0) sellToTrader(game, i, spare);
     });
     // It doesn't flood the Market: past an item's daily allowance (and a 10% drop) it keeps the rest for tomorrow,
@@ -230,7 +238,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const tight = used(game.state, 'goods') >= 0.5 * capacity(game.state, 'goods');
     for (const id of Object.keys(game.state.inventory)) {
       if (id === 'feed' || isMaterial(id)) continue;
-      const keep = PANTRY.includes(id) ? keepFood : 0;
+      const keep = Math.max(PANTRY.includes(id) ? keepFood : 0, supplies(id));
       const room = tight ? Infinity : Math.max(0, allowance(id) + FLOOD_OK - (marketOf(game.state).sold[id] ?? 0));
       const n = Math.min(game.count(id) - keep, room);
       if (n > 0) sell(game, id, n);
@@ -240,7 +248,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const firewood = harsh ? harshWinterWood(game.state) : SEASON_DAYS * FIREWOOD_PER_HOME * Math.min(families, homeRoom(game.state));
     // Materials its buildings made beyond a working stock are sold too.
     for (const id of MATERIAL_IDS) {
-      const keep = id === 'wood' ? Math.max(KEEP_MATERIALS, firewood) : KEEP_MATERIALS;
+      const keep = Math.max(id === 'wood' ? Math.max(KEEP_MATERIALS, firewood) : KEEP_MATERIALS, supplies(id));
       if (game.count(id) > keep) sell(game, id, game.count(id) - keep);
     }
     const fields = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
@@ -410,6 +418,9 @@ describe('level curve balance', () => {
   // L5 167.0; relaxed L2 9.5, L5 158.0; busy L2 9.2, L5 152.0.
   // The whole map open from the start (no land to buy; each player builds nearest the farmhouse first): casual L2 9.0,
   // L5 175.0; relaxed L2 9.0, L5 157.5; busy L2 9.0, L5 148.3 (before: casual L5 170.0, relaxed 158.0, busy 155.5).
+  // The starting camp (40 wood, 20 stone, 15 bread, 15 carrots; no provisions grace), with the bot keeping the supplies
+  // for building and meals and following the "Buy 10 wood" goal: casual L2 9.0, L5 159.0; relaxed L2 9.0, L5 177.0;
+  // busy L2 9.0, L5 157.8.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });

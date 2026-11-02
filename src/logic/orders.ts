@@ -1,6 +1,7 @@
 import { CUSTOMERS } from '../data/customers';
 import { getItem, type ItemDef } from '../data/items';
 import type { ActivityEvents } from './activity';
+import { campInfo } from './camp';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Emitter } from './events';
 import { dailyPrice } from './market';
@@ -125,6 +126,12 @@ export function noteKnown(orders: OrdersState, itemId: ItemId): boolean {
   return true;
 }
 
+/** Goods in the inventory the farm has had beyond the starting camp's supplies (those teach customers nothing). */
+function ownGoods(state: GameState): ItemId[] {
+  const left = campInfo(state)?.left ?? {};
+  return Object.keys(state.inventory).filter((id) => (state.inventory[id] ?? 0) > (left[id] ?? 0));
+}
+
 /** Goods an order may ask for: known orderable goods, or the starting crop when there are none. */
 export function orderPool(orders: OrdersState): ItemId[] {
   const pool = orders.known.filter((id) => isOrderable(getItem(id)));
@@ -186,13 +193,13 @@ function fillSlot(orders: OrdersState, index: number): void {
 // Updating -------------------------------------------------------------------------
 
 /**
- * Learns goods now in the inventory and fills slots that are empty or whose refill
+ * Learns goods now in the inventory (beyond the camp's supplies) and fills slots that are empty or whose refill
  * timer has run out. Call often (every frame is fine). Returns true when anything changed.
  */
 export function updateOrders(state: GameState): boolean {
   const orders = ordersOf(state);
   let changed = false;
-  for (const id of Object.keys(state.inventory)) if (noteKnown(orders, id)) changed = true;
+  for (const id of ownGoods(state)) if (noteKnown(orders, id)) changed = true;
   orders.slots.forEach((slot, i) => {
     if (slot.order || (slot.refill && !timerDone(state.clock, slot.refill))) return;
     fillSlot(orders, i);
@@ -204,7 +211,7 @@ export function updateOrders(state: GameState): boolean {
 /** Debug: replaces every slot with a fresh order now. */
 export function refreshOrders(state: GameState): void {
   const orders = ordersOf(state);
-  for (const id of Object.keys(state.inventory)) noteKnown(orders, id);
+  for (const id of ownGoods(state)) noteKnown(orders, id);
   orders.slots = orders.slots.map(() => ({ order: null, refill: null }));
   for (let i = 0; i < ORDER_SLOTS; i++) fillSlot(orders, i);
 }

@@ -9,7 +9,7 @@ import { addArt, addShadow } from '../../scenes/sprites';
 
 /**
  * Stock piles in the world: logs, stone and iron in the storehouse yard, sacks, baskets, churns, bales and
- * crates at the granary, a small pile at the farmhouse. `stockDisplay` (src/logic/stockpiles.ts) says which
+ * crates at the granary, a small pile at the farmhouse, the starting camp's supplies around its tent. `stockDisplay` (src/logic/stockpiles.ts) says which
  * stage each pile shows; this draws them inside the building's view, so they depth-sort with it. Piles are
  * rebuilt only when the inventory or the buildings change, never every frame, and each building keeps one
  * image per pile (hidden when empty), so the sprite count stays fixed.
@@ -24,6 +24,8 @@ const SLOTS: Record<string, Record<string, { x: number; y: number }>> = {
   granary: { crops: { x: 0.45, y: 1.6 }, animal: { x: 1.0, y: 1.72 }, goods: { x: 1.75, y: 1.1 }, feed: { x: 1.6, y: 1.62 } },
   storehouse: { wood: { x: 0.52, y: 1.45 }, stone: { x: 1.0, y: 1.65 }, iron: { x: 1.6, y: 1.55 } },
   farmhouse: { house_goods: { x: 1.84, y: 0.58 }, house_materials: { x: 1.85, y: 1.1 } },
+  // The camp's supplies, scattered around the front of its 3×3 footprint, the tent on the back tiles (src/features/camp).
+  camp: { wood: { x: 2.6, y: 0.6 }, crops: { x: 0.6, y: 2.55 }, goods: { x: 1.6, y: 2.65 }, stone: { x: 2.6, y: 2.4 } },
 };
 
 interface Pile {

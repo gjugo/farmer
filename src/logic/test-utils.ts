@@ -1,4 +1,6 @@
+import { CAMP_SUPPLIES } from '../data/camp';
 import { MATERIAL_IDS } from '../data/materials';
+import { campOf } from './camp';
 import { MAX_LEVEL } from '../data/progression';
 import { ROAD_SLICE, type RoadState } from './mainroad';
 import { MAP_SLICE, type MapLayer } from './maplayer';
@@ -9,11 +11,12 @@ import type { GameState } from './types';
 import { xpForLevel } from './unlocks';
 
 /**
- * A new game at the top level with a store of building materials and a bare map (see `bareMap`), so tests can use
- * any crop, animal or building anywhere, without level-up bonuses or trips to the Market.
+ * A new game at the top level with a store of building materials, a bare map (see `bareMap`) and no starting camp
+ * (see `noCamp`), so tests can use any crop, animal or building anywhere, without level-up bonuses or trips to the
+ * Market, and count the stock they put in.
  */
 export function maxLevelState(): GameState {
-  const state = bareMap(createNewGame());
+  const state = noCamp(bareMap(createNewGame()));
   getSlice<ProgressionState>(state, PROGRESSION).xp = xpForLevel(MAX_LEVEL);
   stockMaterials(state);
   return state;
@@ -50,5 +53,21 @@ export function bareMap(state: GameState): GameState {
   state.ext[MAP_SLICE] = layer;
   const road: RoadState = { seed: 1, side: null, tiles: [], pending: false };
   state.ext[ROAD_SLICE] = road;
+  return state;
+}
+
+/**
+ * Takes the starting camp (`src/logic/camp.ts`) and its supplies away, so a test starts from an empty store as farms
+ * did before the camp (the slice stays as an old save's: no camp).
+ */
+export function noCamp(state: GameState): GameState {
+  const camp = campOf(state);
+  if (!camp) return state;
+  state.objects = state.objects.filter((o) => o !== camp);
+  for (const [id, n] of Object.entries(CAMP_SUPPLIES)) {
+    const left = (state.inventory[id] ?? 0) - (n ?? 0);
+    if (left > 0) state.inventory[id] = left;
+    else delete state.inventory[id];
+  }
   return state;
 }

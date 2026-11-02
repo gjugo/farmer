@@ -94,7 +94,7 @@ export const GUIDE_STEPS: readonly GuideStepDef[] = [
   {
     id: 'materials',
     title: 'Wood and stone',
-    text: 'Buildings need 🪵 wood and 🪨 stone, and there is no Market yet: build a 🪓 Woodcutter’s Lodge (🔨 → 🪓 Resources) near trees and assign a farmer.',
+    text: 'Buildings need 🪵 wood and 🪨 stone. Your ⛺ camp’s supplies come first (tap it to see what is left); for more, build a 🪓 Woodcutter’s Lodge near trees and assign a farmer (the Market opens once a trading post is linked).',
     ring: ['build-woodcutter', 'build-cat-resources', 'btn-build'],
   },
   {

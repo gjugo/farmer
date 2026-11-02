@@ -27,7 +27,7 @@ import {
   upgrade,
   used,
 } from './storage';
-import { maxLevelState } from './test-utils';
+import { maxLevelState, noCamp } from './test-utils';
 import type { GameState, PlacedObject } from './types';
 
 // Free land in the starting land's top-left corner, above the starting fields and the farmhouse.
@@ -75,9 +75,11 @@ function ripeWheat(game: Game): PlacedObject<FieldState> {
 }
 
 describe('capacity', () => {
-  it('is the farmhouse store on a new farm, for goods and for materials', () => {
+  it("is the farmhouse store on a new farm, for goods and for materials, plus the camp's supplies", () => {
     const game = new Game(createNewGame());
-    expect(storageInfo(game.state)).toEqual({ goods: { used: 0, capacity: 30 }, materials: { used: 0, capacity: 30 } });
+    // 15 bread and 15 carrots, 40 wood and 20 stone: the camp makes room for exactly what it brought.
+    expect(storageInfo(game.state)).toEqual({ goods: { used: 30, capacity: 60 }, materials: { used: 60, capacity: 90 } });
+    expect(storageInfo(noCamp(game.state))).toEqual({ goods: { used: 0, capacity: 30 }, materials: { used: 0, capacity: 30 } });
     expect(FARMHOUSE_STORE).toEqual({ goods: 30, materials: 30 });
   });
 
@@ -326,7 +328,7 @@ describe('offline catch-up', () => {
 describe('old saves', () => {
   /** A version-6 save (from before storage) holding `inventory`. */
   function oldSave(inventory: Record<string, number>, nextGoal?: number): string {
-    const state = createNewGame();
+    const state = noCamp(createNewGame());
     state.inventory = { ...inventory };
     delete state.ext.storage;
     const file = JSON.parse(serialize(state));
