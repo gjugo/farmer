@@ -1,6 +1,7 @@
 import { registerBuildable } from './buildables';
 import type { KnownItemId } from './items';
 import type { MaterialCost } from './materials';
+import type { Season } from './seasons';
 
 export type AnimalKind = 'chicken' | 'cow' | 'sheep';
 export type PenType = 'coop' | 'pasture';
@@ -12,7 +13,7 @@ export interface AnimalDef {
   price: number;
   /** The building it lives in. */
   pen: PenType;
-  /** Feed eaten to start one production cycle. */
+  /** Feed eaten to start one production cycle in a feeding season (winter); the rest of the year it grazes. */
   feedPerCycle: number;
   product: KnownItemId;
   /** Length of a production cycle in game milliseconds. */
@@ -53,7 +54,7 @@ export const PENS: Record<PenType, PenDef> = {
     footprint: { w: 3, h: 3 },
     capacity: 6,
     animals: ['chicken'],
-    description: 'Holds up to 6 chickens. Fed chickens lay eggs.',
+    description: 'Holds up to 6 chickens. They lay eggs, peck about for food most of the year and need feed in winter.',
     unlockLevel: 1,
   },
   pasture: {
@@ -65,10 +66,16 @@ export const PENS: Record<PenType, PenDef> = {
     footprint: { w: 4, h: 4 },
     capacity: 4,
     animals: ['cow', 'sheep'],
-    description: 'Fenced grass for up to 4 cows or sheep. Cows give milk, sheep give wool.',
+    description: 'Fenced grass for up to 4 cows or sheep. Cows give milk, sheep give wool. They graze, and need feed in winter.',
     unlockLevel: 3,
   },
 };
+
+/**
+ * Seasons in which a production cycle costs feed (the season when it starts). The rest of the year the animals graze.
+ * An animal left hungry with no feed through a whole day of these seasons starves (see `stepStarvation`).
+ */
+export const FEED_SEASONS: readonly Season[] = ['winter'];
 
 /** Feed bought from the panel when the barn is empty. */
 export const FEED_PACK = { qty: 5, price: 25 } as const;

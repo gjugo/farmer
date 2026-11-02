@@ -171,7 +171,7 @@ describe('unlocks', () => {
   it('things already on the farm keep working at a lower level', () => {
     const state = bareMap(createNewGame());
     const pen = addStartingObject(state, 'pasture', free.x, free.y) as PlacedObject<PenState>;
-    pen.state.animals.push({ kind: 'cow', timer: null });
+    pen.state.animals.push({ kind: 'cow', timer: null, hungrySince: 0 });
     const game = new Game(state);
     expect(game.level).toBe(1);
     game.addItem('feed', 2);
@@ -336,7 +336,13 @@ describe('goals', () => {
       'build-farmhouse',
       'manor-house',
       'manor-hall',
+      'build-feed-barn',
     ]);
+  });
+
+  it('the feed goal keeps its id and slot, renamed "Make 12 feed"; "Build a feed barn" comes last', () => {
+    expect(GOALS[23]).toMatchObject({ id: 'make-feed', title: 'Make 12 feed', kind: 'make', item: 'feed', count: 12 });
+    expect(GOALS.at(-1)).toMatchObject({ id: 'build-feed-barn', title: 'Build a feed barn', kind: 'own-buildings', type: 'feed-barn', count: 1 });
   });
 
   it('the oxcart goals follow the hazard goals: build an ox barn, haul 100 goods by cart', () => {
@@ -365,11 +371,12 @@ describe('goals', () => {
     ]);
   });
 
-  it('"Upgrade a cottage" counts cottage upgrades; "Build the farmhouse" counts the farmhouse, a site too; its levels come last', () => {
-    expect(GOALS.at(-4)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
-    expect(GOALS.at(-3)).toMatchObject({ id: 'build-farmhouse', kind: 'own-buildings', type: 'farmhouse', count: 1 });
-    expect(GOALS.at(-2)).toMatchObject({ id: 'manor-house', title: 'Upgrade the farmhouse to a manor house', kind: 'building-level', type: 'farmhouse', count: 2 });
-    expect(GOALS.at(-1)).toMatchObject({ id: 'manor-hall', title: 'Raise the manor hall', kind: 'building-level', type: 'farmhouse', count: 3 });
+  it('"Upgrade a cottage" counts cottage upgrades; "Build the farmhouse" counts the farmhouse, a site too; its levels follow', () => {
+    const at = (i: number) => GOALS.at(i - 1);
+    expect(GOALS.at(-5)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
+    expect(at(-3)).toMatchObject({ id: 'build-farmhouse', kind: 'own-buildings', type: 'farmhouse', count: 1 });
+    expect(at(-2)).toMatchObject({ id: 'manor-house', title: 'Upgrade the farmhouse to a manor house', kind: 'building-level', type: 'farmhouse', count: 2 });
+    expect(at(-1)).toMatchObject({ id: 'manor-hall', title: 'Raise the manor hall', kind: 'building-level', type: 'farmhouse', count: 3 });
   });
 
   it('the farmhouse level goals look at the finished farmhouse’s level: one upgrade never completes both', () => {

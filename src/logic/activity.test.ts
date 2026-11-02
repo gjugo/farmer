@@ -6,6 +6,7 @@ import { START_LAND } from './constants';
 import { plant, type FieldState } from './crops';
 import { Game } from './game';
 import { startJob, type ProcessorState } from './processing';
+import { SEASON_MS } from './seasons';
 import { maxLevelState } from './test-utils';
 import type { PlacedObject } from './types';
 
@@ -41,6 +42,7 @@ describe('activity events for actions without a state event', () => {
     if (!placed.ok) throw new Error(placed.reason);
     const coop = placed.object as PlacedObject<PenState>;
     expect(buyAnimal(game, coop, 'chicken').ok).toBe(true);
+    game.state.clock.elapsed = 3 * SEASON_MS; // winter: animals eat feed
     expect(feedAll(game, coop)).toBe(0); // no feed yet
     game.addItem('feed', 5);
     expect(feedAll(game, coop)).toBe(1);

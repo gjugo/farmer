@@ -100,7 +100,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'build-woodcutter', title: "Build a woodcutter's lodge", icon: '🪓', kind: 'own-buildings', type: 'woodcutter', count: 1, reward: { money: 50, xp: 20 } },
   { id: 'produce-wood', title: 'Produce 20 wood', icon: '🪵', kind: 'produce', item: 'wood', count: 20, reward: { money: 60, xp: 25 } },
   { id: 'build-quarry', title: 'Build a quarry', icon: '⛏️', kind: 'own-buildings', type: 'quarry', count: 1, reward: { money: 80, xp: 30 } },
-  { id: 'make-feed', title: 'Mill 12 feed', icon: '🌰', kind: 'make', item: 'feed', count: 12, reward: { money: 150, xp: 75 } },
+  { id: 'make-feed', title: 'Make 12 feed', icon: '🌰', kind: 'make', item: 'feed', count: 12, reward: { money: 150, xp: 75 } },
   { id: 'mine-iron', title: 'Mine 5 iron', icon: '🔩', kind: 'produce', item: 'iron', count: 5, reward: { money: 200, xp: 100 } },
   { id: 'own-sheep', title: 'Own 2 sheep', icon: '🐑', kind: 'own-animals', animal: 'sheep', count: 2, reward: { money: 200, xp: 100 } },
   { id: 'weave-cloth', title: 'Weave 2 cloth', icon: '🧵', kind: 'make', item: 'cloth', count: 2, reward: { money: 250, xp: 120 } },
@@ -124,6 +124,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'build-farmhouse', title: 'Build the farmhouse', icon: '🏠', kind: 'own-buildings', type: 'farmhouse', count: 1, reward: { money: 200, xp: 100 } },
   { id: 'manor-house', title: 'Upgrade the farmhouse to a manor house', icon: '🏡', kind: 'building-level', type: 'farmhouse', count: 2, reward: { money: 400, xp: 200 } },
   { id: 'manor-hall', title: 'Raise the manor hall', icon: '🏰', kind: 'building-level', type: 'farmhouse', count: 3, reward: { money: 600, xp: 300 } },
+  { id: 'build-feed-barn', title: 'Build a feed barn', icon: '🐮', kind: 'own-buildings', type: 'feed-barn', count: 1, reward: { money: 80, xp: 30 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

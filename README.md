@@ -166,7 +166,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   yard, what was made today and why it is idle (no farmer, no path, yard and storehouse full). It pays for itself in
   well under two hours of work against Market prices, so the Market is the dearer fallback. The welcome-back summary
   lists what was produced (stored, or waiting in the yards). Goals: "Build a woodcutter's lodge", "Produce 20 wood" and
-  "Build a quarry" come after "Own 10 fields", "Mine 5 iron" after "Mill 12 feed" (a lodge or quarry built
+  "Build a quarry" come after "Own 10 fields", "Mine 5 iron" after "Make 12 feed" (a lodge or quarry built
   earlier counts).
 - **Oxcarts:** the **🐂 Ox Barn** (level 3, 3×2, $250 + 30 🪵 + 15 🪨; several allowed) hauls goods by oxcart. Buy an
   ox in its panel (**🐂 Buy an ox**, $300; the ox needs no feed) and assign one farmer as the carter (**👨‍🌾 Assign a
@@ -213,9 +213,30 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   least 40 px wide, centred on the village centre: the camp on a new farm); zooming out goes as far as the whole map. Saves from before the map grew
   load in the middle of the bigger map with their farm unchanged; saves from when land was bought (version 14 and
   older) load with the whole map open, nothing moved and nothing refunded.
-- **Animals:** build a Chicken Coop or Pasture, open it to buy animals and feed. Fed animals produce
-  after their cycle (chicken 3 game-minutes, cow 6, sheep 8); click the pen (or **Collect**) to pick up eggs, milk and wool.
-- **Processing:** build a Feed Mill, Dairy, Bakery, Loom, Blacksmith, Malthouse, Brewery or Tailor, open it and pick a recipe.
+- **Animals:** build a Chicken Coop or Pasture, open it to buy animals. A hungry animal starts a cycle when its pen's
+  farmer (or **Let them out to graze** / **Feed all** by hand) sees to it, and produces after the cycle (chicken 3
+  game-minutes, cow 6, sheep 8); click the pen (or **Collect**) to pick up eggs, milk and wool.
+  - **Grazing and winter feeding** (like Manor Lords): in **spring, summer and autumn** a cycle starts **without feed**:
+    the animals graze, the feed in stock doesn't change, and the pen panel and the farmer's status say "Grazing". In
+    **winter** (the season when the cycle starts) each cycle takes the animal's feed (chicken 1, cow 2, sheep 1), as
+    before; with none in stock the animal stays hungry and makes nothing. A winter's need is each animal's feed × the
+    cycles it runs in a winter (32 min: a chicken 11, a cow 6, a sheep 4, faster with Husbandry), about a quarter of
+    what animals used to eat in a year.
+  - **Starving:** an animal hungry through a **whole winter day** (from one day boundary to the next) with no feed in
+    stock for it **dies** at the day's end: at most one per pen per day (the one hungry longest), whatever the pen
+    (the fox's "spares the last chicken" doesn't apply). A toast and a recent-events entry say "A cow starved in the
+    pasture", and the welcome-back summary counts deaths while away. It is settled in the work scheduler on the game
+    clock, so ×1, ×60 and offline catch-up agree. Feed in stock spares them, even before a farmer feeds them.
+  - **Warnings:** from the **last day of autumn**, while the feed in stock is less than this winter's need, a banner
+    says "Winter is coming: the animals need N feed, you have M"; **in winter**, while hungry animals have no feed, an
+    alert banner says "Animals are starving: make feed at a Feed Barn". The pen panel shows the season's rule and the
+    winter need, the 🐄 overview chip the feed in stock against it.
+  - **Feed** comes from the **🐮 Feed Barn** (🔨 → 🌾 Farming, level 2, 2×2, $90 + 8 wood + 2 stone): 3 wheat, corn or
+    barley → 6 feed in 2 game-minutes (1 grain → 2 feed; corn and barley from level 4, when they unlock), with the
+    queue, ⚙️ Keep making, farmer loading and oxcart pickup of any processing building. It has no chimney, so it shows
+    no work animation. The Feed Mill's recipes are unchanged for now. The pen panel's **Buy 5 feed** pack and the
+    trader's feed stay as fallbacks. The hen run garden needs no feed at all.
+- **Processing:** build a Feed Mill, Feed Barn, Dairy, Bakery, Loom, Blacksmith, Malthouse, Brewery or Tailor, open it and pick a recipe.
   Inputs are taken at once; up to 3 jobs queue and run one at a time (feed 2 game-minutes, butter 4, bread 5,
   malt 5, tools 6, cheese 8, linen 8, cloth 10, ale 10, clothes 10). The longer chains:
 
@@ -280,8 +301,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
     worn (below 80%, with 4 in stock), is ploughed (in a ploughing season), sown with its **🌱 Crop plan** (a crop,
     **Best in season**, the default: the longest grower that is ripe before its seasons end, rotating away from the
     last crop, or **Fallow**) and harvested when ripe; ploughing is free, seed is paid as by hand, and the
-    work waits while money for seed is short. A **coop or pasture** gets its products collected and its hungry animals fed from
-    stock (it waits without feed). A **processing building** keeps queueing its **⚙️ Keep making** recipe while the
+    work waits while money for seed is short. A **coop or pasture** gets its products collected and its hungry animals let out to graze (spring
+    to autumn) or fed from stock (winter; it waits without feed). A **processing building** keeps queueing its **⚙️ Keep making** recipe while the
     inputs are in stock and the queue has room, and its finished goods are collected. A **woodcutter's lodge, quarry or
     mine** works cycle after cycle. The panel says why a farmer waits.
   - **Free farmers** (no workplace, or nothing to do there now) build construction sites, oldest first, and take what
@@ -393,7 +414,9 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   15 🔩**; room 3, stores 150 + 150, +20 approval. The farmhouse panel shows the ✅/❌ checklist and **⬆️ Upgrade to the
   manor house** (`farmhouse-upgrade`); Thrifty takes 20% fewer materials; a free farmer does the work once it is paid,
   like the cottage's; a toast and an `upgraded` activity follow. It never goes down a level. Goals "Upgrade the
-  farmhouse to a manor house" and "Raise the manor hall" (they look at the farmhouse's level) come last.
+  farmhouse to a manor house" and "Raise the manor hall" (they look at the farmhouse's level) follow "Build the
+  farmhouse"; "Build a feed barn" comes after them, last (saves keep goals by index). The feed goal (slot 23) is now
+  "Make 12 feed": feed made at the Feed Barn or the Feed Mill counts.
   Saves from before version 18 had a 2×2 farmhouse: on loading it grows into the 3×3 at level 1 (same id, store and
   families), one row further back so its door tile stays where it was, or another way over its old footprint; paths,
   trees and stumps on the new tiles are cleared and the paths that reached it are joined to its door again. Boxed in by
@@ -526,6 +549,7 @@ game keeps running, nothing is dimmed and nothing is blocked.
 Open `/?debug=1` for a panel with **+$1000**, **+10 of any item**, clock speed **×1 / ×10 / ×60 / ×300**
 (at ×60 a season passes in 32 real seconds, at ×300 in under 7 and a whole year in under half a minute),
 **Next season** (jumps the clock to the start of the next season, like time away but without the summary),
+**Winter now** (`debug-winter`: jumps the same way to the first day of the next winter),
 **+1 family** (fills an empty home at once), **Farmhouse +1 level** (`debug-farmhouse-level`: the farmhouse, built or a
 site, goes up a level at once, skipping the checklist and cost), **Next day** (jumps to the next day boundary, where the families settle
 their needs), **Drought now** (a drought until the end of the current season), **Crows now** (a flock lands on a
@@ -560,6 +584,12 @@ while a trading post's build ghost is shown (else null). Test ids: `trade-link` 
 `window.farm.iso.tileToScreen(x, y)` returns the page pixel of tile (x, y)'s centre at the current camera, so a
 script can click a known tile (`page.mouse.click(p.x, p.y)`). Browsers report mouse positions in whole CSS pixels,
 so to click "just inside" an edge, stay at least 2 px inside it.
+`window.farm.feed` is `{ winterNeed, have, starving: [{ pen, kind }], grazing }`: the feed the farm's animals eat in a
+winter (perks included), the feed in stock, the animals hungry now in winter without feed for them (pen object id and
+animal kind; they starve if that lasts a whole day) and whether animals graze now (spring to autumn). Each animal in a
+pen's `state.animals` has `hungrySince` (game time it became hungry, null while eating or with its product waiting);
+the starving check's last day is `window.farm.ext.livestock.checkedDay`. Banners: `banner-winter-feed`,
+`banner-starving`. `window.farm.lastCatchUp.starved` counts animals that starved while away, by kind.
 `window.farm.camp` is `{ id, left, room, packed, families, waiting }`: the camp's object id, what is left of each
 supply, the room it adds to each pool (`{ goods, materials }`), whether it is packed away (then `left` is empty and the
 object is gone), the families living in the tent (2 on a new farm, 0 once packed and on saves from before the tent
@@ -676,7 +706,7 @@ locked, `aria-disabled` while locked or unaffordable, `build-cost-<type>`, `buil
 `tab-<id>` (`goals`, `perks`, `families`, `farmers`, `storage`, `market`, `orders`, `trader`, `almanac`),
 `badge-<tab id>` and `badge-<window>` (`badge-development`, `badge-farm`, `badge-trade`, `badge-almanac`),
 `stat-<id>` (`free`, `working`, `homes`, `approval`, `livestock`, `supplies`; `data-value`), `banner-<id>` (`perk`,
-`trader`, `hazard`; class `banner-info|warn|alert`), `events-log` (🕮) with `events-pop` / `events-list`,
+`trader`, `hazard`, `starving`, `winter-feed`; class `banner-info|warn|alert`), `events-log` (🕮) with `events-pop` / `events-list`,
 `speed-pause`, `speed-1`, `speed-4`, `speed-12` (`aria-pressed`), `hud-tip`, `panel`, `panel-title`, `panel-tabs`,
 `panel-close`, `btn-cancel-tool`, `hud-level`, `hud-xp`, `hud-money`, `hud-day`, `hud-season`.
 `window.farm.audio` is `{ muted, musicVolume, sfxVolume, lastPlayed }`, where `lastPlayed` lists the last 20 sound
@@ -957,6 +987,9 @@ with a full deposit under every quarry and mine and a grove of about 8 trees in 
 Version 13 added oxcart hauling: a resource building's `waiting` output (from older saves: what waited for storehouse
 room) stays, now as its yard, so nothing is lost; jobs gain an optional `haul` trip and ox barns their own state.
 Version 14 added tools: every farmer of an older save gets an empty tool slot (`workers.tools`).
+Version 19 added winter feeding: every animal notes `hungrySince`. On loading an older save a hungry animal counts as
+hungry from the load (so none starves on the first day), one eating or with its product waiting gets null; every cycle
+stays as it was. The `livestock` slice (`checkedDay`) is additive.
 The starting camp needed no version bump either: it is an object (type `camp`, its `left` in `state`) plus the
 additive `camp` slice (`{ id, packed, families }`); a save without them simply has no camp, and one without
 `families` has nobody in the tent.

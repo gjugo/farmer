@@ -1,8 +1,8 @@
-import { registerBuildable } from './buildables';
+import { registerBuildable, type BuildCategory } from './buildables';
 import type { KnownItemId } from './items';
 import type { MaterialCost } from './materials';
 
-export type ProcessorType = 'feed-mill' | 'dairy' | 'bakery' | 'loom' | 'malthouse' | 'brewery' | 'tailor' | 'blacksmith';
+export type ProcessorType = 'feed-mill' | 'feed-barn' | 'dairy' | 'bakery' | 'loom' | 'malthouse' | 'brewery' | 'tailor' | 'blacksmith';
 
 export interface RecipeDef {
   /** Unique across all buildings. */
@@ -25,8 +25,10 @@ export interface ProcessorDef {
   /** Size in tiles. */
   footprint: { w: number; h: number };
   description: string;
-  /** How the building shows that it is working: smoke from its chimney or the mill's sails turning. */
-  anim: 'smoke' | 'sails';
+  /** How the building shows that it is working: smoke from its chimney, the mill's sails turning, or nothing (no chimney). */
+  anim: 'smoke' | 'sails' | 'none';
+  /** Its tab in the construction menu (default Crafts). */
+  category?: BuildCategory;
   /** Farm level that unlocks building it (and so its recipes). */
   unlockLevel: number;
   recipes: readonly RecipeDef[];
@@ -50,6 +52,25 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
       { id: 'feed-from-wheat', inputs: { wheat: 2 }, output: { item: 'feed', qty: 3 }, durationMs: 120_000 },
       { id: 'feed-from-corn', inputs: { corn: 1 }, output: { item: 'feed', qty: 2 }, durationMs: 120_000 },
       { id: 'feed-from-barley', inputs: { barley: 2 }, output: { item: 'feed', qty: 4 }, durationMs: 120_000 },
+    ],
+  },
+  // The animals' own building, like Manor Lords' livestock farm: grain into winter feed at 1:2. In Farming, by the pens.
+  'feed-barn': {
+    id: 'feed-barn',
+    name: 'Feed Barn',
+    icon: '🐮',
+    cost: 90,
+    materials: { wood: 8, stone: 2 },
+    footprint: { w: 2, h: 2 },
+    description: 'Turns wheat, corn or barley into feed, 1 grain to 2 feed. Animals graze most of the year and eat feed only in winter.',
+    unlockLevel: 2,
+    anim: 'none',
+    category: 'farming',
+    recipes: [
+      { id: 'feed-barn-wheat', inputs: { wheat: 3 }, output: { item: 'feed', qty: 6 }, durationMs: 120_000 },
+      // Corn and barley come at level 4.
+      { id: 'feed-barn-corn', inputs: { corn: 3 }, output: { item: 'feed', qty: 6 }, durationMs: 120_000, unlockLevel: 4 },
+      { id: 'feed-barn-barley', inputs: { barley: 3 }, output: { item: 'feed', qty: 6 }, durationMs: 120_000, unlockLevel: 4 },
     ],
   },
   dairy: {
@@ -173,7 +194,7 @@ for (const p of Object.values(PROCESSORS)) {
     materials: p.materials,
     footprint: p.footprint,
     texture: p.id,
-    category: 'crafts',
+    category: p.category ?? 'crafts',
     description: p.description,
     icon: p.icon,
     unlockLevel: p.unlockLevel,

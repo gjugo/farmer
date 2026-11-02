@@ -1,3 +1,4 @@
+import { isPenType } from './animals';
 import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { FARMHOUSE } from '../data/farmhouse';
@@ -30,7 +31,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 
 export interface SaveFile {
   version: number;
@@ -228,6 +229,23 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
   // The farmhouse became 3×3 with levels: an old 2×2 one grows into the 3×3 at level 1 when the save loads, over its
   // old footprint or nearby (`growFarmhouse`, `FARMHOUSE_GROWN_IN`), since that needs the whole farm. Nothing to do here.
   17: (raw) => ({ ...raw, version: 18 }),
+  // Winter feeding (the Feed Barn): animals graze from spring to autumn and eat feed only in winter, and one left
+  // hungry through a whole winter day with no feed starves. Each animal notes since when it is hungry: a hungry one
+  // from now (so none can starve on the first day after loading), one eating or with its product waiting not at all.
+  // Its cycle stays as it was.
+  18: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const clock = isPlainObject(state.clock) ? state.clock : {};
+    const now = isNonNegNumber(clock.elapsed) ? clock.elapsed : 0;
+    const objects = Array.isArray(state.objects)
+      ? state.objects.map((o: unknown) => {
+          if (!isPlainObject(o) || !isPenType(o.type as string) || !isPlainObject(o.state) || !Array.isArray(o.state.animals)) return o;
+          const animals = o.state.animals.map((a: unknown) => (isPlainObject(a) ? { ...a, hungrySince: a.timer ? null : now } : a));
+          return { ...o, state: { ...o.state, animals } };
+        })
+      : state.objects;
+    return { ...raw, version: 19, state: { ...state, objects } };
+  },
 };
 
 /** Version 16's guide steps, in order. */

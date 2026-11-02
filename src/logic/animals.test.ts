@@ -10,13 +10,17 @@ import {
   feedAll,
   feedNeeded,
   readyCount,
+  starvingAnimals,
+  winterFeedNeed,
   type PenState,
 } from './animals';
-import { START_LAND } from './constants';
+import { DAY_MS, START_LAND } from './constants';
+import { catchUp } from './offline';
 import { familiesOf } from './families';
 import { Game } from './game';
+import { SEASON_MS } from './seasons';
 import { maxLevelState } from './test-utils';
-import { deserialize, serialize } from './save';
+import { deserialize, parseSave, serialize } from './save';
 import type { PlacedObject } from './types';
 
 // Free land below the starting fields, the farmhouse and the road between them.
@@ -27,6 +31,13 @@ function pen(game: Game, type: 'coop' | 'pasture', x = ox, y = oy): PlacedObject
   const r = game.place(type, x, y);
   if (!r.ok) throw new Error(`could not place ${type}: ${r.reason}`);
   return r.object as PlacedObject<PenState>;
+}
+
+/** A farm at the first moment of its first winter, when animals eat feed (the rest of the year they graze). */
+function winterState() {
+  const state = maxLevelState();
+  state.clock.elapsed = 3 * SEASON_MS;
+  return state;
 }
 
 /** Advances game time by `ms` (×1 speed, in clamped frames). */
@@ -67,7 +78,7 @@ describe('buying animals', () => {
     const coop = pen(g, 'coop');
     expect(buyAnimal(g, coop, 'chicken')).toEqual({ ok: true });
     expect(g.money).toBe(500 - PENS.coop.cost - 60);
-    expect(coop.state.animals).toEqual([{ kind: 'chicken', timer: null }]);
+    expect(coop.state.animals).toEqual([{ kind: 'chicken', timer: null, hungrySince: g.now }]);
     expect(animalStatus(g.state.clock, coop.state.animals[0])).toBe('hungry');
   });
 
@@ -115,7 +126,7 @@ describe('buying animals', () => {
 
 describe('feeding', () => {
   it('buys 5 feed for $25, refusing when short', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     expect(buyFeed(g)).toEqual({ ok: true });
     expect(g.count('feed')).toBe(FEED_PACK.qty);
     expect(g.money).toBe(500 - FEED_PACK.price);
@@ -125,7 +136,7 @@ describe('feeding', () => {
     expect(g.money).toBe(10);
   });
 
-  it('unfed animals produce nothing', () => {
+  it('animals nobody lets out to graze produce nothing', () => {
     const g = new Game(maxLevelState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
@@ -136,7 +147,7 @@ describe('feeding', () => {
   });
 
   it('feeds every hungry animal it can and never takes feed below zero', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
     buyAnimal(g, pasture, 'cow');
@@ -153,7 +164,7 @@ describe('feeding', () => {
   });
 
   it('skips an animal that needs more feed than is left but feeds cheaper ones after it', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
     buyAnimal(g, pasture, 'cow');
@@ -164,7 +175,7 @@ describe('feeding', () => {
   });
 
   it('does not feed an animal that is already producing', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     g.addItem('feed', 5);
@@ -176,7 +187,7 @@ describe('feeding', () => {
 
 describe('production and collection', () => {
   it('a fed chicken lays an egg after 3 min of game time', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     buyFeed(g);
@@ -197,7 +208,7 @@ describe('production and collection', () => {
   });
 
   it('a cow eats 2 feed and gives milk after 6 min; a sheep eats 1 and gives wool after 8 min', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     g.earn(10_000);
     const pasture = pen(g, 'pasture');
     buyAnimal(g, pasture, 'cow');
@@ -216,7 +227,7 @@ describe('production and collection', () => {
   });
 
   it('the clock speed shortens the real wait', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
     g.addItem('feed', 1);
@@ -229,7 +240,7 @@ describe('production and collection', () => {
 
 describe('saving', () => {
   it('keeps animals, hunger and cycle progress across a reload', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     g.earn(10_000);
     const coop = pen(g, 'coop');
     buyAnimal(g, coop, 'chicken');
@@ -246,9 +257,121 @@ describe('saving', () => {
   });
 
   it('drops malformed animals from a save', () => {
-    const g = new Game(maxLevelState());
+    const g = new Game(winterState());
     const coop = pen(g, 'coop');
     coop.state.animals = [{ kind: 'dragon', timer: null }, { kind: 'chicken', timer: 'soon' }] as never;
-    expect(animalsOf(coop)).toEqual([{ kind: 'chicken', timer: null }]);
+    expect(animalsOf(coop)).toEqual([{ kind: 'chicken', timer: null, hungrySince: null }]);
+  });
+});
+
+describe('winter feeding and starving', () => {
+  const YEAR = 4 * SEASON_MS;
+
+  /** A coop with 6 chickens and a pasture with 4 cows, nobody to feed them and no feed: they starve in winter. */
+  function hungryFarm() {
+    const g = new Game(maxLevelState());
+    g.earn(10_000);
+    const coop = pen(g, 'coop');
+    const pasture = pen(g, 'pasture', ox + 4, oy);
+    for (let i = 0; i < 6; i++) buyAnimal(g, coop, 'chicken');
+    for (let i = 0; i < 4; i++) buyAnimal(g, pasture, 'cow');
+    const starved: { at: number; pen: string; kind: string }[] = [];
+    g.activity.on('starved', ({ pen: id, kind }) => starved.push({ at: g.now, pen: id, kind }));
+    return { g, coop, pasture, starved };
+  }
+
+  it('animals graze from spring to autumn: a cycle takes no feed and the feed count stays as it is', () => {
+    for (const season of [0, 1, 2]) {
+      const g = new Game(maxLevelState());
+      g.state.clock.elapsed = season * SEASON_MS + 1000;
+      const coop = pen(g, 'coop');
+      buyAnimal(g, coop, 'chicken');
+      g.addItem('feed', 3);
+      expect(feedNeeded(g, coop)).toBe(0);
+      expect(feedAll(g, coop)).toBe(1);
+      expect(g.count('feed')).toBe(3);
+      expect(animalStatus(g.state.clock, coop.state.animals[0])).toBe('producing');
+    }
+  });
+
+  it('with no feed in winter a farm loses one animal per pen per day, and none in other seasons', () => {
+    const { g, coop, pasture, starved } = hungryFarm();
+    g.advance(3 * SEASON_MS);
+    // Spring to autumn: hungry all along, but grazing time, so nobody starves.
+    expect(starved).toEqual([]);
+    expect(starvingAnimals(g)).toHaveLength(10);
+    g.advance(SEASON_MS);
+    // Each of the 4 winter days ends with one death in each pen, at the day boundary.
+    expect(starved).toHaveLength(8);
+    const days = [13, 14, 15, 16].map((d) => d * DAY_MS);
+    for (const id of [coop.id, pasture.id]) expect(starved.filter((s) => s.pen === id).map((s) => s.at)).toEqual(days);
+    expect(animalsOf(coop)).toHaveLength(2);
+    expect(animalsOf(pasture)).toHaveLength(0);
+    // Spring again: the last two chickens live on.
+    g.advance(3 * SEASON_MS);
+    expect(starved).toHaveLength(8);
+    expect(animalsOf(coop)).toHaveLength(2);
+  });
+
+  it('feed in stock saves them, and so does a cycle under way', () => {
+    const { g, coop, pasture, starved } = hungryFarm();
+    g.state.clock.elapsed = 3 * SEASON_MS;
+    g.addItem('feed', 2);
+    // Two cows' worth of feed: no one in the coop or the pasture starves while it lasts (nobody feeds them, so it does).
+    g.advance(SEASON_MS);
+    expect(starved).toEqual([]);
+    expect(animalsOf(coop)).toHaveLength(6);
+    expect(animalsOf(pasture)).toHaveLength(4);
+  });
+
+  it('×1, ×60, offline catch-up and a reload give the same deaths', () => {
+    const outcome = (g: Game) => JSON.stringify(g.state.objects.map((o) => o.state));
+    const live = hungryFarm();
+    for (let t = 0; t < YEAR; t += 1000) live.g.advance(1000);
+    const fast = hungryFarm();
+    for (let t = 0; t < YEAR; t += 60_000) fast.g.advance(60_000);
+    const away = hungryFarm();
+    catchUp(away.g, YEAR);
+    let reloaded = hungryFarm().g;
+    reloaded.advance(3 * SEASON_MS + DAY_MS + 12_345);
+    reloaded = new Game(deserialize(serialize(reloaded.state)));
+    reloaded.advance(YEAR - reloaded.now);
+    expect(live.starved).toHaveLength(8);
+    for (const g of [fast.g, away.g, reloaded]) expect(outcome(g)).toBe(outcome(live.g));
+    expect(fast.starved).toEqual(live.starved);
+    expect(away.starved).toEqual(live.starved);
+  });
+
+  it("a winter's need: each animal's feed per cycle × the cycles it runs in a winter", () => {
+    const g = new Game(maxLevelState());
+    g.earn(10_000);
+    const coop = pen(g, 'coop');
+    const pasture = pen(g, 'pasture', ox + 4, oy);
+    buyAnimal(g, coop, 'chicken');
+    buyAnimal(g, pasture, 'cow');
+    buyAnimal(g, pasture, 'sheep');
+    // A winter is 32 min: a chicken lays 11 times (3 min), a cow milks 6 times (6 min, 2 feed), a sheep 4 times (8 min).
+    expect(winterFeedNeed(g.state)).toBe(11 + 12 + 4);
+  });
+
+  it('an old save loads with its animals cycles as they were, hungry ones counted from the load, and a reload changes nothing', () => {
+    const g = new Game(winterState());
+    g.earn(10_000);
+    const coop = pen(g, 'coop');
+    buyAnimal(g, coop, 'chicken');
+    buyAnimal(g, coop, 'chicken');
+    g.addItem('feed', 1);
+    feedAll(g, coop);
+    const timer = coop.state.animals[0].timer;
+    const raw = JSON.parse(serialize(g.state));
+    raw.version = 18;
+    for (const a of raw.state.objects.find((o: { id: string }) => o.id === coop.id).state.animals) delete a.hungrySince;
+    const loaded = parseSave(JSON.stringify(raw)).state;
+    const animals = (loaded.objects.find((o) => o.id === coop.id)!.state as PenState).animals;
+    expect(animals).toEqual([
+      { kind: 'chicken', timer, hungrySince: null },
+      { kind: 'chicken', timer: null, hungrySince: g.now },
+    ]);
+    expect(deserialize(serialize(loaded))).toEqual(loaded);
   });
 });

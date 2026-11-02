@@ -174,8 +174,9 @@ describe('work scheduler', () => {
     expect(game.money).toBe(0);
   });
 
-  it('pens get fed and collected', () => {
+  it('pens get fed and collected in winter', () => {
     const game = farm();
+    game.state.clock.elapsed = 3 * SEASON_MS; // winter: a cycle takes feed
     const coop = build<PenState>(game, 'coop', X + 1, Y + 5);
     buyAnimal(game, coop, 'chicken');
     buyAnimal(game, coop, 'chicken');
@@ -190,6 +191,25 @@ describe('work scheduler', () => {
     expect(game.count('feed')).toBe(0);
     // Out of feed: the farmer waits, and says why.
     expect(workplaceNext(game, coop)).toEqual({ wait: 'feed' });
+  });
+
+  it('from spring to autumn pens run full cycles on grazing: no feed taken, never waiting for feed', () => {
+    for (const season of [0, 1, 2]) {
+      const game = farm();
+      game.state.clock.elapsed = season * SEASON_MS;
+      const coop = build<PenState>(game, 'coop', X + 1, Y + 5);
+      buyAnimal(game, coop, 'chicken');
+      buyAnimal(game, coop, 'chicken');
+      assignFarmer(game, coop.id);
+      const log = record(game, ['fed', 'collected']);
+
+      play(game, 2 * ANIMALS.chicken.cycleMs + 30_000);
+
+      expect(log.slice(0, 3)).toEqual(['fed', 'collected', 'fed']);
+      expect(game.count('egg')).toBeGreaterThanOrEqual(2);
+      expect(game.count('feed')).toBe(0);
+      expect(['grazing', undefined]).toContain((workplaceNext(game, coop) as { wait?: string }).wait);
+    }
   });
 
   it('processing keeps making its recipe while inputs last, and collects the goods', () => {

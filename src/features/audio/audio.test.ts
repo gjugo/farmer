@@ -12,7 +12,7 @@ describe('sound mapping', () => {
     expect(soundFor(ACTIVITY_SOUNDS, 'planted', { crop: 'wheat' })).toBe('plant');
     expect(soundFor(ACTIVITY_SOUNDS, 'harvested', { item: 'wheat', qty: 3 })).toBe('harvest');
     expect(soundFor(ACTIVITY_SOUNDS, 'animalBought', { kind: 'cow' })).toBe('buy_animal');
-    expect(soundFor(ACTIVITY_SOUNDS, 'fed', { count: 2 })).toBe('feed');
+    expect(soundFor(ACTIVITY_SOUNDS, 'fed', { count: 2, grazing: false })).toBe('feed');
     expect(soundFor(ACTIVITY_SOUNDS, 'jobStarted', { recipe: 'cheese' })).toBe('process_start');
     expect(soundFor(ACTIVITY_SOUNDS, 'jobsFinished', { count: 1 })).toBe('process_done');
     expect(soundFor(ACTIVITY_SOUNDS, 'sold', { item: 'egg', qty: 1, earned: 10 })).toBe('coins');

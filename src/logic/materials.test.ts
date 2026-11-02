@@ -260,7 +260,8 @@ describe('goals, orders and saves', () => {
     };
     const loaded = deserialize(JSON.stringify(file));
     expect(loaded.inventory).toEqual({ egg: 2 });
-    expect(loaded.objects[0]).toEqual({ ...coop, ...fromV6(coop.x, coop.y) });
+    // Its hungry chicken notes that it is hungry from the load on (version 19, winter feeding).
+    expect(loaded.objects[0]).toEqual({ ...coop, ...fromV6(coop.x, coop.y), state: { animals: [{ kind: 'chicken', fedAt: null, hungrySince: 0 }] } });
     // Not yet at the coop goal: the new "buy wood" goal comes next.
     // The slot "buy-wood" was in is "Build a trading post" since version 16.
     expect(GOALS[getSlice<ProgressionState>(loaded, PROGRESSION).nextGoal].id).toBe('build-trading-post');

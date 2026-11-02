@@ -418,7 +418,7 @@ export function buyFromTrader(game: Game, index: number, qty: number): TradeResu
   if ('animal' in offer) {
     for (let i = 0; i < n; i++) {
       const pen = pensFor(game, offer.animal)[0];
-      pen.state.animals.push({ kind: offer.animal, timer: null });
+      pen.state.animals.push({ kind: offer.animal, timer: null, hungrySince: game.now });
       game.touch(pen);
       game.activity.emit('animalBought', { kind: offer.animal });
     }

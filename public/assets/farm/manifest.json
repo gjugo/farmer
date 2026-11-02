@@ -9876,6 +9876,44 @@
    }
   },
   {
+   "name": "feed_barn",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "feed_barn (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/feed_barn.png",
+     "w": 506,
+     "h": 354,
+     "anchor": [
+      252.0,
+      97.0
+     ],
+     "origin": [
+      0.49802,
+      0.27401
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/feed_barn.png",
+     "w": 253,
+     "h": 177,
+     "anchor": [
+      126.0,
+      48.5
+     ],
+     "origin": [
+      0.49802,
+      0.27401
+     ]
+    }
+   }
+  },
+  {
    "name": "tailor",
    "category": "buildings",
    "type": "image",
@@ -25891,6 +25929,44 @@
      "origin": [
       0.5,
       0.3359
+     ]
+    }
+   }
+  },
+  {
+   "name": "feed_barn_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    2,
+    2
+   ],
+   "notes": "feed_barn_winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/feed_barn_winter.png",
+     "w": 506,
+     "h": 348,
+     "anchor": [
+      252.0,
+      90.0
+     ],
+     "origin": [
+      0.49802,
+      0.25862
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/feed_barn_winter.png",
+     "w": 253,
+     "h": 174,
+     "anchor": [
+      126.0,
+      45.0
+     ],
+     "origin": [
+      0.49802,
+      0.25862
      ]
     }
    }

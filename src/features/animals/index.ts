@@ -3,9 +3,12 @@ import { ANIMALS, FEED_PACK, PENS, type AnimalKind, type PenType } from '../../d
 import { getItem } from '../../data/items';
 import { FEED_WORK_MS } from '../../data/workers';
 import type { FarmContext, ObjectView, PanelAction, PanelSpec, PlacedObject } from '../../game/context';
-import { registerBehavior, registerHudButton } from '../../game/hooks';
+import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { withFarmer } from '../../game/workers';
+import type { Game } from '../../logic/game';
+import { dayOfSeason, seasonAt } from '../../logic/seasons';
 import { fullMessage, leftBehindMessage } from '../../logic/storage';
+import { SEASON_DAYS } from '../../data/seasons';
 import {
   animalProgress,
   animalsOf,
@@ -16,8 +19,11 @@ import {
   collect,
   feedAll,
   feedNeeded,
+  grazingAt,
   isPenType,
   readyCount,
+  starvingAnimals,
+  winterFeedNeed,
   type AnimalStatus,
   type PenState,
 } from '../../logic/animals';
@@ -210,11 +216,17 @@ function collectAndFloat(ctx: FarmContext, obj: PlacedObject<PenState>): void {
   if (left > 0) ctx.ui.toast(leftBehindMessage(got, left, `the ${PENS[obj.type as PenType].name.toLowerCase()}`), 'error');
 }
 
-const STATUS_TEXT: Record<AnimalStatus, (kind: AnimalKind) => string> = {
-  hungry: () => 'hungry, needs feed',
-  producing: (kind) => `eating, making ${getItem(ANIMALS[kind].product)?.name.toLowerCase() ?? 'something'}`,
+const STATUS_TEXT: Record<AnimalStatus, (kind: AnimalKind, grazing: boolean) => string> = {
+  hungry: (_kind, grazing) => (grazing ? 'waiting to go out to graze' : 'hungry, needs feed'),
+  producing: (kind, grazing) => `${grazing ? 'grazing' : 'eating'}, making ${getItem(ANIMALS[kind].product)?.name.toLowerCase() ?? 'something'}`,
   ready: (kind) => `${itemLabel(ANIMALS[kind].product)} ready!`,
 };
+
+/** "🌿 Grazing: …" / "❄️ Winter feeding: …", the pen panel's line about feed this season. */
+function feedingLine(game: Game): string {
+  if (grazingAt(game.now)) return '🌿 Grazing: the animals find their own food until winter. In winter each cycle takes feed.';
+  return '❄️ Winter feeding: each cycle takes feed. An animal left hungry with no feed through a whole day starves.';
+}
 
 function penPanel(ctx: FarmContext, obj: PlacedObject<PenState>): PanelSpec {
   const { game } = ctx;
@@ -223,15 +235,17 @@ function penPanel(ctx: FarmContext, obj: PlacedObject<PenState>): PanelSpec {
   const animals = animalsOf(obj);
   const feed = game.count('feed');
   const need = feedNeeded(game, obj);
+  const grazing = grazingAt(game.now);
   const hungry = animals.filter((a) => animalStatus(clock, a) === 'hungry');
-  const canFeedAny = hungry.some((a) => ANIMALS[a.kind].feedPerCycle <= feed);
+  const canFeedAny = grazing || hungry.some((a) => ANIMALS[a.kind].feedPerCycle <= feed);
   const ready = readyCount(clock, obj);
   const producing = animals.filter((a) => animalStatus(clock, a) === 'producing');
 
   const lines = [
     `Animals: ${animals.length} / ${pen.capacity}`,
-    ...animals.map((a) => `${ANIMALS[a.kind].icon} ${ANIMALS[a.kind].name} — ${STATUS_TEXT[animalStatus(clock, a)](a.kind)}`),
-    `${itemLabel('feed')} in stock: ${feed}`,
+    ...animals.map((a) => `${ANIMALS[a.kind].icon} ${ANIMALS[a.kind].name} — ${STATUS_TEXT[animalStatus(clock, a)](a.kind, grazing)}`),
+    feedingLine(game),
+    `${itemLabel('feed')} in stock: ${feed} (the farm's animals eat ${winterFeedNeed(game.state)} in a winter)`,
   ];
   if (animals.length === 0) lines.splice(1, 0, `Empty. Buy ${pen.animals.map((k) => ANIMALS[k].name.toLowerCase()).join(' or ')} below.`);
   // A coop says whether a kennel keeps the fox off it.
@@ -242,12 +256,14 @@ function penPanel(ctx: FarmContext, obj: PlacedObject<PenState>): PanelSpec {
   if (ready > 0) actions.push({ label: `Collect (${ready})`, onClick: () => collectAndFloat(ctx, obj) });
   if (hungry.length > 0) {
     actions.push({
-      label: `Feed all (${need} feed)`,
+      label: grazing ? 'Let them out to graze' : `Feed all (${need} feed)`,
       disabled: !canFeedAny,
       onClick: () => {
         withFarmer(ctx, 'feed', obj, FEED_WORK_MS, () => {
+          const out = grazingAt(game.now);
           const fed = feedAll(game, obj);
-          if (fed > 0) ctx.ui.toast(`Fed ${fed} ${fed === 1 ? 'animal' : 'animals'}`, 'success');
+          const animalsText = `${fed} ${fed === 1 ? 'animal' : 'animals'}`;
+          if (fed > 0) ctx.ui.toast(out ? `Let ${animalsText} out to graze` : `Fed ${animalsText}`, 'success');
           return fed > 0;
         });
       },
@@ -339,8 +355,59 @@ registerHudButton({
     detail: (ctx) => {
       const counts = livestock(ctx);
       const lines = (Object.keys(counts) as AnimalKind[]).filter((k) => counts[k] > 0).map((k) => `${ANIMALS[k].icon} ${ANIMALS[k].name}: ${counts[k]}`);
-      return lines.length ? lines : ['No animals yet: build a 🐔 coop and buy chickens from its panel'];
+      if (!lines.length) return ['No animals yet: build a 🐔 coop and buy chickens from its panel'];
+      const { game } = ctx;
+      return [...lines, `${grazingAt(game.now) ? '🌿 Grazing until winter' : '❄️ Eating feed this winter'} · 🌰 feed ${game.count('feed')} / ${winterFeedNeed(game.state)} a winter`];
     },
   },
   live: (ctx) => ({ icon: '🐄', label: String(Object.values(livestock(ctx)).reduce((a, b) => a + b, 0)) }),
+});
+
+// Winter feeding -----------------------------------------------------------------------
+
+/** From the last day of autumn on (until winter): is feed in stock short of what the animals eat in a winter? */
+function winterShort(game: Game): { need: number; have: number } | null {
+  if (seasonAt(game.now) !== 'autumn' || dayOfSeason(game.state.clock) < SEASON_DAYS) return null;
+  const need = winterFeedNeed(game.state);
+  const have = game.count('feed');
+  return need > have ? { need, have } : null;
+}
+
+registerHudButton({
+  id: 'winter-feed',
+  label: 'Winter is coming: make feed',
+  icon: '🌰',
+  spot: { kind: 'banner', order: 40, severity: () => 'warn' },
+  visible: (ctx) => winterShort(ctx.game) !== null,
+  live: (ctx) => {
+    const s = winterShort(ctx.game);
+    return { icon: '🌰', label: s ? `Winter is coming: the animals need ${s.need} feed, you have ${s.have}. Make feed at a Feed Barn` : 'Winter is coming' };
+  },
+});
+
+registerHudButton({
+  id: 'starving',
+  label: 'Animals are starving: make feed at a Feed Barn',
+  icon: '🥀',
+  spot: { kind: 'banner', order: 35, severity: () => 'alert' },
+  visible: (ctx) => starvingAnimals(ctx.game).length > 0,
+});
+
+onGameStart((ctx) => {
+  const { game } = ctx;
+  game.activity.on('starved', ({ kind, penType }) => {
+    const def = ANIMALS[kind as AnimalKind];
+    const where = PENS[penType as PenType]?.name.toLowerCase() ?? 'pen';
+    ctx.ui.toast(`🥀 A ${def?.name.toLowerCase() ?? kind} starved in the ${where}. Make feed at a Feed Barn.`, 'error');
+  });
+
+  /** `window.farm.feed`, for QA: this winter's need, the feed in stock, the animals starving now, and whether they graze. */
+  registerDebugInfo('feed', () =>
+    Object.freeze({
+      winterNeed: winterFeedNeed(game.state),
+      have: game.count('feed'),
+      starving: starvingAnimals(game),
+      grazing: grazingAt(game.now),
+    }),
+  );
 });

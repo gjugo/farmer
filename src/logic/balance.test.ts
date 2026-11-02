@@ -4,7 +4,9 @@ import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { isMaterial, MATERIAL_IDS, type MaterialCost } from '../data/materials';
 import { GRANARY, POOL_BUILDING, type StoragePool } from '../data/storage';
-import { buyAnimal, buyFeed, feedNeeded, type PenState } from './animals';
+import { buyAnimal, buyFeed, feedNeeded, winterFeedNeed, type PenState } from './animals';
+import { PROCESSORS, recipeUnlockLevel } from '../data/processing';
+import { checkStart, collect as collectGoods, settle, startJob, type ProcessorState } from './processing';
 import type { FieldState } from './crops';
 import { Game } from './game';
 import { allowance, buy, buyPrice, buyUnlockLevel, marketOf, sell } from './market';
@@ -117,6 +119,14 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
   const bought: Record<string, number> = {};
   const staffed = new Set<string>();
   game.activity.on('produced', ({ item, qty }) => (produced[item] = (produced[item] ?? 0) + qty));
+  const feed = { barnBuiltAt: Infinity, starved: 0, made: 0, bought: 0 };
+  game.activity.on('built', ({ type }) => {
+    if (type === 'feed-barn') feed.barnBuiltAt = Math.min(feed.barnBuiltAt, game.now);
+  });
+  game.activity.on('starved', () => feed.starved++);
+  game.activity.on('made', ({ item, qty }) => {
+    if (item === 'feed') feed.made += qty;
+  });
   let buyingFirewood = false;
   let buyingDefence = false;
   // Building materials bought (firewood for the families and the stone and wood for defences are counted apart: the
@@ -244,6 +254,23 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // What the camp still holds is eaten first, so only the rest of the need is kept back from the crops.
     const need = days * MEAL_PER_FAMILY * families - FOODS.reduce((n, id) => n + supplies(id), 0);
     const keepFood = need > 0 ? Math.ceil(need / foodKinds) + 1 : 0;
+    // Winter feed: a Feed Barn once the coop has chickens (level 2), and from summer on it turns spare grain into
+    // feed (1 grain to 2 feed) until the store holds a winter's need, before selling that grain. It loads and collects by
+    // hand, as a player taps.
+    if (pens('coop').some((p) => p.state.animals.length > 0) && game.objectsOfType('feed-barn').length === 0) build('feed-barn', 60);
+    const barn = game.objectsOfType('feed-barn').find((o) => !o.site) as PlacedObject<ProcessorState> | undefined;
+    if (barn) {
+      settle(game.state, barn);
+      collectGoods(game, barn);
+      const making = seasonAt(game.now) !== 'spring';
+      const coming = () => game.count('feed') + barn.state.queue.length * 6 + (barn.state.ready.feed ?? 0);
+      for (const r of PROCESSORS['feed-barn'].recipes) {
+        if (!making || !game.isUnlocked(recipeUnlockLevel(PROCESSORS['feed-barn'], r))) continue;
+        const [grain, need] = Object.entries(r.inputs)[0] as [string, number];
+        const keep = PANTRY.includes(grain) ? keepFood : 0;
+        while (coming() < winterFeedNeed(game.state) && game.count(grain) - need >= keep && checkStart(game, barn, r.id).ok) startJob(game, barn, r.id);
+      }
+    }
     // A trader in the yard gets first pick of what it would sell.
     updateTrader(game);
     const trader = traderHere(game.state);
@@ -291,7 +318,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
       makeRoom('materials');
     }
     for (const type of ['coop', 'pasture'] as const) {
-      for (const p of pens(type)) while (game.count('feed') < feedNeeded(game, p) && buyFeed(game).ok);
+      for (const p of pens(type)) while (game.count('feed') < feedNeeded(game, p) && buyFeed(game).ok) feed.bought += 5;
     }
     // Staff every finished field and pen; for those left without a farmer, build cottages so families come for them.
     // (Fields frozen in winter don't count: their farmers are at the lodge and the quarry.)
@@ -365,7 +392,7 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     }
   }
   const storageLevels = (type: string) => game.objectsOfType(type).map((o) => o.state.level as number);
-  return { reachedAt, storage, granaries: storageLevels(GRANARY), storehouses: storageLevels(POOL_BUILDING.materials), produced, bought, staffed, game };
+  return { reachedAt, storage, granaries: storageLevels(GRANARY), storehouses: storageLevels(POOL_BUILDING.materials), produced, bought, staffed, game, feed };
 }
 
 interface Sim {
@@ -379,6 +406,8 @@ interface Sim {
   /** Resource building types that had a farmer at some point. */
   staffed: Set<string>;
   game: Game;
+  /** Winter feed: when its Feed Barn was built (game ms), animals starved, feed made at the barn and bought in packs. */
+  feed: { barnBuiltAt: number; starved: number; made: number; bought: number };
 }
 
 const minutes = (ms: number | undefined) => (ms === undefined ? Infinity : ms / 60_000);
@@ -463,6 +492,10 @@ describe('level curve balance', () => {
   // Ploughing free (#118): the busy bot, with a little more money, spent its wood on cottages and built its quarry only
   // after the last winter (never staffed), so the bot now builds the lodge and quarry before cottages: casual L2 13.0,
   // L5 158.0; relaxed L2 12.5, L5 158.5; busy L2 13.0, L5 159.0 (each quarry at about minute 50).
+  // Winter feeding (#124): animals graze from spring to autumn and eat feed only in winter. Grazing alone (feed bought in
+  // packs): casual L2 13.0, L5 170.0; relaxed L2 12.5, L5 157.5; busy L2 12.5, L5 157.0. With a Feed Barn built once the
+  // coop has chickens (minute 26-29) and spare wheat made into feed from summer on: casual L2 13.0, L5 166.0; relaxed
+  // L2 12.5, L5 159.0; busy L2 12.5, L5 150.5; 84-108 feed made, none bought, no animal starved.
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });
@@ -513,6 +546,16 @@ describe('level curve balance', () => {
     // A good share of its materials are its own, not bought.
     const total = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0);
     expect(total(sim.produced)).toBeGreaterThanOrEqual(0.3 * (total(sim.produced) + total(sim.bought)));
+  });
+
+  it.each([
+    ['casual', casual],
+    ['relaxed', relaxed],
+    ['busy', busy],
+  ])('the %s player builds a Feed Barn before its first winter, makes its winter feed there and loses no animals', (_name, sim) => {
+    expect(minutes(sim.feed.barnBuiltAt)).toBeLessThan(3 * SEASON_DAYS * DAY_MS / 60_000);
+    expect(sim.feed.made).toBeGreaterThan(0);
+    expect(sim.feed.starved).toBe(0);
   });
 
   it.each([
