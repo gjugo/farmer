@@ -22,7 +22,7 @@ import { createNewGame } from './state';
 import { capacity, excessWithout, spaceFor, used } from './storage';
 import type { GameState, ItemId, PlacedObject } from './types';
 import { buildableUnlockLevel, isUnlocked, type Unlock } from './unlocks';
-import { centreSnapshot, keepRoadsJoined } from './roads';
+import { centreSnapshot, keepRoadsJoined, villageCentre } from './roads';
 import { runWork } from './work';
 
 export interface GameEvents {
@@ -60,6 +60,8 @@ export type MissingMaterials = [MaterialId, number][];
 export type DemolishCheck =
   | { ok: true; money: number; materials: MaterialCost; lost: MaterialCost }
   | { ok: false; reason: 'missing' | 'fixed' }
+  /** The last finished cottage while the camp is packed away and no farmhouse stands: the farm's village centre. */
+  | { ok: false; reason: 'centre' }
   /** A storage building whose stock wouldn't fit without it: `excess` items too many. */
   | { ok: false; reason: 'storage'; excess: number };
 
@@ -323,6 +325,10 @@ export class Game {
     const object = this.getObject(id);
     if (!object) return { ok: false, reason: 'missing' };
     if (!demolishable(object)) return { ok: false, reason: 'fixed' };
+    // A farm never loses its village centre (farmers set out from it, and every path starts there).
+    if (villageCentre(this._state) && !villageCentre({ ...this._state, objects: this._state.objects.filter((o) => o !== object) })) {
+      return { ok: false, reason: 'centre' };
+    }
     const excess = excessWithout(this._state, object);
     if (excess > 0) return { ok: false, reason: 'storage', excess };
     let room = Math.max(0, capacity(this._state, 'materials', id) - used(this._state, 'materials'));

@@ -215,7 +215,8 @@ export function startTiles(state: GameState): Tile[] {
 
 /**
  * The way from the village centre to `site` along paths, or null when no path joins them. On a farm without a centre
- * (only in tests) there is nothing to walk: the farmer works in the site's middle.
+ * (a test farm with nothing on it; a real farm always keeps one: the camp, a cottage or the farmhouse, and the last
+ * cottage can't be demolished while it is the centre) there is nothing to walk: the farmer works in the site's middle.
  */
 export function findRoute(state: GameState, site: Area): Route | null {
   const starts = startTiles(state);

@@ -4,6 +4,7 @@ import { getItem } from '../../data/items';
 import type { ObjectView, PanelLine } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo } from '../../game/hooks';
 import { campInfo, campLeft, campSlice, tentFamilies, waitingFamilies, type CampState } from '../../logic/camp';
+import { villageCentre } from '../../logic/roads';
 import { seasonOf } from '../../logic/seasons';
 import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
 import { packAsset } from '../../scenes/sprites';
@@ -80,7 +81,14 @@ registerBehavior<CampState>(CAMP, {
     const lines: PanelLine[] = [
       { text: empty ? 'Starting supplies: all used up' : `Starting supplies: ${suppliesLine(left)} left`, testId: 'camp-supplies' },
       ...(families > 0
-        ? [{ text: `Home of ${families} ${families === 1 ? 'family' : 'families'}: they set out from in front of the tent until the farmhouse is built.`, testId: 'camp-families' }]
+        ? [
+            {
+              text: `Home of ${families} ${families === 1 ? 'family' : 'families'}: ${
+                villageCentre(state)?.type === CAMP ? 'they set out from in front of the tent until the farmhouse is built.' : 'they set out from the farmhouse door.'
+              }`,
+              testId: 'camp-families',
+            },
+          ]
         : []),
       ...(waiting > 0 ? [{ text: `${waitingLine(waiting)}: build 🛖 cottages so they can move out.`, testId: 'camp-waiting' }] : []),
       {

@@ -218,6 +218,27 @@ describe('homes and the tent', () => {
     expect(added.filter((t) => t === PATH).length).toBeGreaterThan(0);
   });
 
+  it('the last cottage can’t be demolished while it is the village centre (camp packed, no farmhouse)', () => {
+    const game = newFarm({ level: 4 });
+    useUpSupplies(game);
+    game.state.inventory.wood = 16;
+    const first = place(game, COTTAGE, ROW.x, ROW.y);
+    const second = place(game, COTTAGE, ROW.x + 3, ROW.y);
+    expect(campOf(game.state)).toBeUndefined();
+    expect(villageCentre(game.state)).toMatchObject({ id: first.id });
+    // The first goes (the second takes over as the centre), the last one stays.
+    expect(game.demolish(first.id)).not.toBeNull();
+    expect(villageCentre(game.state)).toMatchObject({ id: second.id });
+    expect(game.checkDemolish(second.id)).toEqual({ ok: false, reason: 'centre' });
+    expect(game.demolish(second.id)).toBeNull();
+    expect(villageCentre(game.state)).not.toBeNull();
+    // Once the farmhouse stands it is the centre, and the cottage can go.
+    stockMaterials(game.state, 50);
+    place(game, FARMHOUSE, ROW.x, ROW.y + 4);
+    expect(villageCentre(game.state)).toMatchObject({ type: FARMHOUSE });
+    expect(game.checkDemolish(second.id).ok).toBe(true);
+  });
+
   it('a tent family is the one to leave while the tent stands', () => {
     const game = newFarm();
     place(game, COTTAGE, ROW.x, ROW.y);

@@ -68,6 +68,9 @@ const SITE_BAR_W = 64;
 const FLOAT_FONT = Math.round(ISO_H * 0.45);
 
 
+/** Why the last cottage can't go before the farmhouse is built. */
+const CENTRE_MESSAGE = 'This cottage is your village centre: farmers set out from it. Build another cottage or the farmhouse first';
+
 const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string> = {
   money: 'Not enough money',
   materials: 'Not enough building materials',
@@ -831,6 +834,7 @@ export class FarmScene extends Phaser.Scene {
     const check = game.checkDemolish(obj.id);
     if (!check.ok) {
       if (check.reason === 'storage') ui.toast(demolishBlockedMessage(obj, check.excess), 'error');
+      if (check.reason === 'centre') ui.toast(CENTRE_MESSAGE, 'error');
       return;
     }
     const losing = Object.keys(check.lost).length > 0;

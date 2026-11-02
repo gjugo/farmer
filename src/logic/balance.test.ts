@@ -31,7 +31,7 @@ import { ruleBlock } from './placement';
 import { createNewGame } from './state';
 import { RESOURCES } from '../data/resourceBuildings';
 import { TRADING_POST } from '../data/trade';
-import { roadTiles } from './mainroad';
+import { ensureMainRoad, ROAD_SLICE, roadTiles } from './mainroad';
 import { addFarmer, assignFarmer, cropPlanOf, freeFarmers, PLAN_BEST, PLAN_FALLOW, setCropPlan, setKeepMaking, workerAt, workersOf } from './workers';
 import { maxLevelState, useClassicStart } from './test-utils';
 import { campInfo, campOf } from './camp';
@@ -88,6 +88,10 @@ const LODGE_TREES = 8;
 
 /** The new game's map: any seed gives a start grove and outcrop, this one keeps the runs repeatable. */
 const MAP_SEED = 20261031;
+/** Money it keeps back when buying firewood, to plough and sow (spending it all starved a farm of seed). */
+const FIREWOOD_RESERVE = 60;
+/** The main road's seed, fixed so the runs repeat. */
+const ROAD_SEED = 1;
 /** The travelling traders' schedule and offers, fixed so the runs repeat. */
 const TRADER_SEED = 79;
 
@@ -96,6 +100,9 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
   const state = createNewGame();
   if (!campOf(state) || state.objects.length !== 2) throw new Error('not a new start');
   state.ext[MAP_SLICE] = newMapLayer(state, MAP_SEED);
+  // The main road from a fixed seed too (a new game's is random), laid on this map.
+  state.ext[ROAD_SLICE] = { seed: ROAD_SEED, side: null, tiles: [], pending: true };
+  ensureMainRoad(state);
   hazardsOf(state).seed = hazardSeed;
   traderOf(state).seed = TRADER_SEED;
   const game = new Game(state);
@@ -339,8 +346,8 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     }
     if (stocked) guard('kennel', pens('coop'));
     // Firewood for a whole winter (after building, which may have used wood), bought from autumn on if its own lodge
-    // hasn't made it: in fives, as far as the money goes.
-    for (let i = 0; winterSoon && i < 10 && game.count('wood') < firewood && game.money >= 5 * buyPrice(game.day, 'wood')!; i++) {
+    // hasn't made it: in fives, as far as the money goes, keeping enough to plough and sow.
+    for (let i = 0; winterSoon && i < 10 && game.count('wood') < firewood && game.money >= 5 * buyPrice(game.day, 'wood')! + FIREWOOD_RESERVE; i++) {
       if (used(game.state, 'materials') + 5 > capacity(game.state, 'materials')) makeRoom('materials');
       buyingFirewood = true;
       const ok = buy(game, 'wood', 5).ok;
@@ -449,6 +456,10 @@ describe('level curve balance', () => {
   // path from the village to the nearest stretch of road, the post by it): casual L2 13.0, L5 158.0; relaxed L2 12.5,
   // L5 158.0; busy L2 13.0, L5 just past 190 min in this run (about 150 in runs with extra logging: the busy bot
   // overbuilds fields and runs on little money, so it swings either side of 3 h).
+  // With the main road's seed fixed (a new game's is random, so CI and local runs differed) and the bot keeping $60
+  // back when buying winter firewood (spending it all left the relaxed player unable to sow, so it never built its
+  // quarry or reached L5 on some roads): casual L2 13.0, L5 173.0; relaxed L2 12.5, L5 158.0; busy L2 13.0, L5 161.2
+  // (road seeds 1–5: casual L5 158–173, relaxed 158–174, busy 137–161).
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });
