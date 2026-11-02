@@ -178,6 +178,9 @@ export const TEXTURE_ART: Record<string, string> = {
   quarry: 'quarry',
   mine: 'mine',
   cottage: 'cottage',
+  'veg-patch': 'veg_patch',
+  'hen-run': 'hen_run',
+  orchard: 'orchard',
 };
 
 /** Storage buildings have a sprite per level, e.g. `granary_2`; the build preview is level 1. */
@@ -265,7 +268,7 @@ export const WORK_ANIM: Record<JobKind, FarmerAnim> = {
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;
 
 /** Item icons in the pack: every item of the game, plus coins for money. */
-export const ICON_ART = ['egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn', 'wood', 'stone', 'iron', 'manure', 'coins'] as const;
+export const ICON_ART = ['egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'wheat', 'carrot', 'corn', 'apple', 'wood', 'stone', 'iron', 'manure', 'coins'] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */
 export function iconUrl(name: string): string {
@@ -319,6 +322,11 @@ export function depositArt(kind: keyof typeof DEPOSIT_ART, x: number, y: number,
   return spent ? art.spent : art.full[hash(x, y, 19) % art.full.length];
 }
 
+/** House gardens drawn in four seasons (the vegetable patch is bare in winter); the others have a winter version only. */
+export const GARDEN_SEASONAL_ART = ['veg_patch'] as const;
+/** The orchard's two trees: the map's apple tree, in its seasons. */
+export const ORCHARD_TREE = 'tree_apple';
+
 /** Every map-resource sprite, each in four seasons. */
 export const MAP_ART: readonly string[] = [
   ...new Set<string>([...TREE_ART, STUMP_ART, ...Object.values(DEPOSIT_ART).flatMap((d) => [...d.full, d.spent])]),
@@ -339,6 +347,7 @@ export const SEASONAL_ART: readonly string[] = [
   ...SCENERY,
   POND,
   ...MAP_ART,
+  ...GARDEN_SEASONAL_ART,
 ];
 const seasonal = new Set<string>(SEASONAL_ART);
 
