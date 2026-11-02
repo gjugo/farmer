@@ -11,7 +11,7 @@ import { catchUpGame } from '../logic/offline';
 import { clearDrops } from '../logic/market';
 import { refreshOrders } from '../logic/orders';
 import { traderNow } from '../logic/trader';
-import { nextSeasonAt } from '../logic/seasons';
+import { nextSeasonAt, nextSeasonIn, seasonAt } from '../logic/seasons';
 import { fullMessage, poolOf } from '../logic/storage';
 import { h } from './dom';
 
@@ -127,6 +127,20 @@ export function mountDebugPanel(root: HTMLElement, ctx: FarmContext, simulateAwa
         onclick: () => catchUpGame(game, nextSeasonAt(game.now) - game.now, { away: false }),
       },
       'Next season',
+    ),
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn',
+        'data-testid': 'debug-winter',
+        // Like "Next season", straight to the first day of the next winter (animals eat feed, and starve without it).
+        onclick: () => {
+          if (seasonAt(game.now) === 'winter') return ctx.ui.toast('It is winter already', 'error');
+          catchUpGame(game, nextSeasonIn(game.now, ['winter']) - game.now, { away: false });
+        },
+      },
+      'Winter now',
     ),
     h(
       'div',

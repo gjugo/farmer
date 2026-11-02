@@ -56,6 +56,8 @@ export interface CatchUpResult {
   tools: { forged: number; wornOut: number };
   /** Hazards announced, begun, suffered or kept off while away, oldest first (see `src/logic/hazards.ts`). */
   hazards: HazardNote[];
+  /** Animal kind → animals that starved in winter for lack of feed while away. */
+  starved: Record<string, number>;
   /** Travelling traders that came while the player was away (they left, or stay today, without trading). */
   traders: { missed: number };
   dayBefore: number;
@@ -102,6 +104,7 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     families: { arrived: 0, left: 0 },
     tools: { forged: 0, wornOut: 0 },
     hazards: [],
+    starved: {},
     traders: { missed: 0 },
     dayBefore: dayOf(clock),
     dayAfter: dayOf(clock),
@@ -133,6 +136,7 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     activity.on('familyLeft', () => result.families.left++),
     activity.on('toolBroke', () => result.tools.wornOut++),
     activity.on('hazard', (n) => result.hazards.push(n)),
+    activity.on('starved', ({ kind }) => inventory.add(result.starved, kind, 1)),
   ];
   const changed = new Set<string>();
   const settled = (obj: PlacedObject, finished: number) => {

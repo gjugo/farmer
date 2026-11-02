@@ -11,6 +11,7 @@ import { updateTrader } from './trader';
 import { catchUp, catchUpGame, formatAway, shouldShowSummary } from './offline';
 import { settle, startJob, type ProcessorState } from './processing';
 import { parseSave, serialize } from './save';
+import { SEASON_MS } from './seasons';
 import { maxLevelState } from './test-utils';
 import type { PlacedObject } from './types';
 
@@ -60,13 +61,15 @@ describe('offline catch-up', () => {
 
   it('fed animals finish their cycle; animals left hungry for lack of feed produce nothing', () => {
     const game = farm();
+    game.state.clock.elapsed = 3 * SEASON_MS; // winter: a cycle takes feed
     const coop = place<PenState>(game, 'coop', 0, 0);
     for (let i = 0; i < 3; i++) buyAnimal(game, coop, 'chicken');
     game.addItem('feed', 2); // enough for two of the three
     expect(feedAll(game, coop)).toBe(2);
     expect(game.count('feed')).toBe(0);
 
-    const r = catchUp(game, 2 * HOUR);
+    // Less than a day: the hungry one doesn't starve yet.
+    const r = catchUp(game, DAY_MS - 1000);
 
     expect(r.produced).toEqual({ egg: 2 });
     expect(coop.state.animals.map((a) => animalStatus(game.state.clock, a))).toEqual(['ready', 'ready', 'hungry']);
@@ -75,6 +78,7 @@ describe('offline catch-up', () => {
 
   it('counts an animal cycle only when it ends while away', () => {
     const game = farm();
+    game.state.clock.elapsed = 3 * SEASON_MS;
     const pasture = place<PenState>(game, 'pasture', 0, 0);
     buyAnimal(game, pasture, 'cow');
     buyAnimal(game, pasture, 'sheep');

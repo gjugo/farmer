@@ -315,6 +315,8 @@ function workingFarm(seed: number): Game {
   place(game, COTTAGE, X, Y);
   coop(game, 5, X + 4, Y);
   game.addItem('wheat', 40);
+  // Feed in store: nobody works the coop, so it is never eaten, and no chicken starves in winter.
+  game.addItem('feed', 5);
   return game;
 }
 

@@ -20,6 +20,7 @@ import * as resources from './resources';
 import { centreSnapshot, findRoute, keepRoadsJoined, type Route } from './roads';
 import { breakWornTools, toolFactor, toolsWanted } from './tools';
 import { nextSeasonAt } from './seasons';
+import { DAY_MS } from './constants';
 import type { GameState, PlacedObject } from './types';
 import { activeJobs, assignJob, cropPlanOf, jobPhase, jobsByFarmer, keepMakingOf, PLAN_BEST, PLAN_FALLOW, walkMs, workersOf } from './workers';
 
@@ -55,8 +56,9 @@ export type WaitReason =
   | 'season' // nothing on the plan can be sown now
   | 'money' // seed costs more than the farm has
   | 'empty' // a pen without animals
-  | 'fed' // every animal is eating
-  | 'feed' // hungry animals, but no feed in stock
+  | 'fed' // every animal is eating its winter feed
+  | 'grazing' // every animal is out grazing (spring to autumn)
+  | 'feed' // winter: hungry animals, but no feed in stock
   | 'no-recipe' // no "Keep making" recipe
   | 'queue-full'
   | 'enough-tools' // the blacksmith's recipe, with as many tools in store as the farm has farmers (`have`/`need`)
@@ -131,8 +133,10 @@ function penNext(game: Game, obj: PlacedObject<animals.PenState>): WorkplaceNext
   const wait = (reason: WaitReason): WorkplaceNext => ({ wait: ready.length > 0 ? 'full' : reason });
   if (list.length === 0) return { wait: 'empty' };
   const hungry = list.filter((a) => animals.animalStatus(clock, a) === 'hungry');
-  if (hungry.length === 0) return wait('fed');
-  if (!hungry.some((a) => ANIMALS[a.kind].feedPerCycle <= game.count('feed'))) return wait('feed');
+  // Spring to autumn a cycle starts without feed: the farmer lets them out to graze. Winter takes feed.
+  const grazing = animals.grazingAt(clock.elapsed);
+  if (hungry.length === 0) return wait(grazing ? 'grazing' : 'fed');
+  if (!grazing && !hungry.some((a) => ANIMALS[a.kind].feedPerCycle <= game.count('feed'))) return wait('feed');
   return task('feed', FEED_WORK_MS, () => animals.feedAll(game, obj) > 0);
 }
 
@@ -265,6 +269,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
   // Hazards first (a harsh winter or drought starting today counts for today), then new days (meals, firewood,
   // clothes, approval, departures) and arrivals, before work is handed out.
   stepHazards(game);
+  // A winter day just ended: animals hungry all day with no feed starve (one per pen), before the farmers go out.
+  animals.stepStarvation(game);
   stepFamilies(game);
   // House gardens yield after the meal, and carry in what waits as room appears.
   stepGardens(game);
@@ -303,7 +309,8 @@ function step(game: Game, routes: Map<string, Route | null>, onSettled: SettledH
 
 /**
  * The next game time after now at which a farmer may find new work: a job, crop, animal cycle, batch or resource cycle
- * ends, a tree a waiting lodge could fell grows back, a season or a day begins (the families settle their needs), a
+ * ends, a tree a waiting lodge could fell grows back, a season or a day begins (the families settle their needs, hungry
+ * animals may starve in winter), a
  * family is due to move in, or a hazard is due (crows land, a fox comes, a drought starts or ends).
  */
 export function nextWorkEvent(game: Game): number {
@@ -347,6 +354,8 @@ export function nextWorkEvent(game: Game): number {
   if (fields) at(nextSeasonAt(now));
   at(nextFamiliesEvent(state));
   at(nextHazardEvent(state));
+  // Every day boundary (it is one already for the hazards): a winter day ending may starve hungry animals.
+  at((Math.floor(now / DAY_MS) + 1) * DAY_MS);
   at(nextGardensEvent(state));
   return next;
 }

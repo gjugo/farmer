@@ -38,8 +38,10 @@ export interface ActivityEvents {
   planted: { crop: string };
   /** An animal was bought into a pen. */
   animalBought: { kind: string };
-  /** Hungry animals in a pen were fed. */
-  fed: { count: number };
+  /** Hungry animals in a pen started a cycle: fed in winter, or out to graze (`grazing`, no feed taken) the rest of the year. */
+  fed: { count: number; grazing: boolean };
+  /** An animal left hungry through a whole winter day with no feed died (`src/logic/animals.ts`, `stepStarvation`). */
+  starved: { kind: string; pen: string; penType: string };
   /** A processing job was queued. */
   jobStarted: { recipe: string };
   /** Processing jobs finished while the farm was running (offline catch-up does not report these). */

@@ -116,8 +116,10 @@ export function waitText(game: Game, next: Exclude<WorkplaceNext, { task: unknow
       return 'No animals yet';
     case 'fed':
       return 'The animals are eating';
+    case 'grazing':
+      return 'Grazing: no feed needed until winter';
     case 'feed':
-      return 'No feed in stock: buy or mill some';
+      return 'No feed in stock: the animals are starving. Make feed at a Feed Barn or buy some';
     case 'no-recipe':
       return 'Pick a recipe to keep making';
     case 'queue-full':

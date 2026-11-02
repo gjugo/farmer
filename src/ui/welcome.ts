@@ -1,3 +1,4 @@
+import { ANIMALS, type AnimalKind } from '../data/animals';
 import { getBuildable } from '../data/buildables';
 import { getCrop } from '../data/crops';
 import { getItem } from '../data/items';
@@ -58,6 +59,8 @@ export function summaryLines(result: CatchUpResult): string[] {
   if (left > 0) lines.push(`🧳 ${left === 1 ? 'A family' : `${left} families`} left the farm`);
   // Hazards: warnings, losses and the ones the defences kept off (a drought or harsh winter ending needs no line).
   for (const n of result.hazards ?? []) if (n.outcome !== 'ended') lines.push(n.text);
+  const starved = Object.entries(result.starved ?? {}).map(([kind, n]) => `${n} ${ANIMALS[kind as AnimalKind]?.name.toLowerCase() ?? kind}${n > 1 && kind !== 'sheep' ? 's' : ''}`);
+  if (starved.length) lines.push(`🥀 Starved in winter for lack of feed: ${starved.join(', ')}. Make feed at a Feed Barn`);
   const missed = result.traders?.missed ?? 0;
   if (missed > 0) lines.push(`🛒 ${missed === 1 ? 'A travelling trader' : `${missed} travelling traders`} came by while you were away and moved on without trading`);
   if (result.dayAfter !== result.dayBefore) lines.push(`📅 New market day: day ${result.dayAfter} prices`);
