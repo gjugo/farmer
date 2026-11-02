@@ -6,6 +6,7 @@ import { isResourceType } from '../data/resourceBuildings';
 import { animalsOf, isPenType, type PenState } from './animals';
 import { dayOf, type Timer } from './clock';
 import { Game } from './game';
+import type { HazardNote } from './hazards';
 import * as inventory from './inventory';
 import { sanitize, settle, type ProcessorState } from './processing';
 import * as resources from './resources';
@@ -50,6 +51,8 @@ export interface CatchUpResult {
   work: FarmerWork;
   /** Families that moved in and moved away. */
   families: { arrived: number; left: number };
+  /** Hazards announced, begun, suffered or kept off while away, oldest first (see `src/logic/hazards.ts`). */
+  hazards: HazardNote[];
   /** Travelling traders that came while the player was away (they left, or stay today, without trading). */
   traders: { missed: number };
   dayBefore: number;
@@ -94,6 +97,7 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     jobsFinished: 0,
     work: { harvested: {}, sown: {}, collected: {}, made: {}, built: {}, materials: {} },
     families: { arrived: 0, left: 0 },
+    hazards: [],
     traders: { missed: 0 },
     dayBefore: dayOf(clock),
     dayAfter: dayOf(clock),
@@ -123,6 +127,7 @@ export function catchUp(target: Game | GameState, awayMs: number, { away = true 
     activity.on('produced', ({ item, qty }) => inventory.add(work.materials, item, qty)),
     activity.on('familyArrived', () => result.families.arrived++),
     activity.on('familyLeft', () => result.families.left++),
+    activity.on('hazard', (n) => result.hazards.push(n)),
   ];
   const changed = new Set<string>();
   const settled = (obj: PlacedObject, finished: number) => {

@@ -179,10 +179,16 @@ export const TEXTURE_ART: Record<string, string> = {
   quarry: 'quarry',
   mine: 'mine',
   cottage: 'cottage',
+  well: 'well',
+  scarecrow: 'scarecrow',
+  kennel: 'kennel',
   'veg-patch': 'veg_patch',
   'hen-run': 'hen_run',
   orchard: 'orchard',
 };
+
+/** The crows that eat on a field (see `src/features/hazards`): two frames, head up and pecking. */
+export const CROW_ART = ['crow_0', 'crow_1'] as const;
 
 /** Storage buildings have a sprite per level, e.g. `granary_2`; the build preview is level 1. */
 export const STORAGE_ART = { granary: 3, storehouse: 3 } as const;
@@ -420,6 +426,7 @@ export function usedArt(): string[] {
     ...CROP_ART_IDS.flatMap((c) => Object.keys(CROP_STAGES).map((s) => cropArt(c, s)!)),
     ...ANIMAL_ART,
     FARMER_ART,
+    ...CROW_ART,
     ...ICON_ART,
     ...SCENERY,
     POND,

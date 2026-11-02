@@ -1,3 +1,4 @@
+import type { HazardNote } from './hazards';
 import type { ItemId } from './types';
 
 /**
@@ -57,4 +58,6 @@ export interface ActivityEvents {
   familyLeft: { families: number; workplace: string | null };
   /** A game day was settled: the families ate, burned firewood and took cloth; `approval` is the new approval. */
   familiesSettled: { approval: number };
+  /** A hazard was announced, began, ended, hit the farm or was kept off by a defence (see `src/logic/hazards.ts`). */
+  hazard: HazardNote;
 }
