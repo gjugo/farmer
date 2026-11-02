@@ -162,7 +162,11 @@ describe('perk choices', () => {
 
   it('repairs a malformed slice', () => {
     const state = seeded(5);
-    state.ext.perks = { seed: 5, taken: [{ level: 2, id: 'haggler' }, { level: 2, id: 'thrifty' }, { level: 3, id: 'nope' }, 'x'], pending: [4, 2, 4, 1, 11, 'a'] };
+    state.ext.perks = {
+      seed: 5,
+      taken: [{ level: 2, id: 'haggler' }, { level: 2, id: 'thrifty' }, { level: 3, id: 'nope' }, 'x'],
+      pending: [4, 2, 4, 1, 11, 'a'],
+    };
     expect(perksOf(state)).toEqual({ seed: 5, taken: [{ level: 2, id: 'haggler' }], pending: [4] });
   });
 });
@@ -207,7 +211,14 @@ describe('perk effects', () => {
   });
 
   it('Good boots: farmers walk 25% faster', () => {
-    const route = { tiles: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }], work: { x: 3.5, y: 0.5 } };
+    const route = {
+      tiles: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+      ],
+      work: { x: 3.5, y: 0.5 },
+    };
     const state = createNewGame();
     const plain = walkMs(route, perkFactor(state, 'good-boots'));
     give(state, 'good-boots');
@@ -233,10 +244,11 @@ describe('perk effects', () => {
       }
     }
     // Even a far bigger bonus stays below the buy price.
-    for (let day = 1; day <= 50; day++) for (const item of ITEM_LIST) {
-      const buy = buyPrice(day, item.id);
-      if (buy !== null) expect(buy).toBeGreaterThan(sellPrice(day, item.id, 3)!);
-    }
+    for (let day = 1; day <= 50; day++)
+      for (const item of ITEM_LIST) {
+        const buy = buyPrice(day, item.id);
+        if (buy !== null) expect(buy).toBeGreaterThan(sellPrice(day, item.id, 3)!);
+      }
   });
 
   it('Husbandry: animals produce 20% faster', () => {

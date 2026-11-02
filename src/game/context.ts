@@ -91,6 +91,8 @@ export interface UiApi {
   closePanel(): void;
   /** Modal confirm dialog. Resolves true when confirmed. */
   confirm(title: string, message: string, options?: ConfirmOptions): Promise<boolean>;
+  /** Opens the oldest open perk choice (the ⭐ badge on the level does the same); nothing when none is open. */
+  openPerkChoice(): void;
 }
 
 export type ToolMode = { kind: 'normal' } | { kind: 'build'; type: string } | { kind: 'demolish' };
