@@ -14138,6 +14138,310 @@
      ]
     }
    }
+  },
+  {
+   "name": "well",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a stone farm well with a little wooden roof and bucket, 1x1 (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/well.png",
+     "w": 249,
+     "h": 197,
+     "anchor": [
+      125.0,
+      68.0
+     ],
+     "origin": [
+      0.50201,
+      0.34518
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/well.png",
+     "w": 124,
+     "h": 98,
+     "anchor": [
+      62.5,
+      34.0
+     ],
+     "origin": [
+      0.50403,
+      0.34694
+     ]
+    }
+   }
+  },
+  {
+   "name": "well_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "well in winter: snow on the roof and the pad (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/well_winter.png",
+     "w": 250,
+     "h": 199,
+     "anchor": [
+      125.0,
+      71.0
+     ],
+     "origin": [
+      0.5,
+      0.35678
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/well_winter.png",
+     "w": 125,
+     "h": 100,
+     "anchor": [
+      62.5,
+      35.5
+     ],
+     "origin": [
+      0.5,
+      0.355
+     ]
+    }
+   }
+  },
+  {
+   "name": "scarecrow",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a straw scarecrow on a pole, 1x1, no pad (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/scarecrow.png",
+     "w": 111,
+     "h": 157,
+     "anchor": [
+      58.0,
+      82.0
+     ],
+     "origin": [
+      0.52252,
+      0.52229
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/scarecrow.png",
+     "w": 56,
+     "h": 78,
+     "anchor": [
+      29.0,
+      41.0
+     ],
+     "origin": [
+      0.51786,
+      0.52564
+     ]
+    }
+   }
+  },
+  {
+   "name": "scarecrow_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "scarecrow in winter: snow on the hat and arms (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/scarecrow_winter.png",
+     "w": 111,
+     "h": 157,
+     "anchor": [
+      58.0,
+      82.0
+     ],
+     "origin": [
+      0.52252,
+      0.52229
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/scarecrow_winter.png",
+     "w": 56,
+     "h": 78,
+     "anchor": [
+      29.0,
+      41.0
+     ],
+     "origin": [
+      0.51786,
+      0.52564
+     ]
+    }
+   }
+  },
+  {
+   "name": "kennel",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a wooden dog kennel with the farm dog lying in front, 1x1 (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/kennel.png",
+     "w": 249,
+     "h": 176,
+     "anchor": [
+      124.0,
+      46.0
+     ],
+     "origin": [
+      0.49799,
+      0.26136
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/kennel.png",
+     "w": 124,
+     "h": 88,
+     "anchor": [
+      62.0,
+      23.0
+     ],
+     "origin": [
+      0.5,
+      0.26136
+     ]
+    }
+   }
+  },
+  {
+   "name": "kennel_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "kennel in winter: snow on the roof and the pad (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/kennel_winter.png",
+     "w": 250,
+     "h": 179,
+     "anchor": [
+      125.0,
+      49.0
+     ],
+     "origin": [
+      0.5,
+      0.27374
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/kennel_winter.png",
+     "w": 125,
+     "h": 90,
+     "anchor": [
+      62.5,
+      24.5
+     ],
+     "origin": [
+      0.5,
+      0.27222
+     ]
+    }
+   }
+  },
+  {
+   "name": "crow_0",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crow, frame 0 (standing, head up); anchor is the ground under its feet, no shadow (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/props/crow_0.png",
+     "w": 58,
+     "h": 50,
+     "anchor": [
+      32.0,
+      44.0
+     ],
+     "origin": [
+      0.55172,
+      0.88
+     ]
+    },
+    "1x": {
+     "file": "1x/props/crow_0.png",
+     "w": 29,
+     "h": 25,
+     "anchor": [
+      16.0,
+      22.0
+     ],
+     "origin": [
+      0.55172,
+      0.88
+     ]
+    }
+   }
+  },
+  {
+   "name": "crow_1",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "crow, frame 1 (pecking); same canvas and anchor as crow_0, no shadow (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/props/crow_1.png",
+     "w": 58,
+     "h": 50,
+     "anchor": [
+      32.0,
+      44.0
+     ],
+     "origin": [
+      0.55172,
+      0.88
+     ]
+    },
+    "1x": {
+     "file": "1x/props/crow_1.png",
+     "w": 29,
+     "h": 25,
+     "anchor": [
+      16.0,
+      22.0
+     ],
+     "origin": [
+      0.55172,
+      0.88
+     ]
+    }
+   }
   }
  ]
 }
