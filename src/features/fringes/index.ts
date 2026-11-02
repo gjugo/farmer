@@ -2,11 +2,10 @@ import Phaser from 'phaser';
 import type { Season } from '../../data/seasons';
 import { onGameStart, registerDebugInfo } from '../../game/hooks';
 import { footprintOf } from '../../logic/game';
-import { isOwned } from '../../logic/land';
-import { soilAt } from '../../logic/soil';
-import { ART_RES, ART_SCALE, EDGE_STEP, edgeNames, fringeArt, groundTint, NE, NW, seasonalArt, SE, SW } from '../../scenes/art';
+import { ART_RES, ART_SCALE, EDGE_STEP, edgeNames, fringeArt, NE, NW, seasonalArt, SE, SW } from '../../scenes/art';
 import { FRINGE_ATLAS } from '../../scenes/BootScene';
 import { DEPTH } from '../../scenes/depth';
+import type { FarmScene } from '../../scenes/FarmScene';
 import { gridToWorld } from '../../scenes/iso';
 import { artSeason, packAsset } from '../../scenes/sprites';
 import { fringeTiles, type FringeTile } from './layout';
@@ -19,16 +18,9 @@ import { fringeTiles, type FringeTile } from './layout';
  * season changes. `window.farm.fringes` for QA.
  */
 
-/** Locked land's grass is darker and duller (`unowned_*` in tools/ludo/ground_tiles.py); fringes from it match it. */
-const WILD_TINT: Record<Season, number> = { spring: 0xb3b3a8, summer: 0xb3b3a8, autumn: 0xb3b3a8, winter: 0xdbe3f0 };
-
-function multiply(a: number, b: number): number {
-  const ch = (shift: number) => Math.round((((a >> shift) & 0xff) * ((b >> shift) & 0xff)) / 255) << shift;
-  return ch(16) | ch(8) | ch(0);
-}
-
 onGameStart((ctx) => {
-  const { game, scene } = ctx;
+  const { game } = ctx;
+  const scene = ctx.scene as FarmScene;
   const blitter = scene.add.blitter(0, 0, FRINGE_ATLAS);
   // A Blitter ignores its own scale when drawing, so a scaled container brings the 2x strips to world size.
   scene.add.container(0, 0, [blitter]).setScale(ART_SCALE).setDepth(DEPTH.fringe).setName('fringes');
@@ -38,11 +30,8 @@ onGameStart((ctx) => {
   let dirty = true;
   const key = (x: number, y: number) => `${x},${y}`;
 
-  /** A fringe is the neighbouring grass hanging over: it takes that tile's tint (rich soil, locked land). */
-  const tintOf = (x: number, y: number, season: Season) => {
-    const tint = groundTint(soilAt(x, y), season);
-    return isOwned(game.state.land, x, y) ? tint : multiply(tint, WILD_TINT[season]);
-  };
+  /** A fringe is the neighbouring grass hanging over: it takes that tile's tint (colour patches, soil, zone, locked land). */
+  const tintOf = (x: number, y: number) => scene.groundTintAt(x, y);
 
   const layout = () => {
     dirty = false;
@@ -64,7 +53,7 @@ onGameStart((ctx) => {
         const [ax, ay] = packAsset(art)?.res[ART_RES].anchor ?? [0, 0];
         const [dx, dy] = EDGE_STEP[bit];
         // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
-        blitter.create(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, art).setTint(tintOf(t.x + dx, t.y + dy, drawn));
+        blitter.create(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, art).setTint(tintOf(t.x + dx, t.y + dy));
         count++;
       }
     }

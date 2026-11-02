@@ -6,9 +6,10 @@
 
 import { SEASONS, type Season } from '../data/seasons';
 import type { JobKind } from '../data/workers';
+import { GROUND_FRAMES, PLAIN_GRASS } from './ground';
+import { hash } from './noise';
 import { inBounds, isOwned } from '../logic/land';
 import { depositAt, treeAt, type MapLayer } from '../logic/maplayer';
-import { soilBand } from '../logic/soil';
 import type { LandState } from '../logic/types';
 
 /** Where the pack lives, relative to the page (vite `base: './'`). */
@@ -55,49 +56,13 @@ export interface PackManifest {
 
 // Ground ------------------------------------------------------------------------
 
-export const GRASS = ['grass_0', 'grass_1', 'grass_2'] as const;
-export const UNOWNED = ['unowned_0', 'unowned_1'] as const;
+export const GRASS = PLAIN_GRASS;
 export const CURSOR = { normal: 'overlay_cursor', ok: 'overlay_cursor_ok', bad: 'overlay_cursor_bad' } as const;
 export const SOIL = { dry: 'soil_tilled_x', wet: 'soil_watered_x' } as const;
 
-/** Grass variant of a tile: a fixed scatter so the ground looks the same every load. */
-export function grassArt(x: number, y: number): string {
-  return GRASS[(x * 7 + y * 13 + ((x * y) % 5)) % GRASS.length];
-}
-
-/**
- * Rich soil grows lusher grass: its tiles are drawn with this tint (a multiply). Greener and deeper while the grass
- * grows, a softer olive on autumn's gold, and only a faint cool shade on winter's snow (green there reads as mint).
- * Normal and poor ground are drawn as they are.
- */
-export const RICH_GROUND_TINT: Record<Season, number> = {
-  spring: 0xd4ecc4,
-  summer: 0xd4ecc4,
-  autumn: 0xe0e8c8,
-  winter: 0xe6ecf2,
-};
-
-/** The tint of a ground tile of soil quality `quality` (percentage points, see `src/logic/soil.ts`) in `season`. */
-export function groundTint(quality: number, season: Season): number {
-  return soilBand(quality) === 'rich' ? RICH_GROUND_TINT[season] : 0xffffff;
-}
-
-/** A ground tile's tint `tint` (from `groundTint`) as drawn in `season` instead. */
-export function seasonalGroundTint(tint: number, season: Season): number {
-  return Object.values(RICH_GROUND_TINT).includes(tint) ? RICH_GROUND_TINT[season] : tint;
-}
-
-/** Locked land: mostly the dark tile, about one in four overgrown. */
-export function unownedArt(x: number, y: number): string {
-  return UNOWNED[hash(x, y) % 4 === 0 ? 1 : 0];
-}
-
-/** A small deterministic hash of a tile, for scattering art without a save. */
-export function hash(x: number, y: number, seed = 0): number {
-  let h = (x * 374761393 + y * 668265263 + seed * 2147483647) >>> 0;
-  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
-  return (h ^ (h >>> 16)) >>> 0;
-}
+// Which ground tile each map tile gets, and its tint (colour patches, soil, forest and wet zones, locked land),
+// live in `./ground.ts`; `hash` in `./noise.ts`.
+export { hash };
 
 // Paths and fences --------------------------------------------------------------
 
@@ -602,12 +567,11 @@ export const MAP_ART: readonly string[] = [
 // Seasons -----------------------------------------------------------------------
 
 /**
- * Sprites drawn in four seasonal versions, `<name>_<season>`: the ground (grass, locked land, every path piece,
+ * Sprites drawn in four seasonal versions, `<name>_<season>`: the ground (plain grass, every path piece,
  * the grass fringes, soil), the scenery and the map's trees and deposits. Fields and the pasture are composed per season from these at boot.
  */
 export const SEASONAL_ART: readonly string[] = [
   ...GRASS,
-  ...UNOWNED,
   ...Array.from({ length: 16 }, (_, m) => pathPiece(m)),
   ...FRINGE_ART,
   SOIL.dry,
@@ -673,7 +637,6 @@ export function seasonalComposed(): Record<string, Composed> {
 export function usedArt(): string[] {
   const names = new Set<string>([
     ...GRASS,
-    ...UNOWNED,
     ...Object.values(CURSOR),
     ...Object.values(SOIL),
     ...Array.from({ length: 16 }, (_, m) => pathPiece(m)),
@@ -699,5 +662,7 @@ export function usedArt(): string[] {
   ]);
   // Every season's version of what is used (ground and scenery in four seasons, buildings in winter).
   for (const name of [...names]) for (const season of SEASONS) names.add(seasonalArt(name, season));
+  // The ground's other tiles come only in the seasons they are drawn in (see ./ground.ts).
+  for (const name of GROUND_FRAMES) names.add(name);
   return [...names];
 }

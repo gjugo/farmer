@@ -425,6 +425,12 @@ felling is grown with a `felledAt` in the future) and `treeList()` gives that fo
 `young` (from two thirds) or `grown`; anything short of grown has status `stump`, so a lodge fells only grown trees.
 `sprites` counts the tree and deposit sprites drawn, and `pondWillows` the decorative willows beside ponds (not trees of
 the map: never felled or saved, gone when the land is bought). The saved layer is `window.farm.ext.map`.
+`window.farm.ground` is `{ counts, at(x, y) }`, the ground as drawn now (`src/scenes/ground.ts`; nothing saved):
+`counts` maps each ground tile (season left off, e.g. `grass_0`, `grass_clover`, `forest_1`, `wet_0`) and each zone
+(`meadow`, `forest`, `wet`) to its number of tiles; `at(x, y)` is null off the map or `{ art, tint, zone, locked }`:
+`art` the frame drawn (e.g. `grass_flowers_summer`), `tint` the multiply it is drawn with (`0xRRGGBB` as a number:
+colour patches × soil × zone shade × locked), `zone` `'meadow' | 'forest' | 'wet'` (forest within 1 tile of a tree
+or stump, wet within 2 tiles of a pond drawn on locked land) and `locked` whether the land is not yet bought.
 `window.farm.stockpiles` is `{ buildings, sprites }`: `buildings` lists every storing building (farmhouse, finished
 granaries and storehouses) in placement order as `{ id, type, pools, piles, drawn }`, where `pools[pool]` is
 `{ held, capacity }` (its share of the pool's stock), `piles` maps each pile (`crops`, `animal`, `feed`, `goods`, `wood`,

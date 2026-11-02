@@ -4,8 +4,7 @@ import type { FarmContext } from '../../game/context';
 import { onGameStart, registerDebugInfo, registerSettingsSection } from '../../game/hooks';
 import { harshWinterAt } from '../../logic/hazards';
 import { dayOfSeason, nextSeasonAt, seasonOf } from '../../logic/seasons';
-import { baseArt, seasonalArt, seasonalGroundTint } from '../../scenes/art';
-import { GROUND_ATLAS } from '../../scenes/BootScene';
+import { baseArt } from '../../scenes/art';
 import { artSeason, setArtSeason, textureKey } from '../../scenes/sprites';
 import { h } from '../../ui/dom';
 import { CROSSFADE_MS, isNaturalChange, isIdentity, SEASON_LOOK, weatherBudget } from './look';
@@ -38,23 +37,15 @@ let weatherSettings = loadWeatherSettings(storage, reducedMotion);
 const weather = new WeatherScene();
 
 /**
- * Swaps every seasonal texture in the scene (ground bobs included) for the version of the season being drawn. The
- * ground decorations change art with the season, not just their look: `src/features/decor` redraws them itself.
+ * Swaps every seasonal texture in the scene for the version of the season being drawn. The Farm scene repaints its
+ * ground itself, and the ground decorations change art with the season, not just their look: `src/features/decor`
+ * redraws them itself.
  */
 function retexture(scene: Phaser.Scene): void {
-  const season = artSeason();
   const visit = (objects: Phaser.GameObjects.GameObject[]) => {
     for (const o of objects) {
       if (o instanceof Phaser.GameObjects.Container) {
         visit(o.list);
-      } else if (o instanceof Phaser.GameObjects.Blitter && o.texture.key === GROUND_ATLAS) {
-        // Every season's ground tile has the same size and anchor, so a bob only changes frame (and rich soil's tint).
-        for (const bob of o.children.list) {
-          const name = (bob as unknown as { frame: Phaser.Textures.Frame }).frame.name; // protected in the typings only
-          const next = seasonalArt(baseArt(name), season);
-          if (next !== name && o.texture.has(next)) bob.setFrame(next);
-          bob.setTint(seasonalGroundTint(bob.tint, season));
-        }
       } else if (o instanceof Phaser.GameObjects.Image) {
         const key = o.texture.key;
         const next = textureKey(scene, baseArt(key));

@@ -7,6 +7,9 @@ soil_watered_x/y, unowned_0/1), each in the base, _spring, _summer, _autumn and 
 pack's canvas sizes and anchors so manifest.json is unchanged. Autumn is the summer art recoloured with fallen
 leaves; winter uses the snow tiles for grass and paths, and frozen soil with snow in the furrows.
 
+It also builds the meadow variants (grass_clover, ...), forest floor (forest_0..2) and wet meadow (wet_0/1) from
+the Ludo tiles next to GRASS_A (see tools/ludo/README.md, "Ground tiles"), each in the seasons the game draws it.
+
 Every tile is rendered in tile space (u along world x, v along world y, both 0..1 across the tile), sampling
 seamless textures, so all tiles meet without seams. Path and soil shapes follow tools/art/tiles.py.
 """
@@ -275,6 +278,86 @@ SEASONS = {
     '_winter': dict(grass=SNOW3, wild=[(g * np.array([0.86, 0.89, 0.94])).clip(0, 255) for g in SNOW3[:2]],
                     dirt=SNOW_PATH, soil=frozen(SOIL), watered=frozen(watered(SOIL), icy=True)),
 }
+
+# ---------------------------------------------------------------- meadow variants, forest floor, wet meadow
+# More Ludo tiles, read from the same folder as GRASS_A (see tools/ludo/README.md, "Ground tiles").
+src_dir = grass_a.rsplit('/', 1)[0] if '/' in grass_a else '.'
+SPECIALS = ['clover', 'flowers', 'long', 'worn', 'moss', 'stones']   # grass_<name>, spring to autumn
+WINTER_SPECIALS = ['tips', 'drift']                                   # grass_<name>, winter (from snow_<name>_raw)
+
+
+def blobs(seed, sigma=N / 14):
+    """A smooth wrapping random field in -1..1."""
+    rnd = np.random.default_rng(seed)
+    f = rnd.normal(size=(N, N)).astype(np.float32)
+    pad = N // 2
+    wr = np.pad(f, pad, mode='wrap')
+    im = Image.fromarray(((wr - wr.min()) / (wr.max() - wr.min()) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(sigma))
+    b = np.array(im).astype(np.float32)[pad:pad + N, pad:pad + N]
+    return (b - b.mean()) / (np.abs(b - b.mean()).max() + 1e-6)
+
+
+EDGE_D = np.minimum.outer(*(2 * [np.minimum(np.arange(N) + 0.5, N - np.arange(N) - 0.5) / N]))  # 0 at the edge .. 0.5
+
+
+def centre_mask(seed, inner=0.1, ramp=0.14, wobble=0.07):
+    """Where a variant's own art shows (1) over the shared border (0): an irregular blob, so tiles don't read as diamonds."""
+    return np.clip((EDGE_D - inner + wobble * blobs(seed)) / ramp, 0, 1)[..., None]
+
+
+def match_mean(sq, target, mask):
+    """Shift sq so the part under mask has target's mean colour: a variant is no lighter or darker than plain grass."""
+    w = mask[..., 0]
+    mean = (sq * w[..., None]).reshape(-1, 3).sum(0) / w.sum()
+    return (sq + (target.reshape(-1, 3).mean(0) - mean)).clip(0, 255)
+
+
+def variant(raw, base, seed, inner=0.1, ramp=0.14, wobble=0.07):
+    """A Ludo tile's surface over `base`'s border, colour-matched to it."""
+    m = centre_mask(seed, inner, ramp, wobble)
+    sq = match_mean(wrapping(raw), base, m)
+    return base * (1 - m) + sq * m, m
+
+
+def autumn_of(sq, seed, n=11):
+    return leaves(recolour(sq, sat=0.92, val=0.9, hue=-0.035), seed, n)
+
+
+ZONE = dict(inner=0.04, ramp=0.12, wobble=0.04)  # zone tiles cover more of the tile: they come in blocks
+meadow = {}
+for i, name in enumerate(SPECIALS):
+    sq, m = variant(f'{src_dir}/grass_{name}_raw.png', GRASS3[0], 50 + i)
+    meadow[f'grass_{name}'] = {'_spring': sq, '_summer': sq,
+                               '_autumn': autumn_grass[0] * (1 - m) + autumn_of(sq, 60 + i) * m}
+for i, name in enumerate(WINTER_SPECIALS):
+    sq, _ = variant(f'{src_dir}/snow_{name}_raw.png', SNOW3[0], 70 + i)
+    meadow[f'grass_{name}'] = {'_winter': sq}
+for i in range(3):
+    sq, m = variant(f'{src_dir}/forest_{i}_raw.png', GRASS3[0], 80 + i, **ZONE)
+    # Winter: snow with darker, bluish patches where the trees kept some off, the floor showing through a little.
+    rnd = np.random.default_rng(90 + i)
+    yy, xx = (np.mgrid[0:N, 0:N] + 0.5) / N
+    patch = np.zeros((N, N), np.float32)
+    for _ in range(3):  # soft round pools of shade, inside the tile
+        cx, cy, r = *rnd.uniform(0.3, 0.7, 2), rnd.uniform(0.1, 0.16)
+        patch = np.maximum(patch, np.exp(-((xx - cx) ** 2 + (yy - cy) ** 2) / (2 * r * r)))
+    patch = np.clip(patch * 1.3 - 0.15, 0, 1)[..., None] * m
+    shade = SNOW3[0] * (1 - patch * np.array([0.15, 0.12, 0.06]))
+    winter = shade * (1 - 0.08 * patch) + sq * 0.08 * patch
+    meadow[f'forest_{i}'] = {'_spring': sq, '_summer': sq,
+                             '_autumn': autumn_grass[0] * (1 - m) + autumn_of(sq, 85 + i, n=30) * m,
+                             '_winter': winter}
+for i in range(2):
+    sq, m = variant(f'{src_dir}/wet_{i}_raw.png', GRASS3[0], 95 + i, **ZONE)
+    # Winter: frosted, the rushes still showing as pale stalks in the snow.
+    frost = recolour(sq, sat=0.3, val=1.35) * np.array([0.95, 0.98, 1.04])
+    frost = match_mean(SNOW3[0] * 0.55 + frost * 0.45, SNOW3[0], m)
+    meadow[f'wet_{i}'] = {'_spring': sq, '_summer': sq,
+                          '_autumn': autumn_grass[0] * (1 - m) + autumn_of(sq, 98 + i) * m,
+                          '_winter': SNOW3[0] * (1 - m) + frost * m}
+for name, seasons in meadow.items():
+    for suffix, sq in seasons.items():
+        save(f'{name}{suffix}', render(grass_tile(sq)))
 
 for suffix, t in SEASONS.items():
     for i, g in enumerate(t['grass']):

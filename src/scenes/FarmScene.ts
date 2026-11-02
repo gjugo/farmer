@@ -5,20 +5,21 @@ import { splitIcons } from '../data/items';
 import { formatMaterials, needsMaterialsMessage } from '../data/materials';
 import { buildWorkMs } from '../data/workers';
 import type { FarmContext, ObjectView, PanelSpec, ToolMode } from '../game/context';
-import { getBehavior, runBuildPreview, runStartHooks, runTileTapHandlers, type BuildPreview } from '../game/hooks';
+import { getBehavior, registerDebugInfo, runBuildPreview, runStartHooks, runTileTapHandlers, type BuildPreview } from '../game/hooks';
 import { farmerName, NO_ROAD_MESSAGE, reachable, workplacePanel } from '../game/workers';
 import { formatDuration } from '../logic/crops';
 import { footprintOf, refundOf, type DemolishCheck, type PlaceResult } from '../logic/game';
 import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
-import { isOwned } from '../logic/land';
-import { mapOf } from '../logic/maplayer';
+import { inBounds, isOwned } from '../logic/land';
+import { mapOf, treeAt } from '../logic/maplayer';
 import { farmhouseOf } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, grassArt, groundTint, POND, POND_WILLOW, pondWillows, sceneryArt, sceneryClear, seasonalArt, treeLook, unownedArt } from './art';
+import { ART_RES, ART_SCALE, CURSOR, POND, POND_WILLOW, pondWillows, sceneryArt, sceneryClear, treeLook } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
+import { groundLook, groundZone, type GroundLook, type GroundZone } from './ground';
 import {
   depthKey,
   footprintBox,
@@ -36,7 +37,7 @@ import {
   type Footprint,
   type Point,
 } from './iso';
-import { addArt, addShadow, artSeason, fitScale, packAsset, textureKey } from './sprites';
+import { addArt, addShadow, artSeason, fitScale, onArtSeason, packAsset, textureKey } from './sprites';
 
 const DRAG_THRESHOLD = 8;
 /** At zoom 2 the 2x art is drawn pixel for pixel. */
@@ -92,6 +93,12 @@ export class FarmScene extends Phaser.Scene {
   /** The whole ground is one Blitter (in a container that scales it): a bob per tile, created back to front. */
   private groundLayer: Phaser.GameObjects.Container | null = null;
   private groundBobs: Phaser.GameObjects.Bob[] = [];
+  /** Each tile's ground zone (forest floor, wet meadow, meadow), worked out from the map when the world is built. */
+  private groundZones: GroundZone[] = [];
+  /** What each ground bob shows now (for `window.farm.ground`). */
+  private groundLooks: GroundLook[] = [];
+  /** Tiles where a pond is drawn (scenery on locked land): the wet meadow lies around them. */
+  private ponds = new Set<number>();
   /** Bushes and ponds on locked land, each depth-sorted like a building. */
   private scenery: { fp: Footprint; img: Phaser.GameObjects.Image }[] = [];
   private sceneryShadows!: Phaser.GameObjects.Container;
@@ -170,6 +177,9 @@ export class FarmScene extends Phaser.Scene {
         this.paintTile(x, y);
         this.sceneryDirty = true;
       }),
+      // Building over a stump clears it for good: the forest floor around it may go.
+      events.on('objectAdded', (o) => this.rezone({ x: o.x, y: o.y, ...footprintOf(o) })),
+      onArtSeason(() => this.paintGround()),
       events.on('reset', () => {
         this.buildWorld();
         this.focusOwnedLand();
@@ -179,6 +189,7 @@ export class FarmScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unsubscribe.forEach((u) => u()));
     if (!this.started) {
       this.started = true;
+      registerDebugInfo('ground', () => this.groundInfo());
       runStartHooks(this.ctx);
     }
   }
@@ -243,25 +254,83 @@ export class FarmScene extends Phaser.Scene {
     this.groundBobs = new Array(width * height);
     for (let sum = 0; sum <= width + height - 2; sum++) {
       for (let x = Math.max(0, sum - height + 1); x <= Math.min(sum, width - 1); x++) {
-        this.groundBobs[(sum - x) * width + x] = blitter.create(0, 0, seasonalArt('grass_0', artSeason()));
+        this.groundBobs[(sum - x) * width + x] = blitter.create(0, 0, `grass_0_${artSeason()}`);
       }
     }
-    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) this.paintTile(x, y);
+    this.groundZones = new Array(width * height);
+    this.groundLooks = new Array(width * height);
+    // The ponds placed with the scenery make the wet meadow: placing it zones and paints the ground.
+    this.ponds = new Set();
+    this.zoneTiles(0, 0, width, height);
+    this.paintGround();
     this.placeScenery();
     for (const obj of this.farm.state.objects) this.createView(obj);
   }
 
+  /** Works out the ground zone of the tiles in a box: forest floor by the map's trees (stumps too), wet meadow by the ponds. */
+  private zoneTiles(x0: number, y0: number, w: number, h: number): void {
+    const { land } = this.farm.state;
+    const layer = mapOf(this.farm.state);
+    const hasTree = (x: number, y: number) => !!treeAt(layer, x, y);
+    const isPond = (x: number, y: number) => inBounds(land, x, y) && this.ponds.has(y * land.width + x);
+    for (let y = Math.max(0, y0); y < Math.min(land.height, y0 + h); y++) {
+      for (let x = Math.max(0, x0); x < Math.min(land.width, x0 + w); x++) this.groundZones[y * land.width + x] = groundZone(x, y, hasTree, isPond);
+    }
+  }
+
+  /** Rezones (and repaints) the tiles around a footprint, e.g. after a building cleared a stump. */
+  private rezone(fp: Footprint): void {
+    const r = 2; // the forest's reach, plus the ring its shade fades into
+    this.zoneTiles(fp.x - r, fp.y - r, fp.w + 2 * r, fp.h + 2 * r);
+    for (let y = fp.y - r - 1; y < fp.y + fp.h + r + 1; y++) for (let x = fp.x - r - 1; x < fp.x + fp.w + r + 1; x++) this.paintTile(x, y);
+  }
+
+  /** Repaints every ground tile, e.g. in a new season. */
+  private paintGround(): void {
+    const { width, height } = this.farm.state.land;
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) this.paintTile(x, y);
+  }
+
   private paintTile(x: number, y: number): void {
     const { land } = this.farm.state;
-    const bob = this.groundBobs[y * land.width + x];
+    if (!inBounds(land, x, y)) return;
+    const i = y * land.width + x;
+    const bob = this.groundBobs[i];
     if (!bob) return;
-    const art = seasonalArt(isOwned(land, x, y) ? grassArt(x, y) : unownedArt(x, y), artSeason());
-    const [ax, ay] = packAsset(art)?.res[ART_RES].anchor ?? [0, 0];
+    const zoneAt = (zx: number, zy: number) => (inBounds(land, zx, zy) ? this.groundZones[zy * land.width + zx] : undefined) ?? this.groundZones[i] ?? 'meadow';
+    const look = groundLook(x, y, soilAt(x, y), this.groundZones[i] ?? 'meadow', !isOwned(land, x, y), artSeason(), zoneAt);
+    this.groundLooks[i] = look;
+    const [ax, ay] = packAsset(look.art)?.res[ART_RES].anchor ?? [0, 0];
     // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
     const top = gridToWorld(x, y);
-    bob.reset(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, art);
-    // Rich soil shows as lusher grass, owned or not.
-    bob.setTint(groundTint(soilAt(x, y), artSeason()));
+    bob.reset(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, look.art);
+    // Colour patches, the soil showing through, the zone's shade and locked land, as one tint.
+    bob.setTint(look.tint);
+  }
+
+  /** The tint ground tile (x, y) is drawn with (white off the map), e.g. for the grass fringes hanging from it. */
+  groundTintAt(x: number, y: number): number {
+    const { land } = this.farm.state;
+    return (inBounds(land, x, y) ? this.groundLooks[y * land.width + x]?.tint : undefined) ?? 0xffffff;
+  }
+
+  /** `window.farm.ground`, for QA: tiles per ground tile and per zone, and what a tile shows. */
+  private groundInfo() {
+    const counts: Record<string, number> = {};
+    for (const look of this.groundLooks) {
+      if (!look) continue;
+      const name = look.art.slice(0, look.art.lastIndexOf('_'));
+      counts[name] = (counts[name] ?? 0) + 1;
+      counts[look.zone] = (counts[look.zone] ?? 0) + 1;
+    }
+    const { land } = this.farm.state;
+    return Object.freeze({
+      counts,
+      at: (x: number, y: number) => {
+        const look = inBounds(land, x, y) ? this.groundLooks[y * land.width + x] : undefined;
+        return look ? { art: look.art, tint: look.tint, zone: look.zone, locked: !isOwned(land, x, y) } : null;
+      },
+    });
   }
 
   /**
@@ -277,6 +346,7 @@ export class FarmScene extends Phaser.Scene {
     const layer = mapOf(this.farm.state);
     const clear = (x: number, y: number) => sceneryClear(land, layer, x, y);
     const willows = new Set<string>();
+    const ponds = new Set<number>();
     const place = (x: number, y: number, art: string) => {
       const at = gridToWorld(x, y);
       const img = addArt(this, at.x, at.y, art);
@@ -291,6 +361,7 @@ export class FarmScene extends Phaser.Scene {
         if (!art || !clear(x, y)) continue;
         place(x, y, art);
         if (art !== POND) continue;
+        ponds.add(y * land.width + x);
         // A willow or two beside the pond: decoration like the pond, not a tree of the map (never felled or saved).
         const { count, spots } = pondWillows(x, y);
         for (const s of spots.filter((s) => clear(s.x, s.y) && !sceneryArt(s.x, s.y) && !willows.has(`${s.x},${s.y}`)).slice(0, count)) {
@@ -303,6 +374,12 @@ export class FarmScene extends Phaser.Scene {
             .setScale(ART_SCALE * look.scale);
         }
       }
+    }
+    // Buying land near a pond takes it away, and its wet meadow with it.
+    if (ponds.size !== this.ponds.size || [...ponds].some((i) => !this.ponds.has(i))) {
+      this.ponds = ponds;
+      this.zoneTiles(0, 0, land.width, land.height);
+      this.paintGround();
     }
     this.depthsDirty = true;
   }

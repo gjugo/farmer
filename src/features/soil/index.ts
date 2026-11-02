@@ -12,7 +12,7 @@ import { gridToWorld } from '../../scenes/iso';
 /**
  * Soil: the quality overlay over owned land (the Build menu's Soil toggle), the soil tint under a field's build ghost,
  * and `window.farm.soil` for QA. The rules live in `src/logic/soil.ts`; rich ground's lusher grass is drawn by the Farm
- * scene (`groundTint` in `src/scenes/art.ts`), the field panel's soil block in `./panel.ts`.
+ * scene (`soilTint` in `src/scenes/ground.ts`), the field panel's soil block in `./panel.ts`.
  */
 
 /** The overlay lies on the ground and over fields, under shadows and everything standing. */

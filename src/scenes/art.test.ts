@@ -10,7 +10,6 @@ import { GRANARY_PILES, PILE_STAGES, STOREHOUSE_PILES } from '../data/resources'
 import { HOUSE_PILES } from '../logic/stockpiles';
 import '../data/processing';
 import { SEASONS } from '../data/seasons';
-import { SOIL_QUALITY } from '../data/soil';
 import { JOBS, type JobKind } from '../data/workers';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from '../logic/constants';
 import {
@@ -37,9 +36,6 @@ import {
   LOADS,
   type Load,
   fencePiece,
-  groundTint,
-  RICH_GROUND_TINT,
-  seasonalGroundTint,
   GATE,
   ICON_ART,
   NE,
@@ -279,7 +275,6 @@ describe('art pack', () => {
 describe('seasonal art', () => {
   it('maps base art to its season', () => {
     expect(seasonalArt('grass_1', 'winter')).toBe('grass_1_winter');
-    expect(seasonalArt('unowned_0', 'spring')).toBe('unowned_0_spring');
     expect(seasonalArt('path_ne_sw', 'autumn')).toBe('path_ne_sw_autumn');
     expect(seasonalArt('tree_oak', 'summer')).toBe('tree_oak_summer');
     expect(seasonalArt(POND, 'winter')).toBe('pond_winter');
@@ -389,34 +384,7 @@ describe('splitIcons', () => {
   });
 });
 
-describe('soil on the ground', () => {
-  it('draws rich soil as lusher grass and leaves normal and poor ground as it is', () => {
-    for (const season of SEASONS) {
-      expect(groundTint(SOIL_QUALITY.rich, season)).toBe(RICH_GROUND_TINT[season]);
-      expect(groundTint(SOIL_QUALITY.normal, season)).toBe(0xffffff);
-      expect(groundTint(SOIL_QUALITY.poor, season)).toBe(0xffffff);
-    }
-    const rgb = (t: number) => [t >> 16, (t >> 8) & 0xff, t & 0xff];
-    // While the grass grows, a multiply that keeps green strongest: greener, a touch deeper.
-    for (const season of ['spring', 'summer', 'autumn'] as const) {
-      const [r, g, b] = rgb(RICH_GROUND_TINT[season]);
-      expect(g).toBeGreaterThan(r);
-      expect(g).toBeGreaterThan(b);
-    }
-    // On snow, green would read as mint: winter's is a faint cool shade instead.
-    const [r, g, b] = rgb(RICH_GROUND_TINT.winter);
-    expect(b).toBeGreaterThanOrEqual(g);
-    expect(g).toBeGreaterThanOrEqual(r);
-    expect(Math.min(r, g, b)).toBeGreaterThan(0xd8);
-  });
-
-  it('switches rich soil to the new season’s tint and leaves untinted ground alone', () => {
-    expect(seasonalGroundTint(RICH_GROUND_TINT.summer, 'winter')).toBe(RICH_GROUND_TINT.winter);
-    expect(seasonalGroundTint(RICH_GROUND_TINT.winter, 'spring')).toBe(RICH_GROUND_TINT.spring);
-    expect(seasonalGroundTint(RICH_GROUND_TINT.autumn, 'autumn')).toBe(RICH_GROUND_TINT.autumn);
-    expect(seasonalGroundTint(0xffffff, 'winter')).toBe(0xffffff);
-  });
-
+describe('item icons', () => {
   it('has an icon for manure', () => {
     expect(splitIcons('4 💩 Manure')).toEqual(['4 ', { icon: 'manure', emoji: '💩' }, ' Manure']);
   });

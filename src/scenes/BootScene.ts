@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SEASONS } from '../data/seasons';
-import { ART_BASE, ART_RES, COMPOSED, DECOR_ART, FRINGE_ART, GRASS, seasonalArt, seasonalComposed, SHADOW, UNOWNED, usedArt, type PackManifest } from './art';
+import { ART_BASE, ART_RES, COMPOSED, DECOR_ART, FRINGE_ART, GRASS, seasonalArt, seasonalComposed, SHADOW, usedArt, type PackManifest } from './art';
+import { groundFrames } from './ground';
 import { listTextures } from './textures';
 import { packAsset, setPack } from './sprites';
 
@@ -8,7 +9,7 @@ const MANIFEST = 'farm-manifest';
 /** Texture holding every ground tile, so the whole ground is one Blitter (see FarmScene). */
 export const GROUND_ATLAS = 'ground-atlas';
 /** Ground tiles in the atlas: each season's version, a column per season. */
-export const GROUND_TILES = SEASONS.map((season) => [...GRASS, ...UNOWNED].map((name) => seasonalArt(name, season)));
+export const GROUND_TILES = SEASONS.map(groundFrames);
 /** Texture holding every grass fringe strip, for the fringes' Blitter (src/features/fringes). */
 export const FRINGE_ATLAS = 'fringe-atlas';
 /** Fringe strips in their atlas: each season's version, a column per season. */
