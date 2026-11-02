@@ -19,8 +19,11 @@ export const FARMHOUSE_HOMES = 1;
 /** The tile in front of a cottage's door (the middle of its front-left, +y face), relative to its top-left tile. */
 export const COTTAGE_DOOR = { x: 1, y: 2 } as const;
 
-/** What families eat, in the order they reach for it. Never feed, wool, cloth or the brewery's malt and ale. */
-export const FOODS: readonly KnownItemId[] = ['wheat', 'carrot', 'corn', 'potato', 'cabbage', 'pumpkin', 'apple', 'egg', 'milk', 'bread', 'cheese', 'butter'];
+/**
+ * What families eat, in the order they reach for it. Grain is baked first, as in Manor Lords: never raw wheat, rye or
+ * barley, nor flour; bread and rye bread from the bakery instead. Never feed, wool, cloth or the brewery's malt and ale.
+ */
+export const FOODS: readonly KnownItemId[] = ['carrot', 'corn', 'potato', 'cabbage', 'pumpkin', 'apple', 'egg', 'milk', 'bread', 'rye-bread', 'cheese', 'butter'];
 
 /** Food each family eats a day. */
 export const MEAL_PER_FAMILY = 2;

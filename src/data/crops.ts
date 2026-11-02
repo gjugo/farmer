@@ -32,6 +32,9 @@ export const CROPS = {
   flax: { id: 'flax', name: 'Flax', plantCost: 14, growMs: 840_000, harvestItem: 'flax', harvestQty: 8, icon: '🪻', unlockLevel: 6, seasons: ['spring', 'summer'], soilDrain: 10 },
   // The winter crop: sown in autumn, it is ripe in winter (it grows longer than a season), and keeps in the frozen field.
   cabbage: { id: 'cabbage', name: 'Cabbage', plantCost: 20, growMs: 2_100_000, harvestItem: 'cabbage', harvestQty: 10, icon: '🥬', unlockLevel: 6, seasons: ['autumn', 'winter'], soilDrain: 9 },
+  // Winter rye, the hardy grain: sown in autumn like cabbage, it may ripen in winter and keeps in the frozen field. It
+  // asks little of the soil. Not a food: the mill grinds it into rye flour for the bakery's rye bread.
+  rye: { id: 'rye', name: 'Rye', plantCost: 8, growMs: 1_440_000, harvestItem: 'rye', harvestQty: 12, icon: '🎋', unlockLevel: 3, seasons: ['autumn', 'winter'], soilDrain: 4 },
   pumpkin: { id: 'pumpkin', name: 'Pumpkin', plantCost: 24, growMs: 1_500_000, harvestItem: 'pumpkin', harvestQty: 6, icon: '🎃', unlockLevel: 7, seasons: ['summer', 'autumn'], soilDrain: 13 },
 } as const satisfies Record<string, CropDef>;
 

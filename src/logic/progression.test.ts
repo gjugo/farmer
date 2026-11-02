@@ -181,8 +181,11 @@ describe('unlocks', () => {
   });
 
   it('lists what each level unlocks', () => {
-    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Hen Run', 'Iron at the Market', 'Kennel', 'Ox Barn', 'Pasture', 'Potato']);
-    expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
+    // The grain chain opens at level 2 with the bakery: the Windmill grinds the flour it bakes.
+    expect(unlocksAt(2).map((u) => u.name)).toEqual(expect.arrayContaining(['Windmill', 'Bakery', 'Feed Barn']));
+    expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Hen Run', 'Iron at the Market', 'Kennel', 'Ox Barn', 'Pasture', 'Potato', 'Rye']);
+    expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley']));
+    expect(unlocksAt(4).map((u) => u.name)).not.toContain('Windmill');
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Blacksmith', 'Loom', 'Sheep']);
     // The later levels unlock crops and the longer chains: flax, the winter cabbage and the malthouse at 6, pumpkin
     // and the brewery at 7, the tailor at 8.
@@ -337,12 +340,22 @@ describe('goals', () => {
       'manor-house',
       'manor-hall',
       'build-feed-barn',
+      'grind-flour',
+      'bake-rye-bread',
     ]);
   });
 
-  it('the feed goal keeps its id and slot, renamed "Make 12 feed"; "Build a feed barn" comes last', () => {
+  it('the feed goal keeps its id and slot, renamed "Make 12 feed"; "Build a feed barn" follows the farmhouse goals', () => {
     expect(GOALS[23]).toMatchObject({ id: 'make-feed', title: 'Make 12 feed', kind: 'make', item: 'feed', count: 12 });
-    expect(GOALS.at(-1)).toMatchObject({ id: 'build-feed-barn', title: 'Build a feed barn', kind: 'own-buildings', type: 'feed-barn', count: 1 });
+    expect(GOALS.at(-3)).toMatchObject({ id: 'build-feed-barn', title: 'Build a feed barn', kind: 'own-buildings', type: 'feed-barn', count: 1 });
+  });
+
+  it('"Bake 3 bread" keeps its slot; the grain goals come last: grind 20 flour, bake 10 rye bread', () => {
+    expect(GOALS[10]).toMatchObject({ id: 'bake-bread', title: 'Bake 3 bread', kind: 'make', item: 'bread', count: 3 });
+    expect(GOALS.slice(-2).map((g) => [g.id, g.title, g.kind, 'item' in g ? g.item : null, g.count])).toEqual([
+      ['grind-flour', 'Grind 20 flour', 'make', 'flour', 20],
+      ['bake-rye-bread', 'Bake 10 rye bread', 'make', 'rye-bread', 10],
+    ]);
   });
 
   it('the oxcart goals follow the hazard goals: build an ox barn, haul 100 goods by cart', () => {
@@ -372,8 +385,8 @@ describe('goals', () => {
   });
 
   it('"Upgrade a cottage" counts cottage upgrades; "Build the farmhouse" counts the farmhouse, a site too; its levels follow', () => {
-    const at = (i: number) => GOALS.at(i - 1);
-    expect(GOALS.at(-5)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
+    const at = (i: number) => GOALS.at(i - 3);
+    expect(at(-4)).toMatchObject({ id: 'upgrade-cottage', kind: 'upgrade', type: 'cottage', count: 1 });
     expect(at(-3)).toMatchObject({ id: 'build-farmhouse', kind: 'own-buildings', type: 'farmhouse', count: 1 });
     expect(at(-2)).toMatchObject({ id: 'manor-house', title: 'Upgrade the farmhouse to a manor house', kind: 'building-level', type: 'farmhouse', count: 2 });
     expect(at(-1)).toMatchObject({ id: 'manor-hall', title: 'Raise the manor hall', kind: 'building-level', type: 'farmhouse', count: 3 });
@@ -471,7 +484,8 @@ describe('save', () => {
       [[{ id: 'o1', type: 'field', x: 12, y: 9, state: { crop: 'carrot', timer: null } }], 2],
       [[{ id: 'o1', type: 'dairy', x: 12, y: 9, state: {} }], 3],
       [[{ id: 'o1', type: 'pasture', x: 12, y: 9, state: { animals: [{ kind: 'sheep', timer: null }] } }], 5],
-      [[{ id: 'o1', type: 'feed-mill', x: 12, y: 9, state: {} }], 4],
+      [[{ id: 'o1', type: 'feed-mill', x: 12, y: 9, state: {} }], 2],
+      [[{ id: 'o1', type: 'malthouse', x: 12, y: 9, state: {} }], 6],
     ];
     for (const [objects, level] of cases) {
       const game = new Game(deserialize(v1Save(objects)));

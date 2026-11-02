@@ -125,6 +125,8 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'manor-house', title: 'Upgrade the farmhouse to a manor house', icon: '🏡', kind: 'building-level', type: 'farmhouse', count: 2, reward: { money: 400, xp: 200 } },
   { id: 'manor-hall', title: 'Raise the manor hall', icon: '🏰', kind: 'building-level', type: 'farmhouse', count: 3, reward: { money: 600, xp: 300 } },
   { id: 'build-feed-barn', title: 'Build a feed barn', icon: '🐮', kind: 'own-buildings', type: 'feed-barn', count: 1, reward: { money: 80, xp: 30 } },
+  { id: 'grind-flour', title: 'Grind 20 flour', icon: '🥣', kind: 'make', item: 'flour', count: 20, reward: { money: 120, xp: 50 } },
+  { id: 'bake-rye-bread', title: 'Bake 10 rye bread', icon: '🥖', kind: 'make', item: 'rye-bread', count: 10, reward: { money: 200, xp: 100 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

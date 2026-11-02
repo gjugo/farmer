@@ -7666,6 +7666,158 @@
    }
   },
   {
+   "name": "rye_3_ripe",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage ripe (3_ripe); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_3_ripe.png",
+     "w": 234,
+     "h": 146,
+     "anchor": [
+      118.0,
+      36.0
+     ],
+     "origin": [
+      0.50427,
+      0.24658
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_3_ripe.png",
+     "w": 117,
+     "h": 73,
+     "anchor": [
+      59.0,
+      18.0
+     ],
+     "origin": [
+      0.50427,
+      0.24658
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye_2_growing",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage growing (2_growing); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_2_growing.png",
+     "w": 220,
+     "h": 128,
+     "anchor": [
+      110.0,
+      20.0
+     ],
+     "origin": [
+      0.5,
+      0.15625
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_2_growing.png",
+     "w": 110,
+     "h": 64,
+     "anchor": [
+      55.0,
+      10.0
+     ],
+     "origin": [
+      0.5,
+      0.15625
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye_1_sprout",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage sprout (1_sprout); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_1_sprout.png",
+     "w": 208,
+     "h": 108,
+     "anchor": [
+      104.0,
+      2.0
+     ],
+     "origin": [
+      0.5,
+      0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_1_sprout.png",
+     "w": 104,
+     "h": 54,
+     "anchor": [
+      52.0,
+      1.0
+     ],
+     "origin": [
+      0.5,
+      0.01852
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye_0_seeded",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage seeded (0_seeded); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_0_seeded.png",
+     "w": 212,
+     "h": 96,
+     "anchor": [
+      104.0,
+      -4.0
+     ],
+     "origin": [
+      0.49057,
+      -0.04167
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_0_seeded.png",
+     "w": 106,
+     "h": 48,
+     "anchor": [
+      52.0,
+      -2.0
+     ],
+     "origin": [
+      0.49057,
+      -0.04167
+     ]
+    }
+   }
+  },
+  {
    "name": "pumpkin_3_ripe",
    "category": "crops",
    "type": "image",
@@ -7894,6 +8046,44 @@
    }
   },
   {
+   "name": "rye_3_ripe_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage 3_ripe in winter, snowy (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_3_ripe_winter.png",
+     "w": 236,
+     "h": 146,
+     "anchor": [
+      118.0,
+      36.0
+     ],
+     "origin": [
+      0.5,
+      0.24658
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_3_ripe_winter.png",
+     "w": 118,
+     "h": 73,
+     "anchor": [
+      59.0,
+      18.0
+     ],
+     "origin": [
+      0.5,
+      0.24658
+     ]
+    }
+   }
+  },
+  {
    "name": "cabbage_2_growing",
    "category": "crops",
    "type": "image",
@@ -7965,6 +8155,44 @@
      "origin": [
       0.46316,
       0.01786
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye_2_growing_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage 2_growing in winter, snowy (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_2_growing_winter.png",
+     "w": 216,
+     "h": 128,
+     "anchor": [
+      108.0,
+      20.0
+     ],
+     "origin": [
+      0.5,
+      0.15625
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_2_growing_winter.png",
+     "w": 108,
+     "h": 64,
+     "anchor": [
+      54.0,
+      10.0
+     ],
+     "origin": [
+      0.5,
+      0.15625
      ]
     }
    }
@@ -8046,6 +8274,44 @@
    }
   },
   {
+   "name": "rye_1_sprout_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage 1_sprout in winter, snowy (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_1_sprout_winter.png",
+     "w": 208,
+     "h": 108,
+     "anchor": [
+      104.0,
+      2.0
+     ],
+     "origin": [
+      0.5,
+      0.01852
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_1_sprout_winter.png",
+     "w": 104,
+     "h": 54,
+     "anchor": [
+      52.0,
+      1.0
+     ],
+     "origin": [
+      0.5,
+      0.01852
+     ]
+    }
+   }
+  },
+  {
    "name": "cabbage_0_seeded",
    "category": "crops",
    "type": "image",
@@ -8117,6 +8383,44 @@
      "origin": [
       0.51579,
       -0.08889
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye_0_seeded_winter",
+   "category": "crops",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "rye stage 0_seeded in winter, snowy (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/crops/rye_0_seeded_winter.png",
+     "w": 212,
+     "h": 96,
+     "anchor": [
+      104.0,
+      -4.0
+     ],
+     "origin": [
+      0.49057,
+      -0.04167
+     ]
+    },
+    "1x": {
+     "file": "1x/crops/rye_0_seeded_winter.png",
+     "w": 106,
+     "h": 48,
+     "anchor": [
+      52.0,
+      -2.0
+     ],
+     "origin": [
+      0.49057,
+      -0.04167
      ]
     }
    }
@@ -10852,6 +11156,158 @@
     },
     "1x": {
      "file": "1x/icons/malt.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye-bread",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/rye-bread.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/rye-bread.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye-flour",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/rye-flour.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/rye-flour.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "flour",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/flour.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/flour.png",
+     "w": 128,
+     "h": 128,
+     "anchor": [
+      64.0,
+      64.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "rye",
+   "category": "icons",
+   "type": "image",
+   "footprint": [
+    0,
+    0
+   ],
+   "notes": "item icon, 256px @2x / 128px @1x (Ludo.ai, cel-shaded)",
+   "res": {
+    "2x": {
+     "file": "2x/icons/rye.png",
+     "w": 256,
+     "h": 256,
+     "anchor": [
+      128.0,
+      128.0
+     ],
+     "origin": [
+      0.5,
+      0.5
+     ]
+    },
+    "1x": {
+     "file": "1x/icons/rye.png",
      "w": 128,
      "h": 128,
      "anchor": [

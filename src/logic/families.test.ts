@@ -61,11 +61,11 @@ const day = (over: Partial<DayNeeds>): DayNeeds => ({
 
 describe('families: rules', () => {
   it('a meal is spread across the foods in stock, one kind after another', () => {
-    const stock: Record<string, number> = { wheat: 10, carrot: 1, egg: 5, feed: 50, wool: 9, cloth: 9 };
-    expect(mealFrom((id) => stock[id] ?? 0, 3)).toEqual({ wheat: 3, carrot: 1, egg: 2 });
-    expect(mealFrom((id) => stock[id] ?? 0, 1)).toEqual({ wheat: 1, carrot: 1 });
+    const stock: Record<string, number> = { potato: 10, carrot: 1, egg: 5, feed: 50, wool: 9, cloth: 9 };
+    expect(mealFrom((id) => stock[id] ?? 0, 3)).toEqual({ potato: 3, carrot: 1, egg: 2 });
+    expect(mealFrom((id) => stock[id] ?? 0, 1)).toEqual({ potato: 1, carrot: 1 });
     // Never feed, wool or cloth; never more than there is.
-    expect(mealFrom((id) => ({ feed: 9, wool: 9, cloth: 9, wheat: 1 })[id] ?? 0, 2)).toEqual({ wheat: 1 });
+    expect(mealFrom((id) => ({ feed: 9, wool: 9, cloth: 9, potato: 1 })[id] ?? 0, 2)).toEqual({ potato: 1 });
     expect(mealFrom(() => 0, 4)).toEqual({});
     expect(FOODS).not.toContain('feed');
   });
@@ -79,9 +79,18 @@ describe('families: rules', () => {
     expect(mealFrom((id) => stock[id] ?? 0, 3)).toEqual({ potato: 2, cabbage: 2, pumpkin: 2 });
   });
 
+  it('grain is never eaten raw, nor as flour: families eat bread and rye bread, two kinds on the table', () => {
+    for (const id of ['wheat', 'rye', 'barley', 'flour', 'rye-flour']) expect(FOODS).not.toContain(id);
+    expect(FOODS).toEqual(expect.arrayContaining(['bread', 'rye-bread']));
+    const grain: Record<string, number> = { wheat: 50, rye: 50, barley: 50, flour: 50, 'rye-flour': 50 };
+    expect(mealFrom((id) => grain[id] ?? 0, 4)).toEqual({});
+    const stock: Record<string, number> = { ...grain, bread: 9, 'rye-bread': 9 };
+    expect(mealFrom((id) => stock[id] ?? 0, 2)).toEqual({ bread: 2, 'rye-bread': 2 });
+  });
+
   it('approval: variety lifts it, starving or freezing sinks it below the leaving line', () => {
-    const wheat = approvalOf(day({ families: 2, meal: 4, eaten: 4, variety: 1, ate: { wheat: 4 } })).approval;
-    const three = approvalOf(day({ families: 2, meal: 4, eaten: 4, variety: 3, ate: { wheat: 2, carrot: 1, egg: 1 } })).approval;
+    const wheat = approvalOf(day({ families: 2, meal: 4, eaten: 4, variety: 1, ate: { potato: 4 } })).approval;
+    const three = approvalOf(day({ families: 2, meal: 4, eaten: 4, variety: 3, ate: { potato: 2, carrot: 1, egg: 1 } })).approval;
     expect(wheat).toBe(50);
     expect(three).toBe(60);
     expect(approvalOf(day({ variety: 2 })).approval).toBeGreaterThan(ARRIVE_APPROVAL);
@@ -143,23 +152,23 @@ describe('families on the farm', () => {
   it('each day the families eat 2 food each from the granary, and approval follows what they ate', () => {
     const game = farm();
     addFarmer(game); // a second family (more farmers than homes, as in an old save)
-    stock(game, 'wheat', 20);
+    stock(game, 'potato', 20);
     game.advance(DAY_MS);
-    expect(game.count('wheat')).toBe(20 - 2 * MEAL_PER_FAMILY);
-    expect(familiesOf(game.state).lastDay).toMatchObject({ ate: { wheat: 4 }, variety: 1, families: 2 });
+    expect(game.count('potato')).toBe(20 - 2 * MEAL_PER_FAMILY);
+    expect(familiesOf(game.state).lastDay).toMatchObject({ ate: { potato: 4 }, variety: 1, families: 2 });
     const wheatOnly = familiesOf(game.state).approval;
 
     stock(game, 'carrot', 5);
     stock(game, 'egg', 5);
     game.advance(DAY_MS);
-    expect(familiesOf(game.state).lastDay).toMatchObject({ ate: { wheat: 2, carrot: 1, egg: 1 }, variety: 3 });
+    expect(familiesOf(game.state).lastDay).toMatchObject({ ate: { potato: 1, carrot: 2, egg: 1 }, variety: 3 });
     expect(familiesOf(game.state).approval).toBeGreaterThan(wheatOnly);
-    expect(game.count('wheat') + game.count('carrot') + game.count('egg')).toBe(16 + 10 - 4);
+    expect(game.count('potato') + game.count('carrot') + game.count('egg')).toBe(16 + 10 - 4);
   });
 
   it('a built cottage brings a new family half a day later when approval is high enough; at most one a day', () => {
     const game = farm();
-    stock(game, 'wheat', 50);
+    stock(game, 'potato', 50);
     stock(game, 'carrot', 50);
     game.advance(DAY_MS); // approval 55 after the first meal
     expect(familiesOf(game.state).approval).toBeGreaterThanOrEqual(ARRIVE_APPROVAL);
@@ -185,7 +194,7 @@ describe('families on the farm', () => {
 
   it('a cottage built as a construction site counts once a farmer has built it', () => {
     const game = farm();
-    stock(game, 'wheat', 50);
+    stock(game, 'potato', 50);
     const r = game.place(COTTAGE, X, Y, { site: true });
     if (!r.ok) throw new Error(r.reason);
     expect(connectToFarmhouse(game.state, { x: X, y: Y, w: 2, h: 2 })).toBeTruthy();
@@ -208,7 +217,7 @@ describe('families on the farm', () => {
     cottages(game, 1);
     game.advance(DAY_MS - 1);
     expect(workersOf(game.state).farmers).toBe(1);
-    stock(game, 'wheat', 10);
+    stock(game, 'potato', 10);
     game.advance(1); // the next day: fed, approval back to 50, plus the farmhouse's 10
     expect(familiesOf(game.state).approval).toBe(APPROVAL.base + FARMHOUSE_APPROVAL);
     expect(workersOf(game.state).farmers).toBe(2);
@@ -231,7 +240,7 @@ describe('families on the farm', () => {
     const game = farm();
     for (let i = 0; i < 4; i++) addFarmer(game);
     cottages(game, 2);
-    stock(game, 'wheat', 200);
+    stock(game, 'potato', 200);
     game.advance(5 * DAY_MS);
     expect(workersOf(game.state).farmers).toBe(5);
     expect(familiesOf(game.state).nextArrivalAt).toBeNull();
@@ -248,7 +257,7 @@ describe('families on the farm', () => {
     const field = game.objectsOfType(FIELD)[0];
     expect(assignFarmer(game, field.id, 2).ok).toBe(true);
     game.state.inventory.wood = 3; // one day of firewood for three homes
-    stock(game, 'wheat', 100);
+    stock(game, 'potato', 100);
     stock(game, 'carrot', 100);
     const left: (string | null)[] = [];
     game.activity.on('familyLeft', ({ workplace }) => left.push(workplace));
@@ -281,7 +290,7 @@ describe('families on the farm', () => {
     cottages(game, 2);
     addFamily(game);
     addFamily(game);
-    stock(game, 'wheat', 200);
+    stock(game, 'potato', 200);
     stock(game, 'cloth', 2);
     game.state.inventory.wood = 1000;
     game.advance(WINTER - 1 - game.now);
@@ -305,7 +314,7 @@ describe('families on the farm', () => {
     cottages(game, 2);
     addFamily(game);
     addFamily(game);
-    stock(game, 'wheat', 200);
+    stock(game, 'potato', 200);
     stock(game, 'clothes', 2);
     stock(game, 'cloth', 5);
     game.state.inventory.wood = 1000;
@@ -320,7 +329,7 @@ describe('families on the farm', () => {
 
   it('with clothes for everyone no cloth is taken; with none, families fall back on cloth as before', () => {
     const game = farm();
-    stock(game, 'wheat', 200);
+    stock(game, 'potato', 200);
     stock(game, 'clothes', 3);
     stock(game, 'cloth', 3);
     game.state.inventory.wood = 1000;
@@ -340,7 +349,7 @@ describe('families on the farm', () => {
     cottages(game, 2);
     addFamily(game);
     addFamily(game);
-    stock(game, 'wheat', 200);
+    stock(game, 'potato', 200);
     stock(game, 'ale', 3);
     game.advance(DAY_MS);
     // Three families: two ale, one shared and one alone.
@@ -360,7 +369,7 @@ describe('families on the farm', () => {
 
   it('before the brewery is unlocked ale is not drunk and approval has no ale part', () => {
     const game = farm({ max: false });
-    stock(game, 'wheat', 100);
+    stock(game, 'potato', 100);
     stock(game, 'ale', 3);
     game.advance(2 * DAY_MS);
     expect(game.count('ale')).toBe(3);
@@ -370,7 +379,7 @@ describe('families on the farm', () => {
 
   it('before the loom is unlocked cloth is no need: none is taken and approval has no clothes part', () => {
     const game = farm({ max: false });
-    stock(game, 'wheat', 100);
+    stock(game, 'potato', 100);
     stock(game, 'cloth', 3);
     game.state.inventory.wood = 100;
     game.advance(WINTER + 1);
@@ -384,7 +393,7 @@ describe('families on the farm', () => {
     for (let i = 0; i < MAX_FARMERS + 2; i++) game.place(COTTAGE, (i % 12) * 2 + 2, Math.floor(i / 12) * 2 + 2);
     while (addFamily(game));
     expect(workersOf(game.state).farmers).toBe(MAX_FARMERS);
-    stock(game, 'wheat', 200);
+    stock(game, 'potato', 200);
     game.advance(3 * DAY_MS);
     expect(workersOf(game.state).farmers).toBe(MAX_FARMERS);
     expect(familiesOf(game.state).nextArrivalAt).toBeNull();
@@ -400,7 +409,7 @@ describe('families on game time', () => {
     const game = farm({ max: false });
     startAt(game, WINTER - 2 * DAY_MS + 1000);
     cottages(game, 3);
-    stock(game, 'wheat', 12);
+    stock(game, 'potato', 12);
     stock(game, 'carrot', 6);
     stock(game, 'egg', 4);
     game.state.inventory.wood = 3;
@@ -446,7 +455,7 @@ describe('families in saves', () => {
     expect(workersOf(loaded.state).farmers).toBe(5);
     expect(homeRoom(loaded.state)).toBe(1);
     expect((loaded.state.ext.progression as { nextGoal: number }).nextGoal).toBe(14);
-    stock(loaded, 'wheat', 100);
+    stock(loaded, 'potato', 100);
     loaded.advance(2 * DAY_MS);
     expect(workersOf(loaded.state).farmers).toBe(5);
     expect(familiesOf(loaded.state).nextArrivalAt).toBeNull();
@@ -456,7 +465,7 @@ describe('families in saves', () => {
   it('families survive save and load', () => {
     const game = farm();
     cottages(game, 1);
-    stock(game, 'wheat', 10);
+    stock(game, 'potato', 10);
     game.advance(DAY_MS + 1);
     const loaded = new Game(parseSave(serialize(game.state)).state);
     expect(familiesOf(loaded.state)).toEqual(familiesOf(game.state));

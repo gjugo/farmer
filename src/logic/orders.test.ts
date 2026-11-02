@@ -86,15 +86,15 @@ describe('order generation', () => {
     expect(new Set(items)).toEqual(new Set(['wheat', 'cheese']));
   });
 
-  it('scales quantities with value: raw goods up to 10, processed 1–3', () => {
+  it('scales quantities with value: cheap goods up to 10, dear processed goods 1–3', () => {
     const s = createOrdersState(3);
     s.known = Object.keys(ITEMS);
     for (let i = 0; i < 500; i++) {
       for (const it of generateOrder(s).items) {
         const item = getItem(it.itemId)!;
         expect(it.qty).toBeGreaterThanOrEqual(1);
-        expect(it.qty).toBeLessThanOrEqual(item.category === 'processed' ? 3 : 10);
-        if (it.itemId === 'wheat') expect(it.qty).toBeGreaterThanOrEqual(5);
+        expect(it.qty).toBeLessThanOrEqual(item.category === 'processed' && item.price >= 12 ? 3 : 10);
+        if (it.itemId === 'wheat' || it.itemId === 'bread') expect(it.qty).toBeGreaterThanOrEqual(4);
       }
     }
   });

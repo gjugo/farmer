@@ -16,8 +16,8 @@ export interface SeasonDef {
 export const SEASON_INFO: Record<Season, SeasonDef> = {
   spring: { name: 'Spring', icon: '🌸', greeting: 'The ground has thawed: plough your fields and sow! Corn needs half a season, so sow it early.' },
   summer: { name: 'Summer', icon: '🌻', greeting: 'Long, warm days for wheat and corn: carrots wait for the cool of autumn.' },
-  autumn: { name: 'Autumn', icon: '🍂', greeting: 'Last chance to grow crops before the frost: sow early, a late crop will not ripen in time. Cabbage sown now grows on into winter.' },
-  winter: { name: 'Winter', icon: '❄️', greeting: 'The ground is frozen: no ploughing or sowing until spring. Cabbage sown in autumn still ripens.' },
+  autumn: { name: 'Autumn', icon: '🍂', greeting: 'Last chance to grow crops before the frost: sow early, a late crop will not ripen in time. Winter rye and cabbage sown now grow on into winter.' },
+  winter: { name: 'Winter', icon: '❄️', greeting: 'The ground is frozen: no ploughing or sowing until spring. Rye and cabbage sown in autumn still ripen.' },
 };
 
 /** Seasons in which fields can be ploughed. Ploughed soil stays ploughed until the first season outside these (the winter frost). */

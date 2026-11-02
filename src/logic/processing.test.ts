@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PROCESSORS, QUEUE_LIMIT, type RecipeDef } from '../data/processing';
+import { PROCESSORS, QUEUE_LIMIT, recipeUnlockLevel, type RecipeDef } from '../data/processing';
+import { CROPS } from '../data/crops';
 import { getItem } from '../data/items';
 import { Game } from './game';
 import { maxLevelState } from './test-utils';
@@ -23,6 +24,13 @@ function setup(type: keyof typeof PROCESSORS = 'dairy') {
   const placed = game.place(type, 0, 0);
   if (!placed.ok) throw new Error(`could not place ${type}: ${placed.reason}`);
   return { game, obj: placed.object as unknown as PlacedObject<ProcessorState> };
+}
+
+/** Another building of `type` beside the first one. */
+function second(game: Game, type: keyof typeof PROCESSORS): PlacedObject<ProcessorState> {
+  const placed = game.place(type, 4, 0);
+  if (!placed.ok) throw new Error(`could not place ${type}: ${placed.reason}`);
+  return placed.object as unknown as PlacedObject<ProcessorState>;
 }
 
 /** Advances game time by `ms` and settles the building, as the scene does every frame. */
@@ -84,39 +92,68 @@ describe('starting jobs', () => {
     expect(obj.state.queue).toHaveLength(0);
   });
 
-  it('bakery consumes both wheat and egg, and refuses when either is missing', () => {
-    const { game, obj } = setup('bakery');
+  it('wheat → flour → bread: the Windmill grinds 3 wheat into 3 flour, the bakery bakes 2 flour into 3 bread, no egg', () => {
+    const { game, obj: mill } = setup('feed-mill');
     game.addItem('wheat', 3);
-    expect(startJob(game, obj, 'bread')).toEqual({ ok: false, reason: 'inputs' });
-    expect(game.count('wheat')).toBe(3);
+    expect(startJob(game, mill, 'flour').ok).toBe(true);
+    expect(game.count('wheat')).toBe(0);
+    expect(wait(game, mill, 119_999)).toBe(0);
+    expect(wait(game, mill, 1)).toBe(1);
+    expect(collect(game, mill)).toEqual({ flour: 3 });
+    const bakery = second(game, 'bakery');
     game.addItem('egg', 1);
-    expect(startJob(game, obj, 'bread').ok).toBe(true);
-    expect(game.count('wheat')).toBe(0);
-    expect(game.count('egg')).toBe(0);
-    wait(game, obj, 300_000);
-    expect(collect(game, obj)).toEqual({ bread: 1 });
+    expect(startJob(game, bakery, 'bread').ok).toBe(true);
+    expect(game.count('flour')).toBe(1);
+    expect(game.count('egg')).toBe(1);
+    expect(checkStart(game, bakery, 'bread')).toEqual({ ok: false, reason: 'inputs' });
+    expect(wait(game, bakery, 119_999)).toBe(0);
+    expect(wait(game, bakery, 1)).toBe(1);
+    expect(collect(game, bakery)).toEqual({ bread: 3 });
   });
 
-  it('feed mill turns wheat and corn into feed', () => {
-    const { game, obj } = setup('feed-mill');
-    game.addItem('wheat', 2);
-    game.addItem('corn', 1);
-    expect(startJob(game, obj, 'feed-from-wheat').ok).toBe(true);
-    expect(startJob(game, obj, 'feed-from-corn').ok).toBe(true);
-    expect(game.count('wheat')).toBe(0);
-    expect(game.count('corn')).toBe(0);
-    wait(game, obj, 240_000);
-    expect(collect(game, obj)).toEqual({ feed: 5 });
-    expect(game.count('feed')).toBe(5);
+  it('rye → rye flour → rye bread, the same way', () => {
+    const { game, obj: mill } = setup('feed-mill');
+    game.addItem('rye', 3);
+    expect(startJob(game, mill, 'rye-flour').ok).toBe(true);
+    wait(game, mill, 120_000);
+    expect(collect(game, mill)).toEqual({ 'rye-flour': 3 });
+    const bakery = second(game, 'bakery');
+    expect(startJob(game, bakery, 'rye-bread').ok).toBe(true);
+    expect(game.count('rye-flour')).toBe(1);
+    // Wheat flour doesn't make rye bread, nor rye flour bread.
+    expect(checkStart(game, bakery, 'bread')).toEqual({ ok: false, reason: 'inputs' });
+    wait(game, bakery, 150_000);
+    expect(collect(game, bakery)).toEqual({ 'rye-bread': 3 });
   });
 
-  it('feed mill grinds barley into feed: 2 barley make 4', () => {
-    const { game, obj } = setup('feed-mill');
-    game.addItem('barley', 2);
-    expect(startJob(game, obj, 'feed-from-barley').ok).toBe(true);
-    expect(game.count('barley')).toBe(0);
-    wait(game, obj, 120_000);
-    expect(collect(game, obj)).toEqual({ feed: 4 });
+  it('the Windmill makes flour from level 2 and rye flour from level 3; it makes no feed (the Feed Barn does)', () => {
+    const mill = PROCESSORS['feed-mill'];
+    expect(mill).toMatchObject({ name: 'Windmill', unlockLevel: 2, anim: 'sails', description: 'Grinds wheat and rye into flour for the bakery.' });
+    expect(mill.recipes.map((r) => [r.id, recipeUnlockLevel(mill, r)])).toEqual([
+      ['flour', 2],
+      ['rye-flour', 3],
+    ]);
+    expect(mill.recipes.some((r) => r.output.item === 'feed')).toBe(false);
+    const bakery = PROCESSORS.bakery;
+    expect(bakery.recipes.map((r) => [r.id, recipeUnlockLevel(bakery, r)])).toEqual([
+      ['bread', 2],
+      ['rye-bread', 3],
+    ]);
+  });
+
+  it('milling and baking earn more than selling the grain raw, but per minute no more than twice what a wheat field does', () => {
+    const price = (id: string) => getItem(id)!.price;
+    // A wheat field's farmer: a harvest's worth less the seed, over its growing time.
+    const field = (CROPS.wheat.harvestQty * price('wheat') - CROPS.wheat.plantCost) / (CROPS.wheat.growMs / 60_000);
+    for (const type of ['feed-mill', 'bakery'] as const) {
+      for (const r of PROCESSORS[type].recipes) {
+        const inputs = Object.entries(r.inputs).reduce((sum, [id, n]) => sum + price(id) * n!, 0);
+        const added = price(r.output.item) * r.output.qty - inputs;
+        expect(added, r.id).toBeGreaterThan(0);
+        expect(added / (r.durationMs / 60_000), r.id).toBeLessThanOrEqual(2 * field);
+      }
+    }
+    expect(price('rye-bread')).toBeGreaterThan(price('bread'));
   });
 
   it('malthouse malts barley: 3 barley make 2 malt in 5 min', () => {
