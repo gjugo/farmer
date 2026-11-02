@@ -398,7 +398,7 @@ onGameStart((ctx) => {
   game.activity.on('starved', ({ kind, penType }) => {
     const def = ANIMALS[kind as AnimalKind];
     const where = PENS[penType as PenType]?.name.toLowerCase() ?? 'pen';
-    ctx.ui.toast(`🥀 A ${def?.name.toLowerCase() ?? kind} starved in the ${where}. Make feed at a Feed Barn before winter.`, 'error');
+    ctx.ui.toast(`🥀 A ${def?.name.toLowerCase() ?? kind} starved in the ${where}. Make feed at a Feed Barn.`, 'error');
   });
 
   /** `window.farm.feed`, for QA: this winter's need, the feed in stock, the animals starving now, and whether they graze. */
