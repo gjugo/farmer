@@ -52,9 +52,10 @@ git (or rerun the commands below) after running it.
 | `decor_daisies`, `decor_buttercups`, `decor_cornflowers`, `decor_puddle` (spring), `decor_tallgrass_0/1`, `decor_poppies` (summer), `decor_mushrooms_0/1`, `decor_leaves_0/1` (autumn), `decor_twigs_0/1`, `decor_snowdrift` (winter) | `<name>_raw.png` | one season each |
 | `fern_0`, `fern_1`, `fallen_log` (undergrowth at forest edges; base, `_spring`, `_summer`, `_autumn`, `_winter`) | `fern_{0,1}_raw.png`, `fern_{0,1}_{autumn,winter}_raw.png`, `fallen_log_raw.png`, `fallen_log_winter_raw.png` | all |
 | `fence_post`, `fence_<edges>` (16 pieces), `gate_se_nw_closed` | `fence_post_raw.png`, `fence_rail_raw.png`, `fence_gate_raw.png`; see **Fences** below | none (not seasonal) |
-| `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe (flax's sprout is its growing image, smaller), `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none, except cabbage |
+| `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `rye`, `pumpkin` × `0_seeded`, `1_sprout`, `2_growing`, `3_ripe` (one tile of plants each) | `<crop>_<stage>_raw.png` for sprout to ripe (flax's sprout is its growing image, smaller), `seeded_raw.png` for every crop's seeded stage; see **Crops** below | none, except cabbage and rye |
 | `cabbage_<stage>_winter` (frosted, the winter crop) | `cabbage_<stage>_winter_raw.png`, `seeded_winter_raw.png`; see **Crops** below | winter |
-| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `malt`, `ale`, `linen`, `clothes`, `tools`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `apple`, `wood`, `stone`, `iron`, `manure`, `coins` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
+| `rye_<stage>_winter` (snowy, winter rye) | `rye_<stage>_winter_raw.png`, `seeded_winter_raw.png`; see **Winter rye** below | winter |
+| item icons: `egg`, `milk`, `wool`, `feed`, `cheese`, `butter`, `bread`, `cloth`, `malt`, `ale`, `linen`, `clothes`, `tools`, `wheat`, `carrot`, `corn`, `potato`, `barley`, `flax`, `cabbage`, `pumpkin`, `apple`, `wood`, `stone`, `iron`, `manure`, `coins`, `rye`, `flour`, `rye-flour`, `rye-bread` | `icon_<item>_raw.png`; see **Item icons** below | none (icons don't change) |
 | `veg_patch` (base, `_spring`, `_summer`, `_autumn`, `_winter`: bare) | `veg_patch_raw.png`, `veg_patch_{spring,autumn,winter}_raw.png`; see **House gardens** below | all |
 | `hen_run`, `hen_run_winter` (the two hens are the `chicken` sheet, drawn by the game) | `hen_run_raw.png`, `hen_run_winter_raw.png` | all |
 | `orchard`, `orchard_winter` (the pad; its two trees are `tree_apple` in its seasons, drawn by the game) | `orchard_raw.png`, `orchard_winter_raw.png` | all |
@@ -785,6 +786,31 @@ done; done
 for s in 0_seeded 1_sprout 2_growing 3_ripe; do $P $L/install_prop.py /tmp/props cabbage_${s}_winter; done
 ```
 
+### Winter rye
+
+`generateWithStyle` with the ripe barley (`barley_3_ripe_raw.png`, shrunk to a 96 px JPEG) as `style_image`, `sprite`,
+n=2: "A single clump of ripe winter rye: several tall slender stalks with long thin drooping grey-gold rye ears with
+long fine whiskery awns, a few narrow blue-green leaves at the foot, taller and slimmer than barley with a slight
+silvery bloom; only the plant: ...". Then `editImage` on it for growing ("... make it young: about half as tall, all
+fresh blue-green leaves and stalks, the ears still small, green and upright") and sprout ("replace the whole rye plant
+with a tiny young grass-like rye sprout at the same base point ..."), and for each of the three the snowy winter
+version ("keep the same ... exactly ...; add small caps of white snow on the ears and leaves and a pale blue frost on
+the leaf edges"). Its thin stalks need `--widen` and a colour lift to read at game zoom (about 6 credits in all).
+
+```bash
+for s in 0_seeded 1_sprout 2_growing 3_ripe; do
+  $P $L/add_asset.py corn_3_ripe rye_$s "--notes=rye stage ${s#?_} ($s); place on a soil tile at the same tile coords, drawn above it (Ludo.ai, cel-shaded; shadow baked in)"
+  $P $L/add_asset.py cabbage_${s}_winter rye_${s}_winter "--notes=rye stage $s in winter, snowy (Ludo.ai, cel-shaded; shadow baked in)"
+done
+for w in "" _winter; do
+  f $L/source/seeded${w}_raw.png /tmp/props rye_0_seeded$w 14 4 4 --seed=9 --bright=1.15
+  f $L/source/rye_1_sprout${w}_raw.png /tmp/props rye_1_sprout$w 22 4 4 --seed=9 --shadow=5 --color=1.6 --bright=1.25 --widen=2.0
+  f $L/source/rye_2_growing${w}_raw.png /tmp/props rye_2_growing$w 40 4 4 --seed=9 --shadow=7 --color=1.2 --bright=1.1 --widen=1.5
+  f $L/source/rye_3_ripe${w}_raw.png /tmp/props rye_3_ripe$w 56 4 4 --seed=9 --shadow=8 --color=1.7 --bright=1.3 --widen=1.5
+done
+for s in 0_seeded 1_sprout 2_growing 3_ripe; do $P $L/install_prop.py /tmp/props rye_$s; $P $L/install_prop.py /tmp/props rye_${s}_winter; done
+```
+
 HEIGHT is the plant's height in 2x px (corn ripe stands about as tall as the pack's corn). The anchor is the
 tile's top corner, as for every crop sprite, so field depth and clicking are unchanged; `install_prop.py` drops
 the old `_shadow` layer (the fit bakes a small contact shadow under each plant).
@@ -819,8 +845,15 @@ white foam head spilling over the rim / a neatly folded stack of three pale natu
 a thin twine bow, a small sprig of blue flax flowers tucked under the twine / a simple bright red long-sleeved peasant
 tunic shirt with a laced collar and wooden buttons, laid flat ..." (manifest entries: `add_asset.py cloth <name> ...`).
 
+The grain chain's icons (#125) were one `generateWithStyle` image, styled on the Ludo bread icon, of four items in a
+row ("a tied sheaf of ripe grey-gold winter rye stalks with long thin bearded ears ..., tied with a red band / a plump
+white cloth flour sack tied at the top with string, a little heap of white flour spilling in front / a small round
+earthenware crock jar full of light grey-brown rye flour with a wooden scoop in it / a round dark brown rye bread loaf
+with a floury top and a scored cross"), cut apart at the empty columns between them into `icon_rye_raw.png`,
+`icon_flour_raw.png`, `icon_rye-flour_raw.png` and `icon_rye-bread_raw.png` (manifest entries: `add_asset.py malt <name> ...`).
+
 ```bash
-for n in egg milk wool feed cheese butter bread cloth malt ale linen clothes tools wheat carrot corn potato barley flax cabbage pumpkin apple wood stone iron manure coins; do
+for n in egg milk wool feed cheese butter bread cloth malt ale linen clothes tools wheat carrot corn potato barley flax cabbage pumpkin apple wood stone iron manure coins rye flour rye-flour rye-bread; do
   $P $L/fit_icon.py $L/source/icon_${n}_raw.png /tmp/props $n && $P $L/install_prop.py /tmp/props $n
 done
 ```

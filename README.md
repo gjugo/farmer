@@ -90,8 +90,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   orders and starting processing jobs free room at once. Time away only moves goods into pens and buildings, as
   always. Saves from before storage keep everything, even above capacity, but nothing new comes into an over-full
   pool until it is back under; a one-time toast suggests building a granary.
-- **Resource bar:** top right, one chip per category with its total: 🌾 crops (wheat, carrot, potato, corn, barley, flax, cabbage, pumpkin), 🥚 animal
-  products (egg, milk, wool), feed, 🧀 goods (cheese, butter, bread, cloth, malt, ale, linen, clothes) and 🪵 materials (wood, stone, iron), plus the
+- **Resource bar:** top right, one chip per category with its total: 🌾 crops (wheat, carrot, potato, corn, barley, flax, cabbage, pumpkin, rye, apple), 🥚 animal
+  products (egg, milk, wool), feed, 🧀 goods (cheese, butter, flour, rye flour, bread, rye bread, cloth, malt, ale, linen, clothes) and 🪵 materials (wood, stone, iron), plus the
   room used in each pool (goods `used/capacity` after the four goods chips, materials after Materials), green, amber
   from 90% and red when full, like 📦 Storage. Hover a chip (mouse) or tap it for each item's icon and count; Esc or a
   tap outside closes it. When a count changes the chip shows **+N** in green or **−N** in red for a moment (harvests,
@@ -234,21 +234,26 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   - **Feed** comes from the **🐮 Feed Barn** (🔨 → 🌾 Farming, level 2, 2×2, $90 + 8 wood + 2 stone): 3 wheat, corn or
     barley → 6 feed in 2 game-minutes (1 grain → 2 feed; corn and barley from level 4, when they unlock), with the
     queue, ⚙️ Keep making, farmer loading and oxcart pickup of any processing building. It has no chimney, so it shows
-    no work animation. The Feed Mill's recipes are unchanged for now. The pen panel's **Buy 5 feed** pack and the
+    no work animation. The mill no longer makes feed (it is the 🌬️ Windmill now). The pen panel's **Buy 5 feed** pack and the
     trader's feed stay as fallbacks. The hen run garden needs no feed at all.
-- **Processing:** build a Feed Mill, Feed Barn, Dairy, Bakery, Loom, Blacksmith, Malthouse, Brewery or Tailor, open it and pick a recipe.
-  Inputs are taken at once; up to 3 jobs queue and run one at a time (feed 2 game-minutes, butter 4, bread 5,
-  malt 5, tools 6, cheese 8, linen 8, cloth 10, ale 10, clothes 10). The longer chains:
+- **Processing:** build a Windmill, Feed Barn, Dairy, Bakery, Loom, Blacksmith, Malthouse, Brewery or Tailor, open it and pick a recipe.
+  Inputs are taken at once; up to 3 jobs queue and run one at a time (feed 2 game-minutes, flour 2, bread 2, rye
+  bread 2.5, butter 4, malt 5, tools 6, cheese 8, linen 8, cloth 10, ale 10, clothes 10). The bakery takes its flour
+  from the granary like any processing building. The grain chain and the longer chains:
 
   | Building | Level | Size | Recipes |
   | --- | --- | --- | --- |
+  | 🌬️ Windmill | 2 | 2×2 | 3 wheat → 3 🥣 wheat flour ($5); 3 rye → 3 🫙 rye flour ($5, from level 3). Costs $80 + 8 wood + 2 stone; its sails turn while it works. Makes no feed (the Feed Barn does) |
+  | 🍞 Bakery | 2 | 3×2 | 2 flour → 3 🍞 bread ($8); 2 rye flour → 3 🥖 rye bread ($9, from level 3). Costs $120 + 6 wood + 4 stone; no egg |
   | 🧵 Loom | 5 | 2×2 | 2 wool → 1 cloth ($75); 3 flax → 1 linen ($60, from level 6, when flax unlocks) |
   | 🔨 Blacksmith | 5 | 2×2 | 1 iron + 1 wood → 1 🛠️ tools ($40 at the Market, which never sells them): farmers use them. Costs $280 + 10 wood + 10 stone (no iron). **⚙️ Keep making** stops once the store holds (counting batches under way) as many tools as the farm has farmers: "Enough tools in store (8/8)" |
   | 🫘 Malthouse | 6 | 2×2 | 3 barley → 2 malt ($12) |
   | 🍺 Brewery | 7 | 3×2 | 2 malt → 1 ale ($90): families drink it |
   | 👕 Tailor | 8 | 2×2 | 2 cloth → 1 clothes, or 2 linen → 1 clothes ($150): families wear them |
 
-  So barley → malt → ale, wool → cloth or flax → linen → clothes, and mine → blacksmith → farmers. Goals: "Malt barley
+  So wheat → flour → bread and rye → rye flour → rye bread (families eat both: baking stretches the grain, 2 grain to 3
+  loaves; per grain a loaf chain earns about 3× the raw price, but per minute of a building's farmer no more than about
+  twice what a wheat field's farmer earns), barley → malt → ale, wool → cloth or flax → linen → clothes, and mine → blacksmith → farmers. Goals: "Malt barley
   into 10 malt", "Brew 5 ale", "Sew 3 clothes", then (the last two in the list) "Build a blacksmith" and "Forge 5 tools".
   Click the building (or **Collect**) to pick up finished goods.
 - **Orders:** 📋 Orders shows 3 customer orders for goods you have had before. Fulfil hands over the goods
@@ -259,12 +264,13 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 
   | Crop | Level | Sown in | Grows | Yield | Drain | Notes |
   | --- | --- | --- | --- | --- | --- | --- |
-  | 🌾 Wheat | 1 | spring, summer, autumn | 8 min | 10 | 8 | food; bakery and feed mill |
+  | 🌾 Wheat | 1 | spring, summer, autumn | 8 min | 10 | 8 | not eaten raw: the Windmill grinds it into flour for bread; Feed Barn |
   | 🥕 Carrot | 2 | spring, autumn | 10 min | 10 | 5 | food |
   | 🥔 Potato | 3 | spring, summer | 12 min | 14 | 15 | food; drains the soil hard |
-  | 🌽 Corn | 4 | spring, summer | 16 min | 12 | 12 | food; feed mill |
-  | 🌿 Barley | 4 | spring, summer | 9 min | 10 | 6 | feed mill (2 barley → 4 feed) |
+  | 🌽 Corn | 4 | spring, summer | 16 min | 12 | 12 | food; Feed Barn |
+  | 🌿 Barley | 4 | spring, summer | 9 min | 10 | 6 | malthouse; Feed Barn |
   | 🪻 Flax | 6 | spring, summer | 14 min | 8 | 10 | loom (3 flax → 1 linen) |
+  | 🎋 Rye | 3 | autumn (ripens or keeps into winter) | 24 min | 12 | 4 | **winter rye**, the hardy grain: not eaten raw, the Windmill grinds it for rye bread; asks little of the soil |
   | 🥬 Cabbage | 6 | autumn (grows into winter) | 35 min | 10 | 9 | food; **the winter crop** |
   | 🎃 Pumpkin | 7 | summer, autumn | 25 min | 6 | 13 | food; the best price |
 
@@ -332,8 +338,9 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   supplies are used up its families come first: newcomers wait until they have moved out of the tent. When approval
   stays below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; one of the
   tent's while it stands; never the last family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
-  storage: each eats **2 food** from the granary (wheat, carrot, corn, potato, cabbage, pumpkin, apple, egg, milk, bread,
-  cheese, butter; never feed, barley, flax, wool, cloth, malt or ale), spread across the kinds in stock; on **winter** days each family burns **1 wood** at its own hearth (a full level 2 cottage burns 2); once the
+  storage: each eats **2 food** from the granary (carrot, corn, potato, cabbage, pumpkin, apple, egg, milk, bread, rye
+  bread, cheese, butter; never raw grain or flour, as in Manor Lords: wheat, rye and barley are milled and baked first;
+  never feed, flax, wool, cloth, malt or ale; bread and rye bread are two kinds for approval), spread across the kinds in stock; on **winter** days each family burns **1 wood** at its own hearth (a full level 2 cottage burns 2); once the
   loom is unlocked (level 5) each family takes **1 clothes** from the tailor at the start of winter if any are in stock,
   otherwise **1 cloth**, and stays clothed until the next. Once the brewery is unlocked (level 7) they drink **1 ale per
   2 families** a day while there is any.
@@ -415,8 +422,9 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   manor house** (`farmhouse-upgrade`); Thrifty takes 20% fewer materials; a free farmer does the work once it is paid,
   like the cottage's; a toast and an `upgraded` activity follow. It never goes down a level. Goals "Upgrade the
   farmhouse to a manor house" and "Raise the manor hall" (they look at the farmhouse's level) follow "Build the
-  farmhouse"; "Build a feed barn" comes after them, last (saves keep goals by index). The feed goal (slot 23) is now
-  "Make 12 feed": feed made at the Feed Barn or the Feed Mill counts.
+  farmhouse"; "Build a feed barn" comes after them, then "Grind 20 flour" and "Bake 10 rye bread" last (saves keep
+  goals by index). The feed goal (slot 23) is "Make 12 feed": feed made at the Feed Barn counts. "Bake 3 bread" (slot
+  10) now bakes from flour.
   Saves from before version 18 had a 2×2 farmhouse: on loading it grows into the 3×3 at level 1 (same id, store and
   families), one row further back so its door tile stays where it was, or another way over its old footprint; paths,
   trees and stumps on the new tiles are cleared and the paths that reached it are joined to its door again. Boxed in by
@@ -441,7 +449,8 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
 - **Seasons:** a game day lasts 8 real minutes at ×1 and each season 4 days, about 30 minutes (days 1–4 spring,
   5–8 summer, 9–12 autumn, 13–16 winter, then round again), so a year takes about 2 hours. The pace is slow on
   purpose: a new player reaches level 2 in 10–15 minutes and level 5 in 2–3 hours (level 5 asks for 5,000 XP: families eat
-  part of what the farm makes). The HUD shows the season next to
+  part of what the farm makes; the simulated players build a Windmill and a bakery once they have four fields at level 2
+  and bake their families' bread, and no family leaves hungry). The HUD shows the season next to
   the day (bottom right) and a toast announces each new one. A field must be **ploughed** (free, but it takes a farmer) before sowing.
   Ploughing works in spring, summer and autumn, and the soil stays ploughed through harvests until the winter frost,
   which turns every empty field back to unploughed (faded soil); in winter nothing can be ploughed or sown.
@@ -794,7 +803,7 @@ src/
   features/          One folder per feature, auto-loaded (see below)
     path/              reference feature
     animals/           coops, pastures, wandering animals (data: src/data/animals.ts, logic: src/logic/animals.ts)
-    processing/        feed mill, dairy, bakery, loom, blacksmith, malthouse, brewery, tailor (data: src/data/processing.ts, logic: src/logic/processing.ts)
+    processing/        windmill, feed barn, dairy, bakery, loom, blacksmith, malthouse, brewery, tailor (data: src/data/processing.ts, logic: src/logic/processing.ts)
     fields/            field + crop views, ripe effects, plough/plant/harvest panel
     soil/              the Soil overlay and its construction-menu checkbox, the field ghost's soil tint, the field panel's
                        soil block and Spread manure action, `window.farm.soil` (data: src/data/soil.ts)
@@ -987,6 +996,10 @@ with a full deposit under every quarry and mine and a grove of about 8 trees in 
 Version 13 added oxcart hauling: a resource building's `waiting` output (from older saves: what waited for storehouse
 room) stays, now as its yard, so nothing is lost; jobs gain an optional `haul` trip and ox barns their own state.
 Version 14 added tools: every farmer of an older save gets an empty tool slot (`workers.tools`).
+Version 20 made the feed mill the Windmill (same `feed-mill` id, art and sails): on loading an older save a mill's
+queued or running feed jobs are dropped and their grain goes back into store while there is room (the rest is lost);
+feed already waiting in the mill stays to be collected; a ⚙️ Keep making set to a feed recipe is cleared. Bakery jobs on
+the old bread recipe (same `bread` id) just finish, as 3 bread. Reloading changes nothing more.
 Version 19 added winter feeding: every animal notes `hungrySince`. On loading an older save a hungry animal counts as
 hungry from the load (so none starves on the first day), one eating or with its product waiting gets null; every cycle
 stays as it was. The `livestock` slice (`checkedDay`) is additive.
