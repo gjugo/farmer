@@ -1,6 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { createClock } from './clock';
-import { MAP_HEIGHT, MAP_WIDTH, START_LAND, STARTING_MONEY } from './constants';
+import { MAP_HEIGHT, MAP_WIDTH, STARTING_MONEY } from './constants';
 import { createLand } from './land';
 import { canPlace } from './placement';
 import { applySliceDefaults } from './slices';
@@ -22,7 +22,7 @@ export function createNewGame(): GameState {
   const state: GameState = {
     money: STARTING_MONEY,
     inventory: {},
-    land: createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND),
+    land: createLand(MAP_WIDTH, MAP_HEIGHT),
     objects: [],
     nextObjectId: 1,
     clock: createClock(),
@@ -34,7 +34,7 @@ export function createNewGame(): GameState {
 
 /**
  * Places a buildable for free, for new-game setups. Returns null (and changes
- * nothing) when the type is unknown or the spot is not free owned land.
+ * nothing) when the type is unknown or the spot is not free.
  */
 export function addStartingObject(state: GameState, type: string, x: number, y: number): PlacedObject | null {
   const def = getBuildable(type);

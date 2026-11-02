@@ -22,7 +22,6 @@ import {
   triggerHazard,
   type HazardNote,
 } from './hazards';
-import { setOwned } from './land';
 import { catchUp } from './offline';
 import { stateGoalValue } from './progression';
 import { getGoal } from '../data/progression';
@@ -46,14 +45,12 @@ const YEAR_DAYS = SEASON_DAYS * 4;
 const X = START_LAYOUT.x;
 const Y = START_LAYOUT.y + 6;
 
-/** A top-level farm owning the whole map, with plenty of money and the given hazard seed. */
+/** A top-level farm, with plenty of money and the given hazard seed. */
 function farm(seed = 1): Game {
   const state = maxLevelState();
   hazardsOf(state).seed = seed;
   const game = new Game(state);
   game.earn(100_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 

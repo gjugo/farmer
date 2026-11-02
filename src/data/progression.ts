@@ -57,8 +57,6 @@ export type GoalTask =
   // State goals
   | { kind: 'own-buildings'; type: string; count: number }
   | { kind: 'own-animals'; animal?: AnimalKind; count: number }
-  /** Own `count` parcels besides the starting land. */
-  | { kind: 'own-parcels'; count: number }
   | { kind: 'reach-level'; count: number }
   /** Have `count` families (farmers) living on the farm. */
   | { kind: 'families'; count: number }
@@ -74,7 +72,7 @@ export type GoalDef = GoalTask & {
 
 /**
  * Goals in the order they are offered. The first three teach the core loop;
- * later ones walk through animals, materials, processing and land in unlock order.
+ * later ones walk through animals, materials and processing in unlock order.
  */
 export const GOALS: readonly GoalDef[] = [
   { id: 'first-field', title: 'Build a field', icon: '🟫', kind: 'build', type: 'field', count: 1, reward: { money: 30, xp: 10 } },
@@ -96,7 +94,7 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'spread-manure', title: 'Spread manure on a field', icon: '💩', kind: 'fertilise', count: 1, reward: { money: 120, xp: 50 } },
   { id: 'make-cheese', title: 'Make 3 cheese', icon: '🧀', kind: 'make', item: 'cheese', count: 3, reward: { money: 150, xp: 60 } },
   { id: 'earn-1000', title: 'Earn $1,000 from sales', icon: '💰', kind: 'earn', count: 1000, reward: { money: 150, xp: 75 } },
-  { id: 'buy-land', title: 'Buy a plot of land', icon: '🪧', kind: 'own-parcels', count: 1, reward: { money: 200, xp: 75 } },
+  { id: 'own-10-fields', title: 'Own 10 fields', icon: '🟫', kind: 'own-buildings', type: 'field', count: 10, reward: { money: 200, xp: 75 } },
   { id: 'build-woodcutter', title: "Build a woodcutter's lodge", icon: '🪓', kind: 'own-buildings', type: 'woodcutter', count: 1, reward: { money: 50, xp: 20 } },
   { id: 'produce-wood', title: 'Produce 20 wood', icon: '🪵', kind: 'produce', item: 'wood', count: 20, reward: { money: 60, xp: 25 } },
   { id: 'build-quarry', title: 'Build a quarry', icon: '⛏️', kind: 'own-buildings', type: 'quarry', count: 1, reward: { money: 80, xp: 30 } },

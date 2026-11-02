@@ -7,9 +7,10 @@ import * as economy from './economy';
 import { Emitter } from './events';
 import { releaseCargo } from './haul';
 import * as inventory from './inventory';
-import { setOwned } from './land';
 import { clearUnder, mapOf, type MapLayer } from './maplayer';
 import { canPlace, objectAt, type Footprint, type PlacementResult } from './placement';
+// Ponds are in the way of building.
+import './scenery';
 import { buildTime, materialsCost, Perks, type PerksState } from './perks';
 import { Progression, type GoalView } from './progression';
 import { createNewGame } from './state';
@@ -26,7 +27,6 @@ export interface GameEvents {
   objectRemoved: PlacedObject;
   /** An object's per-type state changed (call `game.touch(obj)` after mutating it). */
   objectChanged: PlacedObject;
-  land: { x: number; y: number; owned: boolean };
   day: number;
   speed: number;
   /** XP was gained (or set by the debug panel). */
@@ -219,13 +219,6 @@ export class Game {
   /** The materials building `type` takes on this farm (Thrifty needs fewer). */
   materialsFor(type: string): MaterialCost {
     return materialsCost(this._state, getBuildable(type)?.materials);
-  }
-
-  // Land ----------------------------------------------------------------------
-
-  setLandOwned(x: number, y: number, owned: boolean): void {
-    setOwned(this._state.land, x, y, owned);
-    this.events.emit('land', { x, y, owned });
   }
 
   // Objects -------------------------------------------------------------------

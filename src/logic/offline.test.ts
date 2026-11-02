@@ -8,7 +8,6 @@ import { DAY_MS } from './constants';
 import { cropStage, plant, plough, type FieldState } from './crops';
 import { Game } from './game';
 import { updateTrader } from './trader';
-import { setOwned } from './land';
 import { catchUp, catchUpGame, formatAway, shouldShowSummary } from './offline';
 import { settle, startJob, type ProcessorState } from './processing';
 import { parseSave, serialize } from './save';
@@ -21,8 +20,6 @@ const HOUR = 60 * MIN;
 function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 
@@ -189,7 +186,8 @@ describe('offline catch-up', () => {
     let x = 0;
     for (const type of Object.keys(PROCESSORS) as (keyof typeof recipes)[]) {
       for (let i = 0; i < 3; i++) {
-        const p = place<ProcessorState>(game, type, x, 12);
+        // Row 12 has a pond in it.
+        const p = place<ProcessorState>(game, type, x, 40);
         x += PROCESSORS[type].footprint.w;
         for (let j = 0; j < QUEUE_LIMIT; j++) startJob(game, p, recipes[type]);
       }

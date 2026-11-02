@@ -3,9 +3,8 @@ import { FIELD } from '../data/crops';
 import { isResourceType } from '../data/resourceBuildings';
 import { PLOUGH_SEASONS } from '../data/seasons';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
-import { createLand, isOwned, setOwned, setOwnedRect, type Rect } from './land';
-import { MAP_SLICE, migrateMapLayer } from './maplayer';
-import { FARM_PARCELS, isParcelOwned } from './parcels';
+import { createLand, type Rect } from './land';
+import { MAP_BLOCKS, MAP_SLICE, migrateMapLayer } from './maplayer';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
 import { areaSoil } from './soil';
@@ -14,7 +13,7 @@ import { migrateOrdersSlice } from './orders';
 import { ensureFarmhouse } from './roads';
 import { applySliceDefaults, isPlainObject, shiftSlices } from './slices';
 import { createNewGame } from './state';
-import type { GameState, Inventory, LandState, PlacedObject } from './types';
+import type { GameState, Inventory, PlacedObject } from './types';
 import { requiredLevel, xpForLevel } from './unlocks';
 // The workers slice holds tile coordinates (jobs and their routes); the map migration must know how to move them.
 import './workers';
@@ -26,7 +25,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 
 export interface SaveFile {
   version: number;
@@ -176,7 +175,22 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
     const tools = Array.from({ length: farmers }, () => null);
     return { ...raw, version: 14, state: { ...state, ext: { ...ext, workers: { ...workers, tools } } } };
   },
+  // The whole map is open: every tile is the farm's, no land is bought any more (none refunded either). Nothing
+  // moves. The "Buy a plot of land" goal became "Own 10 fields" in its slot: an active one is renamed.
+  14: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const land = createLand(MAP_WIDTH, MAP_HEIGHT);
+    const p = ext[PROGRESSION];
+    if (!isPlainObject(p) || !Array.isArray(p.goals)) return { ...raw, version: 15, state: { ...state, land } };
+    const goals = p.goals.map((g: unknown) => (isPlainObject(g) && g.id === OLD_LAND_GOAL ? { ...g, id: LAND_GOAL_NOW, progress: 0 } : g));
+    return { ...raw, version: 15, state: { ...state, land, ext: { ...ext, [PROGRESSION]: { ...p, goals } } } };
+  },
 };
+
+/** The goal slot that was "Buy a plot of land" (version 14) and is "Own 10 fields" since. */
+const OLD_LAND_GOAL = 'buy-land';
+const LAND_GOAL_NOW = 'own-10-fields';
 
 /** The map and starting land of saves up to version 7, written out because the constants have moved on since. */
 const OLD_MAP = { width: 32, height: 24 } as const;
@@ -185,26 +199,41 @@ const OLD_START = { x: 11, y: 8, w: 10, h: 8 } as const;
 /**
  * Moves a version-7 farm into the middle of today's bigger map: every saved tile coordinate (objects, owned land,
  * slices such as the farmers' jobs and routes) shifts by the offset between the old and new starting land, so the
- * farm keeps its shape. The farm also gets the whole new starting land, and any parcel it partly owns becomes its own.
+ * farm keeps its shape. The farm also gets the whole new starting land, and any layout block it partly owns becomes
+ * its own. (Saves back then owned land tile by tile: a row-major grid, 1 = owned. Version 10 lays out the map around
+ * it; version 15 opens the whole map.)
  */
 export function growMap(state: Record<string, unknown>): Record<string, unknown> {
   const dx = START_LAND.x - OLD_START.x;
   const dy = START_LAND.y - OLD_START.y;
-  const land = createLand(MAP_WIDTH, MAP_HEIGHT, START_LAND);
+  const owned = new Array<number>(MAP_WIDTH * MAP_HEIGHT).fill(0);
+  const own = (r: Rect) => {
+    for (let y = r.y; y < r.y + r.h; y++) for (let x = r.x; x < r.x + r.w; x++) owned[y * MAP_WIDTH + x] = 1;
+  };
+  own(START_LAND);
   const old = isPlainObject(state.land) ? state.land : {};
   const valid =
     old.width === OLD_MAP.width && old.height === OLD_MAP.height && Array.isArray(old.owned) && old.owned.length === OLD_MAP.width * OLD_MAP.height;
   if (valid) {
     (old.owned as unknown[]).forEach((t, i) => {
-      if (t === 1) setOwned(land, (i % OLD_MAP.width) + dx, Math.floor(i / OLD_MAP.width) + dy, true);
+      if (t === 1) own({ x: (i % OLD_MAP.width) + dx, y: Math.floor(i / OLD_MAP.width) + dy, w: 1, h: 1 });
     });
   } else {
     // A missing or broken grid loaded as a new game's land back then.
-    setOwnedRect(land, { ...OLD_START, x: OLD_START.x + dx, y: OLD_START.y + dy }, true);
+    own({ ...OLD_START, x: OLD_START.x + dx, y: OLD_START.y + dy });
   }
-  for (const p of FARM_PARCELS) {
-    if (!isParcelOwned(land, p) && ownsSomeOf(land, p)) setOwnedRect(land, p, true);
+  for (const b of MAP_BLOCKS) {
+    let some = false;
+    let all = true;
+    for (let y = b.y; y < b.y + b.h; y++) {
+      for (let x = b.x; x < b.x + b.w; x++) {
+        if (owned[y * MAP_WIDTH + x] === 1) some = true;
+        else all = false;
+      }
+    }
+    if (some && !all) own(b);
   }
+  const land = { width: MAP_WIDTH, height: MAP_HEIGHT, owned };
   const objects = Array.isArray(state.objects)
     ? state.objects.map((o: unknown) =>
         isPlainObject(o) && typeof o.x === 'number' && typeof o.y === 'number' ? { ...o, x: o.x + dx, y: o.y + dy } : o,
@@ -212,11 +241,6 @@ export function growMap(state: Record<string, unknown>): Record<string, unknown>
     : state.objects;
   const ext = isPlainObject(state.ext) ? shiftSlices(state.ext, dx, dy) : state.ext;
   return { ...state, land, objects, ext };
-}
-
-function ownsSomeOf(land: LandState, p: Rect): boolean {
-  for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) if (isOwned(land, x, y)) return true;
-  return false;
 }
 
 export type SaveStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
@@ -262,7 +286,8 @@ export function normalize(input: unknown): GameState {
 
   const money = isNonNegNumber(input.money) ? input.money : base.money;
   const inventory = normalizeInventory(input.inventory);
-  const land = normalizeLand(input.land, base.land);
+  // The map is always the same size and every tile of it is the farm's: nothing to read from the save.
+  const land = base.land;
   const clockIn = isPlainObject(input.clock) ? input.clock : {};
   const clock = { elapsed: isNonNegNumber(clockIn.elapsed) ? clockIn.elapsed : 0, speed: 1 };
   const objects = normalizeObjects(input.objects, clock.elapsed);
@@ -288,14 +313,6 @@ function normalizeInventory(v: unknown): Inventory {
     if (typeof n === 'number' && Number.isInteger(n) && n > 0) inv[id] = n;
   }
   return inv;
-}
-
-function normalizeLand(v: unknown, fallback: LandState): LandState {
-  if (!isPlainObject(v)) return fallback;
-  const { width, height, owned } = v;
-  if (width !== fallback.width || height !== fallback.height) return fallback;
-  if (!Array.isArray(owned) || owned.length !== fallback.owned.length) return fallback;
-  return { width, height, owned: owned.map((t) => (t === 1 ? 1 : 0)) };
 }
 
 function normalizeObjects(v: unknown, now: number): PlacedObject[] {

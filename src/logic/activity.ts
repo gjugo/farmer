@@ -30,8 +30,6 @@ export interface ActivityEvents {
   upgraded: { type: string; level: number };
   /** A farmer finished building a construction site. */
   built: { type: string };
-  /** The player bought a parcel of land. */
-  landBought: { parcel: string; price: number };
   /** A field was ploughed. */
   ploughed: Record<string, never>;
   /** Manure was spread on a field, bringing it to `fertility` points. */

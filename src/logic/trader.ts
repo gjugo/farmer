@@ -9,7 +9,6 @@ import { animalsOf, capacityOf, canHouse, type PenState } from './animals';
 import { dayOf } from './clock';
 import { DAY_MS } from './constants';
 import { footprintOf, type Game } from './game';
-import { isOwned } from './land';
 import { buyPrice, hash, PRICE_MAX_FACTOR } from './market';
 import { isOrderable, nextRandom } from './orders';
 import { canPlace, objectAt } from './placement';
@@ -211,13 +210,13 @@ const STEPS = [
   [-1, 0],
 ] as const;
 
-/** Is (x, y) owned land with nothing on it (no object, tree or rock)? */
+/** Is (x, y) a map tile with nothing on it (no object, tree, rock or pond)? */
 function freeTile(state: GameState, x: number, y: number): boolean {
   return canPlace(state, { w: 1, h: 1 }, x, y, footprintOf).ok;
 }
 
 /**
- * Where the wagon parks: a free owned tile next to the farmhouse door, or else the path tile nearest the door with
+ * Where the wagon parks: a free tile next to the farmhouse door, or else the path tile nearest the door with
  * nothing else on it. Null when the farm has no farmhouse or no such tile.
  */
 export function parkingSpot(state: GameState): { x: number; y: number } | null {
@@ -226,7 +225,7 @@ export function parkingSpot(state: GameState): { x: number; y: number } | null {
   const door = doorOf(house);
   for (const [dx, dy] of STEPS) if (freeTile(state, door.x + dx, door.y + dy)) return { x: door.x + dx, y: door.y + dy };
   // Nearest path tile, walking the paths out from the door.
-  const isPath = (x: number, y: number) => isOwned(state.land, x, y) && objectAt(state, x, y, footprintOf)?.type === PATH;
+  const isPath = (x: number, y: number) => objectAt(state, x, y, footprintOf)?.type === PATH;
   const seen = new Set<string>();
   const queue = isPath(door.x, door.y) ? [door] : [];
   for (const t of queue) {

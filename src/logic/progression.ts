@@ -1,9 +1,7 @@
 import { isAnimalKind } from '../data/animals';
 import { ACTIVE_GOALS, getGoal, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL, type GoalDef } from '../data/progression';
-import { START_LAND } from './constants';
 import type { Game } from './game';
 import { isProtected } from './hazards';
-import { FARM_PARCELS, parcelsBought } from './parcels';
 import { seasonOf } from './seasons';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { GameState } from './types';
@@ -37,7 +35,7 @@ export function initialProgression(xp = 0): ProgressionState {
 
 registerStateSlice<ProgressionState>(PROGRESSION, () => initialProgression());
 
-const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'own-parcels', 'reach-level', 'families', 'protected-coops']);
+const STATE_KINDS = new Set<GoalDef['kind']>(['own-buildings', 'own-animals', 'reach-level', 'families', 'protected-coops']);
 
 export function isStateGoal(def: GoalDef): boolean {
   return STATE_KINDS.has(def.kind);
@@ -53,8 +51,6 @@ export function stateGoalValue(state: GameState, def: GoalDef): number {
         const animals = Array.isArray(o.state.animals) ? (o.state.animals as { kind?: unknown }[]) : [];
         return n + animals.filter((a) => isAnimalKind(a?.kind) && (!def.animal || a.kind === def.animal)).length;
       }, 0);
-    case 'own-parcels':
-      return parcelsBought(state.land, FARM_PARCELS, START_LAND);
     case 'reach-level':
       return levelForXp(getSlice<ProgressionState>(state, PROGRESSION).xp);
     case 'families':
@@ -121,7 +117,7 @@ export function levelInfo(xp: number): LevelInfo {
 /**
  * XP, levels and goals. XP comes from income (1 XP per $1, via the `income` activity)
  * and from claimed goals. Goal progress is driven by activity events and, for state
- * goals, by object/land changes — never by polling.
+ * goals, by object changes — never by polling.
  */
 export class Progression {
   constructor(private readonly game: Game) {
@@ -145,7 +141,7 @@ export class Progression {
     activity.on('fertilised', () => this.count((d) => d.kind === 'fertilise', 1));
     activity.on('traded', () => this.count((d) => d.kind === 'trade', 1));
     activity.on('hauled', ({ qty }) => this.count((d) => d.kind === 'haul', qty));
-    for (const e of ['objectAdded', 'objectRemoved', 'objectChanged', 'land'] as const) events.on(e, () => this.refreshStateGoals());
+    for (const e of ['objectAdded', 'objectRemoved', 'objectChanged'] as const) events.on(e, () => this.refreshStateGoals());
     for (const e of ['familyArrived', 'familyLeft'] as const) activity.on(e, () => this.refreshStateGoals());
     events.on('reset', () => this.init());
     this.init();

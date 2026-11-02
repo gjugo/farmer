@@ -6,7 +6,6 @@ import { MAX_FARMERS } from '../data/workers';
 import { DAY_MS, START_LAYOUT } from './constants';
 import { addFamily, approvalOf, familiesOf, homesOf, mealFrom, YEAR_MS, type DayNeeds } from './families';
 import { Game } from './game';
-import { setOwned } from './land';
 import { catchUp } from './offline';
 import { connectToFarmhouse } from './roads';
 import { parseSave, serialize } from './save';
@@ -21,12 +20,10 @@ const WINTER = 3 * SEASON_MS;
 const X = START_LAYOUT.x - 1;
 const Y = START_LAYOUT.y + 6;
 
-/** A farm owning the whole map with plenty of money (and, at `max`, every building and the loom unlocked). */
+/** A farm with plenty of money (and, at `max`, every building and the loom unlocked). */
 function farm({ max = true } = {}): Game {
   const game = new Game(max ? maxLevelState() : bareMap(stockMaterials(new Game().state)));
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 

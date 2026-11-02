@@ -38,7 +38,7 @@ function firstField(game: Game): PlacedObject<FieldState> {
 }
 
 describe('fields', () => {
-  it('a new game starts with 2 empty fields on owned land', () => {
+  it('a new game starts with 2 empty fields on the starting land', () => {
     const game = new Game(maxLevelState());
     const fields = game.objectsOfType(FIELD);
     expect(fields.map((f) => [f.x, f.y])).toEqual(STARTING_FIELDS.map((p) => [p.x, p.y]));
@@ -50,7 +50,7 @@ describe('fields', () => {
     expect(game.money).toBe(500); // starting fields are free
   });
 
-  it('builds a field for $25, only on free owned land', () => {
+  it('builds a field for $25, only on free land in the map', () => {
     const game = new Game(maxLevelState());
     const x = START_LAND.x + 1;
     const y = START_LAND.y + 4;
@@ -58,7 +58,7 @@ describe('fields', () => {
     expect(r.ok).toBe(true);
     expect(game.money).toBe(475);
     expect(game.place(FIELD, x + 1, y + 1)).toEqual({ ok: false, reason: 'occupied' });
-    expect(game.place(FIELD, START_LAND.x - 1, y)).toEqual({ ok: false, reason: 'locked' });
+    expect(game.place(FIELD, -1, y)).toEqual({ ok: false, reason: 'out-of-bounds' });
     expect(game.money).toBe(475);
   });
 });

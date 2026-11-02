@@ -1,11 +1,12 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { getBuildable } from '../data/buildables';
 import { RESOURCES, type ResourceType } from '../data/resourceBuildings';
-import { DAY_MS, START_LAND, START_LAYOUT } from './constants';
+import { DAY_MS, MAP_HEIGHT, MAP_WIDTH, START_LAND, START_LAYOUT } from './constants';
 import { Game } from './game';
-import { isOwned, setOwned } from './land';
 import {
   addDeposit,
+  blockAt,
   addTrees,
   depositsUnder,
   generateMapLayer,
@@ -14,6 +15,7 @@ import {
   mapOf,
   newMapLayer,
   nextStageAt,
+  onStartLand,
   occupantsOf,
   regrowAll,
   regrowAt,
@@ -26,7 +28,7 @@ import {
   type MapLayer,
 } from './maplayer';
 import { catchUp } from './offline';
-import { buyParcel, FARM_PARCELS, parcelAt } from './parcels';
+import { sceneryArt, sceneryClear } from './scenery';
 import { idleReason, type ResourceState } from './resources';
 import { connectToFarmhouse } from './roads';
 import { deserialize, serialize } from './save';
@@ -54,13 +56,11 @@ function newGameWith(seed: number): GameState {
   return state;
 }
 
-/** A top-level farm on a bare map, rich, with an empty inventory, owning the whole map unless `ownAll` is false. */
-function farm(ownAll = true): Game {
+/** A top-level farm on a bare map, rich, with an empty inventory. */
+function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
   game.state.inventory = {};
-  const land = game.state.land;
-  if (ownAll) for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 
@@ -97,7 +97,7 @@ describe('map generation', () => {
     for (const o of state.objects) for (const t of grove) expect(near(footprint(o), t.x, t.y, 2), `${o.type} by ${t.x},${t.y}`).toBe(false);
   });
 
-  it.each(SEEDS)('seed %i: a stone outcrop on the starting land, more out on locked land', (seed) => {
+  it.each(SEEDS)('seed %i: a stone outcrop on the starting land, more out in the wild', (seed) => {
     const state = newGameWith(seed);
     const stone = mapOf(state).deposits.filter((d) => d.kind === 'stone');
     const start = stone.filter((d) => inside(START_LAND, d.x, d.y));
@@ -107,13 +107,13 @@ describe('map generation', () => {
     for (const d of stone) expect([2, 3]).toContain(d.w);
   });
 
-  it.each(SEEDS)('seed %i: iron veins only on locked land, at least 2, one in a parcel next to the start', (seed) => {
+  it.each(SEEDS)('seed %i: iron veins only off the starting land, at least 2, one in a block next to the start', (seed) => {
     const state = newGameWith(seed);
     const veins = mapOf(state).deposits.filter((d) => d.kind === 'iron');
     expect(veins.length).toBeGreaterThanOrEqual(2);
-    for (const v of veins) for (let y = v.y; y < v.y + v.h; y++) for (let x = v.x; x < v.x + v.w; x++) expect(isOwned(state.land, x, y)).toBe(false);
+    for (const v of veins) for (let y = v.y; y < v.y + v.h; y++) for (let x = v.x; x < v.x + v.w; x++) expect(onStartLand(x, y)).toBe(false);
     const beside = (x: number, y: number) => {
-      const p = parcelAt(FARM_PARCELS, x, y)!;
+      const p = blockAt(x, y)!;
       const sharesEdge = (p.x === START_LAND.x && (p.y + p.h === START_LAND.y || p.y === START_LAND.y + START_LAND.h)) ||
         (p.y === START_LAND.y && (p.x + p.w === START_LAND.x || p.x === START_LAND.x + START_LAND.w));
       return sharesEdge;
@@ -122,11 +122,11 @@ describe('map generation', () => {
     for (const v of veins) expect(v).toMatchObject({ left: 150, amount: 150 });
   });
 
-  it.each(SEEDS)('seed %i: large forests on locked land; nothing overlaps anything', (seed) => {
+  it.each(SEEDS)('seed %i: large forests off the starting land; nothing overlaps anything', (seed) => {
     const state = newGameWith(seed);
     const layer = mapOf(state);
-    const locked = layer.trees.filter((t) => !isOwned(state.land, t.x, t.y));
-    expect(locked.length).toBeGreaterThanOrEqual(100);
+    const wild = layer.trees.filter((t) => !onStartLand(t.x, t.y));
+    expect(wild.length).toBeGreaterThanOrEqual(100);
     expect(layer.trees.length).toBeLessThanOrEqual(300); // sprites stay bounded
     const tiles = new Set<string>();
     const claim = (x: number, y: number) => {
@@ -143,6 +143,27 @@ describe('map generation', () => {
   it('the same seed makes the same map; another seed another', () => {
     expect(newGameWith(5).ext[MAP_SLICE]).toEqual(newGameWith(5).ext[MAP_SLICE]);
     expect(newGameWith(5).ext[MAP_SLICE]).not.toEqual(newGameWith(6).ext[MAP_SLICE]);
+  });
+
+  it('lays out the same map for a seed as it always has (trees, deposits and the scenery between them)', () => {
+    // Digests of the layouts these seeds made before the whole map was open: farms' maps never move.
+    const digest = (v: unknown) => createHash('sha1').update(JSON.stringify(v)).digest('hex').slice(0, 12);
+    const expected: Record<number, { map: string; scenery: string }> = {
+      1: { map: 'c9f3221a18fd', scenery: '730a4a0c6bb3' },
+      42: { map: 'ee5f5a927fd2', scenery: 'c81149b74af4' },
+      20261031: { map: '2386ca00f59e', scenery: '9d0ebe6cf900' },
+    };
+    for (const [seed, want] of Object.entries(expected)) {
+      const layer = newMapLayer(createNewGame(), Number(seed));
+      const scenery: string[] = [];
+      for (let y = 0; y < MAP_HEIGHT; y++) {
+        for (let x = 0; x < MAP_WIDTH; x++) {
+          const art = sceneryArt(x, y);
+          if (art && sceneryClear(layer, x, y)) scenery.push(`${x},${y},${art}`);
+        }
+      }
+      expect({ map: digest(layer), scenery: digest(scenery) }, `seed ${seed}`).toEqual(want);
+    }
   });
 
   it('a new game gets a map', () => {
@@ -162,15 +183,13 @@ describe('the map is saved', () => {
     expect(loaded).toEqual(layer);
   });
 
-  it('trees and deposits stay when their land is bought', () => {
+  it('trees and deposits out in the wild block building, like those on the starting land', () => {
     const game = new Game(newGameWith(9));
     game.earn(100_000);
-    const before = structuredClone(mapOf(game.state));
-    const vein = before.deposits.find((d) => d.kind === 'iron' && parcelAt(FARM_PARCELS, d.x, d.y))!;
-    const parcel = parcelAt(FARM_PARCELS, vein.x, vein.y)!;
-    expect(buyParcel(game, FARM_PARCELS, START_LAND, parcel).ok).toBe(true);
-    expect(isOwned(game.state.land, vein.x, vein.y)).toBe(true);
-    expect(mapOf(game.state)).toEqual(before);
+    const vein = mapOf(game.state).deposits.find((d) => d.kind === 'iron')!;
+    const tree = mapOf(game.state).trees.find((t) => !onStartLand(t.x, t.y))!;
+    expect(game.checkPlacement('path', vein.x, vein.y)).toEqual({ ok: false, reason: 'deposit' });
+    expect(game.checkPlacement('path', tree.x, tree.y)).toEqual({ ok: false, reason: 'tree' });
   });
 
   it('garbage in a save is dropped, tree by tree and deposit by deposit', () => {
@@ -447,7 +466,7 @@ describe('quarries and mines take from their deposit', () => {
 describe('saves from before the map (version 10)', () => {
   /** A version-10 save of a farm with a lodge, a quarry and a mine built, staffed and working. */
   function v10(): string {
-    const game = farm(false);
+    const game = farm();
     // In version 10 they stood anywhere: give them what they need here, then drop the map from the save.
     addDeposit(mapOf(game.state), 'stone', { x: X + 4, y: Y + 5, w: 2, h: 2 });
     addDeposit(mapOf(game.state), 'iron', { x: X + 7, y: Y + 5, w: 2, h: 2 });
@@ -501,7 +520,7 @@ describe('saves from before the map (version 10)', () => {
 describe('generateMapLayer', () => {
   it('works around a crowded farm: no grove fits the starting land, the outcrop moves out', () => {
     const state = bareMap(createNewGame());
-    // Paths over every free owned tile.
+    // Paths over every free tile of the starting land.
     const taken = new Set(state.objects.flatMap((o) => {
       const a = footprint(o);
       return Array.from({ length: a.w * a.h }, (_, i) => `${a.x + (i % a.w)},${a.y + Math.floor(i / a.w)}`);
@@ -510,10 +529,10 @@ describe('generateMapLayer', () => {
     for (let y = START_LAND.y; y < START_LAND.y + START_LAND.h; y++) {
       for (let x = START_LAND.x; x < START_LAND.x + START_LAND.w; x++) if (!taken.has(`${x},${y}`)) objects.push({ id: `p${x}-${y}`, type: 'path', x, y, state: {} });
     }
-    const layer: MapLayer = generateMapLayer(state.land, occupantsOf(objects), 4);
-    expect(layer.trees.filter((t) => isOwned(state.land, t.x, t.y))).toHaveLength(0);
+    const layer: MapLayer = generateMapLayer(onStartLand, occupantsOf(objects), 4);
+    expect(layer.trees.filter((t) => onStartLand(t.x, t.y))).toHaveLength(0);
     const stone = layer.deposits.filter((d) => d.kind === 'stone');
     expect(stone.length).toBeGreaterThanOrEqual(1);
-    for (const d of layer.deposits) expect(isOwned(state.land, d.x, d.y)).toBe(false);
+    for (const d of layer.deposits) expect(onStartLand(d.x, d.y)).toBe(false);
   });
 });

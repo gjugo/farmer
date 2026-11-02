@@ -8,7 +8,6 @@ import { DAY_MS } from './constants';
 import { approvalOf, familiesOf, YEAR_MS, type DayNeeds } from './families';
 import { Game } from './game';
 import { gardenHomes, gardensOf, gardenOf, nextYieldAt, type GardenState } from './gardens';
-import { setOwned } from './land';
 import { catchUp } from './offline';
 import { farmhouseOf } from './roads';
 import { SEASON_MS } from './seasons';
@@ -21,12 +20,10 @@ const SUMMER = SEASON_MS;
 const AUTUMN = 2 * SEASON_MS;
 const WINTER = 3 * SEASON_MS;
 
-/** A farm at the top level owning the whole map, with plenty of money and materials. */
+/** A farm at the top level, with plenty of money and materials. */
 function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 

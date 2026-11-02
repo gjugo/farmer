@@ -3,10 +3,11 @@ import { getBuildable } from '../data/buildables';
 import { FARMHOUSE, PATH } from '../data/farmhouse';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { Game } from './game';
-import { isOwned } from './land';
-import { FARM_PARCELS, isParcelOwned, parcelAt, parcelsBought } from './parcels';
+import { createHash } from 'node:crypto';
+import { inBounds } from './land';
+import { blockAt, MAP_BLOCKS, mapOf } from './maplayer';
 import { findRoute } from './roads';
-import { parseSave, serialize } from './save';
+import { growMap, parseSave, serialize } from './save';
 import { SAVE_V6 } from './save-v6.fixture';
 import { activeJobs, jobPhase, workersOf } from './workers';
 import type { GameState, PlacedObject } from './types';
@@ -36,33 +37,37 @@ describe('version 6 saves on the bigger map', () => {
     }
   });
 
-  it('owns the whole new starting land, the shifted old land, and whole parcels only', () => {
-    const state = load();
-    const { land } = state;
+  it('held the whole new starting land, the shifted old land, and whole layout blocks only, to lay the map out around', () => {
+    const grown = growMap(JSON.parse(JSON.stringify(SAVE_V6.state)));
+    const owned = (grown.land as { owned: number[] }).owned;
+    const held = (x: number, y: number) => owned[y * MAP_WIDTH + x] === 1;
     for (let y = START_LAND.y; y < START_LAND.y + START_LAND.h; y++) {
-      for (let x = START_LAND.x; x < START_LAND.x + START_LAND.w; x++) expect(isOwned(land, x, y)).toBe(true);
+      for (let x = START_LAND.x; x < START_LAND.x + START_LAND.w; x++) expect(held(x, y)).toBe(true);
     }
     SAVE_V6.state.land.owned.forEach((t, i) => {
-      if (t === 1) expect(isOwned(land, (i % 32) + 13, Math.floor(i / 32) + 10)).toBe(true);
+      if (t === 1) expect(held((i % 32) + 13, Math.floor(i / 32) + 10)).toBe(true);
     });
-    for (const p of FARM_PARCELS) {
-      let owned = 0;
-      for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) owned += isOwned(land, x, y) ? 1 : 0;
-      expect([0, p.w * p.h], p.id).toContain(owned);
-    }
-    // The old parcel right of the start now lies inside the new starting land. The one below reaches past it into
-    // the parcel below, which becomes the farm's, whole: one parcel bought, nothing left half-owned.
-    const below = parcelAt(FARM_PARCELS, START_LAND.x, START_LAND.y + START_LAND.h)!;
-    expect(isParcelOwned(land, below)).toBe(true);
-    expect(isParcelOwned(land, parcelAt(FARM_PARCELS, START_LAND.x + START_LAND.w, START_LAND.y)!)).toBe(false);
-    expect(parcelsBought(land, FARM_PARCELS, START_LAND)).toBe(1);
+    const whole = (b: (typeof MAP_BLOCKS)[number]) => {
+      let n = 0;
+      for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) n += held(x, y) ? 1 : 0;
+      return n;
+    };
+    for (const b of MAP_BLOCKS) expect([0, b.w * b.h], `${b.c},${b.r}`).toContain(whole(b));
+    // The old land right of the start now lies inside the new starting land. The land below reaches past it into
+    // the block below, which became the farm's, whole.
+    const below = blockAt(START_LAND.x, START_LAND.y + START_LAND.h)!;
+    expect(whole(below)).toBe(below.w * below.h);
+    expect(whole(blockAt(START_LAND.x + START_LAND.w, START_LAND.y)!)).toBe(0);
   });
 
-  it('leaves no object on locked land', () => {
+  it('opens the whole map once loaded, with the map laid out as it always was', () => {
     const state = load();
+    expect(state.land).toEqual({ width: MAP_WIDTH, height: MAP_HEIGHT });
+    // The digest of this save's trees and deposits from before the whole map was open.
+    expect(createHash('sha1').update(JSON.stringify(mapOf(state))).digest('hex').slice(0, 12)).toBe('fe7a8258953e');
     for (const o of state.objects) {
       const fp = footprint(o);
-      for (let y = fp.y; y < fp.y + fp.h; y++) for (let x = fp.x; x < fp.x + fp.w; x++) expect(isOwned(state.land, x, y), o.id).toBe(true);
+      for (let y = fp.y; y < fp.y + fp.h; y++) for (let x = fp.x; x < fp.x + fp.w; x++) expect(inBounds(state.land, x, y), o.id).toBe(true);
     }
   });
 

@@ -10,9 +10,8 @@ import { Game } from './game';
 import { allowance, buy, buyPrice, buyUnlockLevel, marketOf, sell } from './market';
 import { sellToTrader, traderHere, traderOf, updateTrader } from './trader';
 import { START_LAND } from './constants';
-import { buyParcel, FARM_PARCELS, parcelPrice, parcelsBought, parcelsForSale } from './parcels';
 import { connectToFarmhouse, doorOf, farmhouseOf } from './roads';
-import { inBounds, isOwned } from './land';
+import { inBounds } from './land';
 import { capacity, checkUpgrade, nextLevel, upgrade, used } from './storage';
 import type { GameState, PlacedObject } from './types';
 import { PATH } from '../data/farmhouse';
@@ -145,12 +144,15 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     const { width, height } = game.state.land;
     const spots: { x: number; y: number }[] = [];
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (game.checkPlacement(type, x, y).ok) spots.push({ x, y });
+    // The whole map is open: like a player, it builds close to the farmhouse first.
+    const door = doorOf(farmhouseOf(game.state)!);
+    spots.sort((a, b) => Math.abs(a.x - door.x) + Math.abs(a.y - door.y) - (Math.abs(b.x - door.x) + Math.abs(b.y - door.y)));
     const area = (s: { x: number; y: number }) => ({ ...s, ...def.footprint });
     // Same as trying findRoute, then connectToFarmhouse, on each spot, but one flood fill each instead of one per spot.
     const onPaths = reachable(game.state, (o) => o?.type === PATH);
     // Trees and rocks are in the way of paths too.
     const free = (o: PlacedObject | undefined, x: number, y: number) =>
-      isOwned(game.state.land, x, y) && (o ? o.type === PATH : !ruleBlock(game.state, { w: 1, h: 1 }, x, y, PATH));
+      inBounds(game.state.land, x, y) && (o ? o.type === PATH : !ruleBlock(game.state, { w: 1, h: 1 }, x, y, PATH));
     const onLand = reachable(game.state, free);
     // Nor does it wall off its own land: every tile the farmhouse reaches now stays reachable around the new building.
     const walls = (a: { x: number; y: number; w: number; h: number }) => {
@@ -177,13 +179,8 @@ function simulate({ reactMs, maxFields, minutes, hazardSeed }: { reactMs: number
     // A defence where it guards nothing new is money wasted.
     if (defence) spots.splice(spots.findIndex((s) => worth(s) === 0) >>> 0);
     const spot = spots.find((s) => fits(s, onPaths)) ?? spots.find((s) => fits(s, onLand));
-    if (!spot) {
-      // Out of room: buy the cheapest parcel next to the farm, if that leaves the money for the building.
-      const [parcel] = parcelsForSale(game.state.land, FARM_PARCELS);
-      const price = parcelPrice(parcelsBought(game.state.land, FARM_PARCELS, START_LAND));
-      if (parcel && game.money >= price + def.cost + reserve) buyParcel(game, FARM_PARCELS, START_LAND, parcel);
-      return null;
-    }
+    // The whole map is open: no room left means nowhere a path reaches.
+    if (!spot) return null;
     if (!shop(def.cost, def.materials, reserve)) return null;
     const r = game.place(type, spot.x, spot.y, { site: true });
     if (r.ok) connectToFarmhouse(game.state, area(spot));
@@ -411,6 +408,8 @@ describe('level curve balance', () => {
   // relaxed L2 9.5, L5 158.5; busy L2 9.2, L5 149.2 (seeds 1–8: casual L5 at most 175.0). Without the defences a casual
   // or relaxed player could miss level 5 in 3 h. With saturation and traders as well (trader seed 79): casual L2 9.0,
   // L5 167.0; relaxed L2 9.5, L5 158.0; busy L2 9.2, L5 152.0.
+  // The whole map open from the start (no land to buy; each player builds nearest the farmhouse first): casual L2 9.0,
+  // L5 175.0; relaxed L2 9.0, L5 157.5; busy L2 9.0, L5 148.3 (before: casual L5 170.0, relaxed 158.0, busy 155.5).
   const casual = simulate({ reactMs: 60_000, maxFields: 6, minutes: 190, hazardSeed: HAZARD_SEED });
   const relaxed = simulate({ reactMs: 30_000, maxFields: 8, minutes: 190, hazardSeed: HAZARD_SEED });
   const busy = simulate({ reactMs: 10_000, maxFields: 12, minutes: 190, hazardSeed: HAZARD_SEED });
@@ -487,7 +486,6 @@ describe('tools balance', () => {
     game.earn(1_000_000);
     setHazardsEnabled(false);
     const land = game.state.land;
-    for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) land.owned[y * land.width + x] = 1;
     while (workersOf(game.state).farmers < FARMERS) addFarmer(game);
     // Each building at the first free spot (scanning rows below the starting layout) a path can reach.
     const place = (type: string, site = false) => {

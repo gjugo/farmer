@@ -7,7 +7,6 @@ import { FARMHOUSE_STORE } from '../data/storage';
 import { COLLECT_WORK_MS } from '../data/workers';
 import { START_LAYOUT } from './constants';
 import { Game } from './game';
-import { setOwned } from './land';
 import { addDeposit, addTrees, inRange, mapOf } from './maplayer';
 import { buyPrice } from './market';
 import { catchUp } from './offline';
@@ -32,12 +31,10 @@ const X = START_LAYOUT.x;
 const Y = START_LAYOUT.y;
 const TYPES = Object.keys(RESOURCES) as ResourceType[];
 
-/** A top-level farm owning the whole map, with plenty of money and an empty inventory. */
+/** A top-level farm, with plenty of money and an empty inventory. */
 function farm(): Game {
   const game = new Game(maxLevelState());
   game.earn(1_000_000);
-  const land = game.state.land;
-  for (let y = 0; y < land.height; y++) for (let x = 0; x < land.width; x++) setOwned(land, x, y, true);
   return game;
 }
 
@@ -401,8 +398,9 @@ describe('goals and saves', () => {
     expect(GOALS[file(7)].id).toBe('collect-eggs');
     // Not offered "make-cheese" yet: version 10's "spread-manure", inserted before it, comes first.
     expect(GOALS[file(14)].id).toBe('spread-manure');
-    expect(GOALS[file(16)].id).toBe('buy-land');
-    // Offered up to "buy-land": the lodge comes next. Offered "make-feed" too: past the lodge, wood and quarry goals.
+    // "buy-land" became "own-10-fields" in its slot (version 15).
+    expect(GOALS[file(16)].id).toBe('own-10-fields');
+    // Offered up to that slot: the lodge comes next. Offered "make-feed" too: past the lodge, wood and quarry goals.
     expect(GOALS[file(17)].id).toBe('build-woodcutter');
     expect(GOALS[file(18)].id).toBe('mine-iron');
   });
