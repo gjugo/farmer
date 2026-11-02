@@ -66,6 +66,8 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
   deposit: 'Rock is in the way: only a quarry or mine stands on it',
   'needs-outcrop': 'A quarry must stand on a stone outcrop',
   'needs-vein': 'A mine must stand on an iron vein',
+  'needs-home': 'A garden must touch a home along an edge',
+  'home-has-garden': 'That home already has a garden',
 };
 
 /**

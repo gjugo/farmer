@@ -23,6 +23,8 @@ export const ITEMS = {
   flax: { id: 'flax', name: 'Flax', category: 'crop', price: 10, icon: '🪻' },
   cabbage: { id: 'cabbage', name: 'Cabbage', category: 'crop', price: 14, icon: '🥬' },
   pumpkin: { id: 'pumpkin', name: 'Pumpkin', category: 'crop', price: 32, icon: '🎃' },
+  // Picked in the orchards beside the homes (see `src/data/gardens.ts`).
+  apple: { id: 'apple', name: 'Apple', category: 'crop', price: 7, icon: '🍎' },
   egg: { id: 'egg', name: 'Egg', category: 'animal-product', price: 10, icon: '🥚' },
   milk: { id: 'milk', name: 'Milk', category: 'animal-product', price: 18, icon: '🥛' },
   wool: { id: 'wool', name: 'Wool', category: 'animal-product', price: 25, icon: '🧶' },

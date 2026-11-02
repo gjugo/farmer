@@ -26,6 +26,7 @@ import { addArtSprite, addShadow } from '../../scenes/sprites';
 import { h } from '../../ui/dom';
 import { withIcons } from '../../ui/icons';
 import { familiesBlock, familiesSignature } from '../families';
+import { homeGardenLine } from '../gardens';
 
 /**
  * Farmers: every job sends a farmer from the farmhouse along the paths to the work, a few
@@ -293,8 +294,8 @@ onGameStart((ctx) => {
   });
 });
 
-registerBehavior(FARMHOUSE, {
-  panel: (ctx) => {
+registerBehavior<Record<string, unknown>>(FARMHOUSE, {
+  panel: (ctx, obj) => {
     const { farmers } = workersOf(ctx.game.state);
     const free = freeFarmers(ctx.game.state);
     return {
@@ -305,6 +306,7 @@ registerBehavior(FARMHOUSE, {
         'Farmers walk out of the door along paths. Lay a path from the door to every field, pen and building you want worked.',
         'Give farmers a workplace in 👨‍🌾 Farmers or from the workplace itself.',
       ],
+      hint: homeGardenLine(ctx.game, obj),
     };
   },
 });

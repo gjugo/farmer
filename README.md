@@ -198,12 +198,13 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   farmer starts free, without a workplace, and sets out from the farmhouse door like everyone. When approval stays
   below 25% for a whole game day, the last family leaves (its farmer goes and its workplace is freed; never the last
   family), and its home stands empty. At every day boundary (8 game-minutes) the families settle their needs from
-  storage: each eats **2 food** from the granary (wheat, carrot, corn, potato, cabbage, pumpkin, egg, milk, bread,
+  storage: each eats **2 food** from the granary (wheat, carrot, corn, potato, cabbage, pumpkin, apple, egg, milk, bread,
   cheese, butter; never feed, barley, flax, wool or cloth), spread across the kinds in stock; on **winter** days each occupied home burns **1 wood**; once the
   loom is unlocked (level 5) each family takes **1 cloth** at the start of winter and stays clothed until the next.
   **Approval** (0–100%) comes from that day: base 50, +5 per food kind eaten beyond the first (up to +20), −20 short of
   food, −50 with nothing to eat, up to +10 when every family is clothed, and in winter +10 when every home is warm or up
-  to −60 when homes are cold (by the share of cold homes). A new farm's families live on their provisions for the
+  to −60 when homes are cold (by the share of cold homes); from level 2, up to +5 when every home has a house garden
+  (a share of it when some do). A new farm's families live on their provisions for the
   first 2 days (no hunger penalty), so nobody leaves before the first harvest. The HUD chip (😊 62%) opens
   **👪 Families**: homes, families, approval and its breakdown, yesterday's meal, firewood and clothes, and when the
   next family comes ("Build a cottage to house another family"); the 👨‍🌾 Farmers sheet shows the same block. A
@@ -211,6 +212,19 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   the welcome-back summary. All of it runs inside the work scheduler on game time, so ×60, ×1 and offline catch-up
   agree. Saves from before families keep every farmer they have; while there are more farmers than homes no family
   arrives (and nobody leaves just for lack of a home).
+- **House gardens:** a 2×2 backyard plot the family works in its spare time: the **🥬 Vegetable Patch** (level 2,
+  $20 + 2 wood) grows 1 🥕 carrot a day in spring, summer and autumn and rests in winter, the **🐓 Hen Run** (level 3,
+  $30 + 3 wood) lays 1 🥚 egg a day all year (no feed: the hens live on scraps), the **🍎 Orchard** (level 4, $40 +
+  3 wood) gives 4 🍎 apples a day in autumn. A garden must touch a home (the farmhouse or a cottage) along an edge, and
+  each home has at most one; the build ghost outlines the homes still free for one and is red elsewhere ("A garden
+  must touch a home along an edge", "That home already has a garden"). It needs no farmer and no path and is laid out
+  at once. A day after it is built, and every day after, its yield goes into the granary; what doesn't fit waits in
+  the garden and goes in as soon as there is room, so nothing is lost. A garden whose home is demolished stops (it
+  takes up another free home beside it, should one be built). Each feeds about half a family at most (a family eats
+  2 a day). Yields are work-scheduler events, so ×60, ×1 and offline catch-up agree. Tapping a garden shows what it
+  makes, this season's yield, what waits and the next yield; the cottage and farmhouse panels name their garden, or
+  "No garden yet". **🍎 Apple** is a new food (a crop, sells for $7). Goals "Plant a vegetable patch" and "Gather 20
+  apples" come last.
 - **Farmhouse and roads:** every farm has a farmhouse (it can't be built or demolished). Idle farmers rest on its bench;
   for a job a farmer walks out of the door **along paths** to the work (0.4 game-s per tile), works there (hoeing,
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. Work on a field, pen or building is refused
@@ -301,10 +315,14 @@ chips are `data-testid="resource-<category>"` (`crops`, `animal`, `feed`, `goods
 next season); `look` is the season the farm is drawn in (it follows `season`, a crossfade at most behind) and
 `weather` the number of weather particles alive now (0 in summer or with weather effects off, never over 150).
 `window.farm.families` is `{ homes, families, approval, breakdown, lastDay, nextArrivalAt }`: `breakdown` lists
-`{ id, label, points }` parts (`base`, `variety`, `food`, `clothes`, `firewood`), `lastDay` is
+`{ id, label, points }` parts (`base`, `variety`, `food`, `clothes`, `firewood`, `gardens`), `lastDay` is
 `{ ate, variety, firewood, clothed }` for the last settled day (`ate`: food id → eaten; `firewood`: wood burned, null
 outside winter; `clothed`: families clothed, null before the loom is unlocked) or null before the first day, and
 `nextArrivalAt` is the game time (`window.farm.clock.elapsed`) the next family is due, null while no home is free.
+`window.farm.gardens` lists every house garden as `{ id, kind, home, waiting, nextAt }`: `kind` is `veg-patch`,
+`hen-run` or `orchard`, `home` the id of the farmhouse or cottage it belongs to (null without one), `waiting` the
+yield waiting for room in the granary, `nextAt` the game time of its next daily yield (null while it has no finished
+home).
 `window.farm.workers` is `{ farmers, free, list, assignments, plans, recipes, sites }`: `list[i]` is
 `{ farmer, workplace, job, activity }` (workplace: object id or null; job: the running job's kind or null; activity:
 the text the Farmers sheet shows), `assignments` maps workplace id → farmer, `plans` field id → crop plan
@@ -406,6 +424,9 @@ src/
     orders/            📋 Orders HUD button (with badge) and orders panel
     families/          😊 approval chip and 👪 Families sheet, cottage smoke and panel, arrival/departure toasts,
                        `window.farm.families` (data: src/data/families.ts, logic: src/logic/families.ts)
+    gardens/           vegetable patch, hen run (two hens) and orchard (two apple trees): panel, the free homes
+                       outlined on the build ghost, the garden line of home panels, `window.farm.gardens`
+                       (data: src/data/gardens.ts, logic: src/logic/gardens.ts)
     workers/           👨‍🌾 Farmers HUD button, workplace sheet (with the families block), farmers at work on the map, `window.farm.workers`
                        (data: src/data/workers.ts, logic: src/logic/workers.ts and work.ts; hand work goes through
                        `withFarmer`, workplace panels get their farmer block from `workplacePanel`, src/game/workers.ts)
