@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { registerBuildable } from '../data/buildables';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { footprintOf, Game } from './game';
 import { ROAD_SLICE } from './mainroad';
@@ -81,13 +82,37 @@ describe('placement', () => {
   });
 });
 
+// A $5 buildable with no materials, for the money rules (paths and fields are free).
+registerBuildable({ id: 'test-post', name: 'Post', cost: 5, footprint: { w: 1, h: 1 }, texture: 'path' });
+
 describe('Game.place / demolish', () => {
-  it('placing a path costs $5 and demolishing refunds $2', () => {
+  it('laying a path is free and demolishing it gives nothing back', () => {
     const g = new Game(emptyFarm());
+    const money: number[] = [];
+    g.events.on('money', (m) => money.push(m.delta));
     const r = g.place('path', inside.x, inside.y);
     expect(r.ok).toBe(true);
-    expect(g.money).toBe(495);
+    expect(g.money).toBe(500);
     expect(g.objectAt(inside.x, inside.y)?.type).toBe('path');
+    if (!r.ok) return;
+    expect(g.demolish(r.object.id)).toBe(0);
+    expect(g.money).toBe(500);
+    expect(money).toEqual([]);
+    expect(g.state.objects).toHaveLength(0);
+  });
+
+  it('lays a path even with no money left', () => {
+    const g = new Game(emptyFarm());
+    g.spend(500);
+    expect(g.place('path', inside.x, inside.y).ok).toBe(true);
+    expect(g.money).toBe(0);
+  });
+
+  it('placing a $5 object charges $5 and demolishing refunds $2', () => {
+    const g = new Game(emptyFarm());
+    const r = g.place('test-post', inside.x, inside.y);
+    expect(r.ok).toBe(true);
+    expect(g.money).toBe(495);
     if (!r.ok) return;
     expect(g.demolish(r.object.id)).toBe(2);
     expect(g.money).toBe(497);
@@ -96,9 +121,9 @@ describe('Game.place / demolish', () => {
 
   it('refuses out-of-bounds, occupied tiles and unknown types without charging', () => {
     const g = new Game(emptyFarm());
-    expect(g.place('path', -1, 0)).toEqual({ ok: false, reason: 'out-of-bounds' });
-    g.place('path', inside.x, inside.y);
-    expect(g.place('path', inside.x, inside.y)).toEqual({ ok: false, reason: 'occupied' });
+    expect(g.place('test-post', -1, 0)).toEqual({ ok: false, reason: 'out-of-bounds' });
+    g.place('test-post', inside.x, inside.y);
+    expect(g.place('test-post', inside.x, inside.y)).toEqual({ ok: false, reason: 'occupied' });
     expect(g.place('spaceship', inside.x + 1, inside.y)).toEqual({ ok: false, reason: 'unknown-type' });
     expect(g.money).toBe(495);
   });
@@ -106,7 +131,7 @@ describe('Game.place / demolish', () => {
   it('refuses when the player cannot afford it', () => {
     const g = new Game(emptyFarm());
     g.spend(497);
-    expect(g.place('path', inside.x, inside.y)).toEqual({ ok: false, reason: 'money' });
+    expect(g.place('test-post', inside.x, inside.y)).toEqual({ ok: false, reason: 'money' });
     expect(g.money).toBe(3);
     expect(g.state.objects).toHaveLength(0);
   });
@@ -117,8 +142,8 @@ describe('Game.place / demolish', () => {
     g.events.on('objectAdded', (o) => seen.push(`+${o.id}`));
     g.events.on('objectRemoved', (o) => seen.push(`-${o.id}`));
     g.events.on('money', (m) => seen.push(`$${m.delta}`));
-    g.place('path', inside.x, inside.y);
-    g.place('path', inside.x + 1, inside.y);
+    g.place('test-post', inside.x, inside.y);
+    g.place('test-post', inside.x + 1, inside.y);
     g.demolish('o1');
     expect(seen).toEqual(['$-5', '+o1', '$-5', '+o2', '-o1', '$2']);
   });

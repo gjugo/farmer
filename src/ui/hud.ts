@@ -710,7 +710,9 @@ export class Hud implements UiApi {
     if (mode.kind === 'build') {
       const def = getBuildable(mode.type);
       const materials = formatMaterials(this.ctx.game.materialsFor(mode.type));
-      text = `Placing ${def?.name ?? mode.type} (${formatMoney(def?.cost ?? 0)}${materials ? ` + ${materials}` : ''}) — tap a tile`;
+      const cost = def?.cost ?? 0;
+      const price = cost > 0 || materials ? `${formatMoney(cost)}${materials ? ` + ${materials}` : ''}` : 'free';
+      text = `Placing ${def?.name ?? mode.type} (${price}) — tap a tile`;
     } else {
       text = `Demolish — tap an object to remove it (${Math.round(DEMOLISH_REFUND * 100)}% of money and materials back)`;
     }

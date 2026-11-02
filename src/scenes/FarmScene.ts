@@ -95,7 +95,8 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
 function demolishText(check: Extract<DemolishCheck, { ok: true }>): string {
   const materials = formatMaterials(check.materials);
   const lost = formatMaterials(check.lost);
-  return `$${check.money}${materials ? ` and ${materials}` : ''}${lost ? `. ${lost} won't fit in the storehouse and would be lost` : ''}`;
+  const got = [check.money > 0 ? `$${check.money}` : '', materials].filter(Boolean).join(' and ') || 'nothing';
+  return `${got}${lost ? `. ${lost} won't fit in the storehouse and would be lost` : ''}`;
 }
 
 interface TouchState {
@@ -813,7 +814,7 @@ export class FarmScene extends Phaser.Scene {
           ...(spec.actions ?? []),
           ...(work?.actions ?? []),
           {
-            label: obj.site ? `Cancel building (+$${refund})` : `Demolish (+$${refund})`,
+            label: `${obj.site ? 'Cancel building' : 'Demolish'}${refund > 0 ? ` (+$${refund})` : ''}`,
             variant: 'danger',
             onClick: () => void this.demolish(obj, true),
           },
@@ -847,7 +848,7 @@ export class FarmScene extends Phaser.Scene {
       if (!got.ok && got.reason === 'storage') ui.toast(demolishBlockedMessage(obj, got.excess), 'error');
       return;
     }
-    this.floatText(obj.x, obj.y, `+$${got.money}`, '#c8ff9e');
+    if (got.money > 0) this.floatText(obj.x, obj.y, `+$${got.money}`, '#c8ff9e');
     if (!ask && Object.keys(got.materials).length) ui.toast(`${name} demolished: got back ${demolishText(got)}`, 'success');
   }
 

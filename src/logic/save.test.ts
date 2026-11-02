@@ -46,7 +46,7 @@ describe('save / load', () => {
     expect(saveToStorage(storage, g.state)).toBe(true);
     const loaded = loadFromStorage(storage);
 
-    expect(loaded.money).toBe(1490);
+    expect(loaded.money).toBe(1500); // paths are free
     // The family ate a little of it on the way (2 food a day).
     expect(loaded.inventory).toEqual(g.state.inventory);
     expect(loaded.inventory.egg).toBeGreaterThan(0);
