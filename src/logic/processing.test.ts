@@ -112,6 +112,15 @@ describe('starting jobs', () => {
     expect(game.count('feed')).toBe(5);
   });
 
+  it('feed mill grinds barley into feed: 2 barley make 4', () => {
+    const { game, obj } = setup('feed-mill');
+    game.addItem('barley', 2);
+    expect(startJob(game, obj, 'feed-from-barley').ok).toBe(true);
+    expect(game.count('barley')).toBe(0);
+    wait(game, obj, 120_000);
+    expect(collect(game, obj)).toEqual({ feed: 4 });
+  });
+
   it('rejects recipes of another building', () => {
     const { game, obj } = setup('dairy');
     game.addItem('wool', 2);

@@ -1,6 +1,6 @@
 import { getBuildable } from '../data/buildables';
 import { FIELD, getCrop, type CropDef } from '../data/crops';
-import { PLOUGH_COST, PLOUGH_SEASONS } from '../data/seasons';
+import { PLOUGH_COST, PLOUGH_SEASONS, type Season } from '../data/seasons';
 import { MANURE_GAIN, MANURE_PER_SPREAD, MAX_FERTILITY } from '../data/soil';
 import { startTimer, timerDone, timerProgress, timerRemaining, type Timer } from './clock';
 import { START_LAYOUT } from './constants';
@@ -139,12 +139,18 @@ export function plough(game: Game, obj: PlacedObject<FieldState>): PloughResult 
 
 /**
  * Can `crop` be sown now as far as the season goes? It must be one of its seasons, and the crop must be
- * ripe before they are over: "late" when there is not enough of the season left.
+ * ripe before they are over: "late" when there is not enough of the season left. Nothing is sown in frozen ground,
+ * even a crop that grows into winter (cabbage is sown in autumn and ripens in winter).
  */
 export function seasonCheck(clock: ClockState, crop: CropDef): 'ok' | 'out-of-season' | 'late' {
   const end = seasonRunEnd(clock.elapsed, crop.seasons);
-  if (end === clock.elapsed) return 'out-of-season';
+  if (end === clock.elapsed || !canPloughNow(clock)) return 'out-of-season';
   return clock.elapsed + crop.growMs <= end ? 'ok' : 'late';
+}
+
+/** The seasons a crop can be sown in: its seasons with ploughable ground (cabbage grows into winter but is sown in autumn). */
+export function sowSeasons(crop: CropDef): Season[] {
+  return crop.seasons.filter((s) => PLOUGH_SEASONS.includes(s));
 }
 
 export type PlantResult =

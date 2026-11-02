@@ -71,6 +71,15 @@ describe('families: rules', () => {
     expect(FOODS).not.toContain('feed');
   });
 
+  it('potato, cabbage and pumpkin are food; barley and flax are not (they are for the mill and the market)', () => {
+    expect(FOODS).toEqual(expect.arrayContaining(['potato', 'cabbage', 'pumpkin']));
+    expect(FOODS).not.toContain('barley');
+    expect(FOODS).not.toContain('flax');
+    // Each new food is another kind on the table, so it lifts the variety approval.
+    const stock: Record<string, number> = { potato: 9, cabbage: 9, pumpkin: 9, barley: 9, flax: 9 };
+    expect(mealFrom((id) => stock[id] ?? 0, 3)).toEqual({ potato: 2, cabbage: 2, pumpkin: 2 });
+  });
+
   it('approval: variety lifts it, starving or freezing sinks it below the leaving line', () => {
     const wheat = approvalOf(day({ families: 2, meal: 4, eaten: 4, variety: 1, ate: { wheat: 4 } })).approval;
     const three = approvalOf(day({ families: 2, meal: 4, eaten: 4, variety: 3, ate: { wheat: 2, carrot: 1, egg: 1 } })).approval;

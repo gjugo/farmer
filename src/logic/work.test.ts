@@ -315,7 +315,11 @@ describe('work scheduler', () => {
   it('catches up on a week away quickly, stepping from one job to the next', () => {
     const game = farm();
     for (let i = 0; i < 5; i++) addFarmer(game);
-    for (const f of game.objectsOfType(FIELD)) assignFarmer(game, f.id);
+    // Corn and wheat (for the mill): flax, which nobody eats yet, would fill the granary over a week.
+    for (const [i, f] of game.objectsOfType(FIELD).entries()) {
+      assignFarmer(game, f.id);
+      setCropPlan(game, f.id, i === 0 ? 'corn' : 'wheat');
+    }
     const coop = build<PenState>(game, 'coop', X + 1, Y + 5);
     for (let i = 0; i < 6; i++) buyAnimal(game, coop, 'chicken');
     game.addItem('feed', 500);
@@ -340,9 +344,10 @@ describe('work scheduler', () => {
     addFarmer(game);
     game.addItem('wheat', 6); // the families' first meals, until the corn comes in
     assignFarmer(game, field.id);
-    // Two corn harvests (24) fit in the farmhouse store; the third (12 more) does not.
-    play(game, 3 * CROPS.corn.growMs + 5 * MIN);
-    // The family ate some corn on the way: top the store up, so the next harvest has no room either.
+    setCropPlan(game, field.id, 'corn');
+    // Two corn harvests come in, and a third is sown.
+    play(game, 2 * CROPS.corn.growMs + 5 * MIN);
+    // Fill the store, so the third harvest has no room.
     game.addItem('wheat', game.spaceFor('wheat'));
     play(game, CROPS.corn.growMs);
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
@@ -433,9 +438,35 @@ describe('work scheduler', () => {
     const [field] = game.objectsOfType(FIELD);
     assignFarmer(game, field.id);
     expect(plannedCrop(game, field.id)?.id).toBe('corn');
-    game.state.clock.elapsed = 2 * SEASON_MS; // autumn: no corn
-    expect(plannedCrop(game, field.id)?.id).toBe('carrot');
+    game.state.clock.elapsed = SEASON_MS; // summer: pumpkin, the longest grower, is ripe before autumn ends
+    expect(plannedCrop(game, field.id)?.id).toBe('pumpkin');
+    game.state.clock.elapsed = 2 * SEASON_MS; // autumn: cabbage, which ripens in winter
+    expect(plannedCrop(game, field.id)?.id).toBe('cabbage');
+    game.state.clock.elapsed = 3 * SEASON_MS - CROPS.pumpkin.growMs + 1; // late autumn: pumpkin no longer ripens in time
+    expect(plannedCrop(game, field.id)?.id).toBe('cabbage');
+    game.state.clock.elapsed = 4 * SEASON_MS - CROPS.cabbage.growMs + 1; // too late for cabbage, and so for everything
+    expect(plannedCrop(game, field.id)).toBeNull();
+    game.state.clock.elapsed = 3 * SEASON_MS + 1000; // winter: nothing is sown, not even cabbage
+    expect(plannedCrop(game, field.id)).toBeNull();
     game.state.clock.elapsed = 4 * SEASON_MS - 1000; // the end of winter
     expect(plannedCrop(game, field.id)).toBeNull();
+  });
+
+  it('"Best in season" weighs all eight crops by level: corn at level 4, potato at level 3', () => {
+    const game = farm();
+    const [field] = game.objectsOfType(FIELD);
+    assignFarmer(game, field.id);
+    expect(CROP_LIST).toHaveLength(8);
+    game.progression.setLevel(3);
+    expect(plannedCrop(game, field.id)?.id).toBe('potato');
+    game.state.clock.elapsed = 2 * SEASON_MS; // autumn at level 3: carrot (no cabbage before level 6)
+    expect(plannedCrop(game, field.id)?.id).toBe('carrot');
+    game.progression.setLevel(6);
+    expect(plannedCrop(game, field.id)?.id).toBe('cabbage');
+    game.state.clock.elapsed = SEASON_MS; // summer at level 6: no pumpkin yet, so corn
+    expect(plannedCrop(game, field.id)?.id).toBe('corn');
+    // Rotation: after a corn harvest it sows the next longest, flax.
+    (game.getObject(field.id)!.state as FieldState).lastCrop = 'corn';
+    expect(plannedCrop(game, field.id)?.id).toBe('flax');
   });
 });

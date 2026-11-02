@@ -41,12 +41,13 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     cost: 110,
     materials: { wood: 10, stone: 4 },
     footprint: { w: 2, h: 2 },
-    description: 'Grinds wheat and corn into animal feed.',
+    description: 'Grinds wheat, corn and barley into animal feed.',
     unlockLevel: 4,
     anim: 'sails',
     recipes: [
       { id: 'feed-from-wheat', inputs: { wheat: 2 }, output: { item: 'feed', qty: 3 }, durationMs: 120_000 },
       { id: 'feed-from-corn', inputs: { corn: 1 }, output: { item: 'feed', qty: 2 }, durationMs: 120_000 },
+      { id: 'feed-from-barley', inputs: { barley: 2 }, output: { item: 'feed', qty: 4 }, durationMs: 120_000 },
     ],
   },
   dairy: {
