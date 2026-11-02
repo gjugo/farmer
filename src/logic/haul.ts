@@ -72,17 +72,21 @@ export function isBarn(obj: PlacedObject | undefined): boolean {
   return obj?.type === OX_BARN;
 }
 
-/** Repairs a barn's state from a save (or an older shape). */
+/**
+ * Repairs a barn's state from a save (or an older shape). It repairs the object in place, so a
+ * reference someone already holds (buyOx's, across the 'money' redraw of the open panel) stays the barn's.
+ */
 export function sanitizeBarn(obj: PlacedObject): BarnState {
+  if (!isPlainObject(obj.state)) obj.state = {};
   const s = obj.state as Record<string, unknown>;
   const cargo: Inventory = {};
   if (isPlainObject(s.cargo)) for (const [id, n] of Object.entries(s.cargo)) if (Number.isInteger(n) && (n as number) > 0) cargo[id] = n as number;
-  const state: BarnState = { ox: s.ox === true, cargo };
-  obj.state = state;
-  return state;
+  s.ox = s.ox === true;
+  s.cargo = cargo;
+  return s as BarnState;
 }
 
-function barnState(obj: PlacedObject): BarnState {
+export function barnState(obj: PlacedObject): BarnState {
   const s = obj.state as Partial<BarnState>;
   return typeof s.ox === 'boolean' && isPlainObject(s.cargo) ? (s as BarnState) : sanitizeBarn(obj);
 }
@@ -93,11 +97,11 @@ export type BuyOxResult = { ok: true } | { ok: false; reason: 'not-barn' | 'site
 export function buyOx(game: Game, obj: PlacedObject, free = false): BuyOxResult {
   if (!isBarn(obj)) return { ok: false, reason: 'not-barn' };
   if (obj.site) return { ok: false, reason: 'site' };
-  const s = barnState(obj);
-  if (s.ox) return { ok: false, reason: 'has-ox' };
+  if (barnState(obj).ox) return { ok: false, reason: 'has-ox' };
   if (!free && !game.canAfford(OX_PRICE)) return { ok: false, reason: 'money' };
   if (!free) game.spend(OX_PRICE);
-  s.ox = true;
+  // Looked up again: spending emits 'money', and its listeners may have touched the barn.
+  barnState(obj).ox = true;
   game.touch(obj);
   return { ok: true };
 }

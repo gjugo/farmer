@@ -6,7 +6,7 @@ import { FARMHOUSE_STORE } from '../data/storage';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { START_LAYOUT } from './constants';
 import { Game } from './game';
-import { barnWait, buyOx, cartsOf, goodsOnCarts, legEnds, planHaul, tripsOf, type BarnState, type HaulTrip } from './haul';
+import { barnWait, buyOx, cartsOf, goodsOnCarts, legEnds, planHaul, sanitizeBarn, tripsOf, type BarnState, type HaulTrip } from './haul';
 import { setOwned } from './land';
 import { addDeposit, addTrees, inRange, mapOf } from './maplayer';
 import { catchUp } from './offline';
@@ -110,6 +110,15 @@ describe('the ox barn', () => {
     expect(buyOx(poor, other)).toEqual({ ok: false, reason: 'money' });
     expect(buyOx(poor, other, true)).toEqual({ ok: true });
     expect(poor.state.money).toBe(0);
+  });
+
+  it('keeps the bought ox when a money listener repairs the barn (the open panel redraws)', () => {
+    const game = farm();
+    const barn = build<BarnState>(game, OX_BARN, X + 4, Y + 5);
+    game.events.on('money', () => sanitizeBarn(barn));
+    expect(buyOx(game, barn)).toEqual({ ok: true });
+    expect(barn.state.ox).toBe(true);
+    expect(cartsOf(game.state).map((c) => c.barn)).toEqual([barn.id]);
   });
 
   it('allows several barns, each with its own carter', () => {

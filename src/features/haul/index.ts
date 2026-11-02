@@ -5,7 +5,7 @@ import type { FarmContext, PanelAction, PanelSpec, PlacedObject } from '../../ga
 import { onGameStart, registerBehavior, registerDebugInfo } from '../../game/hooks';
 import { placeName } from '../../game/workers';
 import type { Game } from '../../logic/game';
-import { barnWait, buyOx, cartPose, cartsOf, isBarn, parkedPose, sanitizeBarn, tripsOf, units, type BarnState, type BarnWait, type CartPose } from '../../logic/haul';
+import { barnState, barnWait, buyOx, cartPose, cartsOf, isBarn, parkedPose, sanitizeBarn, tripsOf, units, type BarnState, type BarnWait, type CartPose } from '../../logic/haul';
 import type { Inventory } from '../../logic/types';
 import { cartArt, cartLoadArt, facing, OX_ART, type Facing } from '../../scenes/art';
 import { walkerDepth } from '../../scenes/depth';
@@ -61,7 +61,7 @@ function tripLine(game: Game, barn: PlacedObject): string | null {
 
 function panel(ctx: FarmContext, barn: PlacedObject<BarnState>): PanelSpec {
   const { game } = ctx;
-  const s = sanitizeBarn(barn);
+  const s = barnState(barn);
   const lines = [
     `An oxcart carries up to ${CART_CAPACITY} goods at a time from the fullest yard or workshop to the nearest store with room, at ${OX_MS_PER_TILE / 1000} s a tile.`,
     s.ox ? '🐂 Ox: yes' : `🐂 Ox: none yet (${formatMoney(OX_PRICE)})`,
