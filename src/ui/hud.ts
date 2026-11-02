@@ -639,8 +639,8 @@ export class Hud implements UiApi {
     }
     this.showPerkDialog(level, [
       h('div', { class: 'levelup-star', 'aria-hidden': 'true' }, '⭐'),
-      h('h2', { id: `levelup-${level}` }, 'Choose a perk'),
-      h('p', {}, `For reaching level ${level}. A perk lasts for good.`),
+      h('h2', { id: `levelup-${level}` }, `Level ${level} perk`),
+      h('p', {}, 'Pick one: a perk lasts for good.'),
     ]);
   }
 
@@ -661,8 +661,14 @@ export class Hud implements UiApi {
     };
     const isTop = () => this.root.lastElementChild === backdrop;
     const cards = h('div', { class: 'perk-cards', role: 'group', 'aria-label': 'Perks to choose from', 'data-testid': 'perk-cards' });
+    let shown = '';
     const renderCards = () => {
       const offer = perks.offer(level);
+      // Unchanged cards stay as they are, so the one with the focus keeps it.
+      const ids = offer.map((p) => p.id).join();
+      if (ids === shown && cards.childElementCount) return;
+      shown = ids;
+      const focused = cards.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.testid : undefined;
       cards.replaceChildren(
         ...offer.map((perk, i) =>
           h(
@@ -677,7 +683,10 @@ export class Hud implements UiApi {
                 if (r.ok) {
                   close();
                   this.toast(`${r.perk.icon} ${r.perk.name}: ${r.perk.description}`, 'success');
-                } else renderCards();
+                } else {
+                  shown = '';
+                  renderCards();
+                }
               },
             },
             h('span', { class: 'perk-icon', 'aria-hidden': 'true' }, withIcons(perk.icon)),
@@ -686,6 +695,7 @@ export class Hud implements UiApi {
         ),
       );
       if (!offer.length) cards.append(h('p', { class: 'empty' }, 'No perk left to offer.'));
+      if (focused) (cards.querySelector<HTMLElement>(`[data-testid="${focused}"]`) ?? cards.querySelector<HTMLElement>('.perk-card'))?.focus();
     };
     const onKey = (e: KeyboardEvent) => {
       if (!isTop()) return;
