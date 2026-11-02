@@ -2,17 +2,32 @@ import Phaser from 'phaser';
 import { RESOURCES, type ResourceType } from '../../data/resourceBuildings';
 import { onBuildPreview, onGameStart, registerDebugInfo } from '../../game/hooks';
 import type { Game } from '../../logic/game';
-import { inRange, mapCounts, mapOf, regrowAt, treeAt, treeStatus, type Deposit, type MapLayer, type Tree } from '../../logic/maplayer';
-import { depositArt, SHADOW, treeArt } from '../../scenes/art';
+import {
+  inRange,
+  mapCounts,
+  mapOf,
+  nextStageAt,
+  regrowAt,
+  treeAt,
+  treeStage,
+  treeStatus,
+  type Deposit,
+  type MapLayer,
+  type Tree,
+} from '../../logic/maplayer';
+import { ART_SCALE, depositArt, SHADOW, TREE_SPECIES, treeArt, treeLook, YOUNG_TREE_SCALE, type TreeSpecies } from '../../scenes/art';
 import { DEPTH } from '../../scenes/depth';
 import type { FarmScene } from '../../scenes/FarmScene';
 import { gridToWorld, ISO_H, type Footprint } from '../../scenes/iso';
 import { addArt, addShadow, textureKey } from '../../scenes/sprites';
+import { speciesAt } from './species';
 
 /**
  * The map's forests and deposits on screen (rules in `src/logic/maplayer.ts`): a sprite and its shadow per tree
- * tile and per deposit tile, depth-sorted with the buildings. A felled tree becomes a stump and grows back by the
- * clock, so nothing runs per frame but a check against the next time a tree changes. Deposits turn to rubble when
+ * tile and per deposit tile, depth-sorted with the buildings. Each tree's species comes from where it stands
+ * (`./species`) and its size, facing and tint from its tile (`treeLook`). A felled tree becomes a stump and grows
+ * back by the clock, through a sapling and a young tree (`treeStage`), so nothing runs per frame but a check
+ * against the next time a tree changes. Deposits turn to rubble when
  * used up, and the tiles a quarry or mine covers are hidden under it. The sprite count is fixed by the map layer:
  * one image (and shadow) per tile, made when the map is (re)built and only retextured after that.
  *
@@ -51,6 +66,8 @@ onGameStart((ctx) => {
   const { game } = ctx;
   const shadows = scene.add.container(0, 0).setDepth(DEPTH.shadow).setName('nature-shadows');
   let trees = new Map<Tree, TileSprite>();
+  /** Each tree's species, worked out when the sprites are built (it depends on the trees around it). */
+  let species = new Map<Tree, TreeSpecies>();
   let rocks: { d: Deposit; x: number; y: number; s: TileSprite }[] = [];
   /** What the sprites were made for: a new tree list (stumps built over) or deposit list means a rebuild. */
   let built: { layer: MapLayer | null; trees: Tree[] | null; deposits: Deposit[] | null } = { layer: null, trees: null, deposits: null };
@@ -71,6 +88,7 @@ onGameStart((ctx) => {
       s.shadow?.destroy();
     }
     trees = new Map();
+    species = new Map();
     rocks = [];
   };
 
@@ -79,12 +97,13 @@ onGameStart((ctx) => {
     const now = game.now;
     nextChange = Infinity;
     for (const [tree, s] of trees) {
-      const stump = treeStatus(tree, now) === 'stump';
-      show(scene, s, treeArt(tree.x, tree.y, stump));
-      // Falls at `felledAt` (a lodge is felling it), grows back at `regrowAt`.
-      const regrow = regrowAt(tree);
-      if (tree.felledAt !== null && tree.felledAt > now) nextChange = Math.min(nextChange, tree.felledAt);
-      else if (regrow !== null && regrow > now) nextChange = Math.min(nextChange, regrow);
+      const stage = treeStage(tree, now);
+      show(scene, s, treeArt(species.get(tree)!, stage));
+      // A young tree is the grown one drawn smaller; the look's scale is about the base, where the sprite stands.
+      s.img.setScale(ART_SCALE * treeLook(tree.x, tree.y).scale * (stage === 'young' ? YOUNG_TREE_SCALE : 1));
+      // Falls at `felledAt` (a lodge is felling it), then changes at each stage of growing back.
+      const next = nextStageAt(tree, now);
+      if (next !== null) nextChange = Math.min(nextChange, next);
     }
     const under = covered(game);
     for (const r of rocks) {
@@ -101,8 +120,12 @@ onGameStart((ctx) => {
     built = { layer, trees: layer.trees, deposits: layer.deposits };
     const standing: { fp: Footprint; target: Phaser.GameObjects.Image }[] = [];
     for (const t of layer.trees) {
-      const s = sprite(t.x, t.y, treeArt(t.x, t.y, false));
-      s.img.setName('tree');
+      const kind = speciesAt(layer, t.x, t.y);
+      species.set(t, kind);
+      const s = sprite(t.x, t.y, treeArt(kind, 'grown'));
+      const look = treeLook(t.x, t.y);
+      // Pack frames pivot on the anchor (the base of the trunk), so flipping and scaling keep the tree on its tile.
+      s.img.setName('tree').setFlipX(look.flip).setTint(look.tint);
       trees.set(t, s);
       standing.push({ fp: { x: t.x, y: t.y, w: 1, h: 1 }, target: s.img });
     }
@@ -202,6 +225,17 @@ onGameStart((ctx) => {
     }
   });
 
+  const speciesOf = (layer: MapLayer, t: Tree) => species.get(t) ?? speciesAt(layer, t.x, t.y);
+  const describe = (layer: MapLayer, t: Tree, now: number) => ({
+    x: t.x,
+    y: t.y,
+    species: speciesOf(layer, t),
+    stage: treeStage(t, now),
+    status: treeStatus(t, now),
+    felledAt: t.felledAt,
+    regrowsAt: regrowAt(t),
+  });
+
   // What the map holds, for QA: tree counts, the deposits with what is left, and a tile lookup.
   registerDebugInfo('map', () => {
     const layer = mapOf(game.state);
@@ -209,12 +243,17 @@ onGameStart((ctx) => {
     return Object.freeze({
       trees: mapCounts(layer, now),
       deposits: layer.deposits.map((d) => ({ kind: d.kind, x: d.x, y: d.y, w: d.w, h: d.h, left: d.left, amount: d.amount })),
+      species: Object.fromEntries(TREE_SPECIES.map((k) => [k, layer.trees.filter((t) => speciesOf(layer, t) === k).length])),
       treeAt: (x: number, y: number) => {
         const t = treeAt(layer, x, y);
-        return t ? { x: t.x, y: t.y, status: treeStatus(t, now), felledAt: t.felledAt, regrowsAt: regrowAt(t) } : null;
+        return t ? describe(layer, t, now) : null;
       },
+      /** Every tree tile, with its species and stage. */
+      treeList: () => layer.trees.map((t) => describe(layer, t, now)),
       /** Tree and deposit sprites alive in the scene (shadows not counted). */
       sprites: trees.size + rocks.length,
+      /** Decorative willows drawn beside ponds (scenery, not trees of the map: see FarmScene.placeScenery). */
+      pondWillows: scene.children.list.filter((o) => o.name === 'pond-willow').length,
     });
   });
 });

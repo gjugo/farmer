@@ -7446,6 +7446,1146 @@
    }
   },
   {
+   "name": "tree_sapling_conifer_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled conifer growing back: sapling in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_conifer_winter.png",
+     "w": 61,
+     "h": 91,
+     "anchor": [
+      31.0,
+      20.0
+     ],
+     "origin": [
+      0.5082,
+      0.21978
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_conifer_winter.png",
+     "w": 30,
+     "h": 46,
+     "anchor": [
+      15.5,
+      10.0
+     ],
+     "origin": [
+      0.51667,
+      0.21739
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_conifer_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled conifer growing back: sapling in autumn (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_conifer_autumn.png",
+     "w": 61,
+     "h": 89,
+     "anchor": [
+      31.0,
+      16.0
+     ],
+     "origin": [
+      0.5082,
+      0.17978
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_conifer_autumn.png",
+     "w": 30,
+     "h": 44,
+     "anchor": [
+      15.5,
+      8.0
+     ],
+     "origin": [
+      0.51667,
+      0.18182
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_conifer_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled conifer growing back: sapling in summer (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_conifer_summer.png",
+     "w": 61,
+     "h": 89,
+     "anchor": [
+      30.0,
+      19.0
+     ],
+     "origin": [
+      0.4918,
+      0.21348
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_conifer_summer.png",
+     "w": 30,
+     "h": 44,
+     "anchor": [
+      15.0,
+      9.5
+     ],
+     "origin": [
+      0.5,
+      0.21591
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_conifer_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled conifer growing back: sapling in spring (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_conifer_spring.png",
+     "w": 61,
+     "h": 90,
+     "anchor": [
+      30.0,
+      18.0
+     ],
+     "origin": [
+      0.4918,
+      0.2
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_conifer_spring.png",
+     "w": 30,
+     "h": 45,
+     "anchor": [
+      15.0,
+      9.0
+     ],
+     "origin": [
+      0.5,
+      0.2
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_conifer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled conifer growing back: sapling (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_conifer.png",
+     "w": 61,
+     "h": 89,
+     "anchor": [
+      30.0,
+      19.0
+     ],
+     "origin": [
+      0.4918,
+      0.21348
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_conifer.png",
+     "w": 30,
+     "h": 44,
+     "anchor": [
+      15.0,
+      9.5
+     ],
+     "origin": [
+      0.5,
+      0.21591
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_broadleaf_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled broadleaf tree growing back: sapling in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_broadleaf_winter.png",
+     "w": 58,
+     "h": 92,
+     "anchor": [
+      28.0,
+      18.0
+     ],
+     "origin": [
+      0.48276,
+      0.19565
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_broadleaf_winter.png",
+     "w": 29,
+     "h": 46,
+     "anchor": [
+      14.0,
+      9.0
+     ],
+     "origin": [
+      0.48276,
+      0.19565
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_broadleaf_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled broadleaf tree growing back: sapling in autumn (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_broadleaf_autumn.png",
+     "w": 68,
+     "h": 97,
+     "anchor": [
+      34.0,
+      24.0
+     ],
+     "origin": [
+      0.5,
+      0.24742
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_broadleaf_autumn.png",
+     "w": 34,
+     "h": 48,
+     "anchor": [
+      17.0,
+      12.0
+     ],
+     "origin": [
+      0.5,
+      0.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_broadleaf_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled broadleaf tree growing back: sapling in summer (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_broadleaf_summer.png",
+     "w": 68,
+     "h": 95,
+     "anchor": [
+      34.0,
+      24.0
+     ],
+     "origin": [
+      0.5,
+      0.25263
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_broadleaf_summer.png",
+     "w": 34,
+     "h": 48,
+     "anchor": [
+      17.0,
+      12.0
+     ],
+     "origin": [
+      0.5,
+      0.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_broadleaf_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled broadleaf tree growing back: sapling in spring (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_broadleaf_spring.png",
+     "w": 68,
+     "h": 97,
+     "anchor": [
+      34.0,
+      23.0
+     ],
+     "origin": [
+      0.5,
+      0.23711
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_broadleaf_spring.png",
+     "w": 34,
+     "h": 48,
+     "anchor": [
+      17.0,
+      11.5
+     ],
+     "origin": [
+      0.5,
+      0.23958
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_sapling_broadleaf",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "a felled broadleaf tree growing back: sapling (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_sapling_broadleaf.png",
+     "w": 68,
+     "h": 95,
+     "anchor": [
+      34.0,
+      24.0
+     ],
+     "origin": [
+      0.5,
+      0.25263
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_sapling_broadleaf.png",
+     "w": 34,
+     "h": 48,
+     "anchor": [
+      17.0,
+      12.0
+     ],
+     "origin": [
+      0.5,
+      0.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_willow_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "weeping willow (by ponds) in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_willow_winter.png",
+     "w": 217,
+     "h": 250,
+     "anchor": [
+      129.0,
+      159.0
+     ],
+     "origin": [
+      0.59447,
+      0.636
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_willow_winter.png",
+     "w": 108,
+     "h": 125,
+     "anchor": [
+      64.5,
+      79.5
+     ],
+     "origin": [
+      0.59722,
+      0.636
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_willow_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "weeping willow (by ponds) in autumn (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_willow_autumn.png",
+     "w": 226,
+     "h": 256,
+     "anchor": [
+      133.0,
+      166.0
+     ],
+     "origin": [
+      0.5885,
+      0.64844
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_willow_autumn.png",
+     "w": 113,
+     "h": 128,
+     "anchor": [
+      66.5,
+      83.0
+     ],
+     "origin": [
+      0.5885,
+      0.64844
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_willow_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "weeping willow (by ponds) in summer (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_willow_summer.png",
+     "w": 226,
+     "h": 252,
+     "anchor": [
+      133.0,
+      171.0
+     ],
+     "origin": [
+      0.5885,
+      0.67857
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_willow_summer.png",
+     "w": 113,
+     "h": 126,
+     "anchor": [
+      66.5,
+      85.5
+     ],
+     "origin": [
+      0.5885,
+      0.67857
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_willow_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "weeping willow (by ponds) in spring (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_willow_spring.png",
+     "w": 224,
+     "h": 256,
+     "anchor": [
+      132.0,
+      168.0
+     ],
+     "origin": [
+      0.58929,
+      0.65625
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_willow_spring.png",
+     "w": 112,
+     "h": 128,
+     "anchor": [
+      66.0,
+      84.0
+     ],
+     "origin": [
+      0.58929,
+      0.65625
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_willow",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "weeping willow (by ponds) (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_willow.png",
+     "w": 226,
+     "h": 252,
+     "anchor": [
+      133.0,
+      171.0
+     ],
+     "origin": [
+      0.5885,
+      0.67857
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_willow.png",
+     "w": 113,
+     "h": 126,
+     "anchor": [
+      66.5,
+      85.5
+     ],
+     "origin": [
+      0.5885,
+      0.67857
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_spruce_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "spruce: tall, narrow and dark in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_spruce_winter.png",
+     "w": 122,
+     "h": 303,
+     "anchor": [
+      63.0,
+      218.0
+     ],
+     "origin": [
+      0.51639,
+      0.71947
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_spruce_winter.png",
+     "w": 61,
+     "h": 152,
+     "anchor": [
+      31.5,
+      109.0
+     ],
+     "origin": [
+      0.51639,
+      0.71711
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_spruce_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "spruce: tall, narrow and dark in autumn (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_spruce_autumn.png",
+     "w": 119,
+     "h": 304,
+     "anchor": [
+      61.0,
+      219.0
+     ],
+     "origin": [
+      0.51261,
+      0.72039
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_spruce_autumn.png",
+     "w": 60,
+     "h": 152,
+     "anchor": [
+      30.5,
+      109.5
+     ],
+     "origin": [
+      0.50833,
+      0.72039
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_spruce_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "spruce: tall, narrow and dark in summer (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_spruce_summer.png",
+     "w": 130,
+     "h": 310,
+     "anchor": [
+      68.0,
+      225.0
+     ],
+     "origin": [
+      0.52308,
+      0.72581
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_spruce_summer.png",
+     "w": 65,
+     "h": 155,
+     "anchor": [
+      34.0,
+      112.5
+     ],
+     "origin": [
+      0.52308,
+      0.72581
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_spruce_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "spruce: tall, narrow and dark in spring (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_spruce_spring.png",
+     "w": 120,
+     "h": 304,
+     "anchor": [
+      62.0,
+      219.0
+     ],
+     "origin": [
+      0.51667,
+      0.72039
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_spruce_spring.png",
+     "w": 60,
+     "h": 152,
+     "anchor": [
+      31.0,
+      109.5
+     ],
+     "origin": [
+      0.51667,
+      0.72039
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_spruce",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "spruce: tall, narrow and dark (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_spruce.png",
+     "w": 130,
+     "h": 310,
+     "anchor": [
+      68.0,
+      225.0
+     ],
+     "origin": [
+      0.52308,
+      0.72581
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_spruce.png",
+     "w": 65,
+     "h": 155,
+     "anchor": [
+      34.0,
+      112.5
+     ],
+     "origin": [
+      0.52308,
+      0.72581
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_beech_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "beech tree: dense rounded crown in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_beech_winter.png",
+     "w": 198,
+     "h": 242,
+     "anchor": [
+      100.0,
+      153.0
+     ],
+     "origin": [
+      0.50505,
+      0.63223
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_beech_winter.png",
+     "w": 99,
+     "h": 121,
+     "anchor": [
+      50.0,
+      76.5
+     ],
+     "origin": [
+      0.50505,
+      0.63223
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_beech_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "beech tree: dense rounded crown in autumn (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_beech_autumn.png",
+     "w": 199,
+     "h": 247,
+     "anchor": [
+      100.0,
+      163.0
+     ],
+     "origin": [
+      0.50251,
+      0.65992
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_beech_autumn.png",
+     "w": 100,
+     "h": 124,
+     "anchor": [
+      50.0,
+      81.5
+     ],
+     "origin": [
+      0.5,
+      0.65726
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_beech_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "beech tree: dense rounded crown in summer (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_beech_summer.png",
+     "w": 197,
+     "h": 248,
+     "anchor": [
+      99.0,
+      167.0
+     ],
+     "origin": [
+      0.50254,
+      0.67339
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_beech_summer.png",
+     "w": 98,
+     "h": 124,
+     "anchor": [
+      49.5,
+      83.5
+     ],
+     "origin": [
+      0.5051,
+      0.67339
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_beech_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "beech tree: dense rounded crown in spring (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_beech_spring.png",
+     "w": 198,
+     "h": 247,
+     "anchor": [
+      99.0,
+      160.0
+     ],
+     "origin": [
+      0.5,
+      0.64777
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_beech_spring.png",
+     "w": 99,
+     "h": 124,
+     "anchor": [
+      49.5,
+      80.0
+     ],
+     "origin": [
+      0.5,
+      0.64516
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_beech",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "beech tree: dense rounded crown (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_beech.png",
+     "w": 197,
+     "h": 248,
+     "anchor": [
+      99.0,
+      167.0
+     ],
+     "origin": [
+      0.50254,
+      0.67339
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_beech.png",
+     "w": 98,
+     "h": 124,
+     "anchor": [
+      49.5,
+      83.5
+     ],
+     "origin": [
+      0.5051,
+      0.67339
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_birch_winter",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "birch tree: white bark, light airy crown in winter (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_birch_winter.png",
+     "w": 132,
+     "h": 264,
+     "anchor": [
+      62.0,
+      181.0
+     ],
+     "origin": [
+      0.4697,
+      0.68561
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_birch_winter.png",
+     "w": 66,
+     "h": 132,
+     "anchor": [
+      31.0,
+      90.5
+     ],
+     "origin": [
+      0.4697,
+      0.68561
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_birch_autumn",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "birch tree: white bark, light airy crown in autumn (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_birch_autumn.png",
+     "w": 149,
+     "h": 269,
+     "anchor": [
+      71.0,
+      186.0
+     ],
+     "origin": [
+      0.47651,
+      0.69145
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_birch_autumn.png",
+     "w": 74,
+     "h": 134,
+     "anchor": [
+      35.5,
+      93.0
+     ],
+     "origin": [
+      0.47973,
+      0.69403
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_birch_summer",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "birch tree: white bark, light airy crown in summer (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_birch_summer.png",
+     "w": 150,
+     "h": 270,
+     "anchor": [
+      71.0,
+      187.0
+     ],
+     "origin": [
+      0.47333,
+      0.69259
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_birch_summer.png",
+     "w": 75,
+     "h": 135,
+     "anchor": [
+      35.5,
+      93.5
+     ],
+     "origin": [
+      0.47333,
+      0.69259
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_birch_spring",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "birch tree: white bark, light airy crown in spring (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_birch_spring.png",
+     "w": 148,
+     "h": 270,
+     "anchor": [
+      71.0,
+      187.0
+     ],
+     "origin": [
+      0.47973,
+      0.69259
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_birch_spring.png",
+     "w": 74,
+     "h": 135,
+     "anchor": [
+      35.5,
+      93.5
+     ],
+     "origin": [
+      0.47973,
+      0.69259
+     ]
+    }
+   }
+  },
+  {
+   "name": "tree_birch",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "birch tree: white bark, light airy crown (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/tree_birch.png",
+     "w": 150,
+     "h": 270,
+     "anchor": [
+      71.0,
+      187.0
+     ],
+     "origin": [
+      0.47333,
+      0.69259
+     ]
+    },
+    "1x": {
+     "file": "1x/props/tree_birch.png",
+     "w": 75,
+     "h": 135,
+     "anchor": [
+      35.5,
+      93.5
+     ],
+     "origin": [
+      0.47333,
+      0.69259
+     ]
+    }
+   }
+  },
+  {
    "name": "tree_apple",
    "category": "props",
    "type": "image",
