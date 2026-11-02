@@ -146,7 +146,7 @@ export class Hud implements UiApi {
       for (const d of [...this.perkDialogs.values()]) d.refresh();
       this.refresh();
     });
-    for (const e of ['inventory', 'objectAdded', 'objectRemoved', 'objectChanged', 'land', 'day', 'speed', 'xp', 'goals'] as const) {
+    for (const e of ['inventory', 'objectAdded', 'objectRemoved', 'objectChanged', 'day', 'speed', 'xp', 'goals'] as const) {
       events.on(e, () => this.refresh());
     }
     events.on('reset', () => {

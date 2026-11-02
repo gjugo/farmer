@@ -13,11 +13,7 @@ export const DEPTH = {
   fringe: 3,
   /** Every shadow: above the ground and flat things, below everything standing. */
   shadow: 4,
-  /** Things on locked land behind the farm, e.g. "for sale" signs there. */
-  behindFarm: 5,
   tall: 10,
-  /** Things on locked land in front of the farm. */
-  frontOfFarm: 50,
   hover: 900,
   ghost: 1000,
   floatText: 2000,

@@ -18,7 +18,6 @@ describe('sound mapping', () => {
     expect(soundFor(ACTIVITY_SOUNDS, 'sold', { item: 'egg', qty: 1, earned: 10 })).toBe('coins');
     expect(soundFor(ACTIVITY_SOUNDS, 'orderFulfilled', { reward: 70 })).toBe('order');
     expect(soundFor(ACTIVITY_SOUNDS, 'goalClaimed', { id: 'g1' })).toBe('goal');
-    expect(soundFor(ACTIVITY_SOUNDS, 'landBought', { parcel: 'p1', price: 500 })).toBe('land');
     expect(soundFor(GAME_EVENT_SOUNDS, 'levelUp', { level: 2, bonus: 100, unlocks: [] })).toBe('levelup');
     expect(soundFor(UI_SOUNDS, 'refused', { message: 'Not enough money' })).toBe('refused');
     expect(soundFor(UI_SOUNDS, 'welcomeBack', { awayMs: 60_000 })).toBe('welcome');

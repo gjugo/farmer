@@ -8,11 +8,9 @@ import {
   DECOR_CELL,
   DECOR_JITTER,
   decorArt,
-  decorVisible,
   forestDistance,
   scatterDecor,
   type DecorGround,
-  type DecorSpot,
 } from './decor';
 
 /** An open meadow of w × h tiles, with trees on the tiles listed (as "x,y") and nothing blocked. */
@@ -118,17 +116,6 @@ describe('ground decorations', () => {
     const spots = scatterDecor(ground(40, 40, [], blocked));
     expect(spots.length).toBeGreaterThan(0);
     expect(spots.some((s) => s.x < 20 && s.y < 20)).toBe(false);
-  });
-
-  it('hides a decoration on a covered tile; the meadow shows only on owned land, the undergrowth anywhere', () => {
-    const meadow: DecorSpot = { x: 1, y: 1, role: 'tuft', pick: 0, cellPick: 0, dx: 0, dy: 0 };
-    const edge: DecorSpot = { ...meadow, role: 'undergrowth' };
-    expect(decorVisible(meadow, true, false)).toBe(true);
-    expect(decorVisible(meadow, true, true)).toBe(false);
-    expect(decorVisible(meadow, false, false)).toBe(false);
-    expect(decorVisible(edge, false, false)).toBe(true);
-    expect(decorVisible(edge, true, true)).toBe(false);
-    expect(decorVisible(edge, false, true)).toBe(false);
   });
 
   it('changes art with the season: each season its own set, tufts and stones all year, undergrowth in every season', () => {

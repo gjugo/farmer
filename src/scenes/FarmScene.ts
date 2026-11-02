@@ -11,7 +11,8 @@ import { formatDuration } from '../logic/crops';
 import { footprintOf, refundOf, type DemolishCheck, type PlaceResult } from '../logic/game';
 import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
-import { inBounds, isOwned } from '../logic/land';
+import { START_LAND } from '../logic/constants';
+import { inBounds } from '../logic/land';
 import { mapOf, treeAt } from '../logic/maplayer';
 import { farmhouseOf } from '../logic/roads';
 import { soilAt } from '../logic/soil';
@@ -47,6 +48,17 @@ const KEY_PAN_SPEED = 700; // screen px per second
 const MAP_TOP_ROOM = ISO_H * 3;
 /** Buildables whose base art lies flat on the ground (under every shadow and standing thing): paths and field soil. */
 const FLAT_TYPES = new Set(['path', FIELD]);
+/** The farm, for the opening view: the starting land and every building (paths aside), however far out. */
+function farmArea(objects: readonly PlacedObject[]): Footprint {
+  let [minX, minY, maxX, maxY] = [START_LAND.x, START_LAND.y, START_LAND.x + START_LAND.w, START_LAND.y + START_LAND.h];
+  for (const o of objects) {
+    if (o.type === 'path') continue;
+    const fp = footprintOf(o);
+    [minX, minY, maxX, maxY] = [Math.min(minX, o.x), Math.min(minY, o.y), Math.max(maxX, o.x + fp.w), Math.max(maxY, o.y + fp.h)];
+  }
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
 /** Construction sites are drawn faded to this, with a progress bar this wide (world pixels). */
 const SITE_ALPHA = 0.45;
 const SITE_BAR_W = 64;
@@ -57,10 +69,9 @@ const FLOAT_FONT = Math.round(ISO_H * 0.45);
 const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string> = {
   money: 'Not enough money',
   materials: 'Not enough building materials',
-  locked: "That land isn't yours yet",
   level: 'Not unlocked yet — reach a higher farm level',
   occupied: 'Something is already there',
-  'out-of-bounds': "Can't build outside the farm",
+  'out-of-bounds': "Can't build outside the map",
   'unknown-type': 'Unknown building',
   tree: 'A tree stands there: a woodcutter can fell it',
   deposit: 'Rock is in the way: only a quarry or mine stands on it',
@@ -68,6 +79,7 @@ const PLACE_ERRORS: Record<Exclude<PlaceResult, { ok: true }>['reason'], string>
   'needs-vein': 'A mine must stand on an iron vein',
   'needs-home': 'A garden must touch a home along an edge',
   'home-has-garden': 'That home already has a garden',
+  pond: 'A pond is in the way',
 };
 
 /**
@@ -97,13 +109,16 @@ export class FarmScene extends Phaser.Scene {
   private groundZones: GroundZone[] = [];
   /** What each ground bob shows now (for `window.farm.ground`). */
   private groundLooks: GroundLook[] = [];
-  /** Tiles where a pond is drawn (scenery on locked land): the wet meadow lies around them. */
+  /** Tiles where a pond is drawn (scenery out in the wild): the wet meadow lies around them. */
   private ponds = new Set<number>();
-  /** Bushes and ponds on locked land, each depth-sorted like a building. */
-  private scenery: { fp: Footprint; img: Phaser.GameObjects.Image }[] = [];
+  /**
+   * Bushes, ponds and the ponds' willows out in the wild, each depth-sorted like a building. A bush or a willow
+   * gives way (stops showing) while something is built on its tile; a pond is in the way of building.
+   */
+  private scenery: { fp: Footprint; img: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image | null; givesWay: boolean }[] = [];
   private sceneryShadows!: Phaser.GameObjects.Container;
   private depthsDirty = true;
-  /** Buying a parcel announces each tile; the scenery is redone once per frame at most. */
+  /** Something was built or demolished: which bushes and willows show is checked again, once per frame at most. */
   private sceneryDirty = false;
   private views = new Map<string, ObjectView & { obj: PlacedObject }>();
   /** Progress bars over construction sites, by object id. */
@@ -173,16 +188,14 @@ export class FarmScene extends Phaser.Scene {
         const view = this.views.get(o.id);
         if (view) getBehavior(o.type)?.refresh?.(this.ctx, o, view);
       }),
-      events.on('land', ({ x, y }) => {
-        this.paintTile(x, y);
-        this.sceneryDirty = true;
-      }),
+      events.on('objectAdded', () => (this.sceneryDirty = true)),
+      events.on('objectRemoved', () => (this.sceneryDirty = true)),
       // Building over a stump clears it for good: the forest floor around it may go.
       events.on('objectAdded', (o) => this.rezone({ x: o.x, y: o.y, ...footprintOf(o) })),
       onArtSeason(() => this.paintGround()),
       events.on('reset', () => {
         this.buildWorld();
-        this.focusOwnedLand();
+        this.focusFarm();
       }),
       this.ctx.tools.events.on('change', (mode) => this.onToolChange(mode)),
     );
@@ -200,7 +213,7 @@ export class FarmScene extends Phaser.Scene {
     this.clampCamera();
     if (this.sceneryDirty) {
       this.sceneryDirty = false;
-      this.placeScenery();
+      this.coverScenery();
     }
     if (this.depthsDirty) this.sortDepths();
     for (const obj of this.farm.state.objects) {
@@ -298,13 +311,13 @@ export class FarmScene extends Phaser.Scene {
     const bob = this.groundBobs[i];
     if (!bob) return;
     const zoneAt = (zx: number, zy: number) => (inBounds(land, zx, zy) ? this.groundZones[zy * land.width + zx] : undefined) ?? this.groundZones[i] ?? 'meadow';
-    const look = groundLook(x, y, soilAt(x, y), this.groundZones[i] ?? 'meadow', !isOwned(land, x, y), artSeason(), zoneAt);
+    const look = groundLook(x, y, soilAt(x, y), this.groundZones[i] ?? 'meadow', artSeason(), zoneAt);
     this.groundLooks[i] = look;
     const [ax, ay] = packAsset(look.art)?.res[ART_RES].anchor ?? [0, 0];
     // Bobs are placed by their top-left pixel, in the Blitter's unscaled (2x) space.
     const top = gridToWorld(x, y);
     bob.reset(top.x / ART_SCALE - ax, top.y / ART_SCALE - ay, look.art);
-    // Colour patches, the soil showing through, the zone's shade and locked land, as one tint.
+    // Colour patches, the soil showing through and the zone's shade, as one tint.
     bob.setTint(look.tint);
   }
 
@@ -328,15 +341,14 @@ export class FarmScene extends Phaser.Scene {
       counts,
       at: (x: number, y: number) => {
         const look = inBounds(land, x, y) ? this.groundLooks[y * land.width + x] : undefined;
-        return look ? { art: look.art, tint: look.tint, zone: look.zone, locked: !isOwned(land, x, y) } : null;
+        return look ? { art: look.art, tint: look.tint, zone: look.zone } : null;
       },
     });
   }
 
   /**
-   * A few bushes and ponds (with a willow or two beside each) on locked land, scattered from a fixed seed (not saved), away from the farm's edge and
-   * the map's trees and deposits. They go when their land is bought. (Trees and rocks are real and saved: see
-   * `src/features/nature`.)
+   * A few bushes and ponds (with a willow or two beside each) out in the wild, scattered from a fixed seed (not saved), clear of the starting
+   * land and the map's trees and deposits. (Trees and rocks are real and saved: see `src/features/nature`.)
    */
   private placeScenery(): void {
     const { land } = this.farm.state;
@@ -344,15 +356,15 @@ export class FarmScene extends Phaser.Scene {
     this.sceneryShadows.removeAll(true);
     this.scenery = [];
     const layer = mapOf(this.farm.state);
-    const clear = (x: number, y: number) => sceneryClear(land, layer, x, y);
+    const clear = (x: number, y: number) => sceneryClear(layer, x, y);
     const willows = new Set<string>();
     const ponds = new Set<number>();
     const place = (x: number, y: number, art: string) => {
       const at = gridToWorld(x, y);
       const img = addArt(this, at.x, at.y, art);
-      this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img });
-      const shadow = addShadow(this, at.x, at.y, art);
+      const shadow = addShadow(this, at.x, at.y, art) ?? null;
       if (shadow) this.sceneryShadows.add(shadow);
+      this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img, shadow, givesWay: art !== POND });
       return img;
     };
     for (let y = 0; y < land.height; y++) {
@@ -375,13 +387,24 @@ export class FarmScene extends Phaser.Scene {
         }
       }
     }
-    // Buying land near a pond takes it away, and its wet meadow with it.
+    // The wet meadow lies around the ponds.
     if (ponds.size !== this.ponds.size || [...ponds].some((i) => !this.ponds.has(i))) {
       this.ponds = ponds;
       this.zoneTiles(0, 0, land.width, land.height);
       this.paintGround();
     }
+    this.coverScenery();
     this.depthsDirty = true;
+  }
+
+  /** Hides the bushes and willows with something built on their tile, and shows them again once it is gone. */
+  private coverScenery(): void {
+    for (const s of this.scenery) {
+      if (!s.givesWay) continue;
+      const shows = !this.farm.objectAt(s.fp.x, s.fp.y);
+      s.img.setVisible(shows);
+      s.shadow?.setVisible(shows);
+    }
   }
 
   /**
@@ -480,7 +503,7 @@ export class FarmScene extends Phaser.Scene {
 
   private setupCamera(): void {
     this.onResize(this.scale.gameSize);
-    this.focusOwnedLand();
+    this.focusFarm();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.onResize, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, this.onResize, this));
   }
@@ -512,25 +535,11 @@ export class FarmScene extends Phaser.Scene {
   }
 
   /**
-   * The opening view: the owned land with a little land around it, zoomed out as far as tiles stay easy to tap
-   * (on a phone that is closer, centred on the farmhouse).
+   * The opening view: the farm (the starting land and everything built beyond it) with a little land around it,
+   * zoomed out as far as tiles stay easy to tap (on a phone that is closer, centred on the farmhouse).
    */
-  private focusOwnedLand(): void {
-    const { land } = this.farm.state;
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (let y = 0; y < land.height; y++) {
-      for (let x = 0; x < land.width; x++) {
-        if (!isOwned(land, x, y)) continue;
-        minX = Math.min(minX, x);
-        maxX = Math.max(maxX, x);
-        minY = Math.min(minY, y);
-        maxY = Math.max(maxY, y);
-      }
-    }
-    const area = minX > maxX ? { x: 0, y: 0, w: land.width, h: land.height } : { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+  private focusFarm(): void {
+    const area = farmArea(this.farm.state.objects);
     const house = farmhouseOf(this.farm.state);
     const focus = house ? { x: house.x + 1, y: house.y + 1 } : { x: area.x + area.w / 2, y: area.y + area.h / 2 };
     const cam = this.cameras.main;
@@ -679,7 +688,7 @@ export class FarmScene extends Phaser.Scene {
 
   /**
    * The tile a tap means. In normal mode, an interactive display object carrying a `tapTile`
-   * ({ x, y }) wins over the ground under it, e.g. a "for sale" sign standing up over other tiles.
+   * ({ x, y }) wins over the ground under it, e.g. a marker standing up over other tiles.
    */
   private tapTarget(p: Phaser.Input.Pointer): { tx: number; ty: number } {
     if (this.ctx.tools.mode.kind === 'normal') {
@@ -873,7 +882,7 @@ export class FarmScene extends Phaser.Scene {
       this.ghost.setPosition(top.x, top.y).setVisible(true);
       this.ghost.setData('valid', ok);
       this.ghost.setData('tile', { x, y });
-      // Say why the spot itself is wrong (trees, rock, someone else's land), under the footprint.
+      // Say why the spot itself is wrong (trees, rock, a pond), under the footprint.
       const bottom = gridToWorld(x + def.footprint.w, y + def.footprint.h);
       this.ghostReason.setText(check.ok ? '' : PLACE_ERRORS[check.reason]).setPosition(bottom.x, bottom.y + 4).setVisible(!check.ok);
       this.ghost.setData('reason', check.ok ? null : check.reason);

@@ -8,9 +8,8 @@ import { SEASONS, type Season } from '../data/seasons';
 import type { JobKind } from '../data/workers';
 import { GROUND_FRAMES, PLAIN_GRASS } from './ground';
 import { hash } from './noise';
-import { inBounds, isOwned } from '../logic/land';
-import { depositAt, treeAt, type MapLayer } from '../logic/maplayer';
-import type { LandState } from '../logic/types';
+import type { MapLayer } from '../logic/maplayer';
+import { POND, pondShows, SCENERY } from '../logic/scenery';
 
 /** Where the pack lives, relative to the page (vite `base: './'`). */
 export const ART_BASE = 'assets/farm/';
@@ -60,7 +59,7 @@ export const GRASS = PLAIN_GRASS;
 export const CURSOR = { normal: 'overlay_cursor', ok: 'overlay_cursor_ok', bad: 'overlay_cursor_bad' } as const;
 export const SOIL = { dry: 'soil_tilled_x', wet: 'soil_watered_x' } as const;
 
-// Which ground tile each map tile gets, and its tint (colour patches, soil, forest and wet zones, locked land),
+// Which ground tile each map tile gets, and its tint (colour patches, soil, forest and wet zones),
 // live in `./ground.ts`; `hash` in `./noise.ts`.
 export { hash };
 
@@ -162,7 +161,6 @@ export const TEXTURE_ART: Record<string, string> = {
   brewery: 'brewery',
   tailor: 'tailor',
   blacksmith: 'blacksmith',
-  'sale-sign': 'for_sale_sign',
   'trader-wagon': 'trader_wagon',
   farmhouse: 'farmhouse',
   granary: 'granary_1',
@@ -353,36 +351,8 @@ export function pileArt(kind: string, stage: number): string | null {
   return `pile_${kind}_${Math.min(PILE_ART_STAGES, stage)}`;
 }
 
-/** Decorative scenery standing on locked land (gone once the land is bought). Trees and rocks are real: see below. */
-export const SCENERY = ['bush', 'bush_berry'] as const;
-/** A small decorative pond on locked land (no gameplay); scattered apart from the other scenery. */
-export const POND = 'pond';
-/** Share of locked tiles that get a bush, and (of the rest) per mille that get a pond. */
-export const SCENERY_CHANCE = 0.02;
-export const POND_PER_MILLE = 5;
-
-/** The scenery a tile would carry if it is locked land away from the farm, from a fixed seed: null for none. */
-export function sceneryArt(x: number, y: number): string | null {
-  if ((hash(x, y, 7) % 1000) / 1000 < SCENERY_CHANCE) return SCENERY[hash(x, y, 11) % SCENERY.length];
-  return hash(x, y, 13) % 1000 < POND_PER_MILLE ? POND : null;
-}
-
-/** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
-export const SCENERY_CLEARANCE = 4;
-
-/** Can scenery (a bush, a pond or a pond's willow) stand on (x, y): locked land in the map, clear of owned land, trees and deposits? */
-export function sceneryClear(land: LandState, layer: MapLayer, x: number, y: number): boolean {
-  if (!inBounds(land, x, y) || treeAt(layer, x, y) || depositAt(layer, x, y)) return false;
-  for (let dy = -SCENERY_CLEARANCE; dy <= SCENERY_CLEARANCE; dy++) {
-    for (let dx = -SCENERY_CLEARANCE; dx <= SCENERY_CLEARANCE; dx++) if (isOwned(land, x + dx, y + dy)) return false;
-  }
-  return true;
-}
-
-/** Is a pond drawn on (x, y), with `land` owned? */
-export function pondShows(land: LandState, layer: MapLayer, x: number, y: number): boolean {
-  return sceneryArt(x, y) === POND && sceneryClear(land, layer, x, y);
-}
+// Scenery out in the wild (bushes, ponds): where it stands lives in `src/logic/scenery.ts` (ponds block building).
+export { POND, POND_PER_MILLE, pondShows, SCENERY, SCENERY_CHANCE, SCENERY_CLEARANCE, sceneryArt, sceneryClear } from '../logic/scenery';
 
 /** The decorative willows beside each pond: 1 or 2 (`count`), on the first of `spots` that are free, best first. */
 export function pondWillows(x: number, y: number): { count: number; spots: { x: number; y: number }[] } {
@@ -448,11 +418,11 @@ export function treeArt(species: TreeSpecies, stage: 'stump' | 'sapling' | 'youn
 export const YOUNG_TREE_SCALE = 0.6;
 
 export type WoodMix = 'conifer' | 'broadleaf' | 'mixed';
-/** Square of tiles sharing one wood mix off the parcels (the parcels cover the whole map, so only a fallback). */
+/** Square of tiles sharing one wood mix off the layout blocks (the blocks cover the whole map, so only a fallback). */
 const WOOD_CELL = 12;
 
 /**
- * The kind of wood `area` (the parcel a tile lies in: one forest is generated per parcel) is, from a coarse hash of
+ * The kind of wood `area` (the layout block a tile lies in: one forest is generated per block) is, from a coarse hash of
  * it: conifer woods of pine and spruce, broadleaf woods of oak and beech, or mixed.
  */
 export function woodMix(area: { x: number; y: number } | undefined, x: number, y: number): WoodMix {
@@ -463,11 +433,11 @@ export function woodMix(area: { x: number; y: number } | undefined, x: number, y
 /** Willows grow only this close (in tiles, either way) to a pond site. */
 export const WILLOW_POND_REACH = 3;
 
-/** Is a pond drawn (`pondShows`, with `land` owned) within `WILLOW_POND_REACH` tiles of (x, y)? */
-export function nearPond(land: LandState, layer: MapLayer, x: number, y: number): boolean {
+/** Is a pond drawn (`pondShows`) within `WILLOW_POND_REACH` tiles of (x, y)? */
+export function nearPond(layer: MapLayer, x: number, y: number): boolean {
   for (let dy = -WILLOW_POND_REACH; dy <= WILLOW_POND_REACH; dy++) {
     for (let dx = -WILLOW_POND_REACH; dx <= WILLOW_POND_REACH; dx++) {
-      if (pondShows(land, layer, x + dx, y + dy)) return true;
+      if (pondShows(layer, x + dx, y + dy)) return true;
     }
   }
   return false;

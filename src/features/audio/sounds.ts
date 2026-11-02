@@ -25,7 +25,6 @@ export const SFX = {
   order: { volume: 0.8 },
   goal: { volume: 0.8 },
   levelup: { volume: 0.8 },
-  land: { volume: 0.8 },
   refused: { volume: 0.6 },
   welcome: { volume: 0.7 },
   cluck: { volume: 0.5 },
@@ -72,7 +71,6 @@ export const ACTIVITY_SOUNDS: SoundMap<ActivityEvents> = {
   sold: () => 'coins',
   orderFulfilled: () => 'order',
   goalClaimed: () => 'goal',
-  landBought: () => 'land',
   familyArrived: () => 'welcome',
 };
 

@@ -12,7 +12,6 @@ import {
   groundTint,
   groundVariant,
   groundZone,
-  LOCKED_TINT,
   MEADOW_SPECIALS,
   noiseTint,
   PLAIN_GRASS,
@@ -153,7 +152,7 @@ describe('ground zones', () => {
     for (const season of SEASONS) {
       expect(FOREST_FLOOR as readonly string[]).toContain(groundVariant(3, 4, 'forest', season));
       expect(WET_MEADOW as readonly string[]).toContain(groundVariant(3, 4, 'wet', season));
-      expect(groundLook(3, 4, SOIL_QUALITY.normal, 'forest', false, season).art).toMatch(new RegExp(`^forest_\\d_${season}$`));
+      expect(groundLook(3, 4, SOIL_QUALITY.normal, 'forest', season).art).toMatch(new RegExp(`^forest_\\d_${season}$`));
     }
   });
 
@@ -172,8 +171,8 @@ describe('ground zones', () => {
 
   it('shades the forest floor darker than the meadow next to it', () => {
     for (const season of SEASONS) {
-      const meadow = rgbOf(groundTint(4, 4, SOIL_QUALITY.normal, 'meadow', false, season));
-      const forest = rgbOf(groundTint(4, 4, SOIL_QUALITY.normal, 'forest', false, season));
+      const meadow = rgbOf(groundTint(4, 4, SOIL_QUALITY.normal, 'meadow', season));
+      const forest = rgbOf(groundTint(4, 4, SOIL_QUALITY.normal, 'forest', season));
       expect(lum(forest)).toBeLessThan(lum(meadow));
     }
   });
@@ -233,30 +232,11 @@ describe('ground tint', () => {
       const noiseSpan = Math.hypot(...ext.map(([lo, hi]) => hi - lo));
       for (const quality of [SOIL_QUALITY.rich, SOIL_QUALITY.poor]) {
         for (const [x, y] of area.slice(0, 2000)) {
-          const normal = rgbOf(groundTint(x, y, SOIL_QUALITY.normal, 'meadow', false, season));
-          const other = rgbOf(groundTint(x, y, quality, 'meadow', false, season));
+          const normal = rgbOf(groundTint(x, y, SOIL_QUALITY.normal, 'meadow', season));
+          const other = rgbOf(groundTint(x, y, quality, 'meadow', season));
           expect(dist(normal, other), `${season} ${quality}`).toBeGreaterThan(noiseSpan);
         }
       }
     }
-  });
-
-  it('draws locked land darker and muted, over any variant', () => {
-    for (const season of SEASONS) {
-      for (const zone of ['meadow', 'forest', 'wet'] as const) {
-        const open = rgbOf(groundTint(7, 9, SOIL_QUALITY.normal, zone, false, season));
-        const locked = rgbOf(groundTint(7, 9, SOIL_QUALITY.normal, zone, true, season));
-        for (let c = 0; c < 3; c++) expect(locked[c]).toBeLessThan(open[c]);
-        expect(lum(locked) / lum(open), `${season} ${zone}`).toBeLessThan(season === 'winter' ? 0.92 : 0.8);
-      }
-      // Muted: green, the grass's strongest colour, is taken down the most while it grows.
-      const [r, g, b] = rgbOf(LOCKED_TINT[season]);
-      if (season !== 'winter') {
-        expect(g).toBeLessThan(r);
-        expect(g).toBeLessThan(b);
-      }
-    }
-    // The tint is the same multiply on every variant, so the locked look follows the tile.
-    expect(groundLook(2, 3, SOIL_QUALITY.normal, 'meadow', true, 'summer').art).toBe(groundLook(2, 3, SOIL_QUALITY.normal, 'meadow', false, 'summer').art);
   });
 });
