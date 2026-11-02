@@ -153,8 +153,13 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   forests, stone outcrops and iron veins: a grove of about 10 trees and a 2×2 outcrop on the starting land, large
   forests and more outcrops (2×2 or 3×3) on locked land, and at least two iron veins, only on locked land, one in a
   parcel next to the start. Bushes and ponds stay decorative; trees and deposits stay when their land is bought.
+  - Each forest is a conifer wood (pine and spruce), a broadleaf wood (oak and beech) or a mixed one; birches favour
+    forest edges, willows grow only near ponds (with a decorative willow or two beside each pond), and apple trees are
+    rare (the start grove and forest edges). Species is looks only: every tree gives the same wood. Neighbouring trees
+    differ a little in size, facing and tint. All of it follows from where a tree stands, so nothing is saved.
   - A **lodge** works the trees within 6 tiles of its footprint: each cycle fells the nearest grown tree in range, which
-    becomes a stump when the cycle ends and grows back about a season (32 game-minutes) later. With no grown tree in
+    becomes a stump when the cycle ends and grows back about a season (32 game-minutes) later, showing as a sapling
+    from a third of that and a young tree from two thirds. With no grown tree in
     range it waits (*no grown tree within 6 tiles*), the panel says when the next one grows back, and its farmer sets
     off again then. The build ghost shades the tiles it reaches and counts the trees there.
   - A **quarry** must stand on a stone outcrop and a **mine** on an iron vein (at least one footprint tile on it); the
@@ -411,10 +416,15 @@ on the parked cart). `window.farm.carts` lists every barn with an ox as `{ barn,
 cart's grid point, `load` the goods on the cart, `from` / `to` the pickup and store ids of the trip (null while
 parked). A carter's job in `window.farm.ext.workers.jobs` has kind `haul` and a `haul` trip with its legs. Debug
 mode adds **🐞 Free ox (debug)** to a barn's panel.
-`window.farm.map` is `{ trees: { grown, stumps }, deposits, treeAt(x, y), sprites }`: `deposits` lists every stone
-outcrop and iron vein as `{ kind: 'stone' | 'iron', x, y, w, h, left, amount }`; `treeAt(x, y)` is null or
-`{ x, y, status: 'grown' | 'stump', felledAt, regrowsAt }` (a tree a lodge is felling is grown with a `felledAt` in the
-future); `sprites` counts the tree and deposit sprites drawn. The saved layer is `window.farm.ext.map`.
+`window.farm.map` is `{ trees: { grown, stumps }, species, deposits, treeAt(x, y), treeList(), sprites, pondWillows }`:
+`deposits` lists every stone outcrop and iron vein as `{ kind: 'stone' | 'iron', x, y, w, h, left, amount }`;
+`treeAt(x, y)` is null or `{ x, y, species, stage, status: 'grown' | 'stump', felledAt, regrowsAt }` (a tree a lodge is
+felling is grown with a `felledAt` in the future) and `treeList()` gives that for every tree tile. `species` is one of
+`oak`, `pine`, `apple`, `birch`, `beech`, `spruce`, `willow` (looks only: every species gives the same wood), and
+`species` at the top counts the tree tiles of each. `stage` is `stump`, `sapling` (from a third of the regrow time),
+`young` (from two thirds) or `grown`; anything short of grown has status `stump`, so a lodge fells only grown trees.
+`sprites` counts the tree and deposit sprites drawn, and `pondWillows` the decorative willows beside ponds (not trees of
+the map: never felled or saved, gone when the land is bought). The saved layer is `window.farm.ext.map`.
 `window.farm.ground` is `{ counts, at(x, y) }`, the ground as drawn now (`src/scenes/ground.ts`; nothing saved):
 `counts` maps each ground tile (season left off, e.g. `grass_0`, `grass_clover`, `forest_1`, `wet_0`) and each zone
 (`meadow`, `forest`, `wet`) to its number of tiles; `at(x, y)` is null off the map or `{ art, tint, zone, locked }`:
@@ -582,8 +592,8 @@ src/
                        (piles.ts, `window.farm.stockpiles`)
     resources/         woodcutter's lodge, quarry, mine: work chips/dust, the yard's pile, panel
     haul/              ox barn panel (buy an ox, wait reasons), the oxcarts on the map, `window.farm.carts`
-    nature/            trees, stumps, outcrops and veins on the map; the lodge's reach on the build ghost;
-                       `window.farm.map`
+    nature/            trees (species and look per tile: species.ts), stumps, saplings, outcrops and veins on the
+                       map; the lodge's reach on the build ghost; `window.farm.map`
                        (data: src/data/resourceBuildings.ts, logic: src/logic/resources.ts)
     orders/            📋 Orders tab (⚖️ Trade, with badge) and orders panel
     families/          🏠 home room, 😊 approval and 🧺 supplies chips, the 👪 Families tab, cottage smoke and panel, arrival/departure toasts,

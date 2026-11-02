@@ -40,6 +40,8 @@ git (or rerun the commands below) after running it.
 | `tree_oak` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_oak_raw.png`, `tree_oak_{spring,autumn,winter}_raw.png` | all |
 | `tree_apple` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_apple_raw.png`, `tree_apple_{spring,autumn,winter}_raw.png` | all |
 | `tree_pine` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_pine_raw.png`, `tree_pine_winter_raw.png` (spring and autumn recoloured from summer) | all |
+| `tree_birch`, `tree_beech`, `tree_spruce`, `tree_willow` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_<species>_raw.png`, `tree_<species>_{spring,autumn,winter}_raw.png`; see **More trees and saplings** below | all |
+| `tree_sapling_broadleaf`, `tree_sapling_conifer` (base, `_spring`, `_summer`, `_autumn`, `_winter`; a felled tree growing back) | `tree_sapling_<kind>_raw.png`, `tree_sapling_<kind>_{spring,autumn,winter}_raw.png`; see **More trees and saplings** below | all |
 | `tree_stump` (base, `_spring`, `_summer`, `_autumn`, `_winter`) | `tree_stump_raw.png`, `tree_stump_winter_raw.png` (spring and autumn are the summer image) | all |
 | `rock_small`, `rock_large` (not drawn by the game yet), `outcrop_0..2`, `outcrop_spent` (stone deposits) | `rock_small_raw.png`, `rock_large_raw.png` and their `_winter_raw.png` (outcrops: the large cluster, mirrored, the single boulder, and a small boulder for worked-out) | all |
 | `vein_0`, `vein_1`, `vein_spent` (iron deposits; base, `_spring`, `_summer`, `_autumn`, `_winter`) | `vein_raw.png`, `vein_b_raw.png`, `vein_spent_raw.png` and their `_winter_raw.png` (spring to autumn are the base image) | all |
@@ -395,6 +397,62 @@ under the base (Ludo draws none). `--leaves=HUE,SAT,VAL` recolours only the gree
 Ludo needn't draw (the pine's spring and autumn). `install_prop.py` copies a fitted prop over its pack files and sets `w`, `h`, `anchor` and `origin` in
 `manifest.json` (dropping `shadow`); extra names install the same image as other seasons. `--mirror` flips the
 image, for a second variant from one Ludo image.
+
+### More trees and saplings
+
+Birch, beech, spruce, weeping willow and two saplings (broadleaf and conifer), for varied forests and visible regrowth
+(species by place, size, facing and tint per tile: `treeSpecies`, `treeLook` in `src/scenes/art.ts`). The oak file is
+not reachable by URL from a private repo, so a small copy of `tree_oak_raw.png` went through `editImage` once ("keep
+this same oak tree exactly ... redraw it crisp and clean") to get a Ludo URL, used as `style_image` for
+`generateWithStyle` (`sprite`, n=3): "A single complete, uncropped silver birch tree for an isometric farming game,
+standing alone, centered, the whole tree visible from the root flare to the crown top. A slender white trunk with black
+horizontal bark marks ... a light, airy, open crown of small bright fresh-green leaves ... Bright saturated colours, dark
+outlines, flat cel shading, two-tone shadows from the upper left. No ground, no grass, no shadow, plain background.", the
+same for "a European beech ... a smooth silver-grey trunk ... a dense, full, rounded dome crown of glossy deep-green
+leaves", "a Norway spruce ... tall, narrow and slender conical shape, about two and a half times as tall as it is wide,
+with many tiers of drooping dense dark blue-green needle branches", "a weeping willow ... long thin curtains of narrow
+light yellow-green leaves hang and droop down almost to the ground", "a young broadleaf sapling ... a thin short brown
+stem ... a small loose tuft of fresh green leaves, about knee high" and "a young conifer sapling ... a small narrow cone of
+a few tiers of dark green needle branches on a short thin brown stem". The seasons are `editImage` (n=2) on the chosen
+one ("Spring/Autumn/Winter: keep the same ... exactly, same shape, size, position, camera angle, trunk and outlines; ..."):
+fresh pale green (and catkins) in spring; golden yellow birch, copper beech, golden willow, olive spruce with cones and
+red-orange sapling leaves in autumn; bare snowy branches for the broadleaves and heavy snow on the spruce and conifer
+sapling in winter. Ludo returned most edits on a canvas 2-4% smaller than the summer image, so each season has its own
+BASE (the bottom of the trunk, measured per image) and its SCALE is the summer one times the canvas width ratio.
+A young tree is the grown sprite at 60% (`YOUNG_TREE_SCALE`), not art of its own.
+
+```bash
+mkdir -p /tmp/props
+$P $L/fit_prop.py $L/source/tree_birch_raw.png /tmp/props tree_birch 229.5 746 0.35 --shadow=30
+$P $L/fit_prop.py $L/source/tree_birch_spring_raw.png /tmp/props tree_birch_spring 229 745 0.35 --shadow=30
+$P $L/fit_prop.py $L/source/tree_birch_autumn_raw.png /tmp/props tree_birch_autumn 229 745 0.35 --shadow=30
+$P $L/fit_prop.py $L/source/tree_birch_winter_raw.png /tmp/props tree_birch_winter 229.5 746 0.35 --shadow=30
+$P $L/fit_prop.py $L/source/tree_beech_raw.png /tmp/props tree_beech 345.5 761 0.315 --shadow=44
+$P $L/fit_prop.py $L/source/tree_beech_spring_raw.png /tmp/props tree_beech_spring 338.5 728 0.3225 --shadow=44
+$P $L/fit_prop.py $L/source/tree_beech_autumn_raw.png /tmp/props tree_beech_autumn 337.5 738 0.3225 --shadow=44
+$P $L/fit_prop.py $L/source/tree_beech_winter_raw.png /tmp/props tree_beech_winter 337.5 721 0.3225 --shadow=44
+$P $L/fit_prop.py $L/source/tree_spruce_raw.png /tmp/props tree_spruce 197 732 0.41 --shadow=34
+$P $L/fit_prop.py $L/source/tree_spruce_spring_raw.png /tmp/props tree_spruce_spring 189.5 718 0.41 --shadow=34
+$P $L/fit_prop.py $L/source/tree_spruce_autumn_raw.png /tmp/props tree_spruce_autumn 190.5 717 0.41 --shadow=34
+$P $L/fit_prop.py $L/source/tree_spruce_winter_raw.png /tmp/props tree_spruce_winter 198 718 0.41 --shadow=34
+$P $L/fit_prop.py $L/source/tree_willow_raw.png /tmp/props tree_willow 417.5 717 0.34 --shadow=50
+$P $L/fit_prop.py $L/source/tree_willow_spring_raw.png /tmp/props tree_willow_spring 408 699 0.3477 --shadow=50
+$P $L/fit_prop.py $L/source/tree_willow_autumn_raw.png /tmp/props tree_willow_autumn 408.5 693 0.3477 --shadow=50
+$P $L/fit_prop.py $L/source/tree_willow_winter_raw.png /tmp/props tree_willow_winter 404.5 691 0.3477 --shadow=50
+$P $L/fit_prop.py $L/source/tree_sapling_broadleaf_raw.png /tmp/props tree_sapling_broadleaf 278 713 0.125 --shadow=16
+$P $L/fit_prop.py $L/source/tree_sapling_broadleaf_spring_raw.png /tmp/props tree_sapling_broadleaf_spring 269 692 0.1287 --shadow=16
+$P $L/fit_prop.py $L/source/tree_sapling_broadleaf_autumn_raw.png /tmp/props tree_sapling_broadleaf_autumn 270 703 0.1287 --shadow=16
+$P $L/fit_prop.py $L/source/tree_sapling_broadleaf_winter_raw.png /tmp/props tree_sapling_broadleaf_winter 269.5 689 0.1287 --shadow=16
+$P $L/fit_prop.py $L/source/tree_sapling_conifer_raw.png /tmp/props tree_sapling_conifer 265 729 0.115 --shadow=16
+$P $L/fit_prop.py $L/source/tree_sapling_conifer_spring_raw.png /tmp/props tree_sapling_conifer_spring 257 703 0.1186 --shadow=16
+$P $L/fit_prop.py $L/source/tree_sapling_conifer_autumn_raw.png /tmp/props tree_sapling_conifer_autumn 258 691 0.1186 --shadow=16
+$P $L/fit_prop.py $L/source/tree_sapling_conifer_winter_raw.png /tmp/props tree_sapling_conifer_winter 258 711 0.1186 --shadow=16
+for n in tree_birch tree_beech tree_spruce tree_willow tree_sapling_broadleaf tree_sapling_conifer; do
+  $P $L/add_asset.py tree_oak $n; for s in spring summer autumn winter; do $P $L/add_asset.py tree_oak ${n}_$s; done
+  $P $L/install_prop.py /tmp/props $n ${n}_summer
+  for s in _spring _autumn _winter; do $P $L/install_prop.py /tmp/props $n$s; done
+done
+```
 
 ### Iron veins, bushes and the pond
 

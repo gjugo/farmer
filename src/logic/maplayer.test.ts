@@ -13,12 +13,15 @@ import {
   mapCounts,
   mapOf,
   newMapLayer,
+  nextStageAt,
   occupantsOf,
   regrowAll,
+  regrowAt,
   REGROW_MS,
   sanitizeLayer,
   treeAt,
   treesInRange,
+  treeStage,
   treeStatus,
   type MapLayer,
 } from './maplayer';
@@ -341,6 +344,57 @@ describe("the woodcutter's lodge fells trees in range", () => {
     expect(results[1]).toEqual(results[0]);
     expect(ticks).toEqual(results[0]);
     expect(offline).toEqual(results[0]);
+  });
+
+  it('a felled tree shows as a stump, a sapling, a young tree, then grown, at the same times as before', () => {
+    const { game, layer } = lodge();
+    game.advance(1);
+    const tree = treeAt(layer, lodgeAt.x, lodgeAt.y + 4)!;
+    const felled = tree.felledAt!;
+    const at = (t: number) => treeStage(tree, t);
+    // Standing while the lodge works it.
+    expect(at(felled - 1)).toBe('grown');
+    expect(nextStageAt(tree, felled - 1)).toBe(felled);
+    expect(at(felled)).toBe('stump');
+    expect(at(felled + REGROW_MS / 3 - 1)).toBe('stump');
+    expect(at(felled + REGROW_MS / 3)).toBe('sapling');
+    expect(nextStageAt(tree, felled + REGROW_MS / 3)).toBe(felled + (2 * REGROW_MS) / 3);
+    expect(at(felled + (2 * REGROW_MS) / 3 - 1)).toBe('sapling');
+    expect(at(felled + (2 * REGROW_MS) / 3)).toBe('young');
+    expect(at(felled + REGROW_MS - 1)).toBe('young');
+    expect(nextStageAt(tree, felled + REGROW_MS - 1)).toBe(felled + REGROW_MS);
+    // Grown again exactly when it regrew before; the lodge takes only grown trees, so a sapling or young tree is a stump to it.
+    expect(at(felled + REGROW_MS)).toBe('grown');
+    expect(regrowAt(tree)).toBe(felled + REGROW_MS);
+    for (const t of [felled, felled + REGROW_MS / 3, felled + (2 * REGROW_MS) / 3]) expect(treeStatus(tree, t)).toBe('stump');
+    expect(treeStatus(tree, felled + REGROW_MS)).toBe('grown');
+    expect(treeStage({ x: 0, y: 0, felledAt: null }, 123)).toBe('grown');
+    expect(nextStageAt({ x: 0, y: 0, felledAt: null }, 123)).toBeNull();
+  });
+
+  it('×1, ×60 and offline catch-up show the same regrowth stages', () => {
+    const times = [10, 20, 30, 40, 50, 60].map((m) => m * MIN);
+    const stages = (game: Game) => mapOf(game.state).trees.map((t) => treeStage(t, game.now));
+    const x1 = (() => {
+      const { game } = lodge();
+      return times.map((T) => (run(game, T - game.now, MIN), stages(game)));
+    })();
+    const x60 = (() => {
+      const { game } = lodge();
+      game.setSpeed(60);
+      return times.map((T) => {
+        while (game.now < T) game.tick(Math.min(250, (T - game.now) / 60));
+        return stages(game);
+      });
+    })();
+    const offline = (() => {
+      const { game } = lodge();
+      return times.map((T) => (catchUp(game, T - game.now), stages(game)));
+    })();
+    // Along the way every stage shows.
+    expect(new Set(x1.flat())).toEqual(new Set(['grown', 'stump', 'sapling', 'young']));
+    expect(x60).toEqual(x1);
+    expect(offline).toEqual(x1);
   });
 
   it('two lodges never fell the same tree', () => {

@@ -12,11 +12,11 @@ import { footprintOf, refundOf, type DemolishCheck, type PlaceResult } from '../
 import { demolishBlockedMessage } from '../logic/storage';
 import { siteProgress } from '../logic/work';
 import { inBounds, isOwned } from '../logic/land';
-import { depositAt, mapOf, treeAt } from '../logic/maplayer';
+import { mapOf, treeAt } from '../logic/maplayer';
 import { farmhouseOf } from '../logic/roads';
 import { soilAt } from '../logic/soil';
 import type { PlacedObject } from '../logic/types';
-import { ART_RES, ART_SCALE, CURSOR, POND, sceneryArt } from './art';
+import { ART_RES, ART_SCALE, CURSOR, POND, POND_WILLOW, pondWillows, sceneryArt, sceneryClear, treeLook } from './art';
 import { GROUND_ATLAS } from './BootScene';
 import { DEPTH, setStandingDepths } from './depth';
 import { groundLook, groundZone, type GroundLook, type GroundZone } from './ground';
@@ -47,8 +47,6 @@ const KEY_PAN_SPEED = 700; // screen px per second
 const MAP_TOP_ROOM = ISO_H * 3;
 /** Buildables whose base art lies flat on the ground (under every shadow and standing thing): paths and field soil. */
 const FLAT_TYPES = new Set(['path', FIELD]);
-/** Scenery keeps this many tiles clear of owned land, where the fence-side "for sale" signs stand. */
-const SCENERY_CLEARANCE = 4;
 /** Construction sites are drawn faded to this, with a progress bar this wide (world pixels). */
 const SITE_ALPHA = 0.45;
 const SITE_BAR_W = 64;
@@ -336,7 +334,7 @@ export class FarmScene extends Phaser.Scene {
   }
 
   /**
-   * A few bushes and ponds on locked land, scattered from a fixed seed (not saved), away from the farm's edge and
+   * A few bushes and ponds (with a willow or two beside each) on locked land, scattered from a fixed seed (not saved), away from the farm's edge and
    * the map's trees and deposits. They go when their land is bought. (Trees and rocks are real and saved: see
    * `src/features/nature`.)
    */
@@ -345,23 +343,36 @@ export class FarmScene extends Phaser.Scene {
     for (const s of this.scenery) s.img.destroy();
     this.sceneryShadows.removeAll(true);
     this.scenery = [];
-    const nearOwned = (x: number, y: number) => {
-      for (let dy = -SCENERY_CLEARANCE; dy <= SCENERY_CLEARANCE; dy++) {
-        for (let dx = -SCENERY_CLEARANCE; dx <= SCENERY_CLEARANCE; dx++) if (isOwned(land, x + dx, y + dy)) return true;
-      }
-      return false;
-    };
     const layer = mapOf(this.farm.state);
+    const clear = (x: number, y: number) => sceneryClear(land, layer, x, y);
+    const willows = new Set<string>();
     const ponds = new Set<number>();
+    const place = (x: number, y: number, art: string) => {
+      const at = gridToWorld(x, y);
+      const img = addArt(this, at.x, at.y, art);
+      this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img });
+      const shadow = addShadow(this, at.x, at.y, art);
+      if (shadow) this.sceneryShadows.add(shadow);
+      return img;
+    };
     for (let y = 0; y < land.height; y++) {
       for (let x = 0; x < land.width; x++) {
         const art = sceneryArt(x, y);
-        if (!art || isOwned(land, x, y) || nearOwned(x, y) || treeAt(layer, x, y) || depositAt(layer, x, y)) continue;
-        if (art === POND) ponds.add(y * land.width + x);
-        const at = gridToWorld(x, y);
-        this.scenery.push({ fp: { x, y, w: 1, h: 1 }, img: addArt(this, at.x, at.y, art) });
-        const shadow = addShadow(this, at.x, at.y, art);
-        if (shadow) this.sceneryShadows.add(shadow);
+        if (!art || !clear(x, y)) continue;
+        place(x, y, art);
+        if (art !== POND) continue;
+        ponds.add(y * land.width + x);
+        // A willow or two beside the pond: decoration like the pond, not a tree of the map (never felled or saved).
+        const { count, spots } = pondWillows(x, y);
+        for (const s of spots.filter((s) => clear(s.x, s.y) && !sceneryArt(s.x, s.y) && !willows.has(`${s.x},${s.y}`)).slice(0, count)) {
+          willows.add(`${s.x},${s.y}`);
+          const look = treeLook(s.x, s.y);
+          place(s.x, s.y, POND_WILLOW)
+            .setName('pond-willow')
+            .setFlipX(look.flip)
+            .setTint(look.tint)
+            .setScale(ART_SCALE * look.scale);
+        }
       }
     }
     // Buying land near a pond takes it away, and its wet meadow with it.
