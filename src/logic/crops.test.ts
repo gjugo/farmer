@@ -182,7 +182,7 @@ describe('harvest', () => {
   });
 
   it('yields each crop\'s quantity on normal soil', () => {
-    const yields: Record<string, number> = { wheat: 10, carrot: 10, potato: 14, corn: 12, barley: 10, flax: 8, cabbage: 10, pumpkin: 6 };
+    const yields: Record<string, number> = { wheat: 10, carrot: 10, potato: 14, corn: 12, barley: 10, flax: 8, cabbage: 10, rye: 12, pumpkin: 6 };
     expect(Object.keys(yields).sort()).toEqual(Object.keys(CROPS).sort());
     for (const crop of Object.values(CROPS)) {
       const game = new Game(maxLevelState());
@@ -282,7 +282,7 @@ describe('seasons and ploughing', () => {
     };
     expect(sowable(0)).toEqual(['wheat', 'carrot', 'potato', 'corn', 'barley', 'flax']);
     expect(sowable(SUMMER)).toEqual(['wheat', 'potato', 'corn', 'barley', 'flax', 'pumpkin']);
-    expect(sowable(AUTUMN)).toEqual(['wheat', 'carrot', 'cabbage', 'pumpkin']);
+    expect(sowable(AUTUMN)).toEqual(['wheat', 'carrot', 'cabbage', 'rye', 'pumpkin']);
     // Nothing is sown in frozen ground, not even the winter crop.
     expect(sowable(WINTER)).toEqual([]);
 
@@ -363,6 +363,29 @@ describe('seasons and ploughing', () => {
     expect(cropStage(game.state.clock, field.state)).toBe('empty');
     expect(isPloughed(game.state.clock, field.state)).toBe(false);
     expect(plough(game, field)).toEqual({ ok: false, reason: 'season' });
+  });
+
+  it('winter rye is sown in autumn only (from level 3), and one sown late in autumn ripens in winter and keeps in the frozen field', () => {
+    expect(sowSeasons(CROPS.rye)).toEqual(['autumn']);
+    expect(CROPS.rye.unlockLevel).toBe(3);
+    // It asks little of the soil.
+    expect(CROPS.rye.soilDrain).toBeLessThan(Math.min(...Object.values(CROPS).filter((c) => c.id !== 'rye').map((c) => c.soilDrain)));
+    for (const at of [0, SUMMER, WINTER + 1000]) expect(seasonCheck({ elapsed: at + 1000, speed: 1 }, CROPS.rye), String(at)).toBe('out-of-season');
+    const game = new Game(maxLevelState());
+    const field = firstField(game);
+    const sown = WINTER - SEASON_MS / 4;
+    game.state.clock.elapsed = sown;
+    plough(game, field);
+    expect(plant(game, field, 'rye')).toEqual({ ok: true });
+    game.state.clock.elapsed = WINTER + 1000;
+    expect(field.state.crop).toBe('rye');
+    expect(cropStage(game.state.clock, field.state)).not.toBe('ripe');
+    // Ripe in winter, and still standing ripe at the end of it.
+    game.state.clock.elapsed = NEXT_SPRING - 1000;
+    expect(cropStage(game.state.clock, field.state)).toBe('ripe');
+    const r = harvest(game, field);
+    expect(r).toMatchObject({ ok: true, crop: CROPS.rye });
+    expect(game.count('rye')).toBe(r.ok ? r.qty : -1);
   });
 
   it('keeps ploughing across save and load', () => {

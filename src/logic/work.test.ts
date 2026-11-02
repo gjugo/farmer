@@ -216,8 +216,8 @@ describe('work scheduler', () => {
     const game = farm();
     const dairy = build<ProcessorState>(game, 'dairy', X + 1, Y + 5);
     game.addItem('milk', 4);
-    // The family eats from the first foods in stock (wheat, carrots), leaving the milk and butter alone.
-    Object.assign(game.state.inventory, { wheat: 4, carrot: 4 });
+    // The family eats from the first foods in stock (carrots, potatoes), leaving the milk and butter alone.
+    Object.assign(game.state.inventory, { potato: 4, carrot: 4 });
     setKeepMaking(game, dairy.id, 'butter');
     expect(keepMakingOf(game.state, dairy.id)).toBe('butter');
     assignFarmer(game, dairy.id);
@@ -244,7 +244,7 @@ describe('work scheduler', () => {
     const recipe = PROCESSORS[type].recipes.find((r) => r.id === recipeId)!;
     const batches = QUEUE_LIMIT + 1;
     for (const [id, n] of Object.entries(recipe.inputs)) game.addItem(id, n! * batches);
-    Object.assign(game.state.inventory, { wheat: 20, carrot: 20 });
+    Object.assign(game.state.inventory, { potato: 20, carrot: 20 });
     // The family drinks ale as it comes in: count what they drank as made too.
     let drunk = 0;
     game.activity.on('familiesSettled', () => (drunk += familiesOf(game.state).lastDay?.aleDrunk ?? 0));
@@ -387,7 +387,7 @@ describe('work scheduler', () => {
     game.addItem('feed', 500);
     assignFarmer(game, coop.id);
     const mill = build<ProcessorState>(game, 'feed-mill', X + 6, Y + 5);
-    setKeepMaking(game, mill.id, 'feed-from-wheat');
+    setKeepMaking(game, mill.id, 'flour');
     game.addItem('wheat', 400);
     assignFarmer(game, mill.id);
     granaries(game, 4);
@@ -396,7 +396,7 @@ describe('work scheduler', () => {
     const result = catchUp(game, 7 * 24 * HOUR);
     expect(performance.now() - started).toBeLessThan(3000);
     expect(result.work.harvested.corn).toBeGreaterThan(0);
-    expect(result.work.made.feed).toBeGreaterThan(0);
+    expect(result.work.made.flour).toBeGreaterThan(0);
     expect(nextWorkEvent(game)).toBeGreaterThan(game.now);
   });
 
@@ -404,13 +404,13 @@ describe('work scheduler', () => {
     const game = farm();
     const [field] = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
     addFarmer(game);
-    game.addItem('wheat', 6); // the families' first meals, until the corn comes in
+    game.addItem('potato', 6); // the families' first meals, until the corn comes in
     assignFarmer(game, field.id);
     setCropPlan(game, field.id, 'corn');
     // Two corn harvests come in, and a third is sown.
     play(game, 2 * CROPS.corn.growMs + 5 * MIN);
     // Fill the store, so the third harvest has no room.
-    game.addItem('wheat', game.spaceFor('wheat'));
+    game.addItem('potato', game.spaceFor('potato'));
     play(game, CROPS.corn.growMs);
     expect(cropStage(game.state.clock, field.state)).toBe('ripe');
     expect(game.spaceFor('corn')).toBeLessThan(CROPS.corn.harvestQty);
@@ -428,7 +428,7 @@ describe('work scheduler', () => {
     log.length = 0;
     for (let i = 0; i < 300 && !log.includes('fed'); i++) play(game, 1000);
     expect(log).toContain('fed');
-    game.addItem('wheat', 1000); // fill the farmhouse store (feeding freed some)
+    game.addItem('potato', 1000); // fill the farmhouse store (feeding freed some)
     log.length = 0;
     play(game, ANIMALS.chicken.cycleMs);
 
@@ -437,7 +437,7 @@ describe('work scheduler', () => {
     expect(workplaceNext(game, field)).toEqual({ wait: 'full' });
     expect(workplaceNext(game, coop)).toEqual({ wait: 'full' });
 
-    for (const id of ['wheat', 'corn']) game.removeItem(id, game.count(id));
+    for (const id of ['potato', 'corn']) game.removeItem(id, game.count(id));
     play(game, MIN);
     expect(log).toContain('harvested');
     expect(log).toContain('collected');
@@ -446,12 +446,12 @@ describe('work scheduler', () => {
   it('a building keeps loading its queue while its goods wait for room', () => {
     const game = farm();
     const mill = build<ProcessorState>(game, 'feed-mill', X + 6, Y + 5);
-    mill.state.ready = { feed: 5 };
+    mill.state.ready = { flour: 5 };
     game.addItem('wheat', 10);
     game.addItem('corn', 1000); // fill the farmhouse store
-    expect(game.spaceFor('feed')).toBe(0);
+    expect(game.spaceFor('flour')).toBe(0);
     expect(workplaceNext(game, mill)).toEqual({ wait: 'full' });
-    setKeepMaking(game, mill.id, 'feed-from-wheat');
+    setKeepMaking(game, mill.id, 'flour');
     expect(workplaceNext(game, mill)).toMatchObject({ task: { kind: 'load' } });
   });
 
@@ -506,7 +506,9 @@ describe('work scheduler', () => {
     expect(plannedCrop(game, field.id)?.id).toBe('cabbage');
     game.state.clock.elapsed = 3 * SEASON_MS - CROPS.pumpkin.growMs + 1; // late autumn: pumpkin no longer ripens in time
     expect(plannedCrop(game, field.id)?.id).toBe('cabbage');
-    game.state.clock.elapsed = 4 * SEASON_MS - CROPS.cabbage.growMs + 1; // too late for cabbage, and so for everything
+    game.state.clock.elapsed = 4 * SEASON_MS - CROPS.cabbage.growMs + 1; // too late for cabbage: winter rye still ripens
+    expect(plannedCrop(game, field.id)?.id).toBe('rye');
+    game.state.clock.elapsed = 4 * SEASON_MS - CROPS.rye.growMs + 1; // too late for rye, and so for everything
     expect(plannedCrop(game, field.id)).toBeNull();
     game.state.clock.elapsed = 3 * SEASON_MS + 1000; // winter: nothing is sown, not even cabbage
     expect(plannedCrop(game, field.id)).toBeNull();
@@ -517,7 +519,7 @@ describe('work scheduler', () => {
   it('a farmer sows cabbage in autumn and harvests it in winter, after the frost', () => {
     const game = farm();
     const [field] = game.objectsOfType(FIELD) as PlacedObject<FieldState>[];
-    game.addItem('wheat', 20); // the family's meals
+    game.addItem('potato', 20); // the family's meals
     game.state.clock.elapsed = 2 * SEASON_MS; // autumn
     assignFarmer(game, field.id);
     setCropPlan(game, field.id, 'cabbage');
@@ -531,14 +533,16 @@ describe('work scheduler', () => {
     expect(game.count('cabbage')).toBeGreaterThan(0);
   });
 
-  it('"Best in season" weighs all eight crops by level: corn at level 4, potato at level 3', () => {
+  it('"Best in season" weighs all nine crops by level: corn at level 4, potato and winter rye at level 3', () => {
     const game = farm();
     const [field] = game.objectsOfType(FIELD);
     assignFarmer(game, field.id);
-    expect(CROP_LIST).toHaveLength(8);
+    expect(CROP_LIST).toHaveLength(9);
     game.progression.setLevel(3);
     expect(plannedCrop(game, field.id)?.id).toBe('potato');
-    game.state.clock.elapsed = 2 * SEASON_MS; // autumn at level 3: carrot (no cabbage before level 6)
+    game.state.clock.elapsed = 2 * SEASON_MS; // autumn at level 3: winter rye (no cabbage before level 6)
+    expect(plannedCrop(game, field.id)?.id).toBe('rye');
+    game.progression.setLevel(2); // and carrot before rye comes
     expect(plannedCrop(game, field.id)?.id).toBe('carrot');
     game.progression.setLevel(6);
     expect(plannedCrop(game, field.id)?.id).toBe('cabbage');

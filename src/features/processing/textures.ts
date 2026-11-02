@@ -4,7 +4,7 @@ import { registerTexture } from '../../scenes/textures';
 /**
  * Where smoke rises while a building works, in pixels of its 2x pack sprite: the bakery's oven chimney, the
  * dairy's chimney and the weaving hut's stovepipe (the Ludo.ai hut, `tools/ludo/source/weaving_hut_raw.png`), and the
- * chimneys of the malthouse (beside its kiln vent), brewery and tailor, and the blacksmith's forge chimney. The feed mill
+ * chimneys of the malthouse (beside its kiln vent), brewery and tailor, and the blacksmith's forge chimney. The Windmill
  * turns its sails instead.
  */
 export const SMOKE_AT: Partial<Record<ProcessorType, { x: number; y: number }>> = {

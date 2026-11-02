@@ -46,7 +46,7 @@ describe('suppliesOf', () => {
     const game = new Game();
     const families = familiesCount(game.state);
     for (const id of Object.keys(game.state.inventory)) game.state.inventory[id] = 0;
-    game.state.inventory.wheat = 6 * families * MEAL_PER_FAMILY;
+    game.state.inventory.potato = 6 * families * MEAL_PER_FAMILY;
     game.state.inventory.egg = 2 * families * MEAL_PER_FAMILY;
     game.state.inventory.wood = 0;
     expect(suppliesOf(game.state)).toMatchObject({ days: 8, limit: 'food', firewood: null });

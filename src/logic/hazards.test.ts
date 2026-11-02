@@ -266,7 +266,7 @@ describe('harsh winter', () => {
     place(game, COTTAGE, X, Y);
     place(game, 'granary', X + 4, Y);
     addFarmer(game);
-    game.addItem('wheat', 80);
+    game.addItem('potato', 80);
     // Autumn: announce the coming winter as harsh.
     game.advance(2 * SEASON_MS - game.now);
     expect(triggerHazard(game, 'harsh-winter').ok).toBe(true);
@@ -295,7 +295,7 @@ describe('harsh winter', () => {
     const game = farm();
     game.advance(2 * SEASON_MS - game.now);
     triggerHazard(game, 'harsh-winter');
-    game.addItem('wheat', 50);
+    game.addItem('potato', 50);
     game.addItem('wood', 20);
     game.advance(3 * SEASON_MS - game.now);
     expect(familiesOf(game.state).lastDay!.firewood).toBe(1);
@@ -314,7 +314,7 @@ function workingFarm(seed: number): Game {
   });
   place(game, COTTAGE, X, Y);
   coop(game, 5, X + 4, Y);
-  game.addItem('wheat', 40);
+  game.addItem('potato', 40);
   // Feed in store: nobody works the coop, so it is never eaten, and no chicken starves in winter.
   game.addItem('feed', 5);
   return game;

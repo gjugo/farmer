@@ -3,6 +3,7 @@ import { getBuildable } from '../data/buildables';
 import { FIELD } from '../data/crops';
 import { FARMHOUSE } from '../data/farmhouse';
 import { isResourceType } from '../data/resourceBuildings';
+import { MILL } from '../data/processing';
 import { PLOUGH_SEASONS } from '../data/seasons';
 import { MAP_HEIGHT, MAP_WIDTH, START_LAND } from './constants';
 import { createLand, type Rect } from './land';
@@ -10,7 +11,7 @@ import { MAP_BLOCKS, MAP_SLICE, migrateMapLayer } from './maplayer';
 import { initialProgression, PROGRESSION } from './progression';
 import { seasonAt } from './seasons';
 import { areaSoil } from './soil';
-import { STORAGE_SLICE } from './storage';
+import { spaceFor, STORAGE_SLICE } from './storage';
 import { migrateOrdersSlice } from './orders';
 import { GUIDE_STEPS } from '../data/guide';
 import { FARMHOUSE_GROWN_IN, growFarmhouse } from './farmhouse';
@@ -31,7 +32,7 @@ export const SAVE_KEY = 'farmer.save';
  * restructuring) and add a migration below. Purely additive fields need no bump:
  * `normalize` fills anything missing with defaults.
  */
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 
 export interface SaveFile {
   version: number;
@@ -246,7 +247,48 @@ const migrations: Record<number, (raw: RawSave) => RawSave> = {
       : state.objects;
     return { ...raw, version: 19, state: { ...state, objects } };
   },
+  // The feed mill became the Windmill, which grinds flour (the Feed Barn makes feed). Its feed jobs are refunded when
+  // the save loads (`refundMillFeed`, since that needs the farm's storage room); here a "Keep making" set to a feed
+  // recipe is cleared. Feed waiting in a mill stays to be collected, and bakery jobs on the old bread recipe just finish.
+  19: (raw) => {
+    const state = isPlainObject(raw.state) ? raw.state : {};
+    const ext = isPlainObject(state.ext) ? state.ext : {};
+    const workers = ext.workers;
+    if (!isPlainObject(workers) || !isPlainObject(workers.recipes)) return { ...raw, version: 20 };
+    const recipes = Object.fromEntries(Object.entries(workers.recipes).filter(([, r]) => typeof r !== 'string' || !Object.hasOwn(OLD_MILL_FEED, r)));
+    return { ...raw, version: 20, state: { ...state, ext: { ...ext, workers: { ...workers, recipes } } } };
+  },
 };
+
+/** The feed mill's recipes before it became the Windmill (version 19): what each job took. */
+const OLD_MILL_FEED: Readonly<Record<string, Inventory>> = {
+  'feed-from-wheat': { wheat: 2 },
+  'feed-from-corn': { corn: 1 },
+  'feed-from-barley': { barley: 2 },
+};
+
+/** Saves older than this may have feed jobs queued at the mill (`refundMillFeed`). */
+export const MILL_FLOUR_IN = 20;
+
+/**
+ * The feed jobs queued or running at a mill from before it became the Windmill are dropped, and their inputs go back
+ * into store while there is room (what doesn't fit is lost). Only for saves from before `MILL_FLOUR_IN`.
+ */
+export function refundMillFeed(state: GameState): void {
+  for (const o of state.objects) {
+    if (o.type !== MILL || !Array.isArray(o.state.queue)) continue;
+    const queue = o.state.queue as unknown[];
+    const old = queue.filter((j) => isPlainObject(j) && typeof j.recipe === 'string' && Object.hasOwn(OLD_MILL_FEED, j.recipe));
+    if (old.length === 0) continue;
+    o.state.queue = queue.filter((j) => !old.includes(j));
+    for (const job of old as { recipe: string }[]) {
+      for (const [item, qty] of Object.entries(OLD_MILL_FEED[job.recipe])) {
+        const n = Math.min(qty, spaceFor(state, item));
+        if (n > 0) state.inventory[item] = (state.inventory[item] ?? 0) + n;
+      }
+    }
+  }
+}
 
 /** Version 16's guide steps, in order. */
 const GUIDE_V16 = ['look', 'assign', 'speed', 'sow', 'develop', 'field', 'harvest', 'materials', 'post', 'sell', 'granary', 'cottage', 'done'];
@@ -363,6 +405,7 @@ export function parseSave(json: string | null | undefined): LoadedSave {
   const repairFarmhouse = version < FARMHOUSE_REPAIR_BEFORE;
   // A farmhouse saved with a level is the 3×3 one already (one laid out by today's code, then saved as older).
   const growHouse = version < FARMHOUSE_GROWN_IN && !savedWithLevel(file);
+  const refundMill = version < MILL_FLOUR_IN;
   while (version < SAVE_VERSION) {
     const migrate = migrations[version];
     if (!migrate) return fresh();
@@ -370,15 +413,19 @@ export function parseSave(json: string | null | undefined): LoadedSave {
     version++;
   }
   const savedAt = isNonNegNumber(file.savedAt) ? file.savedAt : null;
-  return { state: normalize(file.state, { repairFarmhouse, growHouse }), savedAt };
+  return { state: normalize(file.state, { repairFarmhouse, growHouse, refundMill }), savedAt };
 }
 
 /**
  * Builds a valid GameState from untrusted data, falling back to new-game defaults field by field. `repairFarmhouse`:
  * a save from before the farmhouse was built later, which gets one (with paths) if it has none. `growHouse`: a save
- * from before the farmhouse was 3×3, whose 2×2 one grows.
+ * from before the farmhouse was 3×3, whose 2×2 one grows. `refundMill`: a save from before the Windmill, whose mill
+ * may still have feed jobs (`refundMillFeed`).
  */
-export function normalize(input: unknown, { repairFarmhouse = false, growHouse = false }: { repairFarmhouse?: boolean; growHouse?: boolean } = {}): GameState {
+export function normalize(
+  input: unknown,
+  { repairFarmhouse = false, growHouse = false, refundMill = false }: { repairFarmhouse?: boolean; growHouse?: boolean; refundMill?: boolean } = {},
+): GameState {
   const base = createNewGame();
   if (!isPlainObject(input)) return base;
 
@@ -401,6 +448,8 @@ export function normalize(input: unknown, { repairFarmhouse = false, growHouse =
   if (repairFarmhouse) ensureFarmhouse(state);
   // Farms from before the main road get one (from their seed, round what they have built).
   ensureMainRoad(state);
+  // The mill's feed jobs from before it ground flour go back into store.
+  if (refundMill) refundMillFeed(state);
   return state;
 }
 

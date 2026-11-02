@@ -23,6 +23,8 @@ export const ITEMS = {
   flax: { id: 'flax', name: 'Flax', category: 'crop', price: 10, icon: '🪻' },
   cabbage: { id: 'cabbage', name: 'Cabbage', category: 'crop', price: 14, icon: '🥬' },
   pumpkin: { id: 'pumpkin', name: 'Pumpkin', category: 'crop', price: 32, icon: '🎃' },
+  // Winter rye: milled into rye flour, never eaten raw.
+  rye: { id: 'rye', name: 'Rye', category: 'crop', price: 4, icon: '🎋' },
   // Picked in the orchards beside the homes (see `src/data/gardens.ts`).
   apple: { id: 'apple', name: 'Apple', category: 'crop', price: 7, icon: '🍎' },
   egg: { id: 'egg', name: 'Egg', category: 'animal-product', price: 10, icon: '🥚' },
@@ -31,7 +33,11 @@ export const ITEMS = {
   feed: { id: 'feed', name: 'Feed', category: 'feed', price: 3, icon: '🌰' },
   cheese: { id: 'cheese', name: 'Cheese', category: 'processed', price: 50, icon: '🧀' },
   butter: { id: 'butter', name: 'Butter', category: 'processed', price: 30, icon: '🧈' },
-  bread: { id: 'bread', name: 'Bread', category: 'processed', price: 40, icon: '🍞' },
+  // The grain chain: the Windmill grinds wheat or rye into flour, the bakery bakes it into bread (see `src/data/processing.ts`).
+  flour: { id: 'flour', name: 'Wheat flour', category: 'processed', price: 5, icon: '🥣' },
+  'rye-flour': { id: 'rye-flour', name: 'Rye flour', category: 'processed', price: 5, icon: '🫙' },
+  bread: { id: 'bread', name: 'Bread', category: 'processed', price: 8, icon: '🍞' },
+  'rye-bread': { id: 'rye-bread', name: 'Rye bread', category: 'processed', price: 9, icon: '🥖' },
   cloth: { id: 'cloth', name: 'Cloth', category: 'processed', price: 75, icon: '🧵' },
   malt: { id: 'malt', name: 'Malt', category: 'processed', price: 12, icon: '🫘' },
   ale: { id: 'ale', name: 'Ale', category: 'processed', price: 90, icon: '🍺' },

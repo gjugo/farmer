@@ -34,24 +34,29 @@ export interface ProcessorDef {
   recipes: readonly RecipeDef[];
 }
 
+/** The Windmill's id: the feed mill's, so saves and art carry over. */
+export const MILL = 'feed-mill';
+
 /** Jobs a building can hold at once (the running one included). */
 export const QUEUE_LIMIT = 3;
 
 export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
+  // The Windmill (its id, art and sails are the old feed mill's, so saves and art carry over): grain into flour for
+  // the bakery, like Manor Lords' windmill. Feed is made at the Feed Barn.
   'feed-mill': {
     id: 'feed-mill',
-    name: 'Feed Mill',
-    icon: '🌰',
+    name: 'Windmill',
+    icon: '🌬️',
     cost: 110,
     materials: { wood: 10, stone: 4 },
     footprint: { w: 2, h: 2 },
-    description: 'Grinds wheat, corn and barley into animal feed.',
-    unlockLevel: 4,
+    description: 'Grinds wheat and rye into flour for the bakery.',
+    unlockLevel: 2,
     anim: 'sails',
     recipes: [
-      { id: 'feed-from-wheat', inputs: { wheat: 2 }, output: { item: 'feed', qty: 3 }, durationMs: 120_000 },
-      { id: 'feed-from-corn', inputs: { corn: 1 }, output: { item: 'feed', qty: 2 }, durationMs: 120_000 },
-      { id: 'feed-from-barley', inputs: { barley: 2 }, output: { item: 'feed', qty: 4 }, durationMs: 120_000 },
+      { id: 'flour', inputs: { wheat: 3 }, output: { item: 'flour', qty: 3 }, durationMs: 120_000 },
+      // Rye comes at level 3.
+      { id: 'rye-flour', inputs: { rye: 3 }, output: { item: 'rye-flour', qty: 3 }, durationMs: 120_000, unlockLevel: 3 },
     ],
   },
   // The animals' own building, like Manor Lords' livestock farm: grain into winter feed at 1:2. In Farming, by the pens.
@@ -95,10 +100,14 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     cost: 245,
     materials: { wood: 6, stone: 10 },
     footprint: { w: 3, h: 2 },
-    description: 'Bakes bread from wheat and eggs.',
+    description: 'Bakes flour from the Windmill into bread, and rye flour into rye bread. Families eat both.',
     unlockLevel: 2,
     anim: 'smoke',
-    recipes: [{ id: 'bread', inputs: { wheat: 3, egg: 1 }, output: { item: 'bread', qty: 1 }, durationMs: 300_000 }],
+    recipes: [
+      // Baking stretches the grain: 2 flour make 3 loaves.
+      { id: 'bread', inputs: { flour: 2 }, output: { item: 'bread', qty: 3 }, durationMs: 240_000 },
+      { id: 'rye-bread', inputs: { 'rye-flour': 2 }, output: { item: 'rye-bread', qty: 3 }, durationMs: 240_000, unlockLevel: 3 },
+    ],
   },
   loom: {
     id: 'loom',

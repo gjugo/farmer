@@ -253,9 +253,9 @@ export function artFor(key: string): string {
 
 /** Growth stage of a crop → the pack's stage sprite. */
 const CROP_STAGES = { seeded: '0_seeded', sprout: '1_sprout', growing: '2_growing', ripe: '3_ripe' } as const;
-export const CROP_ART_IDS = ['wheat', 'carrot', 'corn', 'potato', 'barley', 'flax', 'cabbage', 'pumpkin'] as const;
+export const CROP_ART_IDS = ['wheat', 'carrot', 'corn', 'potato', 'barley', 'flax', 'cabbage', 'rye', 'pumpkin'] as const;
 /** Crops that stand in the field in winter have a frosted `<crop>_<stage>_winter` version of every stage. */
-export const WINTER_CROP_ART_IDS = ['cabbage'] as const;
+export const WINTER_CROP_ART_IDS = ['cabbage', 'rye'] as const;
 
 /** One tile's worth of a crop at a stage, e.g. `corn_2_growing`; null for an empty field or a crop without art. */
 export function cropArt(cropId: string, stage: string): string | null {
@@ -353,13 +353,14 @@ export function cartLoadArt(load: Record<string, number>): string | null {
   return pileArt(kind, total > 10 ? 2 : 1);
 }
 
-/** Feed mill body and its turning sails (same canvas and anchor). */
+/** Windmill body and its turning sails (same canvas and anchor; the art keeps the feed mill's names). */
 export const MILL = { body: 'feed_mill', sails: 'feed_mill_sails', spin: 'feed_mill_sails_spin' } as const;
 
 /** Item icons in the pack: every item of the game, plus coins for money. */
 export const ICON_ART = [
   'egg', 'milk', 'wool', 'feed', 'cheese', 'butter', 'bread', 'cloth', 'malt', 'ale', 'linen', 'clothes', 'wheat', 'carrot',
   'corn', 'potato', 'barley', 'flax', 'cabbage', 'pumpkin', 'apple', 'wood', 'stone', 'iron', 'manure', 'tools', 'coins',
+  'rye', 'flour', 'rye-flour', 'rye-bread',
 ] as const;
 
 /** URL of an item icon for the HTML overlay (1x is plenty for a 24 px icon on a 3x screen). */

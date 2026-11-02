@@ -142,13 +142,13 @@ describe('adding items', () => {
   });
 
   it('frees room at once when selling or when processing takes inputs', () => {
-    const game = farm({ wheat: 46, egg: 4 });
+    const game = farm({ wheat: 46, flour: 4 });
     const bakery = build<ProcessorState>(game, 'bakery', fx, fy);
     expect(spaceFor(game.state, 'milk')).toBe(0);
     expect(startJob(game, bakery, 'bread').ok).toBe(true);
-    expect(spaceFor(game.state, 'milk')).toBe(4);
+    expect(spaceFor(game.state, 'milk')).toBe(2);
     sell(game, 'wheat', 3);
-    expect(spaceFor(game.state, 'milk')).toBe(7);
+    expect(spaceFor(game.state, 'milk')).toBe(5);
   });
 });
 
@@ -309,10 +309,10 @@ describe('demolishing', () => {
 
 describe('offline catch-up', () => {
   it('puts nothing in the inventory: goods wait in pens and buildings, even with the granary full', () => {
-    const game = farm({ wheat: 50, milk: 2 });
+    const game = farm({ potato: 50, milk: 2 });
     const dairy = build<ProcessorState>(game, 'dairy', fx, fy);
     startJob(game, dairy, 'cheese');
-    game.state.inventory.wheat = 50;
+    game.state.inventory.potato = 50;
     const g = new Game(game.state);
     const added: string[] = [];
     g.events.on('inventory', ({ itemId, delta }) => delta > 0 && added.push(itemId));
@@ -320,7 +320,7 @@ describe('offline catch-up', () => {
     expect(r.produced).toEqual({ cheese: 1 });
     // Only the family's meals left the store; nothing came in.
     expect(added).toEqual([]);
-    expect(game.state.inventory.wheat).toBe(50 - 2 * 7);
+    expect(game.state.inventory.potato).toBe(50 - 2 * 7);
     expect(outputReady(dairy)).toBe(1);
   });
 });
