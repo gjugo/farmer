@@ -3418,6 +3418,126 @@
    ]
   },
   {
+   "name": "ox",
+   "category": "animals",
+   "type": "spritesheet",
+   "notes": "the ox barn's ox: rows = anim x direction (idle, walk x se, sw, ne, nw); anchor = ground point under the animal's centre (Ludo.ai Directional Sprites, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/animals/ox.png",
+     "frameWidth": 172,
+     "frameHeight": 154,
+     "columns": 12,
+     "rows": 8,
+     "anchor": [
+      86.0,
+      131.0
+     ],
+     "origin": [
+      0.5,
+      0.85065
+     ]
+    },
+    "1x": {
+     "file": "1x/animals/ox.png",
+     "frameWidth": 86,
+     "frameHeight": 77,
+     "columns": 12,
+     "rows": 8,
+     "anchor": [
+      43.0,
+      65.5
+     ],
+     "origin": [
+      0.5,
+      0.85065
+     ]
+    }
+   },
+   "animations": [
+    {
+     "key": "ox_idle_se",
+     "anim": "idle",
+     "dir": "se",
+     "start": 0,
+     "end": 11,
+     "frames": 12,
+     "fps": 5.0,
+     "repeat": -1
+    },
+    {
+     "key": "ox_idle_sw",
+     "anim": "idle",
+     "dir": "sw",
+     "start": 12,
+     "end": 23,
+     "frames": 12,
+     "fps": 5.0,
+     "repeat": -1
+    },
+    {
+     "key": "ox_idle_ne",
+     "anim": "idle",
+     "dir": "ne",
+     "start": 24,
+     "end": 35,
+     "frames": 12,
+     "fps": 5.0,
+     "repeat": -1
+    },
+    {
+     "key": "ox_idle_nw",
+     "anim": "idle",
+     "dir": "nw",
+     "start": 36,
+     "end": 47,
+     "frames": 12,
+     "fps": 5.0,
+     "repeat": -1
+    },
+    {
+     "key": "ox_walk_se",
+     "anim": "walk",
+     "dir": "se",
+     "start": 48,
+     "end": 59,
+     "frames": 12,
+     "fps": 10.0,
+     "repeat": -1
+    },
+    {
+     "key": "ox_walk_sw",
+     "anim": "walk",
+     "dir": "sw",
+     "start": 60,
+     "end": 71,
+     "frames": 12,
+     "fps": 10.0,
+     "repeat": -1
+    },
+    {
+     "key": "ox_walk_ne",
+     "anim": "walk",
+     "dir": "ne",
+     "start": 72,
+     "end": 83,
+     "frames": 12,
+     "fps": 10.0,
+     "repeat": -1
+    },
+    {
+     "key": "ox_walk_nw",
+     "anim": "walk",
+     "dir": "nw",
+     "start": 84,
+     "end": 95,
+     "frames": 12,
+     "fps": 10.0,
+     "repeat": -1
+    }
+   ]
+  },
+  {
    "name": "sheep",
    "category": "animals",
    "type": "spritesheet",
@@ -4241,6 +4361,82 @@
      "origin": [
       0.40094,
       0.2122
+     ]
+    }
+   }
+  },
+  {
+   "name": "ox_barn",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "ox barn, 3x2 (3 tiles along x, 2 along y), cart door on the short front-right wall (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/ox_barn.png",
+     "w": 635,
+     "h": 382,
+     "anchor": [
+      255.0,
+      61.0
+     ],
+     "origin": [
+      0.40157,
+      0.15969
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/ox_barn.png",
+     "w": 318,
+     "h": 191,
+     "anchor": [
+      127.5,
+      30.5
+     ],
+     "origin": [
+      0.40094,
+      0.15969
+     ]
+    }
+   }
+  },
+  {
+   "name": "ox_barn_winter",
+   "category": "buildings",
+   "type": "image",
+   "footprint": [
+    3,
+    2
+   ],
+   "notes": "ox barn, 3x2 (3 tiles along x, 2 along y), cart door on the short front-right wall (Ludo.ai, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/buildings/ox_barn_winter.png",
+     "w": 635,
+     "h": 380,
+     "anchor": [
+      255.0,
+      59.0
+     ],
+     "origin": [
+      0.40157,
+      0.15526
+     ]
+    },
+    "1x": {
+     "file": "1x/buildings/ox_barn_winter.png",
+     "w": 318,
+     "h": 190,
+     "anchor": [
+      127.5,
+      29.5
+     ],
+     "origin": [
+      0.40094,
+      0.15526
      ]
     }
    }
@@ -6007,6 +6203,158 @@
      "origin": [
       0.45833,
       0.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "cart_se",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "the oxcart heading this way, base = the middle of the cart on the ground, at (0.5, 0.5) of its tile (Ludo.ai 3D prop, Directional Stills, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/cart_se.png",
+     "w": 191,
+     "h": 137,
+     "anchor": [
+      71.0,
+      30.0
+     ],
+     "origin": [
+      0.37173,
+      0.21898
+     ]
+    },
+    "1x": {
+     "file": "1x/props/cart_se.png",
+     "w": 96,
+     "h": 68,
+     "anchor": [
+      35.5,
+      15.0
+     ],
+     "origin": [
+      0.36979,
+      0.22059
+     ]
+    }
+   }
+  },
+  {
+   "name": "cart_sw",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "the oxcart heading this way, base = the middle of the cart on the ground, at (0.5, 0.5) of its tile (Ludo.ai 3D prop, Directional Stills, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/cart_sw.png",
+     "w": 182,
+     "h": 138,
+     "anchor": [
+      110.0,
+      30.0
+     ],
+     "origin": [
+      0.6044,
+      0.21739
+     ]
+    },
+    "1x": {
+     "file": "1x/props/cart_sw.png",
+     "w": 91,
+     "h": 69,
+     "anchor": [
+      55.0,
+      15.0
+     ],
+     "origin": [
+      0.6044,
+      0.21739
+     ]
+    }
+   }
+  },
+  {
+   "name": "cart_ne",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "the oxcart heading this way, base = the middle of the cart on the ground, at (0.5, 0.5) of its tile (Ludo.ai 3D prop, Directional Stills, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/cart_ne.png",
+     "w": 181,
+     "h": 142,
+     "anchor": [
+      70.0,
+      35.0
+     ],
+     "origin": [
+      0.38674,
+      0.24648
+     ]
+    },
+    "1x": {
+     "file": "1x/props/cart_ne.png",
+     "w": 90,
+     "h": 71,
+     "anchor": [
+      35.0,
+      17.5
+     ],
+     "origin": [
+      0.38889,
+      0.24648
+     ]
+    }
+   }
+  },
+  {
+   "name": "cart_nw",
+   "category": "props",
+   "type": "image",
+   "footprint": [
+    1,
+    1
+   ],
+   "notes": "the oxcart heading this way, base = the middle of the cart on the ground, at (0.5, 0.5) of its tile (Ludo.ai 3D prop, Directional Stills, cel-shaded; shadow baked in)",
+   "res": {
+    "2x": {
+     "file": "2x/props/cart_nw.png",
+     "w": 190,
+     "h": 136,
+     "anchor": [
+      118.0,
+      29.0
+     ],
+     "origin": [
+      0.62105,
+      0.21324
+     ]
+    },
+    "1x": {
+     "file": "1x/props/cart_nw.png",
+     "w": 95,
+     "h": 68,
+     "anchor": [
+      59.0,
+      14.5
+     ],
+     "origin": [
+      0.62105,
+      0.21324
      ]
     }
    }
