@@ -1,13 +1,14 @@
 """Build an animal's spritesheet (chicken, cow, sheep) from Ludo Directional Sprites renders.
 
 Usage: python fit_animal.py NAME SHEETS_DIR OUT_DIR HEIGHT ANIM:DIR=SHEET[@GRID][!][~] ... [--frames=ANIM:N,...]
-       [--fps=ANIM:N,...] [--shadow=RX,RY] [--grid=COLS,ROWS,COUNT]
+       [--fps=ANIM:N,...] [--shadow=RX,RY] [--grid=COLS,ROWS,COUNT] [--anims=ANIM,...]
 
 Each ANIM:DIR=SHEET[@COLS,ROWS,COUNT] says where an animation (idle, walk, eat) and facing (se, sw, ne, nw) comes
 from: a sheet in SHEETS_DIR (createDirectionalSprites, or animateSprite on a createDirectionalStills image), a grid of
 COLS x ROWS frames of which the first COUNT are used (default --grid, 4,4,16).
 A trailing ! mirrors the sheet, so an SE render can stand in for SW and an NE one for NW; a trailing ~ plays it
-forward then back, for a one-way clip (a head lowered to graze) that has to loop.
+forward then back, for a one-way clip (a head lowered to graze) that has to loop. --anims lists the animations the
+sheet has (default idle,walk,eat; the ox has idle,walk).
 
 Ludo frames every render to its own motion. So each animation is scaled until its standing pose (the tallest SE frame)
 is HEIGHT 2x px tall, and each sheet's ground point is the middle of the standing pose's feet (the ground under the
@@ -30,6 +31,8 @@ PAD = 4  # 2x px of empty border around the widest pose
 
 name, sheets_dir, out_dir, height = sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4])
 opts = {a[2:].split('=')[0]: a.split('=', 1)[1] for a in sys.argv[5:] if a.startswith('--')}
+if 'anims' in opts:
+    ANIMS = tuple(opts['anims'].split(','))
 
 
 def pairs(opt):

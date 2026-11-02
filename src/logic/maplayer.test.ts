@@ -267,6 +267,9 @@ describe("the woodcutter's lodge fells trees in range", () => {
     expect(treesInRange(layer, lodgeArea, 6).map((t) => t.y - lodgeAt.y)).toEqual([4, 5, 7]);
   });
 
+  /** Wood the lodge made: stored, or in its yard. */
+  const wood = (game: Game, obj: PlacedObject) => game.count('wood') + (obj.state.waiting as number);
+
   it('each cycle fells the nearest grown tree in range, which turns into a stump when the cycle ends', () => {
     const { game, obj, layer } = lodge();
     game.advance(1);
@@ -278,19 +281,19 @@ describe("the woodcutter's lodge fells trees in range", () => {
     expect(game.checkPlacement('path', first.x, first.y)).toEqual({ ok: false, reason: 'tree' });
     run(game, cycle.start + cycle.duration - game.now);
     expect(treeStatus(first, game.now)).toBe('stump');
-    expect(game.count('wood')).toBe(4);
+    expect(wood(game, obj)).toBe(4);
     expect(game.checkPlacement('path', first.x, first.y).ok).toBe(true);
     // Then the next nearest, and the one after.
     run(game, 30 * MIN);
     expect([4, 5, 7].map((dy) => treeStatus(treeAt(layer, lodgeAt.x, lodgeAt.y + dy)!, game.now))).toEqual(['stump', 'stump', 'stump']);
     expect(treeStatus(treeAt(layer, lodgeAt.x, lodgeAt.y + 9)!, game.now)).toBe('grown'); // out of range
-    expect(game.count('wood')).toBe(12);
+    expect(wood(game, obj)).toBe(12);
   });
 
   it('with nothing in range it waits `no-trees`, wakes when a stump regrows, and resumes', () => {
     const { game, obj, layer } = lodge();
     run(game, 30 * MIN);
-    expect(game.count('wood')).toBe(12);
+    expect(wood(game, obj)).toBe(12);
     expect(workplaceNext(game, obj)).toEqual({ wait: 'no-trees' });
     expect(idleReason(game, obj)).toBe('no-trees');
     const first = treeAt(layer, lodgeAt.x, lodgeAt.y + 4)!;
@@ -307,14 +310,14 @@ describe("the woodcutter's lodge fells trees in range", () => {
     // About a season of game time.
     expect(REGROW_MS).toBe(32 * MIN);
     run(game, regrow - game.now - 1);
-    expect(game.count('wood')).toBe(12);
+    expect(wood(game, obj)).toBe(12);
     expect(treeStatus(first, game.now)).toBe('stump');
     game.advance(1);
     expect(treeStatus(first, game.now)).toBe('grown');
     const cycle = obj.state.cycle!; // the farmer set off at once
     expect(first.felledAt).toBe(cycle.start + cycle.duration);
     run(game, cycle.start + cycle.duration - game.now);
-    expect(game.count('wood')).toBe(16);
+    expect(wood(game, obj)).toBe(16);
   });
 
   it('×1, ×60 and offline catch-up give the same map', () => {

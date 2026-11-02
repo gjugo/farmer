@@ -16,6 +16,8 @@ export interface ActivityEvents {
   produced: { item: ItemId; qty: number };
   /** A house garden yielded: `qty` of a food picked (stored, or waiting in the garden for room). */
   gathered: { item: ItemId; qty: number };
+  /** An oxcart unloaded `qty` of `item` at a store (`src/logic/haul.ts`). */
+  hauled: { item: ItemId; qty: number };
   /** Items (building materials) were bought at the Market. */
   bought: { item: ItemId; qty: number; spent: number };
   /** Items were sold at the Market. */

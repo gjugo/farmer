@@ -1,11 +1,13 @@
 import { PENS } from '../data/animals';
 import { FIELD } from '../data/crops';
+import { OX_BARN } from '../data/haul';
 import { WALK_MS_PER_TILE } from '../data/farmhouse';
 import { PROCESSORS } from '../data/processing';
 import { RESOURCES } from '../data/resourceBuildings';
 import { MAX_FARMERS, STARTING_FARMERS, type JobKind } from '../data/workers';
 import { startTimer, timerDone, type Timer } from './clock';
 import type { Game } from './game';
+import { returnLoad, type HaulTrip } from './haul';
 import { perkFactor } from './perks';
 import { getSlice, isPlainObject, registerStateSlice } from './slices';
 import type { Route, Tile } from './roads';
@@ -31,6 +33,8 @@ export interface Job {
   target?: string;
   /** Building only: game time the site is finished (the end of the work, before the walk back). Cleared once done. */
   doneAt?: number;
+  /** Hauling only: the oxcart's trip, its legs between the walk to the barn and the walk home (`src/logic/haul.ts`). */
+  haul?: HaulTrip;
 }
 
 export type JobPhase = 'out' | 'work' | 'back';
@@ -68,9 +72,9 @@ export function shiftJobs(saved: unknown, dx: number, dy: number): unknown {
   return { ...saved, jobs };
 }
 
-/** Fields, coops, pastures, processing and resource buildings: a farmer can be assigned to them. */
+/** Fields, coops, pastures, processing and resource buildings, ox barns: a farmer can be assigned to them. */
 export function isWorkplaceType(type: string): boolean {
-  return type === FIELD || Object.hasOwn(PENS, type) || Object.hasOwn(PROCESSORS, type) || Object.hasOwn(RESOURCES, type);
+  return type === FIELD || type === OX_BARN || Object.hasOwn(PENS, type) || Object.hasOwn(PROCESSORS, type) || Object.hasOwn(RESOURCES, type);
 }
 
 /**
@@ -83,6 +87,7 @@ export function workersOf(state: GameState): WorkersState {
   if (w.farmers > MAX_FARMERS) w.farmers = MAX_FARMERS;
   if (!Array.isArray(w.jobs)) w.jobs = [];
   else w.jobs = w.jobs.filter((j) => isPlainObject(j) && isPlainObject(j.timer) && typeof j.timer.start === 'number' && typeof j.timer.duration === 'number');
+  for (const j of w.jobs) if (j.haul !== undefined && !isHaulTrip(j.haul)) delete j.haul;
   const types = new Map(state.objects.map((o) => [o.id, o.type]));
   const raw = Array.isArray(w.workplaces) ? w.workplaces : [];
   const seen = new Set<string>();
@@ -95,6 +100,13 @@ export function workersOf(state: GameState): WorkersState {
   w.plans = keepStrings(w.plans, (id) => types.get(id) === FIELD);
   w.recipes = keepStrings(w.recipes, (id) => Object.hasOwn(PROCESSORS, types.get(id) ?? ''));
   return w;
+}
+
+/** A saved haul trip in good shape (anything else is dropped from its job). */
+function isHaulTrip(v: unknown): v is HaulTrip {
+  if (!isPlainObject(v) || typeof v.barn !== 'string' || typeof v.to !== 'string' || typeof v.start !== 'number') return false;
+  if (!isPlainObject(v.load) || !Array.isArray(v.legs)) return false;
+  return v.legs.every((l) => isPlainObject(l) && typeof l.ms === 'number' && Array.isArray(l.way) && l.way.length > 0);
 }
 
 /** The string entries of `v` whose key passes `keep`, in place when nothing has to go. */
@@ -181,6 +193,8 @@ export interface JobOptions {
   target?: string;
   /** Building: the site is finished when the work ends (see `Job.doneAt`). */
   builds?: boolean;
+  /** Hauling: the trip, given the game time the carter reaches the barn. */
+  haul?: (start: number) => HaulTrip;
 }
 
 /**
@@ -200,6 +214,7 @@ export function assignJob(game: Game, kind: JobKind, x: number, y: number, durat
   const job: Job = { kind, x: at.x, y: at.y, timer: startTimer(state.clock, durationMs + 2 * walk), farmer, route: route?.tiles ?? [], walkMs: walk };
   if (options.target) job.target = options.target;
   if (options.builds) job.doneAt = state.clock.elapsed + walk + durationMs;
+  if (options.haul) job.haul = options.haul(state.clock.elapsed + walk);
   w.jobs.push(job);
   game.activity.emit('workStarted', { kind });
   return true;
@@ -299,8 +314,10 @@ export function removeFarmer(game: Game): { workplace: string | null } | null {
   const workplace = w.workplaces[i] ?? null;
   w.farmers--;
   w.workplaces.length = w.farmers;
-  w.jobs = jobsByFarmer(state.clock, { ...w, farmers: i + 1 })
-    .flatMap((j, k) => (j && k !== i ? [{ ...j, farmer: k }] : []));
+  const jobs = jobsByFarmer(state.clock, { ...w, farmers: i + 1 });
+  // A carter leaving mid-trip: what the cart carries goes back to its barn.
+  if (jobs[i]?.haul) returnLoad(game, jobs[i]!.haul!);
+  w.jobs = jobs.flatMap((j, k) => (j && k !== i ? [{ ...j, farmer: k }] : []));
   const obj = workplace ? game.getObject(workplace) : undefined;
   if (obj) game.touch(obj);
   return { workplace };

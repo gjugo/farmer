@@ -180,7 +180,8 @@ describe('art pack', () => {
   it('gives every job its own farmer animation, in every direction', () => {
     const keys = new Set(assets.get(FARMER_ART)!.animations!.map((a) => a.key));
     for (const kind of Object.keys(JOBS) as JobKind[]) {
-      expect(WORK_ANIM[kind], kind).toBe(kind);
+      // The carter walks beside the ox (and loads with the sack-carrying "load" moves, see src/features/haul).
+      expect(WORK_ANIM[kind], kind).toBe(kind === 'haul' ? 'walk' : kind);
       for (const dir of ['se', 'sw', 'ne', 'nw']) expect(keys.has(`${FARMER_ART}_${WORK_ANIM[kind]}_${dir}`), `${kind} ${dir}`).toBe(true);
     }
   });

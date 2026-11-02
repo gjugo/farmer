@@ -97,15 +97,31 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   (level 2, $120 + 10 🪵) 3 🪨 stone and the **⚒️ Mine** (level 4, $140 + 15 🪵 + 10 🪨, never iron) 1 🔩 iron per cycle
   of work: 4, 5 and 6 game-minutes, a quarter longer in winter. Nothing is made without an assigned farmer
   (**👨‍🌾 Assign a farmer to cut wood**, … to quarry stone, … to mine iron) and a path from the farmhouse: the farmer
-  walks there, works one cycle (chips or dust fly by the building) and the yield goes into the storehouses. When the
-  storehouses are full, what doesn't fit waits in the building (a bubble on the map shows it), no new cycle starts and
-  the farmer is free for other work; once there is room they carry it in, or tap the building (**Carry … to the
-  storehouse**) to take what fits. Nothing is lost. The panel shows the farmer, the cycle's progress, output waiting,
-  what was made today and why it is idle (no farmer, no path, storehouse full). It pays for itself in well under two
-  hours of work against Market prices, so the Market is the dearer fallback. Time away produces up to the storehouse
-  room; the welcome-back summary lists what was produced. Goals: "Build a woodcutter's lodge", "Produce 20 wood" and
+  walks there, works one cycle (chips or dust fly by the building) and the yield lands in the building's **yard**, a
+  pile of logs, stone or iron at the building that grows as it fills. **The yard rule:** a yard holds 3 cycles' yield
+  (12 wood, 9 stone, 3 iron). An ox barn's cart hauls it away (see **Oxcarts**); once the yard is full, the
+  building's own farmer carries all of it into the stores on foot (a `collect` job) before working another cycle, and
+  with nothing left to work (no tree in reach, the deposit used up) they carry in what is left. When the storehouses
+  have no room, the full yard waits, no new cycle starts and the farmer is free for other work. The panel's **Carry …
+  to the storehouse** takes what fits by hand. Nothing is lost. The panel shows the farmer, the cycle's progress, the
+  yard, what was made today and why it is idle (no farmer, no path, yard and storehouse full). It pays for itself in
+  well under two hours of work against Market prices, so the Market is the dearer fallback. The welcome-back summary
+  lists what was produced (stored, or waiting in the yards). Goals: "Build a woodcutter's lodge", "Produce 20 wood" and
   "Build a quarry" come after "Buy a plot of land", "Mine 5 iron" after "Mill 12 feed" (a lodge or quarry built
   earlier counts).
+- **Oxcarts:** the **🐂 Ox Barn** (level 3, 3×2, $250 + 30 🪵 + 15 🪨; several allowed) hauls goods by oxcart. Buy an
+  ox in its panel (**🐂 Buy an ox**, $300; the ox needs no feed) and assign one farmer as the carter (**👨‍🌾 Assign a
+  carter**, one farmer per workplace). The carter walks from the farmhouse to the barn, then the cart leaves along the
+  paths to the **fullest yard** (or the processing building with the most finished goods), loads up to **20** units,
+  drives to the **nearest granary, storehouse or farmhouse store** with room for them, unloads, and drives back to the
+  barn; the carter walks home. The ox pulls the cart at 0.6 game-s a tile (a farmer walks at 0.4); loading and
+  unloading take 10 s each. The goods are counted where they are: in the yard until loaded, on the cart until
+  unloaded (the resource bar rises on unload), and what didn't fit stays on the cart, parked in the barn, until a
+  later trip takes it to a store with room. Carts empty the yards before they fill, so the farmers there keep
+  producing. On the map an ox pulls the cart in four facings with the carter walking beside it and the load on the
+  cart (logs, stone, iron, or sacks for goods). The barn panel says why the cart waits: **No ox**, **No carter**,
+  **Nothing to haul**, **No path to …** or **Stores full**. It all runs in the work scheduler, so ×1, ×60 and offline
+  catch-up agree. Goals: "Build an ox barn" and "Haul 100 goods by cart" (the last two in the list).
 - **Resources on the map:** wood, stone and iron come from real places. A new game generates (from a seed) and saves
   forests, stone outcrops and iron veins: a grove of about 10 trees and a 2×2 outcrop on the starting land, large
   forests and more outcrops (2×2 or 3×3) on locked land, and at least two iron veins, only on locked land, one in a
@@ -230,7 +246,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   sowing, harvesting, hammering, feeding) and walks back, busy the whole way. On the way they carry what the job moves:
   a sack home from a harvest or a workshop and out to feed, spread manure or load a batch, a basket of eggs, a bucket
   of milk, a sack of wool, logs or stone from the lodge, quarry or mine, and logs (or stone) out to a construction
-  site; ploughing and sowing trips are empty-handed. It is only the look: the goods moved when the job started
+  site; ploughing, sowing and hauling trips are empty-handed (a carter's goods ride on the oxcart). It is only the look: the goods moved when the job started
   (`CARRY` in `src/scenes/art.ts`). Work on a field, pen or building is refused
   until a path joins it to the door ("No path leads there"), and the build ghost turns red where no path reaches.
   New farms start with a road from the door to both fields; older saves get a farmhouse and roads to what they built.
@@ -277,7 +293,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci`, typecheck, lint, test and build o
   were away. A parched field is drawn dry and cracked, crows peck on the field they eat, and a harsh winter snows
   heavier (still at most 150 particles). Field and coop panels say "🛡️ Protected by …" or "⚠️ Unprotected: build …";
   the build ghost of a well, scarecrow or kennel shades the tiles it reaches and counts the fields or coops it guards.
-  Two goals at the end of the list: **Build a well** and **Protect a coop with a kennel**.
+  Two goals near the end of the list, before the oxcart goals: **Build a well** and **Protect a coop with a kennel**.
 - **Sound:** starts on the first click/tap (browser autoplay rules). 🔊 in the HUD mutes everything; ⚙️ Settings has
   Music and Effects sliders, a mute switch and the audio Credits. Sound settings are kept in localStorage
   (`farmer.audio`), not in the save. Music and the ambience pause while the tab is hidden.
@@ -328,7 +344,12 @@ so to click "just inside" an edge, stay at least 2 px inside it.
 `window.farm.storage` is `{ goods: { used, capacity }, materials: { used, capacity } }`; each storage building's
 level is `state.level` of its entry in `window.farm.objects` (type `granary` or `storehouse`). A `woodcutter`, `quarry`
 or `mine` entry has `state: { cycle, waiting, day, today }`: the cycle being worked (`{ start, duration }` or null),
-the output waiting for room, and what was made on `day`.
+the output in its yard, and what was made on `day`. An `oxbarn` entry has `state: { ox, cargo }` (cargo: goods left
+on the parked cart). `window.farm.carts` lists every barn with an ox as `{ barn, farmer, leg, at, load, from, to }`:
+`leg` is `'parked'`, `'walk'` (the carter walks to the barn or home), `'drive'`, `'load'` or `'unload'`, `at` the
+cart's grid point, `load` the goods on the cart, `from` / `to` the pickup and store ids of the trip (null while
+parked). A carter's job in `window.farm.ext.workers.jobs` has kind `haul` and a `haul` trip with its legs. Debug
+mode adds **🐞 Free ox (debug)** to a barn's panel.
 `window.farm.map` is `{ trees: { grown, stumps }, deposits, treeAt(x, y), sprites }`: `deposits` lists every stone
 outcrop and iron vein as `{ kind: 'stone' | 'iron', x, y, w, h, left, amount }`; `treeAt(x, y)` is null or
 `{ x, y, status: 'grown' | 'stump', felledAt, regrowsAt }` (a tree a lodge is felling is grown with a `felledAt` in the
@@ -408,7 +429,9 @@ src/
     roads.ts           the farmhouse and paths: the route a farmer walks to a site; farmhouse for new and old farms
     orders.ts          orders board: known goods, seeded order generation, rewards, fulfil/discard, refill timers
     storage.ts         goods/materials pools: capacity, used, spaceFor (Game.addItem takes only what fits), upgrades
-    resources.ts       woodcutter, quarry, mine: production cycles, output waiting for room, idle reasons
+    resources.ts       woodcutter, quarry, mine: production cycles, the yard (3 cycles' yield), idle reasons
+    haul.ts            ox barns and oxcarts: buying the ox, planning a trip (fullest pickup, nearest store), the legs
+                       and their timing, loading / unloading / parking as scheduler events, `cartsOf`
     maplayer.ts        the map layer: forests (felled time, lazy regrowth) and deposits (what is left), seeded
                        generation for new games and old saves, the placement rule for trees and deposits
     stockpiles.ts      which stock pile stage each storing building shows (the shared pools split in placement order)
@@ -419,6 +442,7 @@ src/
     families.ts        the Cottage buildable, foods, needs per family, approval points, arrival and leaving thresholds
     perks.ts           the perk pool: name, what it does, its factor and what it is about
     resourceBuildings.ts woodcutter's lodge, quarry and mine buildables: costs, yields, cycle times
+    haul.ts            the Ox Barn buildable, the ox price, cart capacity, ox speed, load times, yard size
     resources.ts       resource categories (resource bar, stock piles), item → category / pile
     buildables.ts      build menu registry (+ the core Path)
     crops.ts           crop catalogue (with each crop's seasons) + the Field buildable
@@ -455,7 +479,8 @@ src/
     storage/           granary and storehouse: art per level, level badge, storage panel with Upgrade,
                        `window.farm.storage`, the one-time notice for old saves; stock piles in the yards
                        (piles.ts, `window.farm.stockpiles`)
-    resources/         woodcutter's lodge, quarry, mine: work chips/dust, waiting-output bubble, panel
+    resources/         woodcutter's lodge, quarry, mine: work chips/dust, the yard's pile, panel
+    haul/              ox barn panel (buy an ox, wait reasons), the oxcarts on the map, `window.farm.carts`
     nature/            trees, stumps, outcrops and veins on the map; the lodge's reach on the build ghost;
                        `window.farm.map`
                        (data: src/data/resourceBuildings.ts, logic: src/logic/resources.ts)
@@ -606,6 +631,8 @@ The `perks` slice (seed, perks taken, open choices) is purely additive, so it ne
 it gets a seed on load and one open choice per level it has reached.
 Version 11 added the map layer: an older save gets one generated around what it has built (never on top of it),
 with a full deposit under every quarry and mine and a grove of about 8 trees in reach of every lodge.
+Version 13 added oxcart hauling: a resource building's `waiting` output (from older saves: what waited for storehouse
+room) stays, now as its yard, so nothing is lost; jobs gain an optional `haul` trip and ox barns their own state.
 
 - **Home screen:** the page opens on a "Farmer" title over the dimmed, paused farm (its seasonal look, or a fresh
   farm on a first visit): **Continue** (only with an autosave; it catches up on the time away and shows the

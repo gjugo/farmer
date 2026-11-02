@@ -84,12 +84,17 @@ function occupancy(state: GameState): Map<string, PlacedObject> {
  * null when it can't be walked, otherwise 0 or 1 (a 0-1 breadth-first search, so 0-cost tiles are
  * preferred). Returns the tiles from the door on, or null when nothing reaches the site.
  */
-function search(door: Tile, site: Area, cost: (x: number, y: number) => number | null): Tile[] | null {
-  const startCost = cost(door.x, door.y);
-  if (startCost === null) return null;
-  const best = new Map<string, number>([[key(door.x, door.y), startCost]]);
-  const from = new Map<string, Tile | null>([[key(door.x, door.y), null]]);
-  const queue: (Tile & { d: number })[] = [{ ...door, d: startCost }];
+function search(door: Tile | Tile[], site: Area, cost: (x: number, y: number) => number | null): Tile[] | null {
+  const best = new Map<string, number>();
+  const from = new Map<string, Tile | null>();
+  const queue: (Tile & { d: number })[] = [];
+  for (const t of Array.isArray(door) ? door : [door]) {
+    const startCost = cost(t.x, t.y);
+    if (startCost === null || best.has(key(t.x, t.y))) continue;
+    best.set(key(t.x, t.y), startCost);
+    from.set(key(t.x, t.y), null);
+    queue.push({ ...t, d: startCost });
+  }
   while (queue.length > 0) {
     const t = queue.shift()!;
     if (t.d > (best.get(key(t.x, t.y)) ?? Infinity)) continue;
@@ -127,6 +132,39 @@ export function findRoute(state: GameState, site: Area): Route | null {
   const last = tiles[tiles.length - 1];
   const t = touching(site, last.x, last.y)!;
   return { tiles, work: { x: t.x + 0.5, y: t.y + 0.5 } };
+}
+
+/** A grid point (in tiles, may be fractional). */
+export interface Point {
+  x: number;
+  y: number;
+}
+
+/**
+ * The way between two areas along paths, for the oxcart: from the middle of the tile of `from` next to the first path
+ * tile, through the middle of every path tile, to the middle of the tile of `to` next to the last one. Null when no
+ * path joins them.
+ */
+export function findWay(state: GameState, from: Area, to: Area): Point[] | null {
+  const at = occupancy(state);
+  const isPath = (x: number, y: number) => at.get(key(x, y))?.type === PATH;
+  const starts: Tile[] = [];
+  for (let y = from.y - 1; y <= from.y + from.h; y++) {
+    for (let x = from.x - 1; x <= from.x + from.w; x++) if (isPath(x, y) && touching(from, x, y)) starts.push({ x, y });
+  }
+  const tiles = search(starts, to, (x, y) => (isPath(x, y) ? 0 : null));
+  if (!tiles) return null;
+  const first = touching(from, tiles[0].x, tiles[0].y)!;
+  const last = touching(to, tiles[tiles.length - 1].x, tiles[tiles.length - 1].y)!;
+  const mid = (t: Tile): Point => ({ x: t.x + 0.5, y: t.y + 0.5 });
+  return [mid(first), ...tiles.map(mid), mid(last)];
+}
+
+/** Length of a polyline, in tiles. */
+export function wayLength(points: Point[]): number {
+  let n = 0;
+  for (let i = 1; i < points.length; i++) n += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+  return n;
 }
 
 /** Lays free paths over owned empty tiles so the door reaches `site`, reusing paths already there. */
