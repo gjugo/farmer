@@ -100,6 +100,9 @@ export const GOALS: readonly GoalDef[] = [
   { id: 'harvest-potatoes', title: 'Harvest 30 potatoes', icon: '🥔', kind: 'harvest', item: 'potato', count: 30, reward: { money: 120, xp: 50 } },
   { id: 'winter-cabbage', title: 'Harvest cabbage in winter', icon: '🥬', kind: 'harvest', item: 'cabbage', season: 'winter', count: 1, reward: { money: 250, xp: 120 } },
   { id: 'grow-pumpkins', title: 'Grow 10 pumpkins', icon: '🎃', kind: 'harvest', item: 'pumpkin', count: 10, reward: { money: 300, xp: 150 } },
+  { id: 'make-malt', title: 'Malt barley into 10 malt', icon: '🫘', kind: 'make', item: 'malt', count: 10, reward: { money: 300, xp: 150 } },
+  { id: 'brew-ale', title: 'Brew 5 ale', icon: '🍺', kind: 'make', item: 'ale', count: 5, reward: { money: 400, xp: 200 } },
+  { id: 'sew-clothes', title: 'Sew 3 clothes', icon: '👕', kind: 'make', item: 'clothes', count: 3, reward: { money: 500, xp: 250 } },
 ];
 
 export function getGoal(id: string): GoalDef | undefined {

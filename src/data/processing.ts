@@ -2,7 +2,7 @@ import { registerBuildable } from './buildables';
 import type { KnownItemId } from './items';
 import type { MaterialCost } from './materials';
 
-export type ProcessorType = 'feed-mill' | 'dairy' | 'bakery' | 'loom';
+export type ProcessorType = 'feed-mill' | 'dairy' | 'bakery' | 'loom' | 'malthouse' | 'brewery' | 'tailor';
 
 export interface RecipeDef {
   /** Unique across all buildings. */
@@ -12,6 +12,8 @@ export interface RecipeDef {
   output: { item: KnownItemId; qty: number };
   /** Game milliseconds to make one batch. */
   durationMs: number;
+  /** Farm level that unlocks this recipe when it is later than its building's (an input that unlocks later). */
+  unlockLevel?: number;
 }
 
 export interface ProcessorDef {
@@ -84,15 +86,64 @@ export const PROCESSORS: Record<ProcessorType, ProcessorDef> = {
     cost: 325,
     materials: { wood: 10, iron: 3 },
     footprint: { w: 2, h: 2 },
-    description: 'Weaves wool into cloth.',
+    description: 'Weaves wool into cloth and flax into linen.',
     unlockLevel: 5,
     anim: 'smoke',
-    recipes: [{ id: 'cloth', inputs: { wool: 2 }, output: { item: 'cloth', qty: 1 }, durationMs: 600_000 }],
+    recipes: [
+      { id: 'cloth', inputs: { wool: 2 }, output: { item: 'cloth', qty: 1 }, durationMs: 600_000 },
+      // Flax comes at level 6.
+      { id: 'linen', inputs: { flax: 3 }, output: { item: 'linen', qty: 1 }, durationMs: 480_000, unlockLevel: 6 },
+    ],
+  },
+  // The longer chains: barley → malt → ale, and cloth or linen → clothes.
+  malthouse: {
+    id: 'malthouse',
+    name: 'Malthouse',
+    icon: '🫘',
+    cost: 300,
+    materials: { wood: 10, stone: 6 },
+    footprint: { w: 2, h: 2 },
+    description: 'Sprouts and dries barley into malt for the brewery.',
+    unlockLevel: 6,
+    anim: 'smoke',
+    recipes: [{ id: 'malt', inputs: { barley: 3 }, output: { item: 'malt', qty: 2 }, durationMs: 300_000 }],
+  },
+  brewery: {
+    id: 'brewery',
+    name: 'Brewery',
+    icon: '🍺',
+    cost: 450,
+    materials: { wood: 12, stone: 10, iron: 4 },
+    footprint: { w: 3, h: 2 },
+    description: 'Brews malt into ale: families drink it, and it sells well.',
+    unlockLevel: 7,
+    anim: 'smoke',
+    recipes: [{ id: 'ale', inputs: { malt: 2 }, output: { item: 'ale', qty: 1 }, durationMs: 600_000 }],
+  },
+  tailor: {
+    id: 'tailor',
+    name: 'Tailor',
+    icon: '👕',
+    cost: 400,
+    materials: { wood: 10, stone: 4, iron: 4 },
+    footprint: { w: 2, h: 2 },
+    description: 'Sews cloth or linen into clothes, which families like better than cloth.',
+    unlockLevel: 8,
+    anim: 'smoke',
+    recipes: [
+      { id: 'clothes-from-cloth', inputs: { cloth: 2 }, output: { item: 'clothes', qty: 1 }, durationMs: 600_000 },
+      { id: 'clothes-from-linen', inputs: { linen: 2 }, output: { item: 'clothes', qty: 1 }, durationMs: 600_000 },
+    ],
   },
 };
 
 export function isProcessorType(v: unknown): v is ProcessorType {
   return typeof v === 'string' && Object.hasOwn(PROCESSORS, v);
+}
+
+/** The level a recipe can be made from: its own `unlockLevel`, or its building's. */
+export function recipeUnlockLevel(processor: ProcessorDef, recipe: RecipeDef): number {
+  return Math.max(processor.unlockLevel, recipe.unlockLevel ?? 1);
 }
 
 export function findRecipe(type: string, recipeId: string): RecipeDef | undefined {

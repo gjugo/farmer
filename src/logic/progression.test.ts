@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ANIMALS, PENS } from '../data/animals';
 import { listBuildables, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, CROPS, FIELD, getCrop } from '../data/crops';
-import { PROCESSORS } from '../data/processing';
+import { PROCESSORS, recipeUnlockLevel } from '../data/processing';
 import { ACTIVE_GOALS, GOALS, LEVEL_BONUS, LEVEL_XP, MAX_LEVEL } from '../data/progression';
 import { buyAnimal, collect as collectAnimals, feedAll, type PenState } from './animals';
 import { START_LAND } from './constants';
@@ -132,11 +132,11 @@ describe('unlocks', () => {
     for (const a of Object.values(ANIMALS)) expect(a.unlockLevel).toBeGreaterThanOrEqual(PENS[a.pen].unlockLevel);
   });
 
-  it('no recipe needs an input that unlocks after its building', () => {
+  it('no recipe needs an input that unlocks after the recipe', () => {
     for (const p of Object.values(PROCESSORS)) {
       for (const recipe of p.recipes) {
         for (const [item] of inputsOf(recipe)) {
-          expect(itemUnlockLevel(item), `${p.id}/${recipe.id} needs ${item}`).toBeLessThanOrEqual(p.unlockLevel);
+          expect(itemUnlockLevel(item), `${p.id}/${recipe.id} needs ${item}`).toBeLessThanOrEqual(recipeUnlockLevel(p, recipe));
         }
       }
     }
@@ -185,12 +185,18 @@ describe('unlocks', () => {
     expect(unlocksAt(3).map((u) => u.name).sort()).toEqual(['Cow', 'Dairy', 'Iron at the Market', 'Pasture', 'Potato']);
     expect(unlocksAt(4).map((u) => u.name)).toEqual(expect.arrayContaining(['Corn', 'Barley', 'Feed Mill']));
     expect(unlocksAt(5).map((u) => u.name).sort()).toEqual(['Loom', 'Sheep']);
-    // The later levels unlock crops: flax and the winter cabbage at 6, pumpkin at 7.
+    // The later levels unlock crops and the longer chains: flax, the winter cabbage and the malthouse at 6, pumpkin
+    // and the brewery at 7, the tailor at 8.
     expect(unlocksAt(6)).toEqual([
       { icon: '🪻', name: 'Flax' },
       { icon: '🥬', name: 'Cabbage' },
+      { icon: '🫘', name: 'Malthouse' },
     ]);
-    expect(unlocksAt(7)).toEqual([{ icon: '🎃', name: 'Pumpkin' }]);
+    expect(unlocksAt(7)).toEqual([
+      { icon: '🎃', name: 'Pumpkin' },
+      { icon: '🍺', name: 'Brewery' },
+    ]);
+    expect(unlocksAt(8)).toEqual([{ icon: '👕', name: 'Tailor' }]);
   });
 
   it('each new crop unlocks at its level, and so does its item', () => {
@@ -303,9 +309,17 @@ describe('goals', () => {
     expect(game.progression.allDone).toBe(true);
   });
 
-  it('the new crop goals come last, after the goals saves already know by index', () => {
-    expect(GOALS.slice(-3).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins']);
-    expect(GOALS.findIndex((g) => g.id === 'weave-cloth')).toBe(GOALS.length - 4);
+  it('new goals come last, after the goals saves already know by index', () => {
+    expect(GOALS.slice(-6).map((g) => g.id)).toEqual(['harvest-potatoes', 'winter-cabbage', 'grow-pumpkins', 'make-malt', 'brew-ale', 'sew-clothes']);
+    expect(GOALS.findIndex((g) => g.id === 'weave-cloth')).toBe(GOALS.length - 7);
+  });
+
+  it('the chain goals ask for 10 malt, 5 ale and 3 clothes', () => {
+    expect(GOALS.slice(-3).map((g) => [g.kind, 'item' in g ? g.item : null, g.count])).toEqual([
+      ['make', 'malt', 10],
+      ['make', 'ale', 5],
+      ['make', 'clothes', 3],
+    ]);
   });
 
   it('harvest cabbage in winter counts only a winter harvest', () => {

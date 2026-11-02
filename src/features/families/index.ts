@@ -2,7 +2,9 @@ import type Phaser from 'phaser';
 import {
   ARRIVE_APPROVAL,
   CLOTH_PER_FAMILY,
+  CLOTHES_PER_FAMILY,
   COTTAGE,
+  FAMILIES_PER_ALE,
   FARMHOUSE_HOMES,
   FIREWOOD_PER_HOME,
   FOODS,
@@ -14,7 +16,7 @@ import { MAX_FARMERS } from '../../data/workers';
 import type { FarmContext, ObjectView, PlacedObject, SheetSpec } from '../../game/context';
 import { onGameStart, registerBehavior, registerDebugInfo, registerHudButton } from '../../game/hooks';
 import { formatDuration } from '../../logic/crops';
-import { clothesNeeded, familiesCount, familiesOf, homesOf } from '../../logic/families';
+import { aleWanted, clothesNeeded, familiesCount, familiesOf, homesOf } from '../../logic/families';
 import type { Game } from '../../logic/game';
 import { seasonOf } from '../../logic/seasons';
 import { ART_RES, ART_SCALE, artFor } from '../../scenes/art';
@@ -71,11 +73,16 @@ export function familiesBlock(game: Game): HTMLElement {
   if (day) {
     lastLines.push(day.eaten > 0 ? `🍽️ Ate ${foods(day.ate)} (${day.eaten} of ${day.meal})` : `🍽️ Nothing to eat (they needed ${day.meal})`);
     if (day.firewood !== null) lastLines.push(`🪵 Firewood: ${day.firewood} of ${day.firewoodNeeded} homes warm`);
-    if (day.clothed !== null) lastLines.push(`🧵 Clothed: ${day.clothed} of ${day.families}`);
+    if (day.ale != null) lastLines.push(`🍺 Ale: ${day.ale} of ${day.families} families had some (${day.aleDrunk ?? 0} drunk)`);
+    if (day.clothed !== null) {
+      const dressed = Math.min(day.dressed ?? 0, day.clothed);
+      lastLines.push(`🧵 Clothed: ${day.clothed} of ${day.families}${dressed > 0 ? ` (👕 ${dressed} in clothes, 🧵 ${day.clothed - dressed} in cloth)` : ''}`);
+    }
   }
   const clothes = clothesNeeded(game)
-    ? ` At the start of winter each family takes ${CLOTH_PER_FAMILY} 🧵 cloth and stays clothed all year.`
+    ? ` At the start of winter each family takes ${CLOTHES_PER_FAMILY} 👕 clothes if there are any (happier), otherwise ${CLOTH_PER_FAMILY} 🧵 cloth, and stays clothed all year.`
     : ' Once the loom is unlocked they also want 🧵 cloth each winter.';
+  const ale = aleWanted(game) ? ` Each day they drink 1 🍺 ale per ${FAMILIES_PER_ALE} families while there is any.` : '';
   return h(
     'div',
     { class: 'families', 'data-testid': 'families' },
@@ -102,7 +109,7 @@ export function familiesBlock(game: Game): HTMLElement {
       'p',
       { class: 'muted families-needs' },
       withIcons(
-        `Each family eats ${MEAL_PER_FAMILY} food a day from the granary (${FOODS.map((id) => getItem(id)?.icon ?? id).join(' ')}): the more kinds they get, the happier they are. On winter days each home burns ${FIREWOOD_PER_HOME} 🪵 wood from the storehouse.${clothes}`,
+        `Each family eats ${MEAL_PER_FAMILY} food a day from the granary (${FOODS.map((id) => getItem(id)?.icon ?? id).join(' ')}): the more kinds they get, the happier they are. On winter days each home burns ${FIREWOOD_PER_HOME} 🪵 wood from the storehouse.${clothes}${ale}`,
       ),
     ),
   );
@@ -112,7 +119,7 @@ export function familiesBlock(game: Game): HTMLElement {
 export function familiesSignature(game: Game): string {
   const s = familiesOf(game.state);
   const left = s.nextArrivalAt !== null ? Math.ceil((s.nextArrivalAt - game.now) / 10_000) : -1;
-  return `${homesOf(game.state)}|${familiesCount(game.state)}|${s.approval}|${s.settledDay}|${left}|${clothesNeeded(game)}`;
+  return `${homesOf(game.state)}|${familiesCount(game.state)}|${s.approval}|${s.settledDay}|${left}|${clothesNeeded(game)}|${aleWanted(game)}`;
 }
 
 function familiesSheet(ctx: FarmContext): SheetSpec {
@@ -159,7 +166,16 @@ registerDebugInfo('families', () => {
     families: familiesCount(game.state),
     approval: s.approval,
     breakdown: s.breakdown,
-    lastDay: d ? { ate: d.ate, variety: d.variety, firewood: d.firewood, clothed: d.clothed } : null,
+    lastDay: d
+      ? {
+          ate: d.ate,
+          variety: d.variety,
+          firewood: d.firewood,
+          // Families clothed this year: in the tailor's clothes and in cloth.
+          clothed: d.clothed === null ? null : { families: d.clothed, clothes: Math.min(d.dressed ?? 0, d.clothed), cloth: d.clothed - Math.min(d.dressed ?? 0, d.clothed) },
+          ale: d.ale == null ? null : { families: d.ale, drunk: d.aleDrunk ?? 0 },
+        }
+      : null,
     nextArrivalAt: s.nextArrivalAt,
   });
 });

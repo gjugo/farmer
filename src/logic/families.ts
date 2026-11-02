@@ -4,7 +4,9 @@ import {
   ARRIVAL_GAP_DAYS,
   ARRIVE_APPROVAL,
   CLOTH_PER_FAMILY,
+  CLOTHES_PER_FAMILY,
   COTTAGE,
+  FAMILIES_PER_ALE,
   FARMHOUSE_HOMES,
   FIREWOOD_PER_HOME,
   FOODS,
@@ -26,8 +28,9 @@ import { addFarmer, removeFarmer, workersOf } from './workers';
 
 /**
  * Families with needs. Each family is one farmer and lives in a home: the farmer's farmhouse or a cottage. Once a
- * game day (at every day boundary) the families eat from the granary, burn firewood in winter and, at the start of
- * winter once the loom is unlocked, take cloth for the year; the day's results give their approval. When approval is
+ * game day (at every day boundary) the families eat from the granary, burn firewood in winter, drink ale once the
+ * brewery is unlocked and, at the start of winter once the loom is unlocked, take clothes (or else cloth) for the year;
+ * the day's results give their approval. When approval is
  * high and a home is free a new family moves in; when it stays low for a whole day one leaves.
  *
  * Everything runs on the game clock inside the work scheduler (`src/logic/work.ts`): day boundaries and arrival times
@@ -55,11 +58,16 @@ export interface DayNeeds {
   firewoodNeeded: number;
   /** Families clothed this year; null until the loom is unlocked. */
   clothed: number | null;
+  /** How many of the `clothed` wear the tailor's clothes (the rest cloth); missing in older saves (none). */
+  dressed?: number;
+  /** Families who had ale that day, and the ale they drank; null until the brewery is unlocked (missing in older saves). */
+  ale?: number | null;
+  aleDrunk?: number;
   /** One of the new farm's first days (`PROVISION_DAYS`): what the granary lacked, provisions made up. */
   provisions?: boolean;
 }
 
-export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'firewood' | 'neighbours';
+export type ApprovalPartId = 'base' | 'variety' | 'food' | 'clothes' | 'ale' | 'firewood' | 'neighbours';
 
 /** One line of the approval breakdown, e.g. `{ id: 'variety', label: '3 kinds of food', points: 10 }`. */
 export interface ApprovalPart {
@@ -82,9 +90,13 @@ export interface FamiliesState {
   breakdown: ApprovalPart[];
   /** What the families got on the last settled day; null before the first one. */
   lastDay: DayNeeds | null;
-  /** Game time (the start of a winter) the families last took cloth, and how many got one: clothed until the next winter. */
+  /**
+   * Game time (the start of a winter) the families last took clothes or cloth, how many got some (clothed until the next
+   * winter) and how many of those got the tailor's clothes.
+   */
   clothedAt: number | null;
   clothed: number;
+  dressed: number;
   /** Game time the next family moves in (if approval allows then); null while no home is free. */
   nextArrivalAt: number | null;
   /** Game time the last family moved in; null before any. */
@@ -99,6 +111,7 @@ function initialFamilies(): FamiliesState {
     lastDay: null,
     clothedAt: null,
     clothed: 0,
+    dressed: 0,
     nextArrivalAt: null,
     lastArrivalAt: null,
   };
@@ -120,6 +133,7 @@ export function familiesOf(state: GameState): FamiliesState {
     lastDay: isPlainObject(s.lastDay) ? (s.lastDay as unknown as DayNeeds) : null,
     clothedAt: isNum(s.clothedAt) ? s.clothedAt : null,
     clothed: Number.isInteger(s.clothed) && s.clothed! >= 0 ? s.clothed! : 0,
+    dressed: Number.isInteger(s.dressed) && s.dressed! >= 0 ? s.dressed! : 0,
     nextArrivalAt: isNum(s.nextArrivalAt) ? s.nextArrivalAt : null,
     lastArrivalAt: isNum(s.lastArrivalAt) ? s.lastArrivalAt : null,
   };
@@ -178,7 +192,16 @@ export function approvalOf(day: DayNeeds, neighbours = 0): Approval {
   }
   if (day.clothed !== null && day.families > 0) {
     const clothed = Math.min(day.clothed, day.families);
-    parts.push({ id: 'clothes', label: `${clothed} of ${plural(day.families, 'family', 'families')} clothed`, points: Math.round((APPROVAL.clothed * clothed) / day.families) });
+    // The tailor's clothes are worth more than plain cloth.
+    const dressed = Math.min(day.dressed ?? 0, clothed);
+    const points = Math.round((APPROVAL.dressed * dressed + APPROVAL.clothed * (clothed - dressed)) / day.families);
+    const label = `${clothed} of ${plural(day.families, 'family', 'families')} clothed${dressed > 0 ? ` (${dressed} in clothes)` : ''}`;
+    parts.push({ id: 'clothes', label, points });
+  }
+  if (day.ale != null && day.families > 0) {
+    const had = Math.min(day.ale, day.families);
+    const label = had === day.families ? `Ale for every family` : `${had} of ${plural(day.families, 'family', 'families')} had ale`;
+    parts.push({ id: 'ale', label, points: Math.round((APPROVAL.ale * had) / day.families) });
   }
   if (day.firewood !== null && day.firewoodNeeded > 0) {
     const cold = Math.max(0, day.firewoodNeeded - day.firewood);
@@ -202,6 +225,11 @@ function winterStarts(time: number): boolean {
 /** Are clothes a need yet (the loom is unlocked)? */
 export function clothesNeeded(game: Game): boolean {
   return game.isUnlocked(PROCESSORS.loom.unlockLevel);
+}
+
+/** Do the families drink ale yet (the brewery is unlocked)? */
+export function aleWanted(game: Game): boolean {
+  return game.isUnlocked(PROCESSORS.brewery.unlockLevel);
 }
 
 // Game rules -----------------------------------------------------------------------
@@ -229,7 +257,7 @@ function familyLeaves(game: Game): boolean {
   return true;
 }
 
-/** Settles game day `day` at its first moment: who leaves, the meal, firewood, clothes and the new approval. */
+/** Settles game day `day` at its first moment: who leaves, the meal, firewood, ale, clothes and the new approval. */
 function settleDay(game: Game, day: number): void {
   const { state } = game;
   const s = familiesOf(state);
@@ -253,19 +281,45 @@ function settleDay(game: Game, day: number): void {
     firewood = Math.min(firewoodNeeded, Math.floor(burnt / perHome + 1e-9));
   }
 
-  let clothed: number | null = null;
-  if (clothesNeeded(game)) {
-    if (winterStarts(t) && s.clothedAt !== t) {
-      const cloth = Math.min(families * CLOTH_PER_FAMILY, game.count('cloth'));
-      const n = Math.floor(cloth / CLOTH_PER_FAMILY);
-      if (n > 0) game.removeItem('cloth', n * CLOTH_PER_FAMILY);
-      s.clothedAt = t;
-      s.clothed = n;
-    }
-    clothed = s.clothedAt !== null && t < s.clothedAt + YEAR_MS ? Math.min(s.clothed, families) : 0;
+  // Ale: one for every `FAMILIES_PER_ALE` families, as far as the stock goes.
+  let ale: number | null = null;
+  let aleDrunk = 0;
+  if (aleWanted(game)) {
+    aleDrunk = Math.min(Math.ceil(families / FAMILIES_PER_ALE), game.count('ale'));
+    if (aleDrunk > 0) game.removeItem('ale', aleDrunk);
+    ale = Math.min(families, aleDrunk * FAMILIES_PER_ALE);
   }
 
-  const needs: DayNeeds = { families, ate, eaten, meal: families * MEAL_PER_FAMILY, variety: Object.keys(ate).length, firewood, firewoodNeeded, clothed };
+  let clothed: number | null = null;
+  let dressed = 0;
+  if (clothesNeeded(game)) {
+    if (winterStarts(t) && s.clothedAt !== t) {
+      // Clothes first, while there are any; the rest of the families take cloth.
+      const withClothes = Math.min(families, Math.floor(game.count('clothes') / CLOTHES_PER_FAMILY));
+      if (withClothes > 0) game.removeItem('clothes', withClothes * CLOTHES_PER_FAMILY);
+      const withCloth = Math.min(families - withClothes, Math.floor(game.count('cloth') / CLOTH_PER_FAMILY));
+      if (withCloth > 0) game.removeItem('cloth', withCloth * CLOTH_PER_FAMILY);
+      s.clothedAt = t;
+      s.clothed = withClothes + withCloth;
+      s.dressed = withClothes;
+    }
+    clothed = s.clothedAt !== null && t < s.clothedAt + YEAR_MS ? Math.min(s.clothed, families) : 0;
+    dressed = Math.min(s.dressed, clothed);
+  }
+
+  const needs: DayNeeds = {
+    families,
+    ate,
+    eaten,
+    meal: families * MEAL_PER_FAMILY,
+    variety: Object.keys(ate).length,
+    firewood,
+    firewoodNeeded,
+    clothed,
+    dressed,
+    ale,
+    aleDrunk,
+  };
   if (day <= PROVISION_DAYS) needs.provisions = true;
   const { approval, breakdown } = approvalOf(needs, perkFactor(state, 'good-neighbours'));
   Object.assign(s, { settledDay: day, approval, breakdown, lastDay: needs });

@@ -3,7 +3,7 @@ import { getBuildable, listBuildMenu } from '../data/buildables';
 import { CROP_LIST, getCrop } from '../data/crops';
 import { ITEMS } from '../data/items';
 import { MATERIAL_IDS, MATERIAL_UNLOCK } from '../data/materials';
-import { PROCESSORS } from '../data/processing';
+import { PROCESSORS, recipeUnlockLevel } from '../data/processing';
 import { LEVEL_XP, MAX_LEVEL } from '../data/progression';
 import { isPlainObject } from './slices';
 
@@ -39,7 +39,7 @@ export function itemUnlockLevel(itemId: string): number {
     if (animal.product === itemId) sources.push(Math.max(animal.unlockLevel, PENS[animal.pen].unlockLevel));
   }
   for (const p of Object.values(PROCESSORS)) {
-    if (p.recipes.some((r) => r.output.item === itemId)) sources.push(p.unlockLevel);
+    for (const r of p.recipes) if (r.output.item === itemId) sources.push(recipeUnlockLevel(p, r));
   }
   for (const id of MATERIAL_IDS) if (id === itemId) sources.push(MATERIAL_UNLOCK[id]);
   // Feed packs are sold in every pen's panel.
