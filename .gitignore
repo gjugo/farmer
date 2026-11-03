@@ -6,3 +6,5 @@ __pycache__/
 # Art generator (tools/art): its venv, and build.py's default output when run by hand
 tools/art/.venv/
 tools/art/out/
+# Impeccable design tool cache
+.impeccable/
