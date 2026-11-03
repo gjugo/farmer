@@ -7,6 +7,10 @@ A new farm starts like Manor Lords: only a ⛺ camp, with two families living in
 brought. Build fields, a granary and cottages around it; the 🏠 farmhouse comes later (level 4), as a big 3×3 building
 of its own, like the manor, and grows into a manor house and a manor hall.
 
+<p align="center">
+  <img src="docs/screenshot.jpg" alt="An autumn farm with cottages, fields, a windmill and the farming build menu" width="480">
+</p>
+
 ## Running it
 
 ```bash
